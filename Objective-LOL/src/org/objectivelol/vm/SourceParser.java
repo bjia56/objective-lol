@@ -208,6 +208,7 @@ public class SourceParser {
 					}
 
 					if(offset == 0) {
+						boolean first = true;
 						while((line = reader.readLine()) != null && !line.startsWith("KTHXBAI")) {
 							lineNumber++;
 							line = line.replaceAll("\\s+", " ").trim().toUpperCase();
@@ -216,7 +217,8 @@ public class SourceParser {
 								continue;
 							}
 							
-							fCode.append(line).append("\n");
+							fCode.append((first ? "" : "\n") + line);
+							first = false;
 						}
 
 						if(line == null) {
@@ -433,6 +435,7 @@ public class SourceParser {
 							
 							int nests = 1;
 							
+							boolean first = true;
 							while((line = reader.readLine()) != null) {
 								lineNumber++;
 								line = line.replaceAll("\\s+", " ").trim().toUpperCase();
@@ -457,7 +460,8 @@ public class SourceParser {
 									break;
 								}
 								
-								fCode.append(line).append("\n");
+								fCode.append((first ? "" : "\n") + line);
+								first = false;
 							}
 
 							if(line == null) {
@@ -489,7 +493,7 @@ public class SourceParser {
 				throw new LOLError("Line " + lineNumber + ": Unexpected symbol detected");
 			}
 			
-			return new LOLSource(line, importSources, globalVariables, globalFunctions, globalClasses);
+			return new LOLSource(fileName, importSources, globalVariables, globalFunctions, globalClasses);
 		} catch (IOException e) {
 			throw new RuntimeException("An IO error has occurred");
 		}

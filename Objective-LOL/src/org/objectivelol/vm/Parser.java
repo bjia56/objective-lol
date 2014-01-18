@@ -41,14 +41,6 @@ public class Parser {
 				line = line.substring(0, line.indexOf(" BTW"));
 			}
 
-			if(line.startsWith("KTHX")) {
-				if(!line.equals("KTHX")) {
-					throw new LOLError("Unexpected symbol detected");
-				}
-
-				break;
-			}
-
 			if(line.startsWith("IZ")) {
 				if(!line.contains("?")) {
 					throw new LOLError("Condition of IZ statement must be terminated by '?'");
@@ -60,19 +52,47 @@ public class Parser {
 
 				line = line.substring(2, line.length() - 1).trim();
 
+				StringBuilder sb = new StringBuilder();
+
+				boolean first = true;
+				String line2;
+				while(!(line2 = br.readLine()).startsWith("KTHX")) {
+					sb.append((first ? "" : "\n") + line2);
+					first = false;
+				}
+
+				if(!line2.equals("KTHX")) {
+					throw new LOLError("Unexpected symbol detected");
+				}
+
 				Expression condition = parseLine(line);
-				Expression code = parseBlock(br);
+				Expression code = parseBlock(new BufferedReader(new StringReader(sb.toString())));
 
 				statements.add(new IfStatement(condition, code));
+				continue;
 			}
 
 			if(line.startsWith("WHILE")) {
 				line = line.substring(5);
 
+				StringBuilder sb = new StringBuilder();
+
+				boolean first = true;
+				String line2;
+				while(!(line2 = br.readLine()).startsWith("KTHX")) {
+					sb.append((first ? "" : "\n") + line2);
+					first = false;
+				}
+
+				if(!line2.equals("KTHX")) {
+					throw new LOLError("Unexpected symbol detected");
+				}
+
 				Expression condition = parseLine(line);
-				Expression code = parseBlock(br);
+				Expression code = parseBlock(new BufferedReader(new StringReader(sb.toString())));
 
 				statements.add(new WhileStatement(condition, code));
+				continue;
 			}
 
 			statements.add(parseLine(line));
@@ -339,7 +359,7 @@ public class Parser {
 		if(line.equals("")) {
 			return function;
 		}
-		
+
 		String[] tmp = line.split(" ");
 		List<Object> tokens = new ArrayList<Object>();
 
@@ -1073,7 +1093,7 @@ public class Parser {
 			if(expression == null) {
 				expression = new Value(LOLValue.valueOf(expString));
 			}
-			
+
 			tokens.add(0, expression);
 			tokens.remove(1);
 		}
