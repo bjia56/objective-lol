@@ -1,0 +1,106 @@
+(0) Contents
+(1) Introduction
+(2) Language Fundamentals
+	(2.a) Lexical Conventions
+		(2.a.1) AN
+		(2.a.2) AS
+		(2.a.3) BIGGR THAN
+		(2.a.4) BOOL
+		(2.a.5) BTW
+		(2.a.6) CLAS
+		(2.a.7) DIS TEH
+		(2.a.8) DIVIDEZ
+		(2.a.9) DUBBLE
+		(2.a.10) EVRYONE
+		(2.a.11) FUNCSHUN
+		(2.a.12) GIVEZ
+		(2.a.13) GIVEZ UP
+		(2.a.14) HAI ME
+		(2.a.15) I CAN HAS
+		(2.a.16) I HAS A
+		(2.a.17) IN
+		(2.a.18) INTEGR
+		(2.a.19) ITZ
+		(2.a.20) IZ
+		(2.a.21) KK
+		(2.a.22) KTHX
+		(2.a.23) KTHXBAI
+		(2.a.24) LES
+		(2.a.25) LOCKD
+		(2.a.26) MAHSELF
+		(2.a.27) MOAR
+		(2.a.28) NATIV
+		(2.a.29) NO
+		(2.a.30) NOPE
+		(2.a.31) NOTHIN
+		(2.a.32) NUMBR
+		(2.a.33) OR
+		(2.a.34) SAEM AS
+		(2.a.35) SHARD
+		(2.a.36) SMALLR THAN
+		(2.a.37) STRIN
+		(2.a.38) TEH
+		(2.a.39) TIEMZ
+		(2.a.40) VARIABLE
+		(2.a.41) WHILE
+		(2.a.42) WIT
+		(2.a.43) XOR
+		(2.a.44) YEZ
+	(2.b) Values and Types
+	(2.c) Variables
+	(2.d) Casting
+	(2.e) Statements and Expressions
+	(2.f) Scope and Visibility
+	(2.g) Error Handling
+	(2.h) Functions
+	(2.i) Classes
+	(2.j) Memory Management
+	(2.k) Native Code
+(3) Standard Libraries
+	(3.a) STDLIB
+	(3.b) STDIO
+		(3.b.1) Constants
+		(3.b.2) Functions
+			(3.b.2.a) COMPLAIN
+			(3.b.2.b) GIMMEH
+			(3.b.2.c) VISIBLE
+	(3.c) MATH
+		(3.c.1) Constants
+			(3.c.1.a) E
+			(3.c.1.b) PIE
+		(3.c.2) Functions
+			(3.c.2.a) ABS
+			(3.c.2.b) ACOS
+			(3.c.2.c) ASIN
+			(3.c.2.d) ATAN
+			(3.c.2.e) ATAN2
+			(3.c.2.f) CBRT
+			(3.c.2.g) CEIL
+			(3.c.2.h) COS
+			(3.c.2.i) COSH
+			(3.c.2.j) EXP
+			(3.c.2.k) FLOOR
+			(3.c.2.l) LOG
+			(3.c.2.m) LOG10
+			(3.c.2.n) MAX
+			(3.c.2.o) MIN
+			(3.c.2.p) MOD
+			(3.c.2.q) POW
+			(3.c.2.r) RAND
+			(3.c.2.s) ROUND
+			(3.c.2.t) SIN
+			(3.c.2.u) SINH
+			(3.c.2.v) SQRT
+			(3.c.2.w) TAN
+			(3.c.2.x) TANH
+			(3.c.2.y) DEG
+			(3.c.2.z) RAD
+	(3.d) LIST
+		(3.d.1) Classes
+		(3.d.2) Functions
+	(3.e) STRMANIP
+		(3.e.1) Constants
+		(3.e.2) Functions
+	(3.f) FILEIO
+		(3.f.1) Constants
+		(3.f.2) Functions
