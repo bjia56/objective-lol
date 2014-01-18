@@ -25,7 +25,11 @@ public class LOLFunction {
 	
 	public LOLFunction(String functionName, String returnType, LinkedHashMap<String, String> inputArguments, Boolean isShared, String parentClass, String parentSource, String operations) {
 		this.functionName = functionName;
-		this.returnType = returnType;
+		if(returnType == null) {
+			this.returnType = LOLNothing.TYPE_NAME;
+		} else {
+			this.returnType = returnType;
+		}
 		this.inputArguments = inputArguments;
 		this.isShared = isShared;
 		this.parentClass = parentClass;

@@ -14,6 +14,8 @@ public class MainClass {
 		re.loadSource("test.lol");
 		
 		LOLValue result = re.getSource("test").getGlobalFunction("FIBONACCI").execute(null, LOLValue.valueOf("20"));
+		re.getSource("STDIO").getGlobalFunction("COMPLAIN").execute(null, result);
+		re.getSource("STDIO").getGlobalFunction("VISIBLE").execute(null, re.getSource("STDIO").getGlobalFunction("GIMMEH").execute(null));
 	}
 
 }

@@ -237,7 +237,13 @@ public class SourceParser {
 
 							@Override
 							protected LOLValue run(LOLObject owner, LinkedHashMap<String, ValueStruct> args) throws LOLError {
-								return RuntimeEnvironment.getRuntime().getNative(getParentSource()).invoke(getName(), args.values().toArray(new LOLValue[0]));
+								ArrayList<LOLValue> arguments = new ArrayList<LOLValue>();
+								
+								for(ValueStruct vs : args.values()) {
+									arguments.add(vs.getValue());
+								}
+								
+								return RuntimeEnvironment.getRuntime().getNative(getParentSource()).invoke(getName(), arguments.toArray(new LOLValue[0]));
 							}
 
 						});

@@ -8,15 +8,30 @@ import org.objectivelol.lang.LOLFunction;
 import org.objectivelol.lang.LOLNative;
 import org.objectivelol.lang.LOLSource;
 import org.objectivelol.lang.LOLValue;
+import org.objectivelol.libs.MATH;
+import org.objectivelol.libs.STDIO;
 
 public class RuntimeEnvironment {
 
-	private static final RuntimeEnvironment instance = new RuntimeEnvironment();
+	private static RuntimeEnvironment instance = null;
 	
 	private final HashMap<String, LOLSource> loadedSources = new HashMap<String, LOLSource>();
 	private final HashMap<String, LOLNative> nativeFunctions = new HashMap<String, LOLNative>();
 	
-	public static RuntimeEnvironment getRuntime() {
+	private RuntimeEnvironment() throws LOLError {
+		if(instance != null) {
+			throw new IllegalStateException("Cannot instantiate more than one instance of RuntimeEnvironment");
+		}
+		
+		loadSource("libs" + File.separator + "MATH.lol", "libs" + File.separator + "STDIO.lol");
+		loadNative(new MATH(), new STDIO());
+	}
+	
+	public static RuntimeEnvironment getRuntime() throws LOLError {
+		if(instance == null) {
+			instance  = new RuntimeEnvironment();
+		}
+		
 		return instance;
 	}
 	
