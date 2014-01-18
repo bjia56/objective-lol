@@ -33,7 +33,7 @@ public class SourceParser {
 		try {
 			reader = new BufferedReader(new FileReader(file));
 			fileName = file.getName().substring(0, file.getName().length() - 4);
-		} catch (FileNotFoundException e) {
+		} catch(FileNotFoundException e) {
 			throw new RuntimeException("An unexpected IO error has occurred");
 		}
 	}
@@ -494,7 +494,7 @@ public class SourceParser {
 			}
 			
 			return new LOLSource(fileName, importSources, globalVariables, globalFunctions, globalClasses);
-		} catch (IOException e) {
+		} catch(IOException e) {
 			throw new RuntimeException("An IO error has occurred");
 		}
 	}

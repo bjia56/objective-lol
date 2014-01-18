@@ -56,9 +56,38 @@ public abstract class LOLValue {
 		if(o instanceof Boolean) {
 			return ((Boolean)o ? LOLBoolean.YEZ : LOLBoolean.NO);
 		}
+		
+		if(o instanceof Character) {
+			return new LOLString((Character)o + "");
+		}
 
-		if(o instanceof String || o instanceof Character) {
-			return new LOLString((String)o);
+		if(o instanceof String) {
+			String str = (String)o;
+			
+			try {
+				return new LOLInteger(Long.parseLong(str));
+			} catch(NumberFormatException e) {
+				try {
+					str = str.toUpperCase();
+					if(!str.startsWith("0X")) {
+						throw new NumberFormatException();
+					}
+					return new LOLInteger(Long.parseLong(str.replaceFirst("0X", ""), 16));
+				} catch(NumberFormatException e2) {
+					try {
+						return new LOLDouble(Double.parseDouble(str));
+					} catch(NumberFormatException e3) {
+						if(str.equals("YEZ")) {
+							return LOLBoolean.YEZ;
+						}
+						if(str.equals("NO")) {
+							return LOLBoolean.NO;
+						}
+					}
+				}
+			}
+			
+			return new LOLString(str);
 		}
 
 		throw new IllegalArgumentException("Argument cannot be converted to a primitive Objective-LOL type");

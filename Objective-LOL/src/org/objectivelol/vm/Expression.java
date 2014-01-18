@@ -148,7 +148,7 @@ class ArgFunction implements Expression {
 		}
 
 		if(lf.isShared() == null || lf.isShared()) {
-			return lf.execute(null, (LOLValue[])null);
+			return lf.execute(null, args.toArray(new LOLValue[args.size()]));
 		} else {
 			return lf.execute(owner, args.toArray(new LOLValue[args.size()]));
 		}
@@ -678,9 +678,9 @@ class MemberArgFunction implements Expression {
 
 			if(lf != null) {
 				if(lf.isShared() == null || lf.isShared()) {
-					obj = (LOLObject)lf.execute(null, (LOLValue[])null);
+					obj = (LOLObject)lf.execute(null, args.toArray(new LOLValue[args.size()]));
 				} else {
-					obj = (LOLObject)lf.execute(owner, (LOLValue[])null);
+					obj = (LOLObject)lf.execute(owner, args.toArray(new LOLValue[args.size()]));
 				}
 			}
 		} else {

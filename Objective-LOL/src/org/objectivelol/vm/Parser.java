@@ -20,7 +20,7 @@ public class Parser {
 
 		try {
 			return parseBlock(br);
-		} catch (IOException e) {
+		} catch(IOException e) {
 			throw new LOLError("An unexpected IO error has occurred");
 		}
 	}
@@ -32,6 +32,10 @@ public class Parser {
 
 		while((line = br.readLine()) != null) {
 			line = line.replaceAll("\\s+", " ").trim();
+			
+			if(line.equals("")) {
+				continue;
+			}
 
 			if(line.startsWith("BTW")) {
 				continue;
@@ -249,7 +253,7 @@ public class Parser {
 				if(argFunctionCall == null) {
 					StringBuilder expression = new StringBuilder();
 
-					for(int i = 2; i < tokens.size(); i++) {
+					for(int i = 8 + lockedOffset; i < tokens.size(); i++) {
 						expression.append((i == 2 ? "" : " ") + tokens.get(i));
 					}
 
@@ -257,7 +261,7 @@ public class Parser {
 				} else {
 					StringBuilder expression = new StringBuilder();
 
-					for(int i = 2, functionStart = tokens.indexOf("WIT") - 1; i < functionStart; i++) {
+					for(int i = 8 + lockedOffset, functionStart = tokens.indexOf("WIT") - 1; i < functionStart; i++) {
 						expression.append((i == 2 ? "" : " ") + tokens.get(i));
 					}
 
@@ -407,6 +411,10 @@ public class Parser {
 				throw new LOLError("Variable to cast expected before AS");
 			}
 
+			if(tokens.indexOf("SAEM") == asLocation - 1) {
+				break;
+			}
+
 			if(asLocation == tokens.size() - 1) {
 				throw new LOLError("Target cast type expected after AS");
 			}
@@ -432,10 +440,14 @@ public class Parser {
 						Long.parseLong(varString);
 					} catch(NumberFormatException e2) {
 						try {
-							Long.parseLong(varString.toUpperCase().replaceFirst("0X", ""), 16);
+							varString = varString.toUpperCase();
+							if(!varString.startsWith("0X")) {
+								throw new NumberFormatException();
+							}
+							Long.parseLong(varString.replaceFirst("0X", ""), 16);
 						} catch(NumberFormatException e3) {
 							if(!varString.equals("YEZ") && !varString.equals("NO")) {
-								return new VariableAndNoArgFunction(varString);
+								variable = new VariableAndNoArgFunction(varString);
 							}
 						}
 					}
@@ -456,7 +468,7 @@ public class Parser {
 			int timesIndex = tokens.indexOf("TIEMZ");
 			int dividesIndex = tokens.indexOf("DIVIDEZ");
 
-			if(timesIndex == -1 || dividesIndex < timesIndex) {
+			if(timesIndex == -1 || (dividesIndex < timesIndex && dividesIndex != -1)) {
 				if(dividesIndex == 0 || dividesIndex == tokens.size() - 1) {
 					throw new LOLError("Two arguments required for DIVIDEZ operation");
 				}
@@ -476,10 +488,14 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringBefore.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringBefore = expStringBefore.toUpperCase();
+									if(!expStringBefore.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringBefore.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringBefore.equals("YEZ") && !expStringBefore.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringBefore);
+										expressionBefore = new VariableAndNoArgFunction(expStringBefore);
 									}
 								}
 							}
@@ -506,10 +522,14 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringAfter.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringAfter = expStringAfter.toUpperCase();
+									if(!expStringAfter.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringAfter.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringAfter.equals("YEZ") && !expStringAfter.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringAfter);
+										expressionAfter = new VariableAndNoArgFunction(expStringAfter);
 									}
 								}
 							}
@@ -528,7 +548,7 @@ public class Parser {
 				continue;
 			}
 
-			if(dividesIndex == -1 || timesIndex < dividesIndex) {
+			if(dividesIndex == -1 || (timesIndex < dividesIndex && timesIndex != -1)) {
 				if(timesIndex == 0 || timesIndex == tokens.size() - 1) {
 					throw new LOLError("Two arguments required for TIEMZ operation");
 				}
@@ -548,10 +568,14 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringBefore.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringBefore = expStringBefore.toUpperCase();
+									if(!expStringBefore.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringBefore.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringBefore.equals("YEZ") && !expStringBefore.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringBefore);
+										expressionBefore = new VariableAndNoArgFunction(expStringBefore);
 									}
 								}
 							}
@@ -578,10 +602,14 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringAfter.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringAfter = expStringAfter.toUpperCase();
+									if(!expStringAfter.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringAfter.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringAfter.equals("YEZ") && !expStringAfter.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringAfter);
+										expressionAfter = new VariableAndNoArgFunction(expStringAfter);
 									}
 								}
 							}
@@ -605,7 +633,7 @@ public class Parser {
 			int addIndex = tokens.indexOf("MOAR");
 			int subtractIndex = tokens.indexOf("LES");
 
-			if(addIndex == -1 || subtractIndex < addIndex) {
+			if(addIndex == -1 || (subtractIndex < addIndex && subtractIndex != -1)) {
 				if(subtractIndex == 0 || subtractIndex == tokens.size() - 1) {
 					throw new LOLError("Two arguments required for LES operation");
 				}
@@ -625,10 +653,14 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringBefore.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringBefore = expStringBefore.toUpperCase();
+									if(!expStringBefore.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringBefore.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringBefore.equals("YEZ") && !expStringBefore.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringBefore);
+										expressionBefore = new VariableAndNoArgFunction(expStringBefore);
 									}
 								}
 							}
@@ -655,10 +687,14 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringAfter.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringAfter = expStringAfter.toUpperCase();
+									if(!expStringAfter.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringAfter.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringAfter.equals("YEZ") && !expStringAfter.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringAfter);
+										expressionAfter = new VariableAndNoArgFunction(expStringAfter);
 									}
 								}
 							}
@@ -677,7 +713,7 @@ public class Parser {
 				continue;
 			}
 
-			if(subtractIndex == -1 || addIndex < subtractIndex) {
+			if(subtractIndex == -1 || (addIndex < subtractIndex && addIndex != -1)) {
 				if(addIndex == 0 || addIndex == tokens.size() - 1) {
 					throw new LOLError("Two arguments required for MOAR operation");
 				}
@@ -697,10 +733,14 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringBefore.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringBefore = expStringBefore.toUpperCase();
+									if(!expStringBefore.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringBefore.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringBefore.equals("YEZ") && !expStringBefore.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringBefore);
+										expressionBefore = new VariableAndNoArgFunction(expStringBefore);
 									}
 								}
 							}
@@ -727,10 +767,14 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringAfter.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringAfter = expStringAfter.toUpperCase();
+									if(!expStringAfter.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringAfter.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringAfter.equals("YEZ") && !expStringAfter.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringAfter);
+										expressionAfter = new VariableAndNoArgFunction(expStringAfter);
 									}
 								}
 							}
@@ -759,7 +803,7 @@ public class Parser {
 				throw new LOLError("BIGGR or SMALLR expected before THAN");
 			}
 
-			if(greaterThanIndex == -1 || lessThanIndex < greaterThanIndex) {
+			if(greaterThanIndex == -1 || (lessThanIndex < greaterThanIndex && lessThanIndex != -1)) {
 				if(lessThanIndex + 1 != thanIndex) {
 					throw new LOLError("THAN expected after SMALLR");
 				}
@@ -783,10 +827,14 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringBefore.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringBefore = expStringBefore.toUpperCase();
+									if(!expStringBefore.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringBefore.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringBefore.equals("YEZ") && !expStringBefore.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringBefore);
+										expressionBefore = new VariableAndNoArgFunction(expStringBefore);
 									}
 								}
 							}
@@ -813,10 +861,14 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringAfter.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringAfter = expStringAfter.toUpperCase();
+									if(!expStringAfter.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringAfter.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringAfter.equals("YEZ") && !expStringAfter.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringAfter);
+										expressionAfter = new VariableAndNoArgFunction(expStringAfter);
 									}
 								}
 							}
@@ -836,7 +888,7 @@ public class Parser {
 				continue;
 			}
 
-			if(lessThanIndex == -1 || greaterThanIndex < lessThanIndex) {
+			if(lessThanIndex == -1 || (greaterThanIndex < lessThanIndex && greaterThanIndex != -1)) {
 				if(greaterThanIndex + 1 != thanIndex) {
 					throw new LOLError("THAN expected after BIGGR");
 				}
@@ -860,10 +912,14 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringBefore.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringBefore = expStringBefore.toUpperCase();
+									if(!expStringBefore.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringBefore.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringBefore.equals("YEZ") && !expStringBefore.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringBefore);
+										expressionBefore = new VariableAndNoArgFunction(expStringBefore);
 									}
 								}
 							}
@@ -890,10 +946,14 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									Long.parseLong(expStringAfter.toUpperCase().replaceFirst("0X", ""), 16);
+									expStringAfter = expStringAfter.toUpperCase();
+									if(!expStringAfter.startsWith("0X")) {
+										throw new NumberFormatException();
+									}
+									Long.parseLong(expStringAfter.replaceFirst("0X", ""), 16);
 								} catch(NumberFormatException e3) {
 									if(!expStringAfter.equals("YEZ") && !expStringAfter.equals("NO")) {
-										return new VariableAndNoArgFunction(expStringAfter);
+										expressionAfter = new VariableAndNoArgFunction(expStringAfter);
 									}
 								}
 							}
@@ -912,6 +972,93 @@ public class Parser {
 				tokens.remove(greaterThanIndex);
 				continue;
 			}
+		}
+
+		while(tokens.contains("SAEM")) {
+			int equalsIndex = tokens.indexOf("SAEM");
+
+			if(tokens.indexOf("AS") != equalsIndex + 1) {
+				throw new LOLError("AS expected after SAEM");
+			}
+
+			if(equalsIndex == 0 || equalsIndex == tokens.size() - 2) {
+				throw new LOLError("Two arguments required for AN operation");
+			}
+
+			Expression expressionBefore = (tokens.get(equalsIndex - 1) instanceof Expression ? (Expression)tokens.get(equalsIndex - 1) : null);
+
+			if(expressionBefore == null) {
+				String expStringBefore = (String)tokens.get(equalsIndex - 1);
+
+				if(expStringBefore.charAt(0) == '\"') {
+					expressionBefore = new Value(new LOLString(expStringBefore.substring(1, expStringBefore.length() - 1)));
+				} else {
+					try {
+						Double.parseDouble(expStringBefore);
+					} catch(NumberFormatException e) {
+						try {
+							Long.parseLong(expStringBefore);
+						} catch(NumberFormatException e2) {
+							try {
+								expStringBefore = expStringBefore.toUpperCase();
+								if(!expStringBefore.startsWith("0X")) {
+									throw new NumberFormatException();
+								}
+								Long.parseLong(expStringBefore.replaceFirst("0X", ""), 16);
+							} catch(NumberFormatException e3) {
+								if(!expStringBefore.equals("YEZ") && !expStringBefore.equals("NO")) {
+									expressionBefore = new VariableAndNoArgFunction(expStringBefore);
+								}
+							}
+						}
+					}
+				}
+
+				if(expressionBefore == null) {
+					expressionBefore = new Value(LOLValue.valueOf(expStringBefore));
+				}
+			}
+
+			Expression expressionAfter = (tokens.get(equalsIndex + 2) instanceof Expression ? (Expression)tokens.get(equalsIndex + 2) : null);
+
+			if(expressionAfter == null) {
+				String expStringAfter = (String)tokens.get(equalsIndex + 2);
+
+				if(expStringAfter.charAt(0) == '\"') {
+					expressionAfter = new Value(new LOLString(expStringAfter.substring(1, expStringAfter.length() - 1)));
+				} else {
+					try {
+						Double.parseDouble(expStringAfter);
+					} catch(NumberFormatException e) {
+						try {
+							Long.parseLong(expStringAfter);
+						} catch(NumberFormatException e2) {
+							try {
+								expStringAfter = expStringAfter.toUpperCase();
+								if(!expStringAfter.startsWith("0X")) {
+									throw new NumberFormatException();
+								}
+								Long.parseLong(expStringAfter.replaceFirst("0X", ""), 16);
+							} catch(NumberFormatException e3) {
+								if(!expStringAfter.equals("YEZ") && !expStringAfter.equals("NO")) {
+									expressionAfter = new VariableAndNoArgFunction(expStringAfter);
+								}
+							}
+						}
+					}
+				}
+
+				if(expressionAfter == null) {
+					expressionAfter = new Value(LOLValue.valueOf(expStringAfter));
+				}
+			}
+
+			tokens.add(equalsIndex - 1, new EqualTo(expressionBefore, expressionAfter));
+			tokens.remove(equalsIndex);
+			tokens.remove(equalsIndex);
+			tokens.remove(equalsIndex);
+			tokens.remove(equalsIndex);
+			continue;
 		}
 
 		while(tokens.contains("AN")) {
@@ -936,10 +1083,14 @@ public class Parser {
 							Long.parseLong(expStringBefore);
 						} catch(NumberFormatException e2) {
 							try {
-								Long.parseLong(expStringBefore.toUpperCase().replaceFirst("0X", ""), 16);
+								expStringBefore = expStringBefore.toUpperCase();
+								if(!expStringBefore.startsWith("0X")) {
+									throw new NumberFormatException();
+								}
+								Long.parseLong(expStringBefore.replaceFirst("0X", ""), 16);
 							} catch(NumberFormatException e3) {
 								if(!expStringBefore.equals("YEZ") && !expStringBefore.equals("NO")) {
-									return new VariableAndNoArgFunction(expStringBefore);
+									expressionBefore = new VariableAndNoArgFunction(expStringBefore);
 								}
 							}
 						}
@@ -966,10 +1117,14 @@ public class Parser {
 							Long.parseLong(expStringAfter);
 						} catch(NumberFormatException e2) {
 							try {
-								Long.parseLong(expStringAfter.toUpperCase().replaceFirst("0X", ""), 16);
+								expStringAfter = expStringAfter.toUpperCase();
+								if(!expStringAfter.startsWith("0X")) {
+									throw new NumberFormatException();
+								}
+								Long.parseLong(expStringAfter.replaceFirst("0X", ""), 16);
 							} catch(NumberFormatException e3) {
 								if(!expStringAfter.equals("YEZ") && !expStringAfter.equals("NO")) {
-									return new VariableAndNoArgFunction(expStringAfter);
+									expressionAfter = new VariableAndNoArgFunction(expStringAfter);
 								}
 							}
 						}
@@ -1010,10 +1165,14 @@ public class Parser {
 							Long.parseLong(expStringBefore);
 						} catch(NumberFormatException e2) {
 							try {
-								Long.parseLong(expStringBefore.toUpperCase().replaceFirst("0X", ""), 16);
+								expStringBefore = expStringBefore.toUpperCase();
+								if(!expStringBefore.startsWith("0X")) {
+									throw new NumberFormatException();
+								}
+								Long.parseLong(expStringBefore.replaceFirst("0X", ""), 16);
 							} catch(NumberFormatException e3) {
 								if(!expStringBefore.equals("YEZ") && !expStringBefore.equals("NO")) {
-									return new VariableAndNoArgFunction(expStringBefore);
+									expressionBefore = new VariableAndNoArgFunction(expStringBefore);
 								}
 							}
 						}
@@ -1040,10 +1199,14 @@ public class Parser {
 							Long.parseLong(expStringAfter);
 						} catch(NumberFormatException e2) {
 							try {
-								Long.parseLong(expStringAfter.toUpperCase().replaceFirst("0X", ""), 16);
+								expStringAfter = expStringAfter.toUpperCase();
+								if(!expStringAfter.startsWith("0X")) {
+									throw new NumberFormatException();
+								}
+								Long.parseLong(expStringAfter.replaceFirst("0X", ""), 16);
 							} catch(NumberFormatException e3) {
 								if(!expStringAfter.equals("YEZ") && !expStringAfter.equals("NO")) {
-									return new VariableAndNoArgFunction(expStringAfter);
+									expressionAfter = new VariableAndNoArgFunction(expStringAfter);
 								}
 							}
 						}
@@ -1080,7 +1243,11 @@ public class Parser {
 						Long.parseLong(expString);
 					} catch(NumberFormatException e2) {
 						try {
-							Long.parseLong(expString.toUpperCase().replaceFirst("0X", ""), 16);
+							expString = expString.toUpperCase();
+							if(!expString.startsWith("0X")) {
+								throw new NumberFormatException();
+							}
+							Long.parseLong(expString.replaceFirst("0X", ""), 16);
 						} catch(NumberFormatException e3) {
 							if(!expString.equals("YEZ") && !expString.equals("NO")) {
 								expression = new VariableAndNoArgFunction(expString);

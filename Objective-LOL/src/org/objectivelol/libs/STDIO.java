@@ -18,7 +18,7 @@ public class STDIO extends LOLNative {
 	public static LOLString GIMMEH() {
 		try {
 			return (LOLString)LOLValue.valueOf(br.readLine());
-		} catch (IOException e) {
+		} catch(IOException e) {
 			return null;
 		}
 	}

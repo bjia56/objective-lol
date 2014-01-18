@@ -16,7 +16,7 @@ public abstract class LOLNative {
 		
 		try {
 			return (LOLValue)toInvoke.invoke(this, (Object[])args);
-		} catch (Exception e) {
+		} catch(Exception e) {
 			throw new LOLError("Function with the specified signature not found");
 		}
 	}

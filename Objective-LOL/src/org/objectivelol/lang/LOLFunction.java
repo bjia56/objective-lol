@@ -101,7 +101,7 @@ public class LOLFunction {
 			
 			expressions.interpret(owner, this, args);
 			return LOLNothing.NOTHIN;
-		} catch (Return e) {
+		} catch(Return e) {
 			return e.getValue();
 		}
 	}
@@ -117,8 +117,12 @@ public class LOLFunction {
 		for(Iterator<Entry<String, String>> i = inputArguments.entrySet().iterator(); i.hasNext();) {
 			Entry<String, String> e = i.next();
 			
-			if(!e.getKey().equals(args[counter])) {
-				return null;
+			if(!e.getValue().equals(args[counter].getTypeName())) {
+				try {
+					args[counter] = args[counter].cast(e.getValue());
+				} catch(LOLError l) {
+					return null;
+				}
 			}
 			
 			result.put(e.getKey(), new ValueStruct(e.getValue(), args[counter++], false));
