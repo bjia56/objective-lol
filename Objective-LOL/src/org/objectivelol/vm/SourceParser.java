@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.objectivelol.lang.LOLBoolean;
 import org.objectivelol.lang.LOLClass;
 import org.objectivelol.lang.LOLError;
 import org.objectivelol.lang.LOLFunction;
@@ -20,73 +19,6 @@ import org.objectivelol.lang.LOLValue;
 import org.objectivelol.lang.LOLValue.ValueStruct;
 
 public class SourceParser {
-
-	static class PostInstantiationObject extends LOLObject {
-
-		private String sourceName;
-		private String className;
-		private LOLObject obj;
-
-		public PostInstantiationObject(String sourceName, String className) {
-			super(null, null, null);
-
-			this.sourceName = sourceName;
-			this.className = className;
-			this.obj = null;
-		}
-
-		@Override
-		public LOLValue cast(String type) throws LOLError {
-			if(obj == null) {
-				instantiate();
-			}
-
-			return obj.cast(type);
-		}
-
-		@Override
-		public String getTypeName() {
-			return className;
-		}
-
-		@Override
-		public LOLBoolean equalTo(LOLValue other) throws LOLError {
-			if(obj == null) {
-				instantiate();
-			}
-
-			return obj.equalTo(other);
-		}
-
-		public LOLFunction getFunction(String name, LOLFunction context) throws LOLError {
-			if(obj == null) {
-				instantiate();
-			}
-
-			return obj.getFunction(name, context);
-		}
-
-		public ValueStruct getVariable(String name, LOLFunction context) throws LOLError {
-			if(obj == null) {
-				instantiate();
-			}
-
-			return obj.getVariable(name, context);
-		}
-
-		private void instantiate() throws LOLError {
-			LOLClass lc = null;
-
-			lc = RuntimeEnvironment.getRuntime().getSource(sourceName).getGlobalClass(className);
-
-			if(lc == null) {
-				throw new LOLError("Specified class not found when attempting post-parsing instantiation");
-			}
-
-			obj = lc.constructInstance();
-		}
-
-	}
 
 	private BufferedReader reader;
 	private String fileName;
@@ -155,11 +87,11 @@ public class SourceParser {
 						if(!tokens[7 + offset].equals("ITZ")) {
 							throw new LOLError("Line "  + lineNumber + ": Unexpected symbol detected");
 						}
-						
+
 						if(tokens.length < 9 + offset) {
 							throw new LOLError("Line " + lineNumber + ": Value to assign expected");
 						}
-						
+
 						if(tokens[8 + offset].equals("NEW")) {
 							if(tokens.length < 10 + offset) {
 								throw new LOLError("Line " + lineNumber + ": New object type expected");
@@ -174,14 +106,14 @@ public class SourceParser {
 									if(tokens.length < 12 + offset) {
 										throw new LOLError("Line " + lineNumber + ": Source expected at end of line");
 									}
-									
+
 									if(tokens.length > 12 + offset) {
 										throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
 									}
-									
+
 									value = new PostInstantiationObject(tokens[11 + offset], type);
 								}
-								
+
 								throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
 							}
 
@@ -408,11 +340,11 @@ public class SourceParser {
 								if(!tokens1[6 + offset].equals("ITZ")) {
 									throw new LOLError("Line "  + lineNumber + ": Unexpected symbol detected");
 								}
-								
+
 								if(tokens1.length < 8 + offset) {
 									throw new LOLError("Line " + lineNumber + ": Value to assign expected");
 								}
-								
+
 								if(tokens1[7 + offset].equals("NEW")) {
 									if(tokens1.length < 9 + offset) {
 										throw new LOLError("Line " + lineNumber + ": New object type expected");
@@ -427,14 +359,14 @@ public class SourceParser {
 											if(tokens1.length < 11 + offset) {
 												throw new LOLError("Line " + lineNumber + ": Source expected at end of line");
 											}
-											
+
 											if(tokens1.length > 11 + offset) {
 												throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
 											}
-											
+
 											value = new PostInstantiationObject(tokens1[10 + offset], type);
 										}
-										
+
 										throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
 									}
 

@@ -8,7 +8,6 @@ import org.objectivelol.lang.LOLError;
 import org.objectivelol.lang.LOLFunction;
 import org.objectivelol.lang.LOLNative;
 import org.objectivelol.lang.LOLSource;
-import org.objectivelol.lang.LOLValue;
 import org.objectivelol.libs.MATH;
 import org.objectivelol.libs.STDIO;
 
@@ -64,7 +63,7 @@ public class RuntimeEnvironment {
 		for(LOLSource s : loadedSources.values()) {
 			for(LOLFunction f : s.getGlobalFunctions()) {
 				if(f.getName().equals("MAIN")) {
-					f.execute(null, (LOLValue[])null);
+					f.execute(null);
 					return;
 				}
 			}

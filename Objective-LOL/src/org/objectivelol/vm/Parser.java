@@ -10,7 +10,6 @@ import org.objectivelol.lang.LOLError;
 import org.objectivelol.lang.LOLFunction;
 import org.objectivelol.lang.LOLString;
 import org.objectivelol.lang.LOLValue;
-import org.objectivelol.vm.SourceParser.PostInstantiationObject;
 
 public class Parser {
 
@@ -33,7 +32,7 @@ public class Parser {
 
 		while((line = br.readLine()) != null) {
 			line = line.replaceAll("\\s+", " ").trim();
-			
+
 			if(line.equals("")) {
 				continue;
 			}
@@ -114,6 +113,10 @@ public class Parser {
 		boolean firstPartOfLiteral = false;
 		StringBuilder literal = null;
 		for(String s : tmp) {
+			if(firstPartOfLiteral) {
+				firstPartOfLiteral = false;
+			}
+			
 			if(!isStringLiteral && s.charAt(0) == '\"') {
 				isStringLiteral = true;
 				firstPartOfLiteral = true;
@@ -122,20 +125,26 @@ public class Parser {
 
 			if(!isStringLiteral) {
 				tokens.add(s);
+				continue;
 			} else {
 				if(!firstPartOfLiteral) {
 					literal.append(" " + s);
-				} else {
-					firstPartOfLiteral = false;
 				}
 			}
 
 			if(isStringLiteral && s.charAt(s.length() - 1) == '\"' && (s.length() > 1 ? s.charAt(s.length() - 2) != '\\' : true)) {
 				isStringLiteral = false;
 
-				String tmpLiteral = literal.append(s).toString();
+				String tmpLiteral;
+				if(firstPartOfLiteral) {
+					tmpLiteral = literal.toString();
+					firstPartOfLiteral = false;
+				} else {
+					tmpLiteral = literal.append(s).toString();
+				}
 
 				tokens.add('\"' + tmpLiteral.replace("\\\"", pointlessChar).replace("\"", "").replace(pointlessChar, "\"") + '\"');
+				continue;
 			}
 		}
 
@@ -215,7 +224,7 @@ public class Parser {
 			} else {
 				StringBuilder expression = new StringBuilder();
 
-				for(int i = 1, functionStart = tokens.indexOf("WIT") - 1; i < functionStart; i++) {
+				for(int i = 1, functionStart = tokens.indexOf("WIT") - (tokens.contains("IN") ? 3 : 1); i < functionStart; i++) {
 					expression.append((i == 1 ? "" : " ") + tokens.get(i));
 				}
 
@@ -250,12 +259,12 @@ public class Parser {
 				if(tokens.size() == 8 + lockedOffset) {
 					throw new LOLError("Expression to assign expected after ITZ");
 				}
-				
+
 				if(tokens.get(8 + lockedOffset).equals("NEW")) {
 					if(argFunctionCall != null) {
 						throw new LOLError("Cannot have function call in line instantiating a new object");
 					}
-					
+
 					if(tokens.size() < 10 + lockedOffset) {
 						throw new LOLError("New object type expected");
 					}
@@ -269,14 +278,14 @@ public class Parser {
 							if(tokens.size() < 12 + lockedOffset) {
 								throw new LOLError("Source expected at end of line");
 							}
-							
+
 							if(tokens.size() > 12 + lockedOffset) {
 								throw new LOLError("Invalid symbols detected after new object type");
 							}
 
 							return new DeclareVariable(tokens.get(4 + lockedOffset), tokens.get(6 + lockedOffset), lockedOffset == 1, new Value(new PostInstantiationObject(tokens.get(11 + lockedOffset), tokens.get(6 + lockedOffset))));
 						}
-						
+
 						throw new LOLError("Invalid symbols detected after new object type");
 					}
 
@@ -294,7 +303,7 @@ public class Parser {
 				} else {
 					StringBuilder expression = new StringBuilder();
 
-					for(int i = 8 + lockedOffset, functionStart = tokens.indexOf("WIT") - 1; i < functionStart; i++) {
+					for(int i = 8 + lockedOffset, functionStart = tokens.indexOf("WIT") - (tokens.contains("IN") ? 3 : 1); i < functionStart; i++) {
 						expression.append((i == 2 ? "" : " ") + tokens.get(i));
 					}
 
@@ -320,12 +329,12 @@ public class Parser {
 				if(tokens.size() < 3) {
 					throw new LOLError("Expression to assign expected after ITZ");
 				}
-				
+
 				if(tokens.get(2).equals("NEW")) {
 					if(argFunctionCall != null) {
 						throw new LOLError("Cannot have function call in line instantiating a new object");
 					}
-					
+
 					if(tokens.size() < 4) {
 						throw new LOLError("New object type expected");
 					}
@@ -335,14 +344,14 @@ public class Parser {
 							if(tokens.size() < 6) {
 								throw new LOLError("Source expected at end of line");
 							}
-							
+
 							if(tokens.size() > 6) {
 								throw new LOLError("Invalid symbols detected after new object type");
 							}
 
 							return new SimpleAssignment(tokens.get(0), new Value(new PostInstantiationObject(tokens.get(5), tokens.get(3))));
 						}
-						
+
 						throw new LOLError("Invalid symbols detected after new object type");
 					}
 
@@ -360,7 +369,7 @@ public class Parser {
 				} else {
 					StringBuilder expression = new StringBuilder();
 
-					for(int i = 2, functionStart = tokens.indexOf("WIT") - 1; i < functionStart; i++) {
+					for(int i = 2, functionStart = tokens.indexOf("WIT") - (tokens.contains("IN") ? 3 : 1); i < functionStart; i++) {
 						expression.append((i == 2 ? "" : " ") + tokens.get(i));
 					}
 
@@ -398,7 +407,7 @@ public class Parser {
 				} else {
 					StringBuilder expression = new StringBuilder();
 
-					for(int i = 4, functionStart = tokens.indexOf("WIT") - 1; i < functionStart; i++) {
+					for(int i = 4, functionStart = tokens.indexOf("WIT") - (tokens.contains("IN") ? 3 : 1); i < functionStart; i++) {
 						expression.append((i == 4 ? "" : " ") + tokens.get(i));
 					}
 
@@ -412,7 +421,7 @@ public class Parser {
 		} else {
 			StringBuilder expression = new StringBuilder();
 
-			for(int i = 0, functionStart = tokens.indexOf("WIT") - 1; i < functionStart; i++) {
+			for(int i = 0, functionStart = tokens.indexOf("WIT") - (tokens.contains("IN") ? 3 : 1); i < functionStart; i++) {
 				expression.append((i == 0 ? "" : " ") + tokens.get(i));
 			}
 
@@ -432,6 +441,10 @@ public class Parser {
 		boolean firstPartOfLiteral = false;
 		StringBuilder literal = null;
 		for(String s : tmp) {
+			if(firstPartOfLiteral) {
+				firstPartOfLiteral = false;
+			}
+			
 			if(!isStringLiteral && s.charAt(0) == '\"') {
 				isStringLiteral = true;
 				firstPartOfLiteral = true;
@@ -440,20 +453,26 @@ public class Parser {
 
 			if(!isStringLiteral) {
 				tokens.add(s);
+				continue;
 			} else {
 				if(!firstPartOfLiteral) {
 					literal.append(" " + s);
-				} else {
-					firstPartOfLiteral = false;
 				}
 			}
 
 			if(isStringLiteral && s.charAt(s.length() - 1) == '\"' && (s.length() > 1 ? s.charAt(s.length() - 2) != '\\' : true)) {
 				isStringLiteral = false;
 
-				String tmpLiteral = literal.append(s).toString();
+				String tmpLiteral;
+				if(firstPartOfLiteral) {
+					tmpLiteral = literal.toString();
+					firstPartOfLiteral = false;
+				} else {
+					tmpLiteral = literal.append(s).toString();
+				}
 
 				tokens.add('\"' + tmpLiteral.replace("\\\"", pointlessChar).replace("\"", "").replace(pointlessChar, "\"") + '\"');
+				continue;
 			}
 		}
 
