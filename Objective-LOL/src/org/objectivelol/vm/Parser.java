@@ -61,6 +61,10 @@ public class Parser {
 				boolean first = true;
 				String line2;
 				while(!(line2 = br.readLine()).startsWith("KTHX")) {
+					if(line2.trim().equals("")) {
+						continue;
+					}
+					
 					sb.append((first ? "" : "\n") + line2);
 					first = false;
 				}
@@ -77,13 +81,17 @@ public class Parser {
 			}
 
 			if(line.startsWith("WHILE")) {
-				line = line.substring(5);
+				line = line.substring(5).trim();
 
 				StringBuilder sb = new StringBuilder();
 
 				boolean first = true;
 				String line2;
 				while(!(line2 = br.readLine()).startsWith("KTHX")) {
+					if(line2.trim().equals("")) {
+						continue;
+					}
+					
 					sb.append((first ? "" : "\n") + line2);
 					first = false;
 				}
@@ -430,7 +438,7 @@ public class Parser {
 	}
 
 	private static Expression parseStatement(String line, Expression function) throws LOLError {
-		if(line.equals("")) {
+		if(line.trim().equals("")) {
 			return function;
 		}
 
