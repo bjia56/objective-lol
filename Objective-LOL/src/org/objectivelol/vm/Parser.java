@@ -10,6 +10,7 @@ import org.objectivelol.lang.LOLError;
 import org.objectivelol.lang.LOLFunction;
 import org.objectivelol.lang.LOLString;
 import org.objectivelol.lang.LOLValue;
+import org.objectivelol.vm.SourceParser.PostInstantiationObject;
 
 public class Parser {
 
@@ -19,13 +20,13 @@ public class Parser {
 		BufferedReader br = new BufferedReader(new StringReader(s));
 
 		try {
-			return parseBlock(br);
+			return parseBlock(br, context);
 		} catch(IOException e) {
 			throw new LOLError("An unexpected IO error has occurred");
 		}
 	}
 
-	private static Expression parseBlock(BufferedReader br) throws IOException, LOLError {
+	private static Expression parseBlock(BufferedReader br, LOLFunction context) throws IOException, LOLError {
 		String line;
 
 		ArrayList<Expression> statements = new ArrayList<Expression>();
@@ -69,8 +70,8 @@ public class Parser {
 					throw new LOLError("Unexpected symbol detected");
 				}
 
-				Expression condition = parseLine(line);
-				Expression code = parseBlock(new BufferedReader(new StringReader(sb.toString())));
+				Expression condition = parseLine(line, context);
+				Expression code = parseBlock(new BufferedReader(new StringReader(sb.toString())), context);
 
 				statements.add(new IfStatement(condition, code));
 				continue;
@@ -92,20 +93,20 @@ public class Parser {
 					throw new LOLError("Unexpected symbol detected");
 				}
 
-				Expression condition = parseLine(line);
-				Expression code = parseBlock(new BufferedReader(new StringReader(sb.toString())));
+				Expression condition = parseLine(line, context);
+				Expression code = parseBlock(new BufferedReader(new StringReader(sb.toString())), context);
 
 				statements.add(new WhileStatement(condition, code));
 				continue;
 			}
 
-			statements.add(parseLine(line));
+			statements.add(parseLine(line, context));
 		}
 
 		return new StatementBlock(statements);
 	}
 
-	private static Expression parseLine(String line) throws LOLError {
+	private static Expression parseLine(String line, LOLFunction context) throws LOLError {
 		String[] tmp = line.split(" ");
 		List<String> tokens = new ArrayList<String>();
 
@@ -249,6 +250,38 @@ public class Parser {
 				if(tokens.size() == 8 + lockedOffset) {
 					throw new LOLError("Expression to assign expected after ITZ");
 				}
+				
+				if(tokens.get(8 + lockedOffset).equals("NEW")) {
+					if(argFunctionCall != null) {
+						throw new LOLError("Cannot have function call in line instantiating a new object");
+					}
+					
+					if(tokens.size() < 10 + lockedOffset) {
+						throw new LOLError("New object type expected");
+					}
+
+					if(!tokens.get(9 + lockedOffset).equals(tokens.get(6 + lockedOffset))) {
+						throw new LOLError("Cannot instantiate specified object type into specified variable type");
+					}
+
+					if(tokens.size() > 10 + lockedOffset) {
+						if(tokens.get(10 + lockedOffset).equals("IN")) {
+							if(tokens.size() < 12 + lockedOffset) {
+								throw new LOLError("Source expected at end of line");
+							}
+							
+							if(tokens.size() > 12 + lockedOffset) {
+								throw new LOLError("Invalid symbols detected after new object type");
+							}
+
+							return new DeclareVariable(tokens.get(4 + lockedOffset), tokens.get(6 + lockedOffset), lockedOffset == 1, new Value(new PostInstantiationObject(tokens.get(11 + lockedOffset), tokens.get(6 + lockedOffset))));
+						}
+						
+						throw new LOLError("Invalid symbols detected after new object type");
+					}
+
+					return new DeclareVariable(tokens.get(4 + lockedOffset), tokens.get(6 + lockedOffset), lockedOffset == 1, new Value(new PostInstantiationObject(context.getParentSource(), tokens.get(6 + lockedOffset))));
+				}
 
 				if(argFunctionCall == null) {
 					StringBuilder expression = new StringBuilder();
@@ -279,13 +312,41 @@ public class Parser {
 				throw new LOLError("Variable identifier expected before ITZ");
 			}
 
-			if(target != tokens.lastIndexOf("ITZ")) {
+			if(target != tokens.lastIndexOf("ITZ") - 1) {
 				throw new LOLError("Only one assignment operator allowed per line");
 			}
 
 			if(target == 0) {
 				if(tokens.size() < 3) {
 					throw new LOLError("Expression to assign expected after ITZ");
+				}
+				
+				if(tokens.get(2).equals("NEW")) {
+					if(argFunctionCall != null) {
+						throw new LOLError("Cannot have function call in line instantiating a new object");
+					}
+					
+					if(tokens.size() < 4) {
+						throw new LOLError("New object type expected");
+					}
+
+					if(tokens.size() > 4) {
+						if(tokens.get(4).equals("IN")) {
+							if(tokens.size() < 6) {
+								throw new LOLError("Source expected at end of line");
+							}
+							
+							if(tokens.size() > 6) {
+								throw new LOLError("Invalid symbols detected after new object type");
+							}
+
+							return new SimpleAssignment(tokens.get(0), new Value(new PostInstantiationObject(tokens.get(5), tokens.get(3))));
+						}
+						
+						throw new LOLError("Invalid symbols detected after new object type");
+					}
+
+					return new SimpleAssignment(tokens.get(0), new Value(new PostInstantiationObject(context.getParentSource(), tokens.get(3))));
 				}
 
 				if(argFunctionCall == null) {

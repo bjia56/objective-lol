@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import org.objectivelol.lang.LOLBoolean;
 import org.objectivelol.lang.LOLClass;
 import org.objectivelol.lang.LOLError;
 import org.objectivelol.lang.LOLFunction;
@@ -20,9 +21,76 @@ import org.objectivelol.lang.LOLValue.ValueStruct;
 
 public class SourceParser {
 
+	static class PostInstantiationObject extends LOLObject {
+
+		private String sourceName;
+		private String className;
+		private LOLObject obj;
+
+		public PostInstantiationObject(String sourceName, String className) {
+			super(null, null, null);
+
+			this.sourceName = sourceName;
+			this.className = className;
+			this.obj = null;
+		}
+
+		@Override
+		public LOLValue cast(String type) throws LOLError {
+			if(obj == null) {
+				instantiate();
+			}
+
+			return obj.cast(type);
+		}
+
+		@Override
+		public String getTypeName() {
+			return className;
+		}
+
+		@Override
+		public LOLBoolean equalTo(LOLValue other) throws LOLError {
+			if(obj == null) {
+				instantiate();
+			}
+
+			return obj.equalTo(other);
+		}
+
+		public LOLFunction getFunction(String name, LOLFunction context) throws LOLError {
+			if(obj == null) {
+				instantiate();
+			}
+
+			return obj.getFunction(name, context);
+		}
+
+		public ValueStruct getVariable(String name, LOLFunction context) throws LOLError {
+			if(obj == null) {
+				instantiate();
+			}
+
+			return obj.getVariable(name, context);
+		}
+
+		private void instantiate() throws LOLError {
+			LOLClass lc = null;
+
+			lc = RuntimeEnvironment.getRuntime().getSource(sourceName).getGlobalClass(className);
+
+			if(lc == null) {
+				throw new LOLError("Specified class not found when attempting post-parsing instantiation");
+			}
+
+			obj = lc.constructInstance();
+		}
+
+	}
+
 	private BufferedReader reader;
 	private String fileName;
-	
+
 	private static String pointlessChar = (char)600 + "";
 
 	public SourceParser(File file) {
@@ -32,7 +100,7 @@ public class SourceParser {
 
 		try {
 			reader = new BufferedReader(new FileReader(file));
-			fileName = file.getName().substring(0, file.getName().length() - 4);
+			fileName = file.getName().substring(0, file.getName().length() - 4).toUpperCase();
 		} catch(FileNotFoundException e) {
 			throw new RuntimeException("An unexpected IO error has occurred");
 		}
@@ -43,9 +111,6 @@ public class SourceParser {
 			String line;
 			int lineNumber = 0;
 
-			boolean includeSection = true;
-
-			ArrayList<String> importSources = new ArrayList<String>();
 			HashMap<String, ValueStruct> globalVariables = new HashMap<String, ValueStruct>();
 			HashMap<String, LOLFunction> globalFunctions = new HashMap<String, LOLFunction>();
 			HashMap<String, LOLClass> globalClasses = new HashMap<String, LOLClass>();
@@ -53,35 +118,9 @@ public class SourceParser {
 			while((line = reader.readLine()) != null) {
 				lineNumber++;
 				line = line.replaceAll("\\s+", " ").trim().toUpperCase();
-				
+
 				if(line.equals("")) {
 					continue;
-				}
-
-				if(includeSection) {
-					if(!line.startsWith("I CAN HAS")) {
-						includeSection = false;
-					} else {
-						String[] tokens = line.split(" ");
-
-						if(tokens.length == 3) {
-							throw new LOLError("Line " + lineNumber + ": Source identifier expected");
-						}
-
-						for(int i = 3; i < tokens.length; i++) {
-							if(tokens[i].endsWith("?") || i == tokens.length - 1) {
-								String name = tokens[i].replace("?", "");
-
-								if(importSources.contains(name)) {
-									continue;
-								}
-
-								importSources.add(name);
-							}
-						}
-
-						continue;
-					}
 				}
 
 				if(line.startsWith("HAI ME TEH VARIABLE") || line.startsWith("HAI ME TEH LOCKD VARIABLE")) {
@@ -113,18 +152,54 @@ public class SourceParser {
 					if(tokens.length == 7 + offset) {
 						value = LOLNothing.NOTHIN;
 					} else {
-						StringBuilder s = new StringBuilder();
-						
-						for(int i = offset; i + 8 < tokens.length; i++) {
-							if(i != offset) {
-								s.append(" ");
-							}
-							s.append(tokens[8 + i]);
+						if(!tokens[7 + offset].equals("ITZ")) {
+							throw new LOLError("Line "  + lineNumber + ": Unexpected symbol detected");
 						}
 						
-						value = LOLValue.valueOf(s.toString().replace("\\\"", pointlessChar).replace("\"", "").replace(pointlessChar, "\"")).cast(tokens[6 + offset]);
+						if(tokens.length < 9 + offset) {
+							throw new LOLError("Line " + lineNumber + ": Value to assign expected");
+						}
+						
+						if(tokens[8 + offset].equals("NEW")) {
+							if(tokens.length < 10 + offset) {
+								throw new LOLError("Line " + lineNumber + ": New object type expected");
+							}
+
+							if(!tokens[9 + offset].equals(type)) {
+								throw new LOLError("Line " + lineNumber + ": Cannot instantiate specified object type into specified variable type");
+							}
+
+							if(tokens.length > 10 + offset) {
+								if(tokens[10 + offset].equals("IN")) {
+									if(tokens.length < 12 + offset) {
+										throw new LOLError("Line " + lineNumber + ": Source expected at end of line");
+									}
+									
+									if(tokens.length > 12 + offset) {
+										throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
+									}
+									
+									value = new PostInstantiationObject(tokens[11 + offset], type);
+								}
+								
+								throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
+							}
+
+							value = new PostInstantiationObject(fileName, type);
+						} else {
+							StringBuilder s = new StringBuilder();
+
+							for(int i = offset; i + 8 < tokens.length; i++) {
+								if(i != offset) {
+									s.append(" ");
+								}
+								s.append(tokens[8 + i]);
+							}
+
+							value = LOLValue.valueOf(s.toString().replace("\\\"", pointlessChar).replace("\"", "").replace(pointlessChar, "\"")).cast(tokens[6 + offset]);
+						}
 					}
-					
+
 					globalVariables.put(tokens[4 + offset], new ValueStruct(type, value, isLocked));
 
 					continue;
@@ -212,11 +287,11 @@ public class SourceParser {
 						while((line = reader.readLine()) != null && !line.startsWith("KTHXBAI")) {
 							lineNumber++;
 							line = line.replaceAll("\\s+", " ").trim().toUpperCase();
-							
+
 							if(line.equals("")) {
 								continue;
 							}
-							
+
 							fCode.append((first ? "" : "\n") + line);
 							first = false;
 						}
@@ -238,11 +313,11 @@ public class SourceParser {
 							@Override
 							protected LOLValue run(LOLObject owner, LinkedHashMap<String, ValueStruct> args) throws LOLError {
 								ArrayList<LOLValue> arguments = new ArrayList<LOLValue>();
-								
+
 								for(ValueStruct vs : args.values()) {
 									arguments.add(vs.getValue());
 								}
-								
+
 								return RuntimeEnvironment.getRuntime().getNative(getParentSource()).invoke(getName(), arguments.toArray(new LOLValue[0]));
 							}
 
@@ -258,11 +333,11 @@ public class SourceParser {
 					if(tokens.length == 4) {
 						throw new LOLError("Line " + lineNumber + ": Class identifier expected");
 					}
-					
+
 					if(globalClasses.containsKey(tokens[4])) {
 						throw new LOLError("Line " + lineNumber + ": Duplicate class identifier detected");
 					}
-					
+
 					HashMap<String, ValueStruct> publicMemberVariables = new HashMap<String, ValueStruct>();
 					HashMap<String, ValueStruct> privateMemberVariables = new HashMap<String, ValueStruct>();
 					HashMap<String, ValueStruct> publicSharedVariables = new HashMap<String, ValueStruct>();
@@ -271,27 +346,27 @@ public class SourceParser {
 					HashMap<String, LOLFunction> privateMemberFunctions = new HashMap<String, LOLFunction>();
 					HashMap<String, LOLFunction> publicSharedFunctions = new HashMap<String, LOLFunction>();
 					HashMap<String, LOLFunction> privateSharedFunctions = new HashMap<String, LOLFunction>();
-					
+
 					boolean isPublic = true;
-					
+
 					while((line = reader.readLine()) != null && !line.startsWith("KTHXBAI")) {
 						lineNumber++;
 						line = line.replaceAll("\\s+", " ").trim().toUpperCase();
-						
+
 						if(line.equals("")) {
 							continue;
 						}
-						
+
 						if(line.equals("EVRYONE")) {
 							isPublic = true;
 							continue;
 						}
-						
+
 						if(line.equals("MAHSELF")) {
 							isPublic = false;
 							continue;
 						}
-						
+
 						if(line.startsWith("DIS TEH VARIABLE") || line.startsWith("DIS TEH LOCKD VARIABLE") || line.startsWith("DIS TEH LOCKD SHARD VARIABLE") || line.startsWith("DIS TEH SHARD LOCKD VARIABLE")) {
 							String[] tokens1 = line.split(" ");
 
@@ -304,11 +379,11 @@ public class SourceParser {
 							if(isLocked = (tokens1[2].equals("LOCKD") || tokens1[3].equals("LOCKD"))) {
 								offset++;
 							}
-							
+
 							if(isShared = (tokens1[2].equals("SHARD") || tokens1[3].equals("SHARD"))) {
 								offset++;
 							}
-							
+
 							if(tokens1[2].equals(tokens1[3])) {
 								throw new LOLError("Line " + lineNumber + ": Unexpected symbol detected");
 							}
@@ -324,24 +399,60 @@ public class SourceParser {
 							if(publicMemberVariables.containsKey(tokens1[3 + offset]) || privateMemberVariables.containsKey(tokens1[3 + offset]) || publicSharedVariables.containsKey(tokens1[3 + offset]) || privateSharedVariables.containsKey(tokens1[3 + offset])) {
 								throw new LOLError("Line " + lineNumber + ": Duplicate variable identifier detected");
 							}
-							
+
 							type = tokens1[5 + offset];
 
 							if(tokens1.length == 6 + offset) {
 								value = LOLNothing.NOTHIN;
 							} else {
-								StringBuilder s = new StringBuilder();
-								
-								for(int i = offset; i + 7 < tokens1.length; i++) {
-									if(i != offset) {
-										s.append(" ");
-									}
-									s.append(tokens1[7 + i]);
+								if(!tokens1[6 + offset].equals("ITZ")) {
+									throw new LOLError("Line "  + lineNumber + ": Unexpected symbol detected");
 								}
 								
-								value = LOLValue.valueOf(s.toString().replace("\\\"", pointlessChar).replace("\"", "").replace(pointlessChar, "\"")).cast(tokens1[5 + offset]);
+								if(tokens1.length < 8 + offset) {
+									throw new LOLError("Line " + lineNumber + ": Value to assign expected");
+								}
+								
+								if(tokens1[7 + offset].equals("NEW")) {
+									if(tokens1.length < 9 + offset) {
+										throw new LOLError("Line " + lineNumber + ": New object type expected");
+									}
+
+									if(!tokens1[8 + offset].equals(type)) {
+										throw new LOLError("Line " + lineNumber + ": Cannot instantiate specified object type into specified variable type");
+									}
+
+									if(tokens1.length > 9 + offset) {
+										if(tokens1[9 + offset].equals("IN")) {
+											if(tokens1.length < 11 + offset) {
+												throw new LOLError("Line " + lineNumber + ": Source expected at end of line");
+											}
+											
+											if(tokens1.length > 11 + offset) {
+												throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
+											}
+											
+											value = new PostInstantiationObject(tokens1[10 + offset], type);
+										}
+										
+										throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
+									}
+
+									value = new PostInstantiationObject(fileName, type);
+								} else {
+									StringBuilder s = new StringBuilder();
+
+									for(int i = offset; i + 7 < tokens1.length; i++) {
+										if(i != offset) {
+											s.append(" ");
+										}
+										s.append(tokens1[7 + i]);
+									}
+
+									value = LOLValue.valueOf(s.toString().replace("\\\"", pointlessChar).replace("\"", "").replace(pointlessChar, "\"")).cast(tokens1[5 + offset]);
+								}
 							}
-							
+
 							ValueStruct struct = new ValueStruct(type, value, isLocked);
 
 							if(isPublic) {
@@ -366,11 +477,11 @@ public class SourceParser {
 
 							boolean isShared;
 							int offset = 0;
-							
+
 							if(isShared = tokens1[2].equals("SHARD")) {
 								offset = 1;
 							}
-							
+
 							if(tokens1.length == 3 + offset) {
 								throw new LOLError("Line " + lineNumber + ": Function identifier expected");
 							}
@@ -438,34 +549,34 @@ public class SourceParser {
 									throw new LOLError("Line " + lineNumber + ": Unexpected symbol detected");
 								}
 							}
-							
+
 							int nests = 1;
-							
+
 							boolean first = true;
 							while((line = reader.readLine()) != null) {
 								lineNumber++;
 								line = line.replaceAll("\\s+", " ").trim().toUpperCase();
-								
+
 								if(line.equals("")) {
 									continue;
 								}
-								
+
 								if(line.startsWith("KTHX")) {
 									if(!line.equals("KTHX")) {
 										throw new LOLError("Line " + lineNumber + ": Unexpected symbol detected");
 									}
-									
+
 									nests--;
 								}
-								
+
 								if(line.startsWith("IZ") || line.startsWith("WHILE")) {
 									nests++;
 								}
-								
+
 								if(nests == 0) {
 									break;
 								}
-								
+
 								fCode.append((first ? "" : "\n") + line);
 								first = false;
 							}
@@ -487,10 +598,10 @@ public class SourceParser {
 									privateMemberFunctions.put(tokens1[3 + offset], new LOLFunction(tokens1[3 + offset], returnType, fArgs, false, tokens[4], fileName, fCode.toString()));
 								}
 							}
-							
+
 						}
 					}
-					
+
 					globalClasses.put(tokens[4], new LOLClass(tokens[4], publicMemberVariables, privateMemberVariables, publicSharedVariables, privateSharedVariables, publicMemberFunctions, privateMemberFunctions, publicSharedFunctions, privateSharedFunctions, fileName));
 
 					continue;
@@ -498,8 +609,8 @@ public class SourceParser {
 
 				throw new LOLError("Line " + lineNumber + ": Unexpected symbol detected");
 			}
-			
-			return new LOLSource(fileName, importSources, globalVariables, globalFunctions, globalClasses);
+
+			return new LOLSource(fileName, globalVariables, globalFunctions, globalClasses);
 		} catch(IOException e) {
 			throw new RuntimeException("An IO error has occurred");
 		}

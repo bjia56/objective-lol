@@ -144,7 +144,7 @@ class ArgFunction implements Expression {
 		}
 
 		if(lf == null) {
-			throw new LOLError("The specified variable or function does not exist");
+			throw new LOLError("The specified function does not exist");
 		}
 
 		if(lf.isShared() == null || lf.isShared()) {
@@ -443,6 +443,10 @@ class SimpleAssignment implements Expression {
 		if(vs == null) {
 			throw new LOLError("Variable not found");
 		}
+		
+		if(vs.getIsLocked()) {
+			throw new LOLError("Cannot assign value to LOCKD variable");
+		}
 
 		vs.setValue(right.interpret(owner, context, localVariables));
 
@@ -505,6 +509,10 @@ class ComplexAssignment implements Expression {
 		
 		if(vs == null) {
 			throw new LOLError("Specified variable not found");
+		}
+		
+		if(vs.getIsLocked()) {
+			throw new LOLError("Cannot assign value to LOCKD variable");
 		}
 		
 		vs.setValue(right.interpret(owner, context, localVariables));

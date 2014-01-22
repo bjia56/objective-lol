@@ -29,7 +29,7 @@ public class LOLObject extends LOLValue {
 		return objectType.getName();
 	}
 
-	public LOLFunction getFunction(String name, LOLFunction context) {
+	public LOLFunction getFunction(String name, LOLFunction context) throws LOLError {
 		LOLFunction result = objectType.getMemberFunction(name, context);
 
 		if(result == null) {
@@ -39,7 +39,7 @@ public class LOLObject extends LOLValue {
 		return result;
 	}
 
-	public ValueStruct getVariable(String name, LOLFunction context) {
+	public ValueStruct getVariable(String name, LOLFunction context) throws LOLError {
 		ValueStruct result = objectType.getSharedVariable(name, context);
 		
 		if(result == null) {

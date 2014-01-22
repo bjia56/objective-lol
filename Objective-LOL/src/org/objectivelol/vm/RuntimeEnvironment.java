@@ -1,6 +1,7 @@
 package org.objectivelol.vm;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 
 import org.objectivelol.lang.LOLError;
@@ -68,6 +69,10 @@ public class RuntimeEnvironment {
 				}
 			}
 		}
+	}
+	
+	public Collection<LOLSource> getLoadedSources() {
+		return loadedSources.values();
 	}
 	
 }

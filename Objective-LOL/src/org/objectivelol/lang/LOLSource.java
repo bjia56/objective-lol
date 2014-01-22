@@ -1,6 +1,5 @@
 package org.objectivelol.lang;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -9,15 +8,13 @@ import org.objectivelol.lang.LOLValue.ValueStruct;
 public class LOLSource {
 
 	private final String fileName;
-	private final ArrayList<String> importSources;
 	
 	private final HashMap<String, ValueStruct> globalVariables;
 	private final HashMap<String, LOLFunction> globalFunctions;
 	private final HashMap<String, LOLClass> globalClasses;
 
-	public LOLSource(String fileName, ArrayList<String> importSources, HashMap<String, ValueStruct> globalVariables, HashMap<String, LOLFunction> globalFunctions, HashMap<String, LOLClass> globalClasses) {
+	public LOLSource(String fileName, HashMap<String, ValueStruct> globalVariables, HashMap<String, LOLFunction> globalFunctions, HashMap<String, LOLClass> globalClasses) {
 		this.fileName = fileName;
-		this.importSources = importSources;
 		this.globalVariables = globalVariables;
 		this.globalFunctions = globalFunctions;
 		this.globalClasses = globalClasses;
@@ -49,10 +46,6 @@ public class LOLSource {
 	
 	public String getName() {
 		return fileName;
-	}
-	
-	public Collection<String> getImports() {
-		return importSources;
 	}
 	
 	public void prepareSource() throws LOLError {

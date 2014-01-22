@@ -68,11 +68,11 @@ public abstract class LOLValue {
 				return new LOLInteger(Long.parseLong(str));
 			} catch(NumberFormatException e) {
 				try {
-					str = str.toUpperCase();
-					if(!str.startsWith("0X")) {
+					String str2 = str.toUpperCase();
+					if(!str2.startsWith("0X")) {
 						throw new NumberFormatException();
 					}
-					return new LOLInteger(Long.parseLong(str.replaceFirst("0X", ""), 16));
+					return new LOLInteger(Long.parseLong(str2.replaceFirst("0X", ""), 16));
 				} catch(NumberFormatException e2) {
 					try {
 						return new LOLDouble(Double.parseDouble(str));
