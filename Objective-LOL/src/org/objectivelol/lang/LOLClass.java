@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import org.objectivelol.lang.LOLValue.ValueStruct;
+import org.objectivelol.vm.ValueStruct;
 
 public class LOLClass {
 
@@ -116,7 +116,7 @@ public class LOLClass {
 		return privateMemberVariables.values();
 	}
 	
-	public LOLObject constructInstance() {
+	public LOLObject constructInstance() throws LOLError {
 		HashMap<String, ValueStruct> publicVars = new HashMap<String, ValueStruct>();
 		HashMap<String, ValueStruct> privateVars = new HashMap<String, ValueStruct>();
 		

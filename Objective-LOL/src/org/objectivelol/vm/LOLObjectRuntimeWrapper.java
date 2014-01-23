@@ -7,13 +7,13 @@ import org.objectivelol.lang.LOLFunction;
 import org.objectivelol.lang.LOLObject;
 import org.objectivelol.lang.LOLValue;
 
-class PostInstantiationObject extends LOLObject {
+class LOLObjectRuntimeWrapper extends LOLObject {
 
 	private String sourceName;
 	private String className;
 	private LOLObject obj;
 
-	public PostInstantiationObject(String sourceName, String className) {
+	public LOLObjectRuntimeWrapper(String sourceName, String className) {
 		super(null, null, null);
 
 		this.sourceName = sourceName;
@@ -70,6 +70,15 @@ class PostInstantiationObject extends LOLObject {
 		}
 
 		obj = lc.constructInstance();
+	}
+	
+	@Override
+	public LOLValue copy() throws LOLError {
+		if(obj == null) {
+			return new LOLObjectRuntimeWrapper(sourceName, className);
+		}
+		
+		return obj.copy();
 	}
 
 }

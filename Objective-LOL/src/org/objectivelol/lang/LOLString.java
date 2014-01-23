@@ -62,4 +62,9 @@ public class LOLString extends LOLValue {
 		return (value.equals(((LOLString)other.cast(LOLString.TYPE_NAME)).toString()) ?  LOLBoolean.YEZ : LOLBoolean.NO);
 	}
 
+	@Override
+	public LOLValue copy() throws LOLError {
+		return new LOLString(value);
+	}
+
 }

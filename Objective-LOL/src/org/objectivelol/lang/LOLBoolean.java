@@ -56,4 +56,9 @@ public class LOLBoolean extends LOLValue {
 		return (value == ((LOLBoolean)other.cast(LOLBoolean.TYPE_NAME)).value ? LOLBoolean.YEZ : LOLBoolean.NO);
 	}
 
+	@Override
+	public LOLValue copy() throws LOLError {
+		return new LOLBoolean(value);
+	}
+
 }

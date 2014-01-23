@@ -1,44 +1,6 @@
 package org.objectivelol.lang;
 
 public abstract class LOLValue {
-	
-	public static class ValueStruct {
-		
-		private final String type;
-		private LOLValue value;
-		private final boolean isLocked;
-		
-		public ValueStruct(String type, LOLValue value, boolean isLocked) {
-			this.type = type;
-			this.value = value;
-			this.isLocked = isLocked;
-		}
-		
-		public ValueStruct copy() {
-			return new ValueStruct(type, value, isLocked);
-		}
-		
-		public String getType() {
-			return type;
-		}
-		
-		public LOLValue getValue() {
-			return value;
-		}
-		
-		public boolean getIsLocked() {
-			return isLocked;
-		}
-		
-		public void setValue(LOLValue newValue) throws LOLError {
-			if(isLocked) {
-				throw new LOLError("Variable is locked and cannot be updated");
-			}
-			
-			value = newValue.cast(type);
-		}
-		
-	}
 
 	public static LOLValue valueOf(Object o) {
 		if(o instanceof LOLValue) {
@@ -122,5 +84,7 @@ public abstract class LOLValue {
 	public abstract String getTypeName();
 
 	public abstract LOLBoolean equalTo(LOLValue other) throws LOLError;
+	
+	public abstract LOLValue copy() throws LOLError;
 	
 }

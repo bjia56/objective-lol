@@ -114,5 +114,10 @@ public class LOLInteger extends LOLNumber {
 			return (value == ln.integerValue() ? LOLBoolean.YEZ : LOLBoolean.NO);
 		}
 	}
+
+	@Override
+	public LOLValue copy() throws LOLError {
+		return new LOLInteger(value);
+	}
 	
 }

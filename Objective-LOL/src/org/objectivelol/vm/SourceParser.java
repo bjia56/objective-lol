@@ -16,7 +16,6 @@ import org.objectivelol.lang.LOLNothing;
 import org.objectivelol.lang.LOLObject;
 import org.objectivelol.lang.LOLSource;
 import org.objectivelol.lang.LOLValue;
-import org.objectivelol.lang.LOLValue.ValueStruct;
 
 public class SourceParser {
 
@@ -111,13 +110,13 @@ public class SourceParser {
 										throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
 									}
 
-									value = new PostInstantiationObject(tokens[11 + offset], type);
+									value = new LOLObjectRuntimeWrapper(tokens[11 + offset], type);
 								}
 
 								throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
 							}
 
-							value = new PostInstantiationObject(fileName, type);
+							value = new LOLObjectRuntimeWrapper(fileName, type);
 						} else {
 							StringBuilder s = new StringBuilder();
 
@@ -364,13 +363,13 @@ public class SourceParser {
 												throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
 											}
 
-											value = new PostInstantiationObject(tokens1[10 + offset], type);
+											value = new LOLObjectRuntimeWrapper(tokens1[10 + offset], type);
 										}
 
 										throw new LOLError("Line " + lineNumber + ": Invalid symbols detected after new object type");
 									}
 
-									value = new PostInstantiationObject(fileName, type);
+									value = new LOLObjectRuntimeWrapper(fileName, type);
 								} else {
 									StringBuilder s = new StringBuilder();
 

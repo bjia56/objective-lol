@@ -11,7 +11,6 @@ import org.objectivelol.lang.LOLNumber;
 import org.objectivelol.lang.LOLObject;
 import org.objectivelol.lang.LOLSource;
 import org.objectivelol.lang.LOLValue;
-import org.objectivelol.lang.LOLValue.ValueStruct;
 
 public interface Expression {
 

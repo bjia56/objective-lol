@@ -77,4 +77,9 @@ public class LOLDouble extends LOLNumber {
 		return (value == ((LOLNumber)other.cast(LOLNumber.TYPE_NAME)).doubleValue() ?  LOLBoolean.YEZ : LOLBoolean.NO);
 	}
 
+	@Override
+	public LOLValue copy() throws LOLError {
+		return new LOLDouble(value);
+	}
+
 }

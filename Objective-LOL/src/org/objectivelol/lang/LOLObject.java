@@ -1,6 +1,9 @@
 package org.objectivelol.lang;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
+
+import org.objectivelol.vm.ValueStruct;
 
 public class LOLObject extends LOLValue {
 
@@ -60,6 +63,22 @@ public class LOLObject extends LOLValue {
 		LOLObject lo = (LOLObject)other.cast(objectType.getName());
 		
 		return (lo.privateMemberVariables.equals(privateMemberVariables) && lo.publicMemberVariables.equals(publicMemberVariables) ? LOLBoolean.YEZ : LOLBoolean.NO);
+	}
+
+	@Override
+	public LOLValue copy() throws LOLError {
+		HashMap<String, ValueStruct> publicMemberVariables = new HashMap<String, ValueStruct>();
+		HashMap<String, ValueStruct> privateMemberVariables = new HashMap<String, ValueStruct>();
+		
+		for(Entry<String, ValueStruct> e : this.publicMemberVariables.entrySet()) {
+			publicMemberVariables.put(e.getKey(), e.getValue().copy());
+		}
+		
+		for(Entry<String, ValueStruct> e : this.privateMemberVariables.entrySet()) {
+			privateMemberVariables.put(e.getKey(), e.getValue().copy());
+		}
+		
+		return new LOLObject(objectType, publicMemberVariables, privateMemberVariables);
 	}
 
 }

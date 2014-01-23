@@ -20,5 +20,10 @@ public class LOLNothing extends LOLValue {
 	public LOLBoolean equalTo(LOLValue other) throws LOLError {
 		return (other.isLOLNothing() ? LOLBoolean.YEZ : LOLBoolean.NO);
 	}
+
+	@Override
+	public LOLValue copy() throws LOLError {
+		return this;
+	}
 	
 }

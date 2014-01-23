@@ -291,13 +291,13 @@ public class Parser {
 								throw new LOLError("Invalid symbols detected after new object type");
 							}
 
-							return new DeclareVariable(tokens.get(4 + lockedOffset), tokens.get(6 + lockedOffset), lockedOffset == 1, new Value(new PostInstantiationObject(tokens.get(11 + lockedOffset), tokens.get(6 + lockedOffset))));
+							return new DeclareVariable(tokens.get(4 + lockedOffset), tokens.get(6 + lockedOffset), lockedOffset == 1, new Value(new LOLObjectRuntimeWrapper(tokens.get(11 + lockedOffset), tokens.get(6 + lockedOffset))));
 						}
 
 						throw new LOLError("Invalid symbols detected after new object type");
 					}
 
-					return new DeclareVariable(tokens.get(4 + lockedOffset), tokens.get(6 + lockedOffset), lockedOffset == 1, new Value(new PostInstantiationObject(context.getParentSource(), tokens.get(6 + lockedOffset))));
+					return new DeclareVariable(tokens.get(4 + lockedOffset), tokens.get(6 + lockedOffset), lockedOffset == 1, new Value(new LOLObjectRuntimeWrapper(context.getParentSource(), tokens.get(6 + lockedOffset))));
 				}
 
 				if(argFunctionCall == null) {
@@ -357,13 +357,13 @@ public class Parser {
 								throw new LOLError("Invalid symbols detected after new object type");
 							}
 
-							return new SimpleAssignment(tokens.get(0), new Value(new PostInstantiationObject(tokens.get(5), tokens.get(3))));
+							return new SimpleAssignment(tokens.get(0), new Value(new LOLObjectRuntimeWrapper(tokens.get(5), tokens.get(3))));
 						}
 
 						throw new LOLError("Invalid symbols detected after new object type");
 					}
 
-					return new SimpleAssignment(tokens.get(0), new Value(new PostInstantiationObject(context.getParentSource(), tokens.get(3))));
+					return new SimpleAssignment(tokens.get(0), new Value(new LOLObjectRuntimeWrapper(context.getParentSource(), tokens.get(3))));
 				}
 
 				if(argFunctionCall == null) {

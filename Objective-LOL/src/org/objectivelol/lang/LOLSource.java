@@ -3,7 +3,7 @@ package org.objectivelol.lang;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.objectivelol.lang.LOLValue.ValueStruct;
+import org.objectivelol.vm.ValueStruct;
 
 public class LOLSource {
 

@@ -5,10 +5,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
-import org.objectivelol.lang.LOLValue.ValueStruct;
 import org.objectivelol.vm.Expression;
 import org.objectivelol.vm.Expression.Return;
 import org.objectivelol.vm.Parser;
+import org.objectivelol.vm.ValueStruct;
 
 public class LOLFunction {
 
