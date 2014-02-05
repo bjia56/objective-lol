@@ -10,6 +10,7 @@ import org.objectivelol.lang.LOLNative;
 import org.objectivelol.lang.LOLSource;
 import org.objectivelol.libs.MATH;
 import org.objectivelol.libs.STDIO;
+import org.objectivelol.libs.TIEM;
 
 public class RuntimeEnvironment {
 
@@ -23,8 +24,23 @@ public class RuntimeEnvironment {
 			throw new IllegalStateException("Cannot instantiate more than one instance of RuntimeEnvironment");
 		}
 		
-		loadSource("libs" + File.separator + "MATH.lol", "libs" + File.separator + "STDIO.lol");
-		loadNative(new MATH(), new STDIO());
+		File libDir = new File("libs");
+		
+		if(libDir.isDirectory()) {
+			for(File f : libDir.listFiles()) {
+				if(f.isFile()) {
+					loadSource(f);
+					
+					if(f.getName().equals("MATH.lol")) {
+						loadNative(new MATH());
+					} else if(f.getName().equals("STDIO.lol")) {
+						loadNative(new STDIO());
+					} else if(f.getName().equals("TIEM.lol")) {
+						loadNative(new TIEM());
+					}
+				}
+			}
+		}
 	}
 	
 	public static RuntimeEnvironment getRuntime() throws LOLError {
@@ -35,13 +51,15 @@ public class RuntimeEnvironment {
 		return instance;
 	}
 	
+	public void loadSource(File file) throws LOLError {
+		SourceParser sp = new SourceParser(file);
+		LOLSource result = sp.parse();
+		loadedSources.put(result.getName(), result);
+	}
+	
 	public void loadSource(String ... fileNames) throws LOLError {
 		for(String s : fileNames) {
-			File f = new File(s);
-			
-			SourceParser sp = new SourceParser(f);
-			LOLSource result = sp.parse();
-			loadedSources.put(result.getName(), result);
+			loadSource(new File(s));
 		}
 	}
 	

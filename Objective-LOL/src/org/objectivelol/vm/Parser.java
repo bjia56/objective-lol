@@ -491,6 +491,31 @@ public class Parser {
 		if(function != null) {
 			tokens.add(function);
 		}
+		
+		while(tokens.contains("IN")) {
+			int inIndex = tokens.indexOf("IN");
+			
+			if(inIndex == 0) {
+				throw new LOLError("Member identifier expected before IN");
+			}
+			
+			if(inIndex == tokens.size() - 1) {
+				throw new LOLError("Source or class expected after IN");
+			}
+			
+			if(!(tokens.get(inIndex + 1) instanceof String)) {
+				throw new LOLError("Source or class after IN cannot be an expression");
+			}
+
+			if(!(tokens.get(inIndex - 1) instanceof String)) {
+				throw new LOLError("Member before IN cannot be an expression");
+			}
+			
+			tokens.add(inIndex - 1, new MemberVariableAndNoArgFunction((String)tokens.get(inIndex + 1), (String)tokens.get(inIndex - 1)));
+			tokens.remove(inIndex);
+			tokens.remove(inIndex);
+			tokens.remove(inIndex);
+		}
 
 		while(tokens.contains("AS")) {
 			int asLocation = tokens.indexOf("AS");
@@ -500,7 +525,8 @@ public class Parser {
 			}
 
 			if(tokens.indexOf("SAEM") == asLocation - 1) {
-				break;
+				tokens.set(asLocation, "AS_SAEM");
+				continue;
 			}
 
 			if(asLocation == tokens.size() - 1) {
@@ -1065,7 +1091,7 @@ public class Parser {
 		while(tokens.contains("SAEM")) {
 			int equalsIndex = tokens.indexOf("SAEM");
 
-			if(tokens.indexOf("AS") != equalsIndex + 1) {
+			if(tokens.indexOf("AS_SAEM") != equalsIndex + 1) {
 				throw new LOLError("AS expected after SAEM");
 			}
 

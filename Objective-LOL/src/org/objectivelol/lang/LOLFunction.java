@@ -10,6 +10,11 @@ import org.objectivelol.vm.Expression.Return;
 import org.objectivelol.vm.Parser;
 import org.objectivelol.vm.ValueStruct;
 
+/**
+ * Class to represent a function in Objective-LOL.
+ * 
+ * @author Brett Jia
+ */
 public class LOLFunction {
 
 	private final String functionName;
@@ -23,6 +28,15 @@ public class LOLFunction {
 	private String operations;
 	private Expression expressions;
 	
+	/**
+	 * @param functionName
+	 * @param returnType
+	 * @param inputArguments
+	 * @param isShared
+	 * @param parentClass
+	 * @param parentSource
+	 * @param operations
+	 */
 	public LOLFunction(String functionName, String returnType, LinkedHashMap<String, String> inputArguments, Boolean isShared, String parentClass, String parentSource, String operations) {
 		this.functionName = functionName;
 		if(returnType == null) {
@@ -85,6 +99,10 @@ public class LOLFunction {
 					throw new LOLError("Invoking a shared function does not require an owner object");
 				}
 			}
+		}
+		
+		if(args == null) {
+			args = new LOLValue[0];
 		}
 		
 		LinkedHashMap<String, ValueStruct> arguments = null;

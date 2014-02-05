@@ -70,7 +70,7 @@ class VariableAndNoArgFunction implements Expression {
 	@Override
 	public LOLValue interpret(LOLObject owner, LOLFunction context, HashMap<String, ValueStruct> localVariables) throws LOLError {
 		ValueStruct vs = localVariables.get(name);
-
+		
 		if(vs == null) {
 			if(owner == null) {
 				vs = RuntimeEnvironment.getRuntime().getSource(context.getParentSource()).getGlobalVariable(name);
