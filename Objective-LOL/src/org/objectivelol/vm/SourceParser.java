@@ -249,7 +249,7 @@ public class SourceParser {
 									arguments.add(vs.getValue());
 								}
 
-								return RuntimeEnvironment.getRuntime().getNative(getParentSource()).invoke(getName(), arguments.toArray(new LOLValue[0]));
+								return RuntimeEnvironment.getRuntime().getNative(getParentSource()).invoke(getName(), arguments.toArray(new LOLValue[arguments.size()]));
 							}
 
 						});

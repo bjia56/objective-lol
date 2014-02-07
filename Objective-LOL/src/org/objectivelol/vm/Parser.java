@@ -56,16 +56,33 @@ public class Parser {
 
 				line = line.substring(2, line.length() - 1).trim();
 
-				StringBuilder sb = new StringBuilder();
+				StringBuilder trueOperations = new StringBuilder();
+				StringBuilder elseOperations = new StringBuilder();
 
-				boolean first = true;
+				boolean first = true, isElse = false;
 				String line2;
 				while(!(line2 = br.readLine()).startsWith("KTHX")) {
 					if(line2.trim().equals("")) {
 						continue;
 					}
-					
-					sb.append((first ? "" : "\n") + line2);
+
+					if(line2.startsWith("NOPE")) {
+						if(!line2.equals("NOPE")) {
+							throw new LOLError("Unexpected symbol detected");
+						}
+
+						isElse = true;
+						first = true;
+
+						continue;
+					}
+
+					if(!isElse) {
+						trueOperations.append((first ? "" : "\n") + line2);
+					} else {
+						elseOperations.append((first ? "" : "\n") + line2);
+					}
+
 					first = false;
 				}
 
@@ -74,9 +91,10 @@ public class Parser {
 				}
 
 				Expression condition = parseLine(line, context);
-				Expression code = parseBlock(new BufferedReader(new StringReader(sb.toString())), context);
+				Expression code = parseBlock(new BufferedReader(new StringReader(trueOperations.toString())), context);
+				Expression code2 = (isElse ? parseBlock(new BufferedReader(new StringReader(elseOperations.toString())), context) : null);
 
-				statements.add(new IfStatement(condition, code));
+				statements.add(new IfStatement(condition, code, code2));
 				continue;
 			}
 
@@ -91,7 +109,7 @@ public class Parser {
 					if(line2.trim().equals("")) {
 						continue;
 					}
-					
+
 					sb.append((first ? "" : "\n") + line2);
 					first = false;
 				}
@@ -124,7 +142,7 @@ public class Parser {
 			if(firstPartOfLiteral) {
 				firstPartOfLiteral = false;
 			}
-			
+
 			if(!isStringLiteral && s.charAt(0) == '\"') {
 				isStringLiteral = true;
 				firstPartOfLiteral = true;
@@ -217,6 +235,14 @@ public class Parser {
 		}
 
 		if(tokens.get(0).equals("GIVEZ")) {
+			if(tokens.size() == 1) {
+				throw new LOLError("Expected expression after GIVEZ");
+			}
+			
+			if(tokens.size() == 2 && tokens.get(1).equals("UP")) {
+				return new Expression.Return(null);
+			}
+			
 			if(tokens.contains("ITZ")) {
 				throw new LOLError("GIVEZ line cannot include an assignment");
 			}
@@ -304,7 +330,7 @@ public class Parser {
 					StringBuilder expression = new StringBuilder();
 
 					for(int i = 8 + lockedOffset; i < tokens.size(); i++) {
-						expression.append((i == 2 ? "" : " ") + tokens.get(i));
+						expression.append((i == 8 + lockedOffset ? "" : " ") + tokens.get(i));
 					}
 
 					return new DeclareVariable(tokens.get(4 + lockedOffset), tokens.get(6 + lockedOffset), lockedOffset == 1, parseStatement(expression.toString(), null));
@@ -312,7 +338,7 @@ public class Parser {
 					StringBuilder expression = new StringBuilder();
 
 					for(int i = 8 + lockedOffset, functionStart = tokens.indexOf("WIT") - (tokens.contains("IN") ? 3 : 1); i < functionStart; i++) {
-						expression.append((i == 2 ? "" : " ") + tokens.get(i));
+						expression.append((i == 8 + lockedOffset ? "" : " ") + tokens.get(i));
 					}
 
 					return new DeclareVariable(tokens.get(4 + lockedOffset), tokens.get(6 + lockedOffset), lockedOffset == 1, parseStatement(expression.toString(), argFunctionCall));
@@ -452,7 +478,7 @@ public class Parser {
 			if(firstPartOfLiteral) {
 				firstPartOfLiteral = false;
 			}
-			
+
 			if(!isStringLiteral && s.charAt(0) == '\"') {
 				isStringLiteral = true;
 				firstPartOfLiteral = true;
@@ -491,18 +517,18 @@ public class Parser {
 		if(function != null) {
 			tokens.add(function);
 		}
-		
+
 		while(tokens.contains("IN")) {
 			int inIndex = tokens.indexOf("IN");
-			
+
 			if(inIndex == 0) {
 				throw new LOLError("Member identifier expected before IN");
 			}
-			
+
 			if(inIndex == tokens.size() - 1) {
 				throw new LOLError("Source or class expected after IN");
 			}
-			
+
 			if(!(tokens.get(inIndex + 1) instanceof String)) {
 				throw new LOLError("Source or class after IN cannot be an expression");
 			}
@@ -510,7 +536,7 @@ public class Parser {
 			if(!(tokens.get(inIndex - 1) instanceof String)) {
 				throw new LOLError("Member before IN cannot be an expression");
 			}
-			
+
 			tokens.add(inIndex - 1, new MemberVariableAndNoArgFunction((String)tokens.get(inIndex + 1), (String)tokens.get(inIndex - 1)));
 			tokens.remove(inIndex);
 			tokens.remove(inIndex);

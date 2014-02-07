@@ -86,7 +86,7 @@ public class LOLBoolean extends LOLValue {
 	 * LOLBoolean.
 	 * 
 	 * @return
-	 * The boolean value held.
+	 * A boolean representing the value held.
 	 */
 	public boolean booleanValue() {
 		return value;

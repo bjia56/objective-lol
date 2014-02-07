@@ -102,9 +102,9 @@ public class LOLClass {
 	 * a request for the specified variable is initiated.
 	 * 
 	 * @return
-	 * The ValueStruct corresponding to the specified
-	 * variable, or null if not found in the given context's
-	 * visibility permissions.
+	 * A ValueStruct corresponding to the specified variable,
+	 * or null if not found in the given context's visibility
+	 * permissions.
 	 */
 	public ValueStruct getSharedVariable(String name, LOLFunction context) {
 		ValueStruct result = publicSharedVariables.get(name);
@@ -135,9 +135,9 @@ public class LOLClass {
 	 * a request for the specified function is initiated.
 	 * 
 	 * @return
-	 * The LOLFunction corresponding to the specified
-	 * function, or null if not found in the given context's
-	 * visibility permissions.
+	 * A LOLFunction corresponding to the specified function,
+	 * or null if not found in the given context's visibility
+	 * permissions.
 	 */
 	public LOLFunction getSharedFunction(String name, LOLFunction context) {
 		LOLFunction result = publicSharedFunctions.get(name);
@@ -168,9 +168,9 @@ public class LOLClass {
 	 * a request for the specified function is initiated.
 	 * 
 	 * @return
-	 * The LOLFunction corresponding to the specified
-	 * function, or null if not found in the given context's
-	 * visibility permissions.
+	 * A LOLFunction corresponding to the specified function, 
+	 * or null if not found in the given context's visibility
+	 * permissions.
 	 */
 	public LOLFunction getMemberFunction(String name, LOLFunction context) {
 		LOLFunction result = publicMemberFunctions.get(name);
@@ -265,7 +265,7 @@ public class LOLClass {
 	 * as well.
 	 * 
 	 * @return
-	 * A Collection of ValueStructs representing the public member
+	 * A Collection of ValueStruct representing the public member
 	 * variables defined by the CLAS.
 	 * 
 	 * @see java.util.HashMap#values()
@@ -281,7 +281,7 @@ public class LOLClass {
 	 * as well.
 	 * 
 	 * @return
-	 * A Collection of ValueStructs representing the private member
+	 * A Collection of ValueStruct representing the private member
 	 * variables defined by the CLAS.
 	 * 
 	 * @see java.util.HashMap#values()

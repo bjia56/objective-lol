@@ -19,15 +19,15 @@ public class RuntimeEnvironment {
 	private final HashMap<String, LOLSource> loadedSources = new HashMap<String, LOLSource>();
 	private final HashMap<String, LOLNative> nativeFunctions = new HashMap<String, LOLNative>();
 	
-	private RuntimeEnvironment() throws LOLError {
+	private File execDir = new File(System.getProperty("user.dir"));
+	
+	private RuntimeEnvironment(File library) throws LOLError {
 		if(instance != null) {
 			throw new IllegalStateException("Cannot instantiate more than one instance of RuntimeEnvironment");
 		}
 		
-		File libDir = new File("libs");
-		
-		if(libDir.isDirectory()) {
-			for(File f : libDir.listFiles()) {
+		if(library.isDirectory()) {
+			for(File f : library.listFiles()) {
 				if(f.isFile()) {
 					loadSource(f);
 					
@@ -43,12 +43,32 @@ public class RuntimeEnvironment {
 		}
 	}
 	
+	private RuntimeEnvironment() throws LOLError {
+		this(new File("libs"));
+	}
+	
 	public static RuntimeEnvironment getRuntime() throws LOLError {
 		if(instance == null) {
 			instance  = new RuntimeEnvironment();
 		}
 		
 		return instance;
+	}
+	
+	public static RuntimeEnvironment getRuntime(File library) throws LOLError {
+		if(instance == null) {
+			instance = new RuntimeEnvironment(library);
+		}
+		
+		return instance;
+	}
+	
+	public void setExecDir(File execDir) {
+		this.execDir = execDir.getAbsoluteFile();
+	}
+	
+	public File getExecDir() {
+		return execDir;
 	}
 	
 	public void loadSource(File file) throws LOLError {
@@ -60,6 +80,12 @@ public class RuntimeEnvironment {
 	public void loadSource(String ... fileNames) throws LOLError {
 		for(String s : fileNames) {
 			loadSource(new File(s));
+		}
+	}
+	
+	public void loadSource(File[] files) throws LOLError {
+		for(File f : files) {
+			loadSource(f);
 		}
 	}
 	

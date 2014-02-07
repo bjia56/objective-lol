@@ -101,9 +101,9 @@ class VariableAndNoArgFunction implements Expression {
 			}
 
 			if(lf.isShared() == null || lf.isShared()) {
-				return lf.execute(null, (LOLValue[])null);
+				return lf.execute(null);
 			} else {
-				return lf.execute(owner, (LOLValue[])null);
+				return lf.execute(owner);
 			}
 		}
 
@@ -341,7 +341,7 @@ class DeclareVariable implements Expression {
 
 	@Override
 	public LOLValue interpret(LOLObject owner, LOLFunction context, HashMap<String, ValueStruct> localVariables) throws LOLError, Return {
-		ValueStruct vs = new ValueStruct(type, right.interpret(owner, context, localVariables), isLocked);
+		ValueStruct vs = new ValueStruct(type, right.interpret(owner, context, localVariables).cast(type), isLocked);
 
 		if(localVariables.put(name, vs) != null) {
 			throw new LOLError("Local variable identifier exists");
@@ -395,17 +395,21 @@ class WhileStatement implements Expression {
 class IfStatement implements Expression {
 
 	private Expression condition;
-	private Expression statements;
+	private Expression trueStatements;
+	private Expression elseStatements;
 
-	public IfStatement(Expression condition, Expression statements) {
+	public IfStatement(Expression condition, Expression trueStatements, Expression elseStatements) {
 		this.condition = condition;
-		this.statements = statements;
+		this.trueStatements = trueStatements;
+		this.elseStatements = elseStatements;
 	}
 
 	@Override
 	public LOLValue interpret(LOLObject owner, LOLFunction context, HashMap<String, ValueStruct> localVariables) throws LOLError, Return {
 		if(condition.interpret(owner, context, localVariables).cast(LOLBoolean.TYPE_NAME).equalTo(LOLBoolean.YEZ).booleanValue()) {
-			statements.interpret(owner, context, localVariables);
+			trueStatements.interpret(owner, context, localVariables);
+		} else if(elseStatements != null) {
+			elseStatements.interpret(owner, context, localVariables);
 		}
 
 		return null;
@@ -447,7 +451,7 @@ class SimpleAssignment implements Expression {
 			throw new LOLError("Cannot assign value to LOCKD variable");
 		}
 
-		vs.setValue(right.interpret(owner, context, localVariables));
+		vs.setValue(right.interpret(owner, context, localVariables).cast(vs.getType()));
 
 		return vs.getValue();
 	}
@@ -514,7 +518,7 @@ class ComplexAssignment implements Expression {
 			throw new LOLError("Cannot assign value to LOCKD variable");
 		}
 		
-		vs.setValue(right.interpret(owner, context, localVariables));
+		vs.setValue(right.interpret(owner, context, localVariables).cast(vs.getType()));
 
 		return vs.getValue();
 	}
@@ -564,9 +568,9 @@ class MemberVariableAndNoArgFunction implements Expression {
 
 			if(lf != null) {
 				if(lf.isShared() == null || lf.isShared()) {
-					obj = (LOLObject)lf.execute(null, (LOLValue[])null);
+					obj = (LOLObject)lf.execute(null);
 				} else {
-					obj = (LOLObject)lf.execute(owner, (LOLValue[])null);
+					obj = (LOLObject)lf.execute(owner);
 				}
 			}
 		} else {
