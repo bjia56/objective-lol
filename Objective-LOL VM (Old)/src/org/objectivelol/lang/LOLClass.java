@@ -1,10 +1,8 @@
 package org.objectivelol.lang;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
-
 import org.objectivelol.vm.ValueStruct;
 
 /**
@@ -259,35 +257,59 @@ public class LOLClass {
 	}
 	
 	/**
-	 * Gives a Collection of all the public member variables contained
-	 * within the CLAS. Changing this Collection will cause the underlying
+	 * Gives a HashMap of all the public member variables contained
+	 * within the CLAS. Changing this HashMap will cause the underlying
 	 * map that contains the variables and their values to be altered
 	 * as well.
 	 * 
 	 * @return
-	 * A Collection of ValueStruct representing the public member
-	 * variables defined by the CLAS.
-	 * 
-	 * @see java.util.HashMap#values()
+	 * A HashMap of String to ValueStruct representing the public
+	 * member variables defined by the CLAS.
 	 */
-	public Collection<ValueStruct> getPublicMemberVariables() {
-		return publicMemberVariables.values();
+	public HashMap<String, ValueStruct> getPublicMemberVariables() {
+		return publicMemberVariables;
 	}
 	
 	/**
-	 * Gives a Collection of all the private member variables contained
-	 * within the CLAS. Changing this Collection will cause the underlying
+	 * Gives a HashMap of all the private member variables contained
+	 * within the CLAS. Changing this HashMap will cause the underlying
 	 * map that contains the variables and their values to be altered
 	 * as well.
 	 * 
 	 * @return
-	 * A Collection of ValueStruct representing the private member
-	 * variables defined by the CLAS.
-	 * 
-	 * @see java.util.HashMap#values()
+	 * A HashMap of String to ValueStruct representing the private
+	 * member variables defined by the CLAS.
 	 */
-	public Collection<ValueStruct> getPrivateMemberVariables() {
-		return privateMemberVariables.values();
+	public HashMap<String, ValueStruct> getPrivateMemberVariables() {
+		return privateMemberVariables;
+	}
+	
+	/**
+	 * Gives a HashMap of all the public SHARD variables contained
+	 * within the CLAS. Changing this HashMap will cause the underlying
+	 * map that contains the variables and their values to be altered
+	 * as well.
+	 * 
+	 * @return
+	 * A HashMap of String to ValueStruct representing the public
+	 * SHARD variables defined by the CLAS.
+	 */
+	public HashMap<String, ValueStruct> getPublicSharedVariables() {
+		return publicSharedVariables;
+	}
+	
+	/**
+	 * Gives a HashMap of all the private SHARD variables contained
+	 * within the CLAS. Changing this HashMap will cause the underlying
+	 * map that contains the variables and their values to be altered
+	 * as well.
+	 * 
+	 * @return
+	 * A HashMap of String to ValueStruct representing the private
+	 * SHARD variables defined by the CLAS.
+	 */
+	public HashMap<String, ValueStruct> getPrivateSharedVariables() {
+		return privateSharedVariables;
 	}
 	
 	/**

@@ -5,6 +5,12 @@ import java.util.Map.Entry;
 
 import org.objectivelol.vm.ValueStruct;
 
+/**
+ * Class to represent an instantiated object in
+ * Objective-LOL.
+ * 
+ * @author Brett Jia
+ */
 public class LOLObject extends LOLValue {
 
 	private final LOLClass objectType;
@@ -12,12 +18,41 @@ public class LOLObject extends LOLValue {
 	private final HashMap<String, ValueStruct> publicMemberVariables;
 	private final HashMap<String, ValueStruct> privateMemberVariables;
 
+	/**
+	 * Constructor for the LOLObject class.
+	 * 
+	 * @param objectType
+	 * A LOLClass representing the object type that
+	 * this instance is based on.
+	 * 
+	 * @param publicMemberVariables
+	 * A HashMap<String, ValueStruct> holding the
+	 * initial values of the public member variables
+	 * of this object instance. This hashmap is used
+	 * directly and not copied.
+	 * 
+	 * @param privateMemberVariables
+	 * A HashMap<String, ValueStruct> holding the
+	 * initial values of the private member variables
+	 * of this object instance. This hashmap is used
+	 * directly and not copied.
+	 */
 	public LOLObject(LOLClass objectType, HashMap<String, ValueStruct> publicMemberVariables, HashMap<String, ValueStruct> privateMemberVariables) {
 		this.objectType = objectType;
 		this.publicMemberVariables = publicMemberVariables;
 		this.privateMemberVariables = privateMemberVariables;
 	}
 
+	/* (non-Javadoc)
+	 * Casts this LOLObject to the specified type.
+	 * Currently only supports casting to the type
+	 * specified by the LOLClass this object is
+	 * based on. If inheritance is introduced, this
+	 * function would perform all upcasting and
+	 * downcasting operations as necessary.
+	 * 
+	 * @see org.objectivelol.lang.LOLValue#cast(java.lang.String)
+	 */
 	@Override
 	public LOLValue cast(String type) throws LOLError {
 		if(type.equals(objectType.getName())) {
@@ -26,7 +61,7 @@ public class LOLObject extends LOLValue {
 
 		throw new LOLError("Cannot cast to the specified type");
 	}
-
+	
 	@Override
 	public String getTypeName() {
 		return objectType.getName();

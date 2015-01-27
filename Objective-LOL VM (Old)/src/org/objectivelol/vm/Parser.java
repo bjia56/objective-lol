@@ -580,7 +580,7 @@ public class Parser {
 						Long.parseLong(varString);
 					} catch(NumberFormatException e2) {
 						try {
-							varString = varString.toUpperCase();
+							//varString = varString.toUpperCase();
 							if(!varString.startsWith("0X")) {
 								throw new NumberFormatException();
 							}
@@ -628,7 +628,7 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringBefore = expStringBefore.toUpperCase();
+									//expStringBefore = expStringBefore.toUpperCase();
 									if(!expStringBefore.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -662,7 +662,7 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringAfter = expStringAfter.toUpperCase();
+									//expStringAfter = expStringAfter.toUpperCase();
 									if(!expStringAfter.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -708,7 +708,7 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringBefore = expStringBefore.toUpperCase();
+									//expStringBefore = expStringBefore.toUpperCase();
 									if(!expStringBefore.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -742,7 +742,7 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringAfter = expStringAfter.toUpperCase();
+									//expStringAfter = expStringAfter.toUpperCase();
 									if(!expStringAfter.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -793,7 +793,7 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringBefore = expStringBefore.toUpperCase();
+									//expStringBefore = expStringBefore.toUpperCase();
 									if(!expStringBefore.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -827,7 +827,7 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringAfter = expStringAfter.toUpperCase();
+									//expStringAfter = expStringAfter.toUpperCase();
 									if(!expStringAfter.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -873,7 +873,7 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringBefore = expStringBefore.toUpperCase();
+									//expStringBefore = expStringBefore.toUpperCase();
 									if(!expStringBefore.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -907,7 +907,7 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringAfter = expStringAfter.toUpperCase();
+									//expStringAfter = expStringAfter.toUpperCase();
 									if(!expStringAfter.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -967,7 +967,7 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringBefore = expStringBefore.toUpperCase();
+									//expStringBefore = expStringBefore.toUpperCase();
 									if(!expStringBefore.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -1001,7 +1001,7 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringAfter = expStringAfter.toUpperCase();
+									//expStringAfter = expStringAfter.toUpperCase();
 									if(!expStringAfter.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -1052,7 +1052,7 @@ public class Parser {
 								Long.parseLong(expStringBefore);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringBefore = expStringBefore.toUpperCase();
+									//expStringBefore = expStringBefore.toUpperCase();
 									if(!expStringBefore.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -1086,7 +1086,7 @@ public class Parser {
 								Long.parseLong(expStringAfter);
 							} catch(NumberFormatException e2) {
 								try {
-									expStringAfter = expStringAfter.toUpperCase();
+									//expStringAfter = expStringAfter.toUpperCase();
 									if(!expStringAfter.startsWith("0X")) {
 										throw new NumberFormatException();
 									}
@@ -1140,7 +1140,7 @@ public class Parser {
 							Long.parseLong(expStringBefore);
 						} catch(NumberFormatException e2) {
 							try {
-								expStringBefore = expStringBefore.toUpperCase();
+								//expStringBefore = expStringBefore.toUpperCase();
 								if(!expStringBefore.startsWith("0X")) {
 									throw new NumberFormatException();
 								}
@@ -1174,7 +1174,7 @@ public class Parser {
 							Long.parseLong(expStringAfter);
 						} catch(NumberFormatException e2) {
 							try {
-								expStringAfter = expStringAfter.toUpperCase();
+								//expStringAfter = expStringAfter.toUpperCase();
 								if(!expStringAfter.startsWith("0X")) {
 									throw new NumberFormatException();
 								}
@@ -1223,7 +1223,7 @@ public class Parser {
 							Long.parseLong(expStringBefore);
 						} catch(NumberFormatException e2) {
 							try {
-								expStringBefore = expStringBefore.toUpperCase();
+								//expStringBefore = expStringBefore.toUpperCase();
 								if(!expStringBefore.startsWith("0X")) {
 									throw new NumberFormatException();
 								}
@@ -1257,7 +1257,7 @@ public class Parser {
 							Long.parseLong(expStringAfter);
 						} catch(NumberFormatException e2) {
 							try {
-								expStringAfter = expStringAfter.toUpperCase();
+								//expStringAfter = expStringAfter.toUpperCase();
 								if(!expStringAfter.startsWith("0X")) {
 									throw new NumberFormatException();
 								}
@@ -1305,7 +1305,7 @@ public class Parser {
 							Long.parseLong(expStringBefore);
 						} catch(NumberFormatException e2) {
 							try {
-								expStringBefore = expStringBefore.toUpperCase();
+								//expStringBefore = expStringBefore.toUpperCase();
 								if(!expStringBefore.startsWith("0X")) {
 									throw new NumberFormatException();
 								}
@@ -1339,7 +1339,7 @@ public class Parser {
 							Long.parseLong(expStringAfter);
 						} catch(NumberFormatException e2) {
 							try {
-								expStringAfter = expStringAfter.toUpperCase();
+								//expStringAfter = expStringAfter.toUpperCase();
 								if(!expStringAfter.startsWith("0X")) {
 									throw new NumberFormatException();
 								}
@@ -1383,7 +1383,7 @@ public class Parser {
 						Long.parseLong(expString);
 					} catch(NumberFormatException e2) {
 						try {
-							expString = expString.toUpperCase();
+							//expString = expString.toUpperCase();
 							if(!expString.startsWith("0X")) {
 								throw new NumberFormatException();
 							}

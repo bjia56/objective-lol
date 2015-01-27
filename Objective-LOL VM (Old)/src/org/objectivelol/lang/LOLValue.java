@@ -2,31 +2,63 @@ package org.objectivelol.lang;
 
 public abstract class LOLValue {
 
+	/**
+	 * Converts an arbitrary Java object into a LOLValue.
+	 * Conversion is currently limited to Java primitives.
+	 * Any unsupported conversions will throw an exception.
+	 * 
+	 * @param o
+	 * An Object representing the value to convert.
+	 * 
+	 * @return
+	 * A LOLValue representing the result of the conversion.
+	 * The conversion pattern is as follows:
+	 * <li>LOLValues will be returned directly</li>
+	 * <li>Integers and Longs will be converted into
+	 * LOLIntegers</li>
+	 * <li>Doubles and Floats will be converted into
+	 * LOLDoubles</li>
+	 * <li>Booleans will be converted into LOLBooleans</li>
+	 * <li>Characters will be converted into LOLStrings of
+	 * one character long</li>
+	 * <li>Strings will be converted into a LOLInteger,
+	 * LOLDouble, or LOLBoolean, if possible; otherwise, a LOLString will be returned</li> 
+	 */
 	public static LOLValue valueOf(Object o) {
 		if(o instanceof LOLValue) {
+			// no reason to do anything special here, just return
+			// the value
 			return (LOLValue)o;
 		}
 
 		if(o instanceof Integer || o instanceof Long) {
+			// convert Integers and Longs into LOLIntegers
 			return new LOLInteger(((Number)o).longValue());
 		}
 
 		if(o instanceof Double || o instanceof Float) {
+			// convert Doubles and Floats into LOLDoubles
 			return new LOLDouble(((Number)o).doubleValue());
 		}
 
 		if(o instanceof Boolean) {
+			// converts Booleans into the LOLBoolean YEZ and
+			// NO constants
 			return ((Boolean)o ? LOLBoolean.YEZ : LOLBoolean.NO);
 		}
 		
 		if(o instanceof Character) {
+			// converts Characters into a one character String
 			return new LOLString((Character)o + "");
 		}
 
 		if(o instanceof String) {
 			String str = (String)o;
 			
+			// Strings can be converted into a wide variety of LOLValues,
+			// depending on the contents of the String
 			try {
+				// try to convert the String into a Long
 				return new LOLInteger(Long.parseLong(str));
 			} catch(NumberFormatException e) {
 				try {

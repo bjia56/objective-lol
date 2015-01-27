@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -36,6 +37,11 @@ public class SourceParser {
 			throw new RuntimeException("An unexpected IO error has occurred");
 		}
 	}
+	
+	public SourceParser(String name, Reader source) {
+		reader = new BufferedReader(source);
+		fileName = name;
+	}
 
 	public LOLSource parse() throws LOLError {
 		try {
@@ -48,7 +54,7 @@ public class SourceParser {
 
 			while((line = reader.readLine()) != null) {
 				lineNumber++;
-				line = line.replaceAll("\\s+", " ").trim().toUpperCase();
+				line = line.replaceAll("\\s+", " ").trim();//.toUpperCase();
 
 				if(line.equals("")) {
 					continue;
@@ -217,7 +223,7 @@ public class SourceParser {
 						boolean first = true;
 						while((line = reader.readLine()) != null && !line.startsWith("KTHXBAI")) {
 							lineNumber++;
-							line = line.replaceAll("\\s+", " ").trim().toUpperCase();
+							line = line.replaceAll("\\s+", " ").trim();//.toUpperCase();
 
 							if(line.equals("")) {
 								continue;
@@ -282,7 +288,7 @@ public class SourceParser {
 
 					while((line = reader.readLine()) != null && !line.startsWith("KTHXBAI")) {
 						lineNumber++;
-						line = line.replaceAll("\\s+", " ").trim().toUpperCase();
+						line = line.replaceAll("\\s+", " ").trim();//.toUpperCase();
 
 						if(line.equals("")) {
 							continue;
@@ -486,7 +492,7 @@ public class SourceParser {
 							boolean first = true;
 							while((line = reader.readLine()) != null) {
 								lineNumber++;
-								line = line.replaceAll("\\s+", " ").trim().toUpperCase();
+								line = line.replaceAll("\\s+", " ").trim();//.toUpperCase();
 
 								if(line.equals("")) {
 									continue;
