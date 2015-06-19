@@ -2,60 +2,65 @@
 (1) Introduction
 (2) Language Fundamentals
 	(2.a) Lexical Conventions
-		(2.a.1) AN
-		(2.a.2) AS
-		(2.a.3) BIGGR THAN
-		(2.a.4) BOOL
-		(2.a.5) BTW
-		(2.a.6) CLAS
-		(2.a.7) DIS TEH
-		(2.a.8) DIVIDEZ
-		(2.a.9) DUBBLE
-		(2.a.10) EVRYONE
-		(2.a.11) FUNCSHUN
-		(2.a.12) GIVEZ
-		(2.a.13) GIVEZ UP
-		(2.a.14) HAI ME
-		(2.a.15) I CAN HAS
-		(2.a.16) I HAS A
-		(2.a.17) IN
-		(2.a.18) INTEGR
-		(2.a.19) ITZ
-		(2.a.20) IZ
-		(2.a.21) KK
-		(2.a.22) KTHX
-		(2.a.23) KTHXBAI
-		(2.a.24) LES
-		(2.a.25) LOCKD
-		(2.a.26) MAHSELF
-		(2.a.27) MOAR
-		(2.a.28) NATIV
-		(2.a.29) NO
-		(2.a.30) NOPE
-		(2.a.31) NOTHIN
-		(2.a.32) NUMBR
-		(2.a.33) OR
-		(2.a.34) SAEM AS
-		(2.a.35) SHARD
-		(2.a.36) SMALLR THAN
-		(2.a.37) STRIN
-		(2.a.38) TEH
-		(2.a.39) TIEMZ
-		(2.a.40) VARIABLE
-		(2.a.41) WHILE
-		(2.a.42) WIT
-		(2.a.43) XOR
-		(2.a.44) YEZ
-	(2.b) Values and Types
-	(2.c) Variables
-	(2.d) Casting
-	(2.e) Statements and Expressions
-	(2.f) Scope and Visibility
-	(2.g) Error Handling
-	(2.h) Functions
-	(2.i) Classes
-	(2.j) Memory Management
-	(2.k) Native Code
+	(2.b) Keywords
+		(2.b.1) AN
+		(2.b.2) AS
+		(2.b.3) BIGGR THAN
+		(2.b.4) BOOL
+		(2.b.5) BTW
+		(2.b.6) CLAS
+		(2.b.7) DELETE
+		(2.b.8) DIS TEH
+		(2.b.9) DIVIDEZ
+		(2.b.10) DUBBLE
+		(2.b.11) EVRYONE
+		(2.b.12) FUNCSHUN
+		(2.b.13) GIVEZ
+		(2.b.14) GIVEZ UP
+		(2.b.15) HAI ME
+		(2.b.16) I CAN HAS
+		(2.b.17) I HAS A
+		(2.b.18) IN
+		(2.b.19) INTEGR
+		(2.b.20) ITZ
+		(2.b.21) IZ
+		(2.b.22) KITTEH OF
+		(2.b.23) KK
+		(2.b.24) KTHX
+		(2.b.25) KTHXBAI
+		(2.b.26) LES
+		(2.b.27) LOCKD
+		(2.b.28) MAHSELF
+		(2.b.29) MOAR
+		(2.b.30) NATIV
+		(2.b.31) NO
+		(2.b.32) NOPE
+		(2.b.33) NOTHIN
+		(2.b.34) NUMBR
+		(2.b.35) OPERATR
+		(2.b.36) OR
+		(2.b.37) SAEM AS
+		(2.b.38) SECRET
+		(2.b.39) SHARD
+		(2.b.40) SMALLR THAN
+		(2.b.41) STRIN
+		(2.b.42) TEH
+		(2.b.43) TIEMZ
+		(2.b.44) VARIABLE
+		(2.b.45) WHILE
+		(2.b.46) WIT
+		(2.b.47) XOR
+		(2.b.48) YEZ
+	(2.c) Values and Types
+	(2.d) Variables
+	(2.e) Casting
+	(2.f) Statements and Expressions
+	(2.g) Scope and Visibility
+	(2.h) Error Handling
+	(2.i) Functions
+	(2.j) Classes
+	(2.k) Memory Management
+	(2.l) Native Code
 (3) Standard Libraries
 	(3.a) STDLIB
 	(3.b) STDIO
