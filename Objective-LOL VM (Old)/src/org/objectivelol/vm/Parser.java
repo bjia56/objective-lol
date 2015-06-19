@@ -238,11 +238,11 @@ public class Parser {
 			if(tokens.size() == 1) {
 				throw new LOLError("Expected expression after GIVEZ");
 			}
-			
+
 			if(tokens.size() == 2 && tokens.get(1).equals("UP")) {
 				return new Expression.Return(null);
 			}
-			
+
 			if(tokens.contains("ITZ")) {
 				throw new LOLError("GIVEZ line cannot include an assignment");
 			}
