@@ -118,7 +118,6 @@ A class can inherit from a parent class with the `KITTEH OF` expression:
 
     HAI ME TEH CLAS KITTEN TEH KITTEH OF CAT
 
-
 #### (2.b.8) DIS TEH
 Used to declare a variable or a function with class scope. Any declarations with `DIS TEH` cannot be enclosed inside a function or outside of a class. Function declarations with `DIS TEH` must be closed by `KTHX`.
 

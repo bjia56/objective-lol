@@ -33,24 +33,25 @@
 		(2.b.28) MAHSELF
 		(2.b.29) MOAR
 		(2.b.30) NATIV
-		(2.b.31) NO
-		(2.b.32) NOPE
-		(2.b.33) NOTHIN
-		(2.b.34) NUMBR
-		(2.b.35) OPERATR
-		(2.b.36) OR
-		(2.b.37) SAEM AS
-		(2.b.38) SECRET
-		(2.b.39) SHARD
-		(2.b.40) SMALLR THAN
-		(2.b.41) STRIN
-		(2.b.42) TEH
-		(2.b.43) TIEMZ
-		(2.b.44) VARIABLE
-		(2.b.45) WHILE
-		(2.b.46) WIT
-		(2.b.47) XOR
-		(2.b.48) YEZ
+		(2.b.31) NEW
+		(2.b.32) NO
+		(2.b.33) NOPE
+		(2.b.34) NOTHIN
+		(2.b.35) NUMBR
+		(2.b.36) OPERATR
+		(2.b.37) OR
+		(2.b.38) SAEM AS
+		(2.b.39) SECRET
+		(2.b.40) SHARD
+		(2.b.41) SMALLR THAN
+		(2.b.42) STRIN
+		(2.b.43) TEH
+		(2.b.44) TIEMZ
+		(2.b.45) VARIABLE
+		(2.b.46) WHILE
+		(2.b.47) WIT
+		(2.b.48) XOR
+		(2.b.49) YEZ
 	(2.c) Values and Types
 	(2.d) Variables
 	(2.e) Casting
