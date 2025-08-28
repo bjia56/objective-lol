@@ -1,0 +1,36 @@
+BTW Precedence override test with parentheses
+
+HAI ME TEH FUNCSHUN MAIN
+    VISIBLEZ WIT "=== Precedence Override Test ==="
+
+    BTW Test cases to verify precedence override
+    VISIBLEZ WIT "Without parentheses (normal precedence):"
+    VISIBLE WIT "2 + 3 * 4 = "
+    VISIBLEZ WIT 2 MOAR 3 TIEMZ 4  BTW Should be 14 (3*4 + 2)
+
+    VISIBLE WIT "10 - 2 * 3 = "
+    VISIBLEZ WIT 10 LES 2 TIEMZ 3  BTW Should be 4 (10 - 6)
+
+    VISIBLEZ WIT "With parentheses (override precedence):"
+    VISIBLE WIT "(2 + 3) * 4 = "
+    VISIBLEZ WIT (2 MOAR 3) TIEMZ 4  BTW Should be 20 (5 * 4)
+
+    VISIBLE WIT "(10 - 2) * 3 = "
+    VISIBLEZ WIT (10 LES 2) TIEMZ 3  BTW Should be 24 (8 * 3)
+
+    BTW Complex precedence tests
+    VISIBLEZ WIT "Complex precedence tests:"
+    VISIBLE WIT "2 * 3 + 4 * 5 = "
+    VISIBLEZ WIT 2 TIEMZ 3 MOAR 4 TIEMZ 5  BTW Should be 26 (6 + 20)
+
+    VISIBLE WIT "(2 * 3 + 4) * 5 = "
+    VISIBLEZ WIT (2 TIEMZ 3 MOAR 4) TIEMZ 5  BTW Should be 50 (10 * 5)
+
+    VISIBLE WIT "2 * (3 + 4 * 5) = "
+    VISIBLEZ WIT 2 TIEMZ (3 MOAR 4 TIEMZ 5)  BTW Should be 46 (2 * 23)
+
+    VISIBLE WIT "(2 * 3) + (4 * 5) = "
+    VISIBLEZ WIT (2 TIEMZ 3) MOAR (4 TIEMZ 5)  BTW Should be 26 (6 + 20)
+
+    VISIBLEZ WIT "=== Precedence Override Test Complete ==="
+KTHXBAI

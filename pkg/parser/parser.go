@@ -936,6 +936,16 @@ func (p *Parser) parsePrimaryExpression() ast.Node {
 	case NEW:
 		return p.parseObjectInstantiation()
 
+	case LPAREN:
+		// Parse parenthesized expression
+		p.nextToken() // consume '('
+		expr := p.parseExpression()
+		if !p.expectPeek(RPAREN) {
+			p.addError(fmt.Sprintf("expected ')' after expression, got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+			return nil
+		}
+		return expr
+
 	default:
 		p.addError(fmt.Sprintf("unexpected token in expression: %v at line %d", p.currentToken.Type, p.currentToken.Line))
 		return nil

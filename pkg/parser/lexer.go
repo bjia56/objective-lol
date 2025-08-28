@@ -75,6 +75,8 @@ const (
 
 	// Punctuation
 	QUESTION
+	LPAREN  // (
+	RPAREN  // )
 
 	// Special values
 	YEZ
@@ -193,6 +195,10 @@ func (t TokenType) String() string {
 		return "STRIN"
 	case QUESTION:
 		return "?"
+	case LPAREN:
+		return "("
+	case RPAREN:
+		return ")"
 	case YEZ:
 		return "YEZ"
 	case NO:
@@ -418,6 +424,12 @@ func (l *Lexer) NextToken() (Token, error) {
 		}
 	case '?':
 		tok = Token{Type: QUESTION, Literal: string(l.ch), Line: l.line, Column: l.column, Position: l.position}
+		l.readChar()
+	case '(':
+		tok = Token{Type: LPAREN, Literal: string(l.ch), Line: l.line, Column: l.column, Position: l.position}
+		l.readChar()
+	case ')':
+		tok = Token{Type: RPAREN, Literal: string(l.ch), Line: l.line, Column: l.column, Position: l.position}
 		l.readChar()
 	case '"':
 		str, err := l.readString()

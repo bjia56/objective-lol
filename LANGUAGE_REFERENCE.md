@@ -273,6 +273,43 @@ I HAS A VARIABLE RESULT1 TEH BOOL ITZ X AN Y  BTW NO
 I HAS A VARIABLE RESULT2 TEH BOOL ITZ X OR Y  BTW YEZ
 ```
 
+### Expression Grouping (Parentheses)
+
+Parentheses `()` can be used to override operator precedence and group sub-expressions:
+
+| Usage | Example | Description |
+|-------|---------|-------------|
+| `(expression)` | `(5 MOAR 3) TIEMZ 2` | Groups sub-expressions |
+| Nested parentheses | `((2 MOAR 3) LES 1)` | Multiple levels of grouping |
+
+#### Operator Precedence (highest to lowest)
+
+1. **Parentheses** - `()`
+2. **Type Casting** - `AS`
+3. **Multiplication/Division** - `TIEMZ`, `DIVIDEZ`
+4. **Addition/Subtraction** - `MOAR`, `LES`
+5. **Comparisons** - `BIGGR THAN`, `SMALLR THAN`
+6. **Equality** - `SAEM AS`
+7. **Logical AND** - `AN`
+8. **Logical OR** - `OR`
+
+```lol
+BTW Without parentheses - follows precedence rules
+I HAS A VARIABLE RESULT1 TEH INTEGR ITZ 2 MOAR 3 TIEMZ 4  BTW 14 (3*4 + 2)
+
+BTW With parentheses - override precedence
+I HAS A VARIABLE RESULT2 TEH INTEGR ITZ (2 MOAR 3) TIEMZ 4  BTW 20 (5 * 4)
+
+BTW Complex expressions with nested parentheses
+I HAS A VARIABLE RESULT3 TEH INTEGR ITZ ((2 MOAR 3) TIEMZ (6 LES 2))  BTW 20 (5 * 4)
+
+BTW Parentheses with logical operators
+I HAS A VARIABLE A TEH INTEGR ITZ 5
+I HAS A VARIABLE B TEH INTEGR ITZ 3
+I HAS A VARIABLE C TEH INTEGR ITZ 10
+I HAS A VARIABLE CONDITION TEH BOOL ITZ (A BIGGR THAN B) AN (C BIGGR THAN A)  BTW YEZ
+```
+
 ---
 
 ## Control Flow
@@ -968,6 +1005,7 @@ KTHXBAI
 
 #### Special
 - `?` - Question mark (used in conditionals)
+- `(` `)` - Parentheses (expression grouping)
 
 ### Built-in Functions
 

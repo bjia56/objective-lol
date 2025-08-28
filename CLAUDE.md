@@ -63,6 +63,7 @@ The interpreter supports:
 - Classes with inheritance (KITTEH OF), visibility modifiers (EVRYONE/MAHSELF)
 - Control flow (IZ/NOPE conditionals, WHILE loops)
 - Arithmetic, comparison, and logical operators
+- Parentheses for expression grouping and precedence override
 - Type casting with AS operator
 - Object instantiation and method calls
 
@@ -72,6 +73,23 @@ Uses recursive descent parsing with:
 - Parser maintains current/peek tokens for lookahead
 - Error collection system for parse errors
 - Case-insensitive keyword handling (converted to uppercase internally)
+- Expression parsing with operator precedence and parentheses support
+
+#### Expression Parsing and Operator Precedence
+The parser implements a precedence-climbing algorithm with the following precedence levels (lowest to highest):
+1. **OR** - Logical OR operations
+2. **AN** - Logical AND operations  
+3. **SAEM AS** - Equality comparisons
+4. **BIGGR THAN, SMALLR THAN** - Relational comparisons
+5. **MOAR, LES** - Addition and subtraction
+6. **TIEMZ, DIVIDEZ** - Multiplication and division
+7. **AS** - Type casting
+8. **Primary expressions** - Literals, identifiers, function calls, parenthesized expressions
+
+Parentheses `()` can be used to override operator precedence and group sub-expressions:
+- `2 TIEMZ 3 MOAR 4` evaluates to `10` (multiplication first)
+- `2 TIEMZ (3 MOAR 4)` evaluates to `14` (parentheses override precedence)
+- Nested parentheses are fully supported: `((2 MOAR 3) TIEMZ 4)`
 
 ### Interpreter Architecture
 Implements visitor pattern:
