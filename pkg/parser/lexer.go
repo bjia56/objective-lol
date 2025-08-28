@@ -52,6 +52,7 @@ const (
 	AS
 	BTW
 	I
+	CAN
 	HAS
 	A
 	DO
@@ -161,6 +162,8 @@ func (t TokenType) String() string {
 		return "BTW"
 	case I:
 		return "I"
+	case CAN:
+		return "CAN"
 	case HAS:
 		return "HAS"
 	case A:
@@ -286,6 +289,7 @@ var keywords = map[string]TokenType{
 	"YEZ":      YEZ,
 	"NO":       NO,
 	"I":        I,
+	"CAN":      CAN,
 	"HAS":      HAS,
 	"A":        A,
 	"DO":       DO,

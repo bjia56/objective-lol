@@ -8,7 +8,6 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/interpreter"
 	"github.com/bjia56/objective-lol/pkg/parser"
-	"github.com/bjia56/objective-lol/pkg/stdlib"
 )
 
 func main() {
@@ -22,10 +21,8 @@ func main() {
 	// Create interpreter
 	interp := interpreter.NewInterpreter()
 
-	// Register standard library functions
-	stdlib.RegisterSTDIO(interp.GetRuntime())
-	stdlib.RegisterMATH(interp.GetRuntime())
-	stdlib.RegisterTIEM(interp.GetRuntime())
+	// Note: Standard library functions are now loaded on-demand via import statements
+	// e.g., "I CAN HAS STDIO?" will load STDIO functions
 
 	// Execute the file
 	if err := executeFile(interp, filename); err != nil {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/bjia56/objective-lol/pkg/stdlib"
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
@@ -34,7 +35,17 @@ func (i *Interpreter) Interpret(program *ast.ProgramNode) error {
 
 // VisitProgram executes the entire program
 func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
-	// First pass: declare all functions and classes
+	// First pass: process import statements
+	for _, decl := range node.Declarations {
+		switch n := decl.(type) {
+		case *ast.ImportStatementNode:
+			if _, err := i.VisitImportStatement(n); err != nil {
+				return types.NOTHIN, err
+			}
+		}
+	}
+
+	// Second pass: declare all functions and classes
 	for _, decl := range node.Declarations {
 		switch n := decl.(type) {
 		case *ast.FunctionDeclarationNode:
@@ -48,7 +59,7 @@ func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
 		}
 	}
 
-	// Second pass: execute variable declarations and other statements
+	// Third pass: execute variable declarations and other statements
 	for _, decl := range node.Declarations {
 		switch n := decl.(type) {
 		case *ast.VariableDeclarationNode:
@@ -61,6 +72,25 @@ func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
 	// Look for and execute MAIN function
 	if mainFunc, err := i.environment.GetFunction("MAIN"); err == nil {
 		return i.callFunction(mainFunc, []types.Value{})
+	}
+
+	return types.NOTHIN, nil
+}
+
+// VisitImportStatement handles module import statements
+func (i *Interpreter) VisitImportStatement(node *ast.ImportStatementNode) (types.Value, error) {
+	moduleName := strings.ToUpper(node.ModuleName)
+
+	// Load the requested module
+	switch moduleName {
+	case "STDIO":
+		stdlib.RegisterSTDIO(i.runtime)
+	case "MATH":
+		stdlib.RegisterMATH(i.runtime)
+	case "TIEM":
+		stdlib.RegisterTIEM(i.runtime)
+	default:
+		return types.NOTHIN, fmt.Errorf("unknown module: %s", moduleName)
 	}
 
 	return types.NOTHIN, nil

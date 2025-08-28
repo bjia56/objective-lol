@@ -79,9 +79,23 @@ func (p *Parser) ParseProgram() *ast.ProgramNode {
 	p.skipNewlines() // skip any leading newlines
 
 	for !p.currentTokenIs(EOF) {
-		decl := p.parseDeclaration()
-		if decl != nil {
-			program.Declarations = append(program.Declarations, decl)
+		var node ast.Node
+		
+		// Check if this is an import statement or a regular declaration
+		if p.currentTokenIs(I) && p.peekTokenIs(CAN) {
+			// This is an import statement
+			node = p.parseImportStatement()
+		} else if p.currentTokenIs(HAI) {
+			// This is a regular declaration
+			node = p.parseDeclaration()
+		} else {
+			p.addError(fmt.Sprintf("expected 'HAI' for declaration or 'I CAN HAS' for import, got %v at line %d", p.currentToken.Type, p.currentToken.Line))
+			p.nextToken()
+			continue
+		}
+		
+		if node != nil {
+			program.Declarations = append(program.Declarations, node)
 		}
 		p.nextToken()
 		p.skipNewlines() // skip newlines between declarations
@@ -211,6 +225,36 @@ func (p *Parser) parseIHasAVariableDeclaration() *ast.VariableDeclarationNode {
 		p.nextToken() // consume ITZ
 		p.nextToken() // move to expression
 		node.Value = p.parseExpression()
+	}
+
+	return node
+}
+
+// parseImportStatement parses "I CAN HAS module?" import statements
+func (p *Parser) parseImportStatement() *ast.ImportStatementNode {
+	node := &ast.ImportStatementNode{}
+
+	// Expect "I CAN HAS"
+	if !p.expectPeek(CAN) {
+		p.addError(fmt.Sprintf("expected 'CAN', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+		return nil
+	}
+	if !p.expectPeek(HAS) {
+		p.addError(fmt.Sprintf("expected 'HAS', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+		return nil
+	}
+
+	// Expect module name (identifier)
+	if !p.expectPeek(IDENTIFIER) {
+		p.addError(fmt.Sprintf("expected module name, got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+		return nil
+	}
+	node.ModuleName = p.currentToken.Literal
+
+	// Expect '?' at the end
+	if !p.expectPeek(QUESTION) {
+		p.addError(fmt.Sprintf("expected '?' after module name, got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+		return nil
 	}
 
 	return node
@@ -552,7 +596,12 @@ func (p *Parser) parseStatement() ast.Node {
 	case NEWLINE:
 		return nil // empty statement
 	case I:
-		return p.parseIHasAVariableDeclaration()
+		// Check if this is "I CAN HAS" (import) or "I HAS A" (variable)
+		if p.peekTokenIs(CAN) {
+			return p.parseImportStatement()
+		} else {
+			return p.parseIHasAVariableDeclaration()
+		}
 	case IZ:
 		return p.parseIfStatement()
 	case WHILE:

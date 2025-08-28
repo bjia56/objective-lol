@@ -13,6 +13,7 @@ type Node interface {
 // Visitor defines the visitor pattern for AST traversal
 type Visitor interface {
 	VisitProgram(node *ProgramNode) (types.Value, error)
+	VisitImportStatement(node *ImportStatementNode) (types.Value, error)
 	VisitVariableDeclaration(node *VariableDeclarationNode) (types.Value, error)
 	VisitFunctionDeclaration(node *FunctionDeclarationNode) (types.Value, error)
 	VisitClassDeclaration(node *ClassDeclarationNode) (types.Value, error)
@@ -38,6 +39,15 @@ type ProgramNode struct {
 
 func (n *ProgramNode) Accept(visitor Visitor) (types.Value, error) {
 	return visitor.VisitProgram(n)
+}
+
+// ImportStatementNode represents module import statements
+type ImportStatementNode struct {
+	ModuleName string
+}
+
+func (n *ImportStatementNode) Accept(visitor Visitor) (types.Value, error) {
+	return visitor.VisitImportStatement(n)
 }
 
 // VariableDeclarationNode represents variable declarations
