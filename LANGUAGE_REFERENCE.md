@@ -479,6 +479,43 @@ HAI ME TEH FUNCSHUN FACTORIAL TEH INTEGR WIT N TEH INTEGR
 KTHXBAI
 ```
 
+### Function Scoping and Environment
+
+Functions in Objective-LOL follow **lexical scoping** similar to bash functions:
+
+#### Variable and Function Lookup
+
+- Functions can access variables and functions from their **calling context**
+- Lookup walks up the parent environment chain: current scope → caller scope → caller's caller → etc.
+- Each function call creates a new environment with the calling environment as its parent
+
+#### Module Import Scoping
+
+- **Module imports are function-scoped** - they only affect the function where they appear
+- Functions inherit imports from their calling context through the parent chain
+- No import leakage between sibling functions
+
+```lol
+I HAS A VARIABLE GLOBAL_VAR TEH STRIN ITZ "Available everywhere"
+I CAN HAS STDIO?  BTW Global import
+
+HAI ME TEH FUNCSHUN OUTER
+    I HAS A VARIABLE LOCAL_VAR TEH STRIN ITZ "Available to inner functions"
+    I CAN HAS MATH?  BTW Local import
+    
+    HAI ME TEH FUNCSHUN INNER
+        BTW Can access: GLOBAL_VAR, LOCAL_VAR, STDIO, MATH
+        VISIBLEZ WIT GLOBAL_VAR
+        VISIBLEZ WIT LOCAL_VAR
+        I HAS A VARIABLE RESULT TEH DUBBLE ITZ ABS WIT -42
+    KTHXBAI
+    
+    INNER
+KTHXBAI
+```
+
+This scoping behavior enables powerful composition patterns while maintaining clear import boundaries.
+
 ---
 
 ## Object-Oriented Programming
@@ -619,6 +656,63 @@ I HAS A VARIABLE GREETING TEH STRIN ITZ PERSON1 DO GET_NAME
 ---
 
 ## Standard Library
+
+### Module Import System
+
+Standard library functions must be explicitly imported using the `I CAN HAS <module>?` syntax before they can be used.
+
+#### Import Syntax
+
+```lol
+I CAN HAS STDIO?    BTW Import I/O functions
+I CAN HAS MATH?     BTW Import mathematical functions  
+I CAN HAS TIEM?     BTW Import time functions
+```
+
+#### Function-Scoped Imports
+
+**Imports are scoped to the function where they appear.** This means:
+
+- Imports inside a function are only available within that function
+- Functions can access imports from their calling context (parent scopes)
+- Each function maintains its own import scope
+- No import leakage between sibling functions
+
+```lol
+BTW Global import - available everywhere
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN OUTER_FUNCTION
+    I CAN HAS MATH?  BTW Math available in OUTER_FUNCTION and its callees
+    
+    HAI ME TEH FUNCSHUN INNER_FUNCTION
+        BTW Can access STDIO (from global) and MATH (from OUTER_FUNCTION)
+        VISIBLEZ WIT "Hello from inner function"
+        I HAS A VARIABLE RESULT TEH DUBBLE ITZ ABS WIT -42.5
+    KTHXBAI
+    
+    INNER_FUNCTION
+KTHXBAI
+
+HAI ME TEH FUNCSHUN SEPARATE_FUNCTION  
+    BTW Can access STDIO (global) but NOT MATH (not imported here)
+    VISIBLEZ WIT "This works"
+    BTW I HAS A VARIABLE X TEH DUBBLE ITZ ABS WIT -5  BTW This would fail!
+KTHXBAI
+```
+
+**Scoping Rules:**
+
+1. **Lexical Scoping**: Functions inherit imports from their calling context
+2. **No Leakage**: Imports in one function don't affect sibling functions  
+3. **Parent Access**: Child functions can access parent function imports
+4. **Similar to Bash**: Variable and function lookup walks up the parent environment chain
+
+#### Available Modules
+
+- **STDIO**: I/O functions (`VISIBLE`, `VISIBLEZ`, `GIMME`)
+- **MATH**: Mathematical functions (`ABS`, `MAX`, `MIN`, `SQRT`, `POW`, `RANDOM`, `SIN`, `COS`, etc.)
+- **TIEM**: Time functions (`NOW`, `YEAR`, `MONTH`, `DAY`, `HOUR`, `MINUTE`, `SECOND`, etc.)
 
 ### I/O Functions (STDIO)
 
