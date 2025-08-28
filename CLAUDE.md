@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Objective-LOL is a programming language interpreter written in Go that implements a humorous, LOLCODE-inspired language. The codebase follows a traditional interpreter architecture with lexer, parser, AST, and tree-walking interpreter components.
+Objective-LOL is a programming language interpreter written in Go that implements a LOLCODE-inspired language with modern language features. The codebase follows a traditional interpreter architecture with lexer, parser, AST, and tree-walking interpreter components.
 
 ## Build and Development Commands
 

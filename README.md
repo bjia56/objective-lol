@@ -1,6 +1,6 @@
 # Objective-LOL
 
-A programming language interpreter inspired by LOLCODE, implemented in Go. Objective-LOL combines the playful syntax of LOLCODE with modern language features including object-oriented programming, a rich type system, and a comprehensive standard library.
+A programming language interpreter inspired by LOLCODE, implemented in Go. Objective-LOL combines the syntax of LOLCODE with modern language features including object-oriented programming, a rich type system, and a comprehensive standard library.
 
 ## Features
 
@@ -220,4 +220,4 @@ This project follows standard Go conventions. Key guidelines:
 
 ## License
 
-See the repository for license information.
+MIT
