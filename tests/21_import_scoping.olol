@@ -1,0 +1,53 @@
+BTW Test module import scoping - imports are scoped to their function
+BTW This test demonstrates function-scoped imports
+
+BTW Function that imports STDIO locally
+HAI ME TEH FUNCSHUN TEST_LOCAL_STDIO_IMPORT
+    I CAN HAS STDIO?
+    VISIBLEZ WIT "STDIO imported and used locally in this function"
+KTHXBAI
+
+BTW Function that imports MATH locally
+HAI ME TEH FUNCSHUN TEST_LOCAL_MATH_IMPORT
+    I CAN HAS MATH?
+    I HAS A VARIABLE RESULT TEH DUBBLE ITZ ABS WIT -42.5
+    BTW Note: This function cannot use VISIBLEZ because STDIO is not imported here
+    BTW VISIBLEZ WIT "This would fail - no STDIO here"
+KTHXBAI
+
+BTW Function that imports both STDIO and TIEM locally
+HAI ME TEH FUNCSHUN TEST_MULTIPLE_LOCAL_IMPORTS
+    I CAN HAS STDIO?
+    I CAN HAS TIEM?
+    VISIBLEZ WIT "Testing multiple local imports:"
+    I HAS A VARIABLE CURRENT_YEAR TEH INTEGR ITZ YEAR
+    VISIBLE WIT "Current year: "
+    VISIBLEZ WIT CURRENT_YEAR
+KTHXBAI
+
+BTW Function that has no imports - cannot use any stdlib functions
+HAI ME TEH FUNCSHUN TEST_NO_IMPORTS
+    BTW Cannot use VISIBLEZ, ABS, YEAR, etc. without importing
+    BTW VISIBLEZ WIT "This would fail"
+    I HAS A VARIABLE X TEH INTEGR ITZ 42
+    BTW Can only use basic language features
+KTHXBAI
+
+BTW Main function with its own import
+HAI ME TEH FUNCSHUN MAIN
+    I CAN HAS STDIO?
+    VISIBLEZ WIT "=== Function-Scoped Import Test ==="
+
+    BTW Each function has its own import scope
+    TEST_LOCAL_STDIO_IMPORT
+    TEST_LOCAL_MATH_IMPORT
+    TEST_MULTIPLE_LOCAL_IMPORTS
+    TEST_NO_IMPORTS
+
+    BTW MAIN can only use what it imported (STDIO in this case)
+    VISIBLEZ WIT "MAIN can use STDIO because it imported it"
+    BTW But MAIN cannot use MATH functions without importing
+    BTW I HAS A VARIABLE MATH_RESULT TEH DUBBLE ITZ ABS WIT -5.0  BTW This would fail
+
+    VISIBLEZ WIT "=== Function-scoped imports working correctly ==="
+KTHXBAI

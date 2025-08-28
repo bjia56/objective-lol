@@ -10,8 +10,8 @@ import (
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
-// RegisterSTDIO registers all STDIO functions with the runtime environment
-func RegisterSTDIO(runtime *environment.RuntimeEnvironment) {
+// RegisterSTDIOInEnv registers all STDIO functions directly in the given environment
+func RegisterSTDIOInEnv(env *environment.Environment) {
 	// VISIBLE function - prints value to stdout
 	visible := &environment.Function{
 		Name:       "VISIBLE",
@@ -22,7 +22,7 @@ func RegisterSTDIO(runtime *environment.RuntimeEnvironment) {
 			return types.NOTHIN, nil
 		},
 	}
-	runtime.RegisterNative("VISIBLE", visible)
+	env.DefineFunction(visible)
 
 	// VISIBLEZ function - prints value with newline
 	visiblez := &environment.Function{
@@ -34,7 +34,7 @@ func RegisterSTDIO(runtime *environment.RuntimeEnvironment) {
 			return types.NOTHIN, nil
 		},
 	}
-	runtime.RegisterNative("VISIBLEZ", visiblez)
+	env.DefineFunction(visiblez)
 
 	// GIMME function - reads line from stdin
 	gimme := &environment.Function{
@@ -56,5 +56,5 @@ func RegisterSTDIO(runtime *environment.RuntimeEnvironment) {
 			return types.StringValue(line), nil
 		},
 	}
-	runtime.RegisterNative("GIMME", gimme)
+	env.DefineFunction(gimme)
 }

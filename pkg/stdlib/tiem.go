@@ -8,9 +8,9 @@ import (
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
-// RegisterTIEM registers all TIEM (time) functions with the runtime environment
-func RegisterTIEM(runtime *environment.RuntimeEnvironment) {
-	// NOW function - current Unix timestamp
+// RegisterTIEMInEnv registers all TIEM functions directly in the given environment
+func RegisterTIEMInEnv(env *environment.Environment) {
+	// NOW function - current timestamp in seconds
 	now := &environment.Function{
 		Name:       "NOW",
 		ReturnType: "INTEGR",
@@ -20,9 +20,9 @@ func RegisterTIEM(runtime *environment.RuntimeEnvironment) {
 			return types.IntegerValue(time.Now().Unix()), nil
 		},
 	}
-	runtime.RegisterNative("NOW", now)
+	env.DefineFunction(now)
 
-	// MILLIS function - current Unix timestamp in milliseconds
+	// MILLIS function - current timestamp in milliseconds
 	millis := &environment.Function{
 		Name:       "MILLIS",
 		ReturnType: "INTEGR",
@@ -32,31 +32,27 @@ func RegisterTIEM(runtime *environment.RuntimeEnvironment) {
 			return types.IntegerValue(time.Now().UnixMilli()), nil
 		},
 	}
-	runtime.RegisterNative("MILLIS", millis)
+	env.DefineFunction(millis)
 
 	// SLEEP function - sleep for specified seconds
 	sleep := &environment.Function{
 		Name:     "SLEEP",
 		IsNative: true,
 		Parameters: []environment.Parameter{
-			{Name: "duration", Type: "DUBBLE"},
+			{Name: "seconds", Type: "INTEGR"},
 		},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
-			duration := args[0]
+			seconds := args[0]
 
-			if doubleVal, ok := duration.(types.DoubleValue); ok {
-				if float64(doubleVal) < 0 {
-					return types.NOTHIN, fmt.Errorf("SLEEP: negative duration")
-				}
-				duration := time.Duration(float64(doubleVal) * float64(time.Second))
-				time.Sleep(duration)
+			if secondsVal, ok := seconds.(types.IntegerValue); ok {
+				time.Sleep(time.Duration(secondsVal) * time.Second)
 				return types.NOTHIN, nil
 			}
 
-			return types.NOTHIN, fmt.Errorf("SLEEP: invalid numeric type")
+			return types.NOTHIN, fmt.Errorf("SLEEP: invalid argument type")
 		},
 	}
-	runtime.RegisterNative("SLEEP", sleep)
+	env.DefineFunction(sleep)
 
 	// YEAR function - current year
 	year := &environment.Function{
@@ -65,10 +61,10 @@ func RegisterTIEM(runtime *environment.RuntimeEnvironment) {
 		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(int64(time.Now().Year())), nil
+			return types.IntegerValue(time.Now().Year()), nil
 		},
 	}
-	runtime.RegisterNative("YEAR", year)
+	env.DefineFunction(year)
 
 	// MONTH function - current month (1-12)
 	month := &environment.Function{
@@ -77,10 +73,10 @@ func RegisterTIEM(runtime *environment.RuntimeEnvironment) {
 		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(int64(time.Now().Month())), nil
+			return types.IntegerValue(int(time.Now().Month())), nil
 		},
 	}
-	runtime.RegisterNative("MONTH", month)
+	env.DefineFunction(month)
 
 	// DAY function - current day of month
 	day := &environment.Function{
@@ -89,10 +85,10 @@ func RegisterTIEM(runtime *environment.RuntimeEnvironment) {
 		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(int64(time.Now().Day())), nil
+			return types.IntegerValue(time.Now().Day()), nil
 		},
 	}
-	runtime.RegisterNative("DAY", day)
+	env.DefineFunction(day)
 
 	// HOUR function - current hour (0-23)
 	hour := &environment.Function{
@@ -101,10 +97,10 @@ func RegisterTIEM(runtime *environment.RuntimeEnvironment) {
 		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(int64(time.Now().Hour())), nil
+			return types.IntegerValue(time.Now().Hour()), nil
 		},
 	}
-	runtime.RegisterNative("HOUR", hour)
+	env.DefineFunction(hour)
 
 	// MINUTE function - current minute (0-59)
 	minute := &environment.Function{
@@ -113,10 +109,10 @@ func RegisterTIEM(runtime *environment.RuntimeEnvironment) {
 		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(int64(time.Now().Minute())), nil
+			return types.IntegerValue(time.Now().Minute()), nil
 		},
 	}
-	runtime.RegisterNative("MINUTE", minute)
+	env.DefineFunction(minute)
 
 	// SECOND function - current second (0-59)
 	second := &environment.Function{
@@ -125,12 +121,12 @@ func RegisterTIEM(runtime *environment.RuntimeEnvironment) {
 		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(int64(time.Now().Second())), nil
+			return types.IntegerValue(time.Now().Second()), nil
 		},
 	}
-	runtime.RegisterNative("SECOND", second)
+	env.DefineFunction(second)
 
-	// FORMAT_TIME function - format timestamp as string
+	// FORMAT_TIME function - format timestamp using Go time format
 	formatTime := &environment.Function{
 		Name:       "FORMAT_TIME",
 		ReturnType: "STRIN",
@@ -153,5 +149,5 @@ func RegisterTIEM(runtime *environment.RuntimeEnvironment) {
 			return types.NOTHIN, fmt.Errorf("FORMAT_TIME: invalid argument types")
 		},
 	}
-	runtime.RegisterNative("FORMAT_TIME", formatTime)
+	env.DefineFunction(formatTime)
 }

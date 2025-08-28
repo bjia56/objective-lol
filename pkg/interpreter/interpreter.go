@@ -35,17 +35,7 @@ func (i *Interpreter) Interpret(program *ast.ProgramNode) error {
 
 // VisitProgram executes the entire program
 func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
-	// First pass: process import statements
-	for _, decl := range node.Declarations {
-		switch n := decl.(type) {
-		case *ast.ImportStatementNode:
-			if _, err := i.VisitImportStatement(n); err != nil {
-				return types.NOTHIN, err
-			}
-		}
-	}
-
-	// Second pass: declare all functions and classes
+	// First pass: declare all functions and classes
 	for _, decl := range node.Declarations {
 		switch n := decl.(type) {
 		case *ast.FunctionDeclarationNode:
@@ -59,11 +49,15 @@ func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
 		}
 	}
 
-	// Third pass: execute variable declarations and other statements
+	// Second pass: execute variable declarations, import statements, and other statements
 	for _, decl := range node.Declarations {
 		switch n := decl.(type) {
 		case *ast.VariableDeclarationNode:
 			if _, err := i.VisitVariableDeclaration(n); err != nil {
+				return types.NOTHIN, err
+			}
+		case *ast.ImportStatementNode:
+			if _, err := i.VisitImportStatement(n); err != nil {
 				return types.NOTHIN, err
 			}
 		}
@@ -81,14 +75,14 @@ func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
 func (i *Interpreter) VisitImportStatement(node *ast.ImportStatementNode) (types.Value, error) {
 	moduleName := strings.ToUpper(node.ModuleName)
 
-	// Load the requested module
+	// Load the requested module into the current environment scope
 	switch moduleName {
 	case "STDIO":
-		stdlib.RegisterSTDIO(i.runtime)
+		stdlib.RegisterSTDIOInEnv(i.environment)
 	case "MATH":
-		stdlib.RegisterMATH(i.runtime)
+		stdlib.RegisterMATHInEnv(i.environment)
 	case "TIEM":
-		stdlib.RegisterTIEM(i.runtime)
+		stdlib.RegisterTIEMInEnv(i.environment)
 	default:
 		return types.NOTHIN, fmt.Errorf("unknown module: %s", moduleName)
 	}

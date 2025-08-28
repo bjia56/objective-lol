@@ -10,8 +10,8 @@ import (
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
-// RegisterMATH registers all MATH functions with the runtime environment
-func RegisterMATH(runtime *environment.RuntimeEnvironment) {
+// RegisterMATHInEnv registers all MATH functions directly in the given environment
+func RegisterMATHInEnv(env *environment.Environment) {
 	// Initialize random seed
 	rand.Seed(time.Now().UnixNano())
 
@@ -33,7 +33,7 @@ func RegisterMATH(runtime *environment.RuntimeEnvironment) {
 			return types.NOTHIN, fmt.Errorf("ABS: invalid numeric type")
 		},
 	}
-	runtime.RegisterNative("ABS", abs)
+	env.DefineFunction(abs)
 
 	// MAX function - maximum of two values
 	max := &environment.Function{
@@ -56,7 +56,7 @@ func RegisterMATH(runtime *environment.RuntimeEnvironment) {
 			return types.NOTHIN, fmt.Errorf("MAX: invalid numeric types")
 		},
 	}
-	runtime.RegisterNative("MAX", max)
+	env.DefineFunction(max)
 
 	// MIN function - minimum of two values
 	min := &environment.Function{
@@ -79,7 +79,7 @@ func RegisterMATH(runtime *environment.RuntimeEnvironment) {
 			return types.NOTHIN, fmt.Errorf("MIN: invalid numeric types")
 		},
 	}
-	runtime.RegisterNative("MIN", min)
+	env.DefineFunction(min)
 
 	// SQRT function - square root
 	sqrt := &environment.Function{
@@ -102,7 +102,7 @@ func RegisterMATH(runtime *environment.RuntimeEnvironment) {
 			return types.NOTHIN, fmt.Errorf("SQRT: invalid numeric type")
 		},
 	}
-	runtime.RegisterNative("SQRT", sqrt)
+	env.DefineFunction(sqrt)
 
 	// POW function - power
 	pow := &environment.Function{
@@ -126,7 +126,7 @@ func RegisterMATH(runtime *environment.RuntimeEnvironment) {
 			return types.NOTHIN, fmt.Errorf("POW: invalid numeric types")
 		},
 	}
-	runtime.RegisterNative("POW", pow)
+	env.DefineFunction(pow)
 
 	// RANDOM function - random number between 0 and 1
 	random := &environment.Function{
@@ -138,7 +138,7 @@ func RegisterMATH(runtime *environment.RuntimeEnvironment) {
 			return types.DoubleValue(rand.Float64()), nil
 		},
 	}
-	runtime.RegisterNative("RANDOM", random)
+	env.DefineFunction(random)
 
 	// RANDINT function - random integer in range
 	randint := &environment.Function{
@@ -165,7 +165,7 @@ func RegisterMATH(runtime *environment.RuntimeEnvironment) {
 			return types.NOTHIN, fmt.Errorf("RANDINT: invalid integer types")
 		},
 	}
-	runtime.RegisterNative("RANDINT", randint)
+	env.DefineFunction(randint)
 
 	// SIN function - sine
 	sin := &environment.Function{
@@ -185,7 +185,7 @@ func RegisterMATH(runtime *environment.RuntimeEnvironment) {
 			return types.NOTHIN, fmt.Errorf("SIN: invalid numeric type")
 		},
 	}
-	runtime.RegisterNative("SIN", sin)
+	env.DefineFunction(sin)
 
 	// COS function - cosine
 	cos := &environment.Function{
@@ -205,5 +205,5 @@ func RegisterMATH(runtime *environment.RuntimeEnvironment) {
 			return types.NOTHIN, fmt.Errorf("COS: invalid numeric type")
 		},
 	}
-	runtime.RegisterNative("COS", cos)
+	env.DefineFunction(cos)
 }
