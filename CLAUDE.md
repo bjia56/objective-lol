@@ -83,7 +83,7 @@ Implements visitor pattern:
 
 ### Testing
 Comprehensive test suite in `tests/` directory:
-- Files numbered 01-15 covering basic to advanced features
+- Files covering basic to advanced features
 - Each test file is self-documenting with expected outputs
 - Tests use `.olol` extension to distinguish from examples
 - `run_tests.sh` provides automated test execution with pass/fail reporting
