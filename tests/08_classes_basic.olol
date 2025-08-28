@@ -1,0 +1,148 @@
+BTW Basic classes and object-oriented programming test
+
+BTW Simple class with member variables
+HAI ME TEH CLAS PERSON
+    EVRYONE
+    DIS TEH VARIABLE NAME TEH STRIN ITZ "Unknown"
+    DIS TEH VARIABLE AGE TEH INTEGR ITZ 0
+
+    DIS TEH FUNCSHUN GET_NAME TEH STRIN
+        GIVEZ NAME
+    KTHX
+
+    DIS TEH FUNCSHUN SET_NAME WIT NEW_NAME TEH STRIN
+        NAME ITZ NEW_NAME
+    KTHX
+
+    DIS TEH FUNCSHUN GET_AGE TEH INTEGR
+        GIVEZ AGE
+    KTHX
+
+    DIS TEH FUNCSHUN SET_AGE WIT NEW_AGE TEH INTEGR
+        AGE ITZ NEW_AGE
+    KTHX
+
+    DIS TEH FUNCSHUN INTRODUCE
+        VISIBLE WIT "Hi, I'm "
+        VISIBLE WIT NAME
+        VISIBLE WIT " and I'm "
+        VISIBLE WIT AGE
+        VISIBLEZ WIT " years old."
+    KTHX
+KTHXBAI
+
+BTW Class with private members
+HAI ME TEH CLAS BANK_ACCOUNT
+    EVRYONE
+    DIS TEH VARIABLE OWNER TEH STRIN ITZ "Anonymous"
+
+    MAHSELF
+    DIS TEH VARIABLE BALANCE TEH DUBBLE ITZ 0.0
+
+    EVRYONE
+    DIS TEH FUNCSHUN SET_OWNER WIT NAME TEH STRIN
+        OWNER ITZ NAME
+    KTHX
+
+    DIS TEH FUNCSHUN GET_OWNER TEH STRIN
+        GIVEZ OWNER
+    KTHX
+
+    DIS TEH FUNCSHUN DEPOSIT WIT AMOUNT TEH DUBBLE
+        BALANCE ITZ BALANCE MOAR AMOUNT
+        VISIBLE WIT "Deposited "
+        VISIBLEZ WIT AMOUNT
+    KTHX
+
+    DIS TEH FUNCSHUN GET_BALANCE TEH DUBBLE
+        GIVEZ BALANCE
+    KTHX
+
+    DIS TEH FUNCSHUN WITHDRAW TEH BOOL WIT AMOUNT TEH DUBBLE
+        IZ AMOUNT SMALLR THAN BALANCE?
+            BALANCE ITZ BALANCE LES AMOUNT
+            VISIBLE WIT "Withdrew "
+            VISIBLEZ WIT AMOUNT
+            GIVEZ YEZ
+        NOPE
+            VISIBLEZ WIT "Insufficient funds"
+            GIVEZ NO
+        KTHX
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    VISIBLEZ WIT "=== Basic Classes Test ==="
+
+    BTW Test basic object creation
+    VISIBLE WIT "Creating person object: "
+    I HAS A VARIABLE PERSON1 TEH PERSON ITZ NEW PERSON
+    VISIBLEZ WIT PERSON1
+
+    BTW Test member variable access
+    VISIBLE WIT "Default name: "
+    VISIBLEZ WIT PERSON1 NAME
+    VISIBLE WIT "Default age: "
+    VISIBLEZ WIT PERSON1 AGE
+
+    BTW Test member variable assignment
+    PERSON1 NAME ITZ "Alice"
+    PERSON1 AGE ITZ 25
+
+    VISIBLE WIT "After assignment name: "
+    VISIBLEZ WIT PERSON1 NAME
+    VISIBLE WIT "After assignment age: "
+    VISIBLEZ WIT PERSON1 AGE
+
+    BTW Test method calls
+    VISIBLEZ WIT "Testing methods:"
+    PERSON1 DO INTRODUCE
+
+    BTW Test method with parameters
+    PERSON1 DO SET_NAME WIT "Bob"
+    PERSON1 DO SET_AGE WIT 30
+    VISIBLEZ WIT "After method calls:"
+    PERSON1 DO INTRODUCE
+
+    BTW Test methods with return values
+    I HAS A VARIABLE CURRENT_NAME TEH STRIN ITZ PERSON1 DO GET_NAME
+    I HAS A VARIABLE CURRENT_AGE TEH INTEGR ITZ PERSON1 DO GET_AGE
+    VISIBLE WIT "Name from method: "
+    VISIBLEZ WIT CURRENT_NAME
+    VISIBLE WIT "Age from method: "
+    VISIBLEZ WIT CURRENT_AGE
+
+    BTW Test multiple objects
+    VISIBLE WIT "Creating second person: "
+    I HAS A VARIABLE PERSON2 TEH PERSON ITZ NEW PERSON
+    PERSON2 DO SET_NAME WIT "Charlie"
+    PERSON2 DO SET_AGE WIT 35
+    VISIBLEZ WIT PERSON2
+
+    VISIBLEZ WIT "Person1:"
+    PERSON1 DO INTRODUCE
+    VISIBLEZ WIT "Person2:"
+    PERSON2 DO INTRODUCE
+
+    BTW Test private members
+    VISIBLEZ WIT "Testing bank account:"
+    I HAS A VARIABLE ACCOUNT TEH BANK_ACCOUNT ITZ NEW BANK_ACCOUNT
+    ACCOUNT DO SET_OWNER WIT "Alice"
+
+    VISIBLE WIT "Account owner: "
+    VISIBLEZ WIT ACCOUNT DO GET_OWNER
+    VISIBLE WIT "Initial balance: "
+    VISIBLEZ WIT ACCOUNT DO GET_BALANCE
+
+    ACCOUNT DO DEPOSIT WIT 100.0
+    VISIBLE WIT "Balance after deposit: "
+    VISIBLEZ WIT ACCOUNT DO GET_BALANCE
+
+    I HAS A VARIABLE SUCCESS TEH BOOL ITZ ACCOUNT DO WITHDRAW WIT 50.0
+    VISIBLE WIT "Withdrawal success: "
+    VISIBLEZ WIT SUCCESS
+    VISIBLE WIT "Final balance: "
+    VISIBLEZ WIT ACCOUNT DO GET_BALANCE
+
+    VISIBLEZ WIT "=== Basic Classes Test Complete ==="
+KTHXBAI

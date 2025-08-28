@@ -1,0 +1,126 @@
+BTW Standard library math functions test
+
+HAI ME TEH FUNCSHUN MAIN
+    VISIBLEZ WIT "=== Math Library Test ==="
+
+    BTW Test basic random functions
+    VISIBLE WIT "Random number (0-1): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT RANDOM
+    VISIBLE WIT "Another random number: "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT RANDOM
+
+    BTW Test random integer
+    VISIBLE WIT "Random integer between 1 and 10: "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT RANDINT WIT 1 AN WIT 10
+    VISIBLE WIT "Another random integer (1-10): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT RANDINT WIT 1 AN WIT 10
+
+    BTW Test absolute value
+    VISIBLE WIT "Absolute values: "
+    VISIBLEZ WIT ""
+    VISIBLE WIT "ABS(-5.5): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT ABS WIT -5.5
+    VISIBLE WIT "ABS(3.14): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT ABS WIT 3.14
+    VISIBLE WIT "ABS(-42): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT ABS WIT -42
+
+    BTW Test min and max
+    VISIBLE WIT "Min/Max functions: "
+    VISIBLEZ WIT ""
+    VISIBLE WIT "MIN(5, 10): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT MIN WIT 5 AN WIT 10
+    VISIBLE WIT "MAX(5, 10): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT MAX WIT 5 AN WIT 10
+    VISIBLE WIT "MIN(-3.5, 2.1): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT MIN WIT -3.5 AN WIT 2.1
+    VISIBLE WIT "MAX(-3.5, 2.1): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT MAX WIT -3.5 AN WIT 2.1
+
+    BTW Test square root
+    VISIBLE WIT "Square root functions: "
+    VISIBLEZ WIT ""
+    VISIBLE WIT "SQRT(16): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT SQRT WIT 16
+    VISIBLE WIT "SQRT(2): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT SQRT WIT 2
+    VISIBLE WIT "SQRT(100): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT SQRT WIT 100
+
+    BTW Test power function
+    VISIBLE WIT "Power functions: "
+    VISIBLEZ WIT ""
+    VISIBLE WIT "POW(2, 3): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT POW WIT 2 AN WIT 3
+    VISIBLE WIT "POW(5, 2): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT POW WIT 5 AN WIT 2
+    VISIBLE WIT "POW(10, 0.5) (same as SQRT(10)): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT POW WIT 10 AN WIT 0.5
+
+    BTW Test trigonometric functions
+    VISIBLE WIT "Trigonometric functions: "
+    VISIBLEZ WIT ""
+    VISIBLE WIT "SIN(0): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT SIN WIT 0
+    VISIBLE WIT "COS(0): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT COS WIT 0
+    VISIBLE WIT "SIN(1.5708) (approx pi/2): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT SIN WIT 1.5708
+    VISIBLE WIT "COS(1.5708) (approx pi/2): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT COS WIT 1.5708
+
+    BTW Test math in expressions
+    VISIBLE WIT "Math in expressions: "
+    VISIBLEZ WIT ""
+    I HAS A VARIABLE AA TEH INTEGR ITZ 5
+    I HAS A VARIABLE BB TEH INTEGR ITZ 3
+
+    VISIBLE WIT "MAX(5+3, 5*3): "
+    VISIBLEZ WIT ""
+    I HAS A VARIABLE A_PLUS_B TEH INTEGR ITZ AA MOAR BB
+    I HAS A VARIABLE A_TIMES_B TEH INTEGR ITZ AA TIEMZ BB
+    VISIBLEZ WIT MAX WIT A_PLUS_B AN WIT A_TIMES_B
+
+    VISIBLE WIT "SQRT(A^2 + B^2) (hypotenuse): "
+    VISIBLEZ WIT ""
+    I HAS A VARIABLE A_SQUARED TEH DUBBLE ITZ POW WIT AA AN WIT 2
+    I HAS A VARIABLE B_SQUARED TEH DUBBLE ITZ POW WIT BB AN WIT 2
+    I HAS A VARIABLE HYPOTENUSE_SQ TEH DUBBLE ITZ A_SQUARED MOAR B_SQUARED
+    VISIBLEZ WIT SQRT WIT HYPOTENUSE_SQ
+
+    BTW Test edge cases
+    VISIBLE WIT "Edge cases: "
+    VISIBLEZ WIT ""
+    VISIBLE WIT "ABS(0): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT ABS WIT 0
+    VISIBLE WIT "POW(0, 5): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT POW WIT 0 AN WIT 5
+    VISIBLE WIT "POW(5, 0): "
+    VISIBLEZ WIT ""
+    VISIBLEZ WIT POW WIT 5 AN WIT 0
+
+    VISIBLEZ WIT "=== Math Library Test Complete ==="
+KTHXBAI

@@ -1,0 +1,189 @@
+BTW Inheritance and polymorphism test
+
+BTW Base class
+HAI ME TEH CLAS ANIMAL
+    EVRYONE
+    DIS TEH VARIABLE NAME TEH STRIN ITZ "Unknown Animal"
+    DIS TEH VARIABLE AGE TEH INTEGR ITZ 0
+    DIS TEH VARIABLE SPECIES TEH STRIN ITZ "Generic"
+
+    DIS TEH FUNCSHUN SET_NAME WIT NEW_NAME TEH STRIN
+        NAME ITZ NEW_NAME
+    KTHX
+
+    DIS TEH FUNCSHUN GET_NAME TEH STRIN
+        GIVEZ NAME
+    KTHX
+
+    DIS TEH FUNCSHUN SET_AGE WIT NEW_AGE TEH INTEGR
+        AGE ITZ NEW_AGE
+    KTHX
+
+    DIS TEH FUNCSHUN GET_AGE TEH INTEGR
+        GIVEZ AGE
+    KTHX
+
+    DIS TEH FUNCSHUN SPEAK
+        VISIBLEZ WIT "Generic animal sound"
+    KTHX
+
+    DIS TEH FUNCSHUN GET_INFO TEH STRIN
+        GIVEZ NAME
+    KTHX
+
+    DIS TEH FUNCSHUN DESCRIBE
+        VISIBLE WIT NAME
+        VISIBLE WIT " is a "
+        VISIBLE WIT SPECIES
+        VISIBLE WIT " aged "
+        VISIBLEZ WIT AGE
+    KTHX
+KTHXBAI
+
+BTW Derived class - Cat
+HAI ME TEH CLAS CAT KITTEH OF ANIMAL
+    EVRYONE
+    DIS TEH VARIABLE LIVES TEH INTEGR ITZ 9
+    DIS TEH VARIABLE COLOR TEH STRIN ITZ "Unknown"
+
+    DIS TEH FUNCSHUN SET_COLOR WIT NEW_COLOR TEH STRIN
+        COLOR ITZ NEW_COLOR
+        SPECIES ITZ "Cat"
+    KTHX
+
+    DIS TEH FUNCSHUN GET_LIVES TEH INTEGR
+        GIVEZ LIVES
+    KTHX
+
+    BTW Override parent method
+    DIS TEH FUNCSHUN SPEAK
+        VISIBLEZ WIT "Meow!"
+    KTHX
+
+    DIS TEH FUNCSHUN PURR
+        VISIBLEZ WIT "Purrrrr..."
+    KTHX
+
+    BTW Override describe to include cat-specific info
+    DIS TEH FUNCSHUN DESCRIBE
+        VISIBLE WIT NAME
+        VISIBLE WIT " is a "
+        VISIBLE WIT COLOR
+        VISIBLE WIT " "
+        VISIBLE WIT SPECIES
+        VISIBLE WIT " aged "
+        VISIBLE WIT AGE
+        VISIBLE WIT " with "
+        VISIBLE WIT LIVES
+        VISIBLEZ WIT " lives"
+    KTHX
+KTHXBAI
+
+BTW Another derived class - Dog
+HAI ME TEH CLAS DOG KITTEH OF ANIMAL
+    EVRYONE
+    DIS TEH VARIABLE BREED TEH STRIN ITZ "Mixed"
+    DIS TEH VARIABLE IS_GOOD_BOY TEH BOOL ITZ YEZ
+
+    DIS TEH FUNCSHUN SET_BREED WIT NEW_BREED TEH STRIN
+        BREED ITZ NEW_BREED
+        SPECIES ITZ "Dog"
+    KTHX
+
+    DIS TEH FUNCSHUN GET_BREED TEH STRIN
+        GIVEZ BREED
+    KTHX
+
+    BTW Override parent method
+    DIS TEH FUNCSHUN SPEAK
+        VISIBLEZ WIT "Woof!"
+    KTHX
+
+    DIS TEH FUNCSHUN FETCH
+        VISIBLEZ WIT "Fetching the ball!"
+    KTHX
+
+    DIS TEH FUNCSHUN SIT
+        VISIBLEZ WIT "Sitting like a good dog"
+    KTHX
+
+    BTW Override describe
+    DIS TEH FUNCSHUN DESCRIBE
+        VISIBLE WIT NAME
+        VISIBLE WIT " is a "
+        VISIBLE WIT BREED
+        VISIBLE WIT " "
+        VISIBLE WIT SPECIES
+        VISIBLE WIT " aged "
+        VISIBLE WIT AGE
+        IZ IS_GOOD_BOY SAEM AS YEZ?
+            VISIBLEZ WIT " and is a very good boy!"
+        NOPE
+            VISIBLEZ WIT " and needs more training."
+        KTHX
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    VISIBLEZ WIT "=== Inheritance Test ==="
+
+    BTW Test base class
+    VISIBLEZ WIT "Creating base animal:"
+    I HAS A VARIABLE ANIMAL1 TEH ANIMAL ITZ NEW ANIMAL
+    ANIMAL1 DO SET_NAME WIT "Generic Beast"
+    ANIMAL1 DO SET_AGE WIT 5
+    ANIMAL1 DO DESCRIBE
+    ANIMAL1 DO SPEAK
+
+    BTW Test cat inheritance
+    VISIBLEZ WIT "Creating cat:"
+    I HAS A VARIABLE FLUFFY TEH CAT ITZ NEW CAT
+    FLUFFY DO SET_NAME WIT "Fluffy"
+    FLUFFY DO SET_AGE WIT 3
+    FLUFFY DO SET_COLOR WIT "Orange"
+
+    VISIBLEZ WIT "Cat info:"
+    FLUFFY DO DESCRIBE
+    FLUFFY DO SPEAK
+    FLUFFY DO PURR
+
+    BTW Test accessing parent class members
+    VISIBLE WIT "Cat's name (from parent): "
+    VISIBLEZ WIT FLUFFY DO GET_NAME
+    VISIBLE WIT "Cat's age (from parent): "
+    VISIBLEZ WIT FLUFFY DO GET_AGE
+    VISIBLE WIT "Cat's lives (own member): "
+    VISIBLEZ WIT FLUFFY DO GET_LIVES
+
+    BTW Test dog inheritance
+    VISIBLEZ WIT "Creating dog:"
+    I HAS A VARIABLE BUDDY TEH DOG ITZ NEW DOG
+    BUDDY DO SET_NAME WIT "Buddy"
+    BUDDY DO SET_AGE WIT 4
+    BUDDY DO SET_BREED WIT "Golden Retriever"
+
+    VISIBLEZ WIT "Dog info:"
+    BUDDY DO DESCRIBE
+    BUDDY DO SPEAK
+    BUDDY DO FETCH
+    BUDDY DO SIT
+
+    BTW Test polymorphism - same method, different behavior
+    VISIBLEZ WIT "Polymorphism test - all animals speak:"
+    ANIMAL1 DO SPEAK
+    FLUFFY DO SPEAK
+    BUDDY DO SPEAK
+
+    BTW Test multiple objects of same derived class
+    VISIBLEZ WIT "Creating second cat:"
+    I HAS A VARIABLE WHISKERS TEH CAT ITZ NEW CAT
+    WHISKERS DO SET_NAME WIT "Whiskers"
+    WHISKERS DO SET_AGE WIT 2
+    WHISKERS DO SET_COLOR WIT "Black"
+
+    VISIBLEZ WIT "Comparing cats:"
+    FLUFFY DO DESCRIBE
+    WHISKERS DO DESCRIBE
+
+    VISIBLEZ WIT "=== Inheritance Test Complete ==="
+KTHXBAI

@@ -1,0 +1,83 @@
+BTW Functions test
+
+BTW Function with no parameters and no return value
+HAI ME TEH FUNCSHUN SAY_HELLO
+    VISIBLEZ WIT "Hello from function!"
+KTHXBAI
+
+BTW Function with parameters
+HAI ME TEH FUNCSHUN GREET WIT NAME TEH STRIN
+    VISIBLE WIT "Hello "
+    VISIBLEZ WIT NAME
+KTHXBAI
+
+BTW Function with return value
+HAI ME TEH FUNCSHUN ADD TEH INTEGR WIT X TEH INTEGR AN WIT Y TEH INTEGR
+    GIVEZ X MOAR Y
+KTHXBAI
+
+BTW Function with multiple parameters and return value
+HAI ME TEH FUNCSHUN MULTIPLY_AND_ADD TEH DUBBLE WIT X TEH DUBBLE AN WIT Y TEH DUBBLE AN WIT Z TEH DUBBLE
+    I HAS A VARIABLE PRODUCT TEH DUBBLE ITZ X TIEMZ Y
+    I HAS A VARIABLE RESULT TEH DUBBLE ITZ PRODUCT MOAR Z
+    GIVEZ RESULT
+KTHXBAI
+
+BTW Recursive function
+HAI ME TEH FUNCSHUN FACTORIAL TEH INTEGR WIT N TEH INTEGR
+    IZ N SMALLR THAN 2?
+        GIVEZ 1
+    NOPE
+        GIVEZ N TIEMZ FACTORIAL WIT N LES 1
+    KTHX
+KTHXBAI
+
+BTW Function that returns early
+HAI ME TEH FUNCSHUN CHECK_POSITIVE TEH STRIN WIT NUM TEH INTEGR
+    IZ NUM SMALLR THAN 1?
+        GIVEZ "Not positive"
+    KTHX
+    GIVEZ "Positive"
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    VISIBLEZ WIT "=== Functions Test ==="
+
+    BTW Test simple function call
+    VISIBLEZ WIT "Testing simple function:"
+    SAY_HELLO
+
+    BTW Test function with parameters
+    VISIBLEZ WIT "Testing function with parameters:"
+    GREET WIT "Bob"
+
+    BTW Test function with return value
+    VISIBLEZ WIT "Testing function with return value:"
+    I HAS A VARIABLE SUM TEH INTEGR ITZ ADD WIT 5 AN WIT 3
+    VISIBLE WIT "5 + 3 = "
+    VISIBLEZ WIT SUM
+
+    BTW Test complex function
+    VISIBLEZ WIT "Testing complex function:"
+    I HAS A VARIABLE RESULT TEH DUBBLE ITZ MULTIPLY_AND_ADD WIT 2.5 AN WIT 4.0 AN WIT 1.0
+    VISIBLE WIT "(2.5 * 4.0) + 1.0 = "
+    VISIBLEZ WIT RESULT
+
+    BTW Test recursive function
+    VISIBLEZ WIT "Testing recursive function:"
+    I HAS A VARIABLE FACT5 TEH INTEGR ITZ FACTORIAL WIT 5
+    VISIBLE WIT "5! = "
+    VISIBLEZ WIT FACT5
+
+    BTW Test early return function
+    VISIBLEZ WIT "Testing early return function:"
+    VISIBLEZ WIT CHECK_POSITIVE WIT 10
+    VISIBLEZ WIT CHECK_POSITIVE WIT -5
+    VISIBLEZ WIT CHECK_POSITIVE WIT 0
+
+    BTW Test zero-argument function calls as expressions
+    VISIBLEZ WIT "Testing zero-arg function as expression:"
+    VISIBLEZ WIT SAY_HELLO
+
+    VISIBLEZ WIT "=== Functions Test Complete ==="
+KTHXBAI

@@ -1,0 +1,46 @@
+BTW Arithmetic operations test
+
+HAI ME TEH FUNCSHUN MAIN
+    VISIBLEZ WIT "=== Arithmetic Operations Test ==="
+
+    BTW Setup test variables
+    I HAS A VARIABLE AA TEH INTEGR ITZ 15
+    I HAS A VARIABLE BB TEH INTEGR ITZ 3
+    I HAS A VARIABLE CC TEH DUBBLE ITZ -2.5
+    I HAS A VARIABLE DD TEH DUBBLE ITZ 1.5
+
+    BTW Test integer arithmetic
+    VISIBLEZ WIT "Integer arithmetic:"
+    VISIBLE WIT "15 + 3 = "
+    VISIBLEZ WIT AA MOAR BB
+
+    VISIBLE WIT "15 - 3 = "
+    VISIBLEZ WIT AA LES BB
+
+    VISIBLE WIT "15 * 3 = "
+    VISIBLEZ WIT AA TIEMZ BB
+
+    VISIBLE WIT "15 / 3 = "
+    VISIBLEZ WIT AA DIVIDEZ BB
+
+    BTW Test double arithmetic
+    VISIBLEZ WIT "Double arithmetic:"
+    VISIBLE WIT "-2.5 + 1.5 = "
+    VISIBLEZ WIT CC MOAR DD
+
+    VISIBLE WIT "-2.5 - 1.5 = "
+    VISIBLEZ WIT CC LES DD
+
+    VISIBLE WIT "-2.5 * 1.5 = "
+    VISIBLEZ WIT CC TIEMZ DD
+
+    VISIBLE WIT "-2.5 / 1.5 = "
+    VISIBLEZ WIT CC DIVIDEZ DD
+
+    BTW Test mixed arithmetic
+    VISIBLEZ WIT "Mixed arithmetic:"
+    VISIBLE WIT "15 + -2.5 = "
+    VISIBLEZ WIT AA MOAR CC
+
+    VISIBLEZ WIT "=== Arithmetic Operations Test Complete ==="
+KTHXBAI

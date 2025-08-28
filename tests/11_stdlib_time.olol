@@ -1,0 +1,87 @@
+BTW Standard library time functions test
+
+HAI ME TEH FUNCSHUN MAIN
+    VISIBLEZ WIT "=== Time Library Test ==="
+
+    BTW Test current time functions
+    VISIBLEZ WIT "Current date/time information:"
+    VISIBLE WIT "Current year: "
+    VISIBLEZ WIT YEAR
+    VISIBLE WIT "Current month: "
+    VISIBLEZ WIT MONTH
+    VISIBLE WIT "Current day: "
+    VISIBLEZ WIT DAY
+
+    VISIBLEZ WIT "Current time:"
+    VISIBLE WIT "Hour: "
+    VISIBLEZ WIT HOUR
+    VISIBLE WIT "Minute: "
+    VISIBLEZ WIT MINUTE
+    VISIBLE WIT "Second: "
+    VISIBLEZ WIT SECOND
+
+    BTW Test timestamp functions
+    VISIBLEZ WIT "Timestamp information:"
+    VISIBLE WIT "Current Unix timestamp (seconds): "
+    I HAS A VARIABLE TIMESTAMP TEH INTEGR ITZ NOW
+    VISIBLEZ WIT TIMESTAMP
+
+    VISIBLE WIT "Current timestamp (milliseconds): "
+    I HAS A VARIABLE MILLIS_TIME TEH INTEGR ITZ MILLIS
+    VISIBLEZ WIT MILLIS_TIME
+
+    BTW Test time formatting
+    VISIBLEZ WIT "Formatted time:"
+    I HAS A VARIABLE FORMATTED TEH STRIN ITZ FORMAT_TIME WIT TIMESTAMP AN WIT "2006-01-02 15:04:05"
+    VISIBLE WIT "ISO format: "
+    VISIBLEZ WIT FORMATTED
+
+    BTW Test sleep function (brief sleep to avoid long test)
+    VISIBLEZ WIT "Testing sleep (2 seconds)..."
+    I HAS A VARIABLE BEFORE_SLEEP TEH INTEGR ITZ SECOND
+    SLEEP WIT 2
+    I HAS A VARIABLE AFTER_SLEEP TEH INTEGR ITZ SECOND
+    VISIBLE WIT "Sleep completed. Before: "
+    VISIBLEZ WIT BEFORE_SLEEP
+    VISIBLE WIT "After: "
+    VISIBLEZ WIT AFTER_SLEEP
+
+    BTW Test time calculations
+    VISIBLEZ WIT "Time calculations:"
+    I HAS A VARIABLE CURRENT_YEAR TEH INTEGR ITZ YEAR
+    I HAS A VARIABLE BIRTH_YEAR TEH INTEGR ITZ 1990
+    I HAS A VARIABLE AGE TEH INTEGR ITZ CURRENT_YEAR LES BIRTH_YEAR
+    VISIBLE WIT "If born in 1990, current age would be approximately: "
+    VISIBLEZ WIT AGE
+
+    BTW Test multiple timestamp calls
+    VISIBLEZ WIT "Multiple timestamp calls:"
+    VISIBLE WIT "First call: "
+    VISIBLEZ WIT NOW
+    VISIBLE WIT "Second call: "
+    VISIBLEZ WIT NOW
+    VISIBLE WIT "Third call: "
+    VISIBLEZ WIT NOW
+
+    BTW Test different format patterns
+    VISIBLEZ WIT "Different time formats:"
+    I HAS A VARIABLE FORMAT1 TEH STRIN ITZ FORMAT_TIME WIT TIMESTAMP AN WIT "2006/01/02"
+    I HAS A VARIABLE FORMAT2 TEH STRIN ITZ FORMAT_TIME WIT TIMESTAMP AN WIT "15:04:05"
+    I HAS A VARIABLE FORMAT3 TEH STRIN ITZ FORMAT_TIME WIT TIMESTAMP AN WIT "Jan 02, 2006"
+
+    VISIBLE WIT "Date only: "
+    VISIBLEZ WIT FORMAT1
+    VISIBLE WIT "Time only: "
+    VISIBLEZ WIT FORMAT2
+    VISIBLE WIT "Readable format: "
+    VISIBLEZ WIT FORMAT3
+
+    BTW Test edge cases
+    VISIBLEZ WIT "Testing historical timestamp:"
+    I HAS A VARIABLE OLD_TIMESTAMP TEH INTEGR ITZ 0
+    I HAS A VARIABLE OLD_FORMATTED TEH STRIN ITZ FORMAT_TIME WIT OLD_TIMESTAMP AN WIT "2006-01-02 15:04:05"
+    VISIBLE WIT "Unix epoch (1970-01-01): "
+    VISIBLEZ WIT OLD_FORMATTED
+
+    VISIBLEZ WIT "=== Time Library Test Complete ==="
+KTHXBAI

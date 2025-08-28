@@ -1,0 +1,42 @@
+BTW Variable declaration and manipulation test
+
+HAI ME TEH FUNCSHUN MAIN
+    VISIBLEZ WIT "=== Variables Test ==="
+
+    BTW Test I HAS A syntax
+    I HAS A VARIABLE X TEH INTEGR ITZ 42
+    VISIBLE WIT "Variable X: "
+    VISIBLEZ WIT X
+    I HAS A VARIABLE Y TEH INTEGR ITZ 10
+    VISIBLE WIT "Variable Y: "
+    VISIBLEZ WIT Y
+
+    BTW Test different data types
+    I HAS A VARIABLE NAME TEH STRIN ITZ "Fluffy"
+    I HAS A VARIABLE PI TEH DUBBLE ITZ 3.14159
+    I HAS A VARIABLE IS_READY TEH BOOL ITZ YEZ
+
+    VISIBLE WIT "Name: "
+    VISIBLEZ WIT NAME
+    VISIBLE WIT "Pi: "
+    VISIBLEZ WIT PI
+    VISIBLE WIT "Is Ready: "
+    VISIBLEZ WIT IS_READY
+
+    BTW Test variable assignment
+    X ITZ 100
+    VISIBLE WIT "X after assignment: "
+    VISIBLEZ WIT X
+
+    BTW Test uninitialized variable
+    I HAS A VARIABLE EMPTY TEH STRIN
+    VISIBLE WIT "Empty variable: "
+    VISIBLEZ WIT EMPTY
+
+    BTW Test locked variables
+    I HAS A LOCKD VARIABLE CONSTANT TEH INTEGR ITZ 999
+    VISIBLE WIT "Constant: "
+    VISIBLEZ WIT CONSTANT
+
+    VISIBLEZ WIT "=== Variables Test Complete ==="
+KTHXBAI
