@@ -27,7 +27,7 @@
 Objective-LOL is a programming language inspired by LOLCODE, implemented in Go. It features:
 
 - Strong type system with automatic casting
-- Object-oriented programming with classes and inheritance
+- Object-oriented programming with classes, inheritance, and constructors
 - Functions with parameters and return values
 - Standard library for I/O, mathematics, and time operations
 - Control flow structures (conditionals and loops)
@@ -577,7 +577,7 @@ KTHXBAI
 
 ```lol
 HAI ME TEH FUNCSHUN MAIN
-    BTW Create new object
+    BTW Create new object without constructor
     I HAS A VARIABLE PERSON1 TEH PERSON ITZ NEW PERSON
 
     BTW Access member variables directly
@@ -595,6 +595,123 @@ HAI ME TEH FUNCSHUN MAIN
     BTW Call methods with return values
     I HAS A VARIABLE CURRENT_NAME TEH STRIN ITZ PERSON1 DO GET_NAME
     SAYZ WIT CURRENT_NAME
+KTHXBAI
+```
+
+### Constructor Methods
+
+Constructor methods are special methods with the same name as the class that are called automatically during object instantiation. Constructors:
+
+- Must have the same name as the class (case-insensitive)
+- Should not declare a return type (treated as void)
+- Can accept parameters for initialization
+- Are called using `NEW classname WIT arg1 AN WIT arg2` syntax
+
+#### Class with Constructor
+
+```lol
+HAI ME TEH CLAS POINT
+    EVRYONE
+    DIS TEH VARIABLE X TEH INTEGR ITZ 0
+    DIS TEH VARIABLE Y TEH INTEGR ITZ 0
+
+    BTW Constructor method - same name as class, no return type
+    DIS TEH FUNCSHUN POINT WIT X_VAL TEH INTEGR AN WIT Y_VAL TEH INTEGR
+        X ITZ X_VAL
+        Y ITZ Y_VAL
+        SAYZ WIT "Point created!"
+    KTHX
+
+    DIS TEH FUNCSHUN DISPLAY
+        SAY WIT "Point("
+        SAY WIT X
+        SAY WIT ", "
+        SAY WIT Y
+        SAYZ WIT ")"
+    KTHX
+KTHXBAI
+
+HAI ME TEH CLAS RECTANGLE
+    EVRYONE
+    DIS TEH VARIABLE WIDTH TEH INTEGR ITZ 0
+    DIS TEH VARIABLE HEIGHT TEH INTEGR ITZ 0
+    DIS TEH VARIABLE COLOR TEH STRIN ITZ "white"
+
+    BTW Constructor with multiple parameters
+    DIS TEH FUNCSHUN RECTANGLE WIT W TEH INTEGR AN WIT H TEH INTEGR AN WIT C TEH STRIN
+        WIDTH ITZ W
+        HEIGHT ITZ H
+        COLOR ITZ C
+    KTHX
+
+    DIS TEH FUNCSHUN GET_AREA TEH INTEGR
+        GIVEZ WIDTH TIEMZ HEIGHT
+    KTHX
+KTHXBAI
+```
+
+#### Using Constructors
+
+```lol
+HAI ME TEH FUNCSHUN MAIN
+    BTW Create objects with constructor arguments
+    I HAS A VARIABLE ORIGIN TEH POINT ITZ NEW POINT WIT 0 AN WIT 0
+    I HAS A VARIABLE CORNER TEH POINT ITZ NEW POINT WIT 10 AN WIT 5
+    
+    ORIGIN DO DISPLAY    BTW Point(0, 0)
+    CORNER DO DISPLAY    BTW Point(10, 5)
+    
+    BTW Constructor with multiple parameters
+    I HAS A VARIABLE RECT TEH RECTANGLE ITZ NEW RECTANGLE WIT 20 AN WIT 15 AN WIT "blue"
+    SAYZ WIT RECT DO GET_AREA    BTW 300
+    
+    BTW Create without constructor (uses default values)
+    I HAS A VARIABLE DEFAULT_POINT TEH POINT ITZ NEW POINT
+    DEFAULT_POINT DO DISPLAY    BTW Point(0, 0)
+KTHXBAI
+```
+
+#### Constructor Best Practices
+
+- **Initialization**: Use constructors to set up object state during creation
+- **Validation**: Constructors can validate input parameters
+- **Required Parameters**: Constructors make certain parameters mandatory
+- **Backward Compatibility**: Classes with constructors still support `NEW class` without arguments
+
+```lol
+HAI ME TEH CLAS BANK_ACCOUNT
+    EVRYONE
+    DIS TEH VARIABLE OWNER TEH STRIN ITZ "Anonymous"
+
+    MAHSELF
+    DIS TEH VARIABLE BALANCE TEH DUBBLE ITZ 0.0
+
+    EVRYONE
+    BTW Constructor ensures owner name and initial balance are set
+    DIS TEH FUNCSHUN BANK_ACCOUNT WIT OWNER_NAME TEH STRIN AN WIT INITIAL_BALANCE TEH DUBBLE
+        OWNER ITZ OWNER_NAME
+        IZ INITIAL_BALANCE BIGGR THAN 0.0?
+            BALANCE ITZ INITIAL_BALANCE
+        NOPE
+            BALANCE ITZ 0.0
+            SAYZ WIT "Warning: Initial balance cannot be negative, set to 0"
+        KTHX
+    KTHX
+
+    DIS TEH FUNCSHUN GET_BALANCE TEH DUBBLE
+        GIVEZ BALANCE
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    BTW Constructor ensures proper initialization
+    I HAS A VARIABLE ACCOUNT TEH BANK_ACCOUNT ITZ NEW BANK_ACCOUNT WIT "Alice" AN WIT 1000.0
+    SAYZ WIT ACCOUNT DO GET_BALANCE    BTW 1000
+
+    BTW Constructor with validation
+    I HAS A VARIABLE BAD_ACCOUNT TEH BANK_ACCOUNT ITZ NEW BANK_ACCOUNT WIT "Bob" AN WIT -50.0
+    BTW Output: "Warning: Initial balance cannot be negative, set to 0"
+    SAYZ WIT BAD_ACCOUNT DO GET_BALANCE    BTW 0
 KTHXBAI
 ```
 
@@ -1066,6 +1183,7 @@ KTHXBAI
 - `VARIABLE` - Variable keyword
 - `ITZ` - Assignment/initialization
 - `NEW` - Object instantiation
+- `WIT` - Constructor argument/parameter keyword
 
 #### Control Flow
 - `IZ` - If statement
@@ -1151,7 +1269,14 @@ HAI ME TEH CLAS <name> [KITTEH OF <parent>]
     [EVRYONE|MAHSELF]
     [DIS TEH VARIABLE <name> TEH <type> [ITZ <value>]]
     [DIS TEH FUNCSHUN <name> ...]
+    [DIS TEH FUNCSHUN <classname> WIT <params>...]  BTW Constructor
 KTHXBAI
+```
+
+#### Object Instantiation
+```
+NEW <classname>                                      BTW Without constructor
+NEW <classname> WIT <arg1> [AN WIT <arg2>]...        BTW With constructor arguments
 ```
 
 #### Control Flow

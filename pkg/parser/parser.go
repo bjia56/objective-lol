@@ -1044,6 +1044,12 @@ func (p *Parser) parseObjectInstantiation() *ast.ObjectInstantiationNode {
 
 	node.ClassName = p.currentToken.Literal
 
+	// Check for constructor arguments (WIT ...)
+	if p.peekTokenIs(WIT) {
+		p.nextToken() // consume WIT
+		node.ConstructorArgs = p.parseArgumentList()
+	}
+
 	return node
 }
 

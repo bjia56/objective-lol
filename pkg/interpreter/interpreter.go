@@ -618,7 +618,38 @@ func (i *Interpreter) VisitObjectInstantiation(node *ast.ObjectInstantiationNode
 	if err != nil {
 		return types.NOTHIN, err
 	}
-	return types.NewObjectValue(instance, strings.ToUpper(node.ClassName)), nil
+
+	objectValue := types.NewObjectValue(instance, strings.ToUpper(node.ClassName))
+
+	// Check for constructor call if arguments are provided
+	if len(node.ConstructorArgs) > 0 {
+		if obj, ok := instance.(*environment.ObjectInstance); ok {
+			// Look for a constructor method with the same name as the class
+			constructorName := strings.ToUpper(node.ClassName)
+			function, err := obj.GetMemberFunction(constructorName, i.currentClass, i.environment)
+			if err != nil {
+				return types.NOTHIN, fmt.Errorf("constructor '%s' not found in class '%s': %v", constructorName, node.ClassName, err)
+			}
+
+			// Evaluate constructor arguments
+			args := make([]types.Value, len(node.ConstructorArgs))
+			for j, arg := range node.ConstructorArgs {
+				val, err := arg.Accept(i)
+				if err != nil {
+					return types.NOTHIN, err
+				}
+				args[j] = val
+			}
+
+			// Call the constructor method
+			_, err = i.callMemberFunction(function, obj, args)
+			if err != nil {
+				return types.NOTHIN, fmt.Errorf("constructor call failed: %v", err)
+			}
+		}
+	}
+
+	return objectValue, nil
 }
 
 // VisitStatementBlock handles statement blocks

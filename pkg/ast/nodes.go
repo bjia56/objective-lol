@@ -207,8 +207,9 @@ func (n *IdentifierNode) Accept(visitor Visitor) (types.Value, error) {
 
 // ObjectInstantiationNode represents object creation
 type ObjectInstantiationNode struct {
-	ClassName  string
-	SourceName string // optional, for "NEW TYPE IN SOURCE"
+	ClassName         string
+	SourceName        string // optional, for "NEW TYPE IN SOURCE"
+	ConstructorArgs   []Node // arguments for constructor call
 }
 
 func (n *ObjectInstantiationNode) Accept(visitor Visitor) (types.Value, error) {

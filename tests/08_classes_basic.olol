@@ -1,11 +1,17 @@
 BTW Basic classes and object-oriented programming test
 I CAN HAS STDIO?
 
-BTW Simple class with member variables
+BTW Simple class with member variables and constructor
 HAI ME TEH CLAS PERSON
     EVRYONE
     DIS TEH VARIABLE NAME TEH STRIN ITZ "Unknown"
     DIS TEH VARIABLE AGE TEH INTEGR ITZ 0
+
+    BTW Constructor method - same name as class, no return type
+    DIS TEH FUNCSHUN PERSON WIT INITIAL_NAME TEH STRIN AN WIT INITIAL_AGE TEH INTEGR
+        NAME ITZ INITIAL_NAME
+        AGE ITZ INITIAL_AGE
+    KTHX
 
     DIS TEH FUNCSHUN GET_NAME TEH STRIN
         GIVEZ NAME
@@ -32,7 +38,7 @@ HAI ME TEH CLAS PERSON
     KTHX
 KTHXBAI
 
-BTW Class with private members
+BTW Class with private members and constructor
 HAI ME TEH CLAS BANK_ACCOUNT
     EVRYONE
     DIS TEH VARIABLE OWNER TEH STRIN ITZ "Anonymous"
@@ -41,6 +47,12 @@ HAI ME TEH CLAS BANK_ACCOUNT
     DIS TEH VARIABLE BALANCE TEH DUBBLE ITZ 0.0
 
     EVRYONE
+    BTW Constructor with owner name and initial balance
+    DIS TEH FUNCSHUN BANK_ACCOUNT WIT OWNER_NAME TEH STRIN AN WIT INITIAL_BALANCE TEH DUBBLE
+        OWNER ITZ OWNER_NAME
+        BALANCE ITZ INITIAL_BALANCE
+    KTHX
+
     DIS TEH FUNCSHUN SET_OWNER WIT NAME TEH STRIN
         OWNER ITZ NAME
     KTHX
@@ -75,20 +87,27 @@ KTHXBAI
 HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT "=== Basic Classes Test ==="
 
-    BTW Test basic object creation
-    SAY WIT "Creating person object: "
-    I HAS A VARIABLE PERSON1 TEH PERSON ITZ NEW PERSON
-    SAYZ WIT PERSON1
-
-    BTW Test member variable access
+    BTW Test basic object creation without constructor
+    SAY WIT "Creating person object without constructor: "
+    I HAS A VARIABLE PERSON0 TEH PERSON ITZ NEW PERSON
+    SAYZ WIT PERSON0
     SAY WIT "Default name: "
-    SAYZ WIT PERSON1 NAME
+    SAYZ WIT PERSON0 NAME
     SAY WIT "Default age: "
+    SAYZ WIT PERSON0 AGE
+
+    BTW Test constructor-style initialization
+    SAY WIT "Creating person with constructor: "
+    I HAS A VARIABLE PERSON1 TEH PERSON ITZ NEW PERSON WIT "Alice" AN WIT 25
+    SAYZ WIT PERSON1
+    SAY WIT "Constructor-set name: "
+    SAYZ WIT PERSON1 NAME
+    SAY WIT "Constructor-set age: "
     SAYZ WIT PERSON1 AGE
 
     BTW Test member variable assignment
-    PERSON1 NAME ITZ "Alice"
-    PERSON1 AGE ITZ 25
+    PERSON1 NAME ITZ "Alice Updated"
+    PERSON1 AGE ITZ 26
 
     SAY WIT "After assignment name: "
     SAYZ WIT PERSON1 NAME
@@ -113,11 +132,9 @@ HAI ME TEH FUNCSHUN MAIN
     SAY WIT "Age from method: "
     SAYZ WIT CURRENT_AGE
 
-    BTW Test multiple objects
-    SAY WIT "Creating second person: "
-    I HAS A VARIABLE PERSON2 TEH PERSON ITZ NEW PERSON
-    PERSON2 DO SET_NAME WIT "Charlie"
-    PERSON2 DO SET_AGE WIT 35
+    BTW Test multiple objects with constructors
+    SAY WIT "Creating second person with constructor: "
+    I HAS A VARIABLE PERSON2 TEH PERSON ITZ NEW PERSON WIT "Charlie" AN WIT 35
     SAYZ WIT PERSON2
 
     SAYZ WIT "Person1:"
@@ -125,25 +142,32 @@ HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT "Person2:"
     PERSON2 DO INTRODUCE
 
-    BTW Test private members
-    SAYZ WIT "Testing bank account:"
-    I HAS A VARIABLE ACCOUNT TEH BANK_ACCOUNT ITZ NEW BANK_ACCOUNT
-    ACCOUNT DO SET_OWNER WIT "Alice"
+    BTW Test constructor with private members
+    SAYZ WIT "Testing bank account with constructor:"
+    I HAS A VARIABLE ACCOUNT TEH BANK_ACCOUNT ITZ NEW BANK_ACCOUNT WIT "Alice" AN WIT 100.0
 
-    SAY WIT "Account owner: "
+    SAY WIT "Account owner from constructor: "
     SAYZ WIT ACCOUNT DO GET_OWNER
-    SAY WIT "Initial balance: "
+    SAY WIT "Initial balance from constructor: "
     SAYZ WIT ACCOUNT DO GET_BALANCE
 
-    ACCOUNT DO DEPOSIT WIT 100.0
+    ACCOUNT DO DEPOSIT WIT 50.0
     SAY WIT "Balance after deposit: "
     SAYZ WIT ACCOUNT DO GET_BALANCE
 
-    I HAS A VARIABLE SUCCESS TEH BOOL ITZ ACCOUNT DO WITHDRAW WIT 50.0
+    I HAS A VARIABLE SUCCESS TEH BOOL ITZ ACCOUNT DO WITHDRAW WIT 75.0
     SAY WIT "Withdrawal success: "
     SAYZ WIT SUCCESS
     SAY WIT "Final balance: "
     SAYZ WIT ACCOUNT DO GET_BALANCE
+
+    BTW Test creating another account with different initial values
+    SAYZ WIT "Creating second bank account:"
+    I HAS A VARIABLE ACCOUNT2 TEH BANK_ACCOUNT ITZ NEW BANK_ACCOUNT WIT "Bob" AN WIT 200.0
+    SAY WIT "Second account owner: "
+    SAYZ WIT ACCOUNT2 DO GET_OWNER
+    SAY WIT "Second account initial balance: "
+    SAYZ WIT ACCOUNT2 DO GET_BALANCE
 
     SAYZ WIT "=== Basic Classes Test Complete ==="
 KTHXBAI
