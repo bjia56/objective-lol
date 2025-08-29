@@ -15,7 +15,6 @@ func RegisterSTDIOInEnv(env *environment.Environment) {
 	// SAY function - prints value to stdout
 	say := &environment.Function{
 		Name:       "SAY",
-		IsNative:   true,
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			fmt.Print(args[0].String())
@@ -27,7 +26,6 @@ func RegisterSTDIOInEnv(env *environment.Environment) {
 	// SAYZ function - prints value with newline
 	sayz := &environment.Function{
 		Name:       "SAYZ",
-		IsNative:   true,
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			fmt.Println(args[0].String())
@@ -40,7 +38,6 @@ func RegisterSTDIOInEnv(env *environment.Environment) {
 	gimme := &environment.Function{
 		Name:       "GIMME",
 		ReturnType: "STRIN",
-		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			reader := bufio.NewReader(os.Stdin)

@@ -119,7 +119,6 @@ func (i *Interpreter) VisitFunctionDeclaration(node *ast.FunctionDeclarationNode
 		ReturnType:  strings.ToUpper(node.ReturnType),
 		Parameters:  node.Parameters,
 		Body:        node.Body,
-		IsNative:    node.IsNative,
 		IsShared:    node.IsShared,
 		ParentClass: i.currentClass,
 	}
@@ -187,7 +186,6 @@ func (i *Interpreter) VisitClassDeclaration(node *ast.ClassDeclarationNode) (typ
 				ReturnType:  strings.ToUpper(member.Function.ReturnType),
 				Parameters:  member.Function.Parameters,
 				Body:        member.Function.Body,
-				IsNative:    member.Function.IsNative,
 				IsShared:    &member.IsShared,
 				ParentClass: class.Name,
 			}
@@ -373,7 +371,7 @@ func (i *Interpreter) callFunction(function *environment.Function, args []types.
 	}
 
 	// Handle native functions
-	if function.IsNative && function.NativeImpl != nil {
+	if function.NativeImpl != nil {
 		argsCasted := make([]types.Value, len(args))
 		for i, arg := range args {
 			casted, err := arg.Cast(function.Parameters[i].Type)

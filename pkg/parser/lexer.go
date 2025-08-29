@@ -28,7 +28,6 @@ const (
 	TEH
 	VARIABLE
 	FUNCSHUN
-	NATIV
 	CLAS
 	KITTEH
 	OF
@@ -113,8 +112,6 @@ func (t TokenType) String() string {
 		return "VARIABLE"
 	case FUNCSHUN:
 		return "FUNCSHUN"
-	case NATIV:
-		return "NATIV"
 	case CLAS:
 		return "CLAS"
 	case KITTEH:
@@ -247,7 +244,6 @@ var keywords = map[string]TokenType{
 	"TEH":      TEH,
 	"VARIABLE": VARIABLE,
 	"FUNCSHUN": FUNCSHUN,
-	"NATIV":    NATIV,
 	"CLAS":     CLAS,
 	"KITTEH":   KITTEH,
 	"OF":       OF,

@@ -14,7 +14,6 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 	now := &environment.Function{
 		Name:       "NOW",
 		ReturnType: "INTEGR",
-		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			return types.IntegerValue(time.Now().Unix()), nil
@@ -26,7 +25,6 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 	millis := &environment.Function{
 		Name:       "MILLIS",
 		ReturnType: "INTEGR",
-		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			return types.IntegerValue(time.Now().UnixMilli()), nil
@@ -36,8 +34,7 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 
 	// SLEEP function - sleep for specified seconds
 	sleep := &environment.Function{
-		Name:     "SLEEP",
-		IsNative: true,
+		Name: "SLEEP",
 		Parameters: []environment.Parameter{
 			{Name: "seconds", Type: "INTEGR"},
 		},
@@ -58,7 +55,6 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 	year := &environment.Function{
 		Name:       "YEAR",
 		ReturnType: "INTEGR",
-		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			return types.IntegerValue(time.Now().Year()), nil
@@ -70,7 +66,6 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 	month := &environment.Function{
 		Name:       "MONTH",
 		ReturnType: "INTEGR",
-		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			return types.IntegerValue(int(time.Now().Month())), nil
@@ -82,7 +77,6 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 	day := &environment.Function{
 		Name:       "DAY",
 		ReturnType: "INTEGR",
-		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			return types.IntegerValue(time.Now().Day()), nil
@@ -94,7 +88,6 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 	hour := &environment.Function{
 		Name:       "HOUR",
 		ReturnType: "INTEGR",
-		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			return types.IntegerValue(time.Now().Hour()), nil
@@ -106,7 +99,6 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 	minute := &environment.Function{
 		Name:       "MINUTE",
 		ReturnType: "INTEGR",
-		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			return types.IntegerValue(time.Now().Minute()), nil
@@ -118,7 +110,6 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 	second := &environment.Function{
 		Name:       "SECOND",
 		ReturnType: "INTEGR",
-		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			return types.IntegerValue(time.Now().Second()), nil
@@ -130,7 +121,6 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 	formatTime := &environment.Function{
 		Name:       "FORMAT_TIME",
 		ReturnType: "STRIN",
-		IsNative:   true,
 		Parameters: []environment.Parameter{
 			{Name: "timestamp", Type: "INTEGR"},
 			{Name: "format", Type: "STRIN"},

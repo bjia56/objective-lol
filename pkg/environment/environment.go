@@ -2,6 +2,7 @@ package environment
 
 import (
 	"fmt"
+
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
@@ -28,8 +29,7 @@ type Function struct {
 	ReturnType  string
 	Parameters  []Parameter
 	Body        interface{} // Will hold AST nodes
-	IsNative    bool
-	IsShared    *bool // nil for global functions, true/false for class methods
+	IsShared    *bool       // nil for global functions, true/false for class methods
 	ParentClass string
 	NativeImpl  func(args []types.Value) (types.Value, error)
 }

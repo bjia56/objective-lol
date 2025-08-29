@@ -19,7 +19,6 @@ func RegisterMATHInEnv(env *environment.Environment) {
 	abs := &environment.Function{
 		Name:       "ABS",
 		ReturnType: "DUBBLE",
-		IsNative:   true,
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},
@@ -39,7 +38,6 @@ func RegisterMATHInEnv(env *environment.Environment) {
 	max := &environment.Function{
 		Name:       "MAX",
 		ReturnType: "DUBBLE",
-		IsNative:   true,
 		Parameters: []environment.Parameter{
 			{Name: "a", Type: "DUBBLE"},
 			{Name: "b", Type: "DUBBLE"},
@@ -62,7 +60,6 @@ func RegisterMATHInEnv(env *environment.Environment) {
 	min := &environment.Function{
 		Name:       "MIN",
 		ReturnType: "DUBBLE",
-		IsNative:   true,
 		Parameters: []environment.Parameter{
 			{Name: "a", Type: "DUBBLE"},
 			{Name: "b", Type: "DUBBLE"},
@@ -85,7 +82,6 @@ func RegisterMATHInEnv(env *environment.Environment) {
 	sqrt := &environment.Function{
 		Name:       "SQRT",
 		ReturnType: "DUBBLE",
-		IsNative:   true,
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},
@@ -108,7 +104,6 @@ func RegisterMATHInEnv(env *environment.Environment) {
 	pow := &environment.Function{
 		Name:       "POW",
 		ReturnType: "DUBBLE",
-		IsNative:   true,
 		Parameters: []environment.Parameter{
 			{Name: "base", Type: "DUBBLE"},
 			{Name: "exponent", Type: "DUBBLE"},
@@ -132,7 +127,6 @@ func RegisterMATHInEnv(env *environment.Environment) {
 	random := &environment.Function{
 		Name:       "RANDOM",
 		ReturnType: "DUBBLE",
-		IsNative:   true,
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(args []types.Value) (types.Value, error) {
 			return types.DoubleValue(rand.Float64()), nil
@@ -144,7 +138,6 @@ func RegisterMATHInEnv(env *environment.Environment) {
 	randint := &environment.Function{
 		Name:       "RANDINT",
 		ReturnType: "INTEGR",
-		IsNative:   true,
 		Parameters: []environment.Parameter{
 			{Name: "min", Type: "INTEGR"},
 			{Name: "max", Type: "INTEGR"},
@@ -171,7 +164,6 @@ func RegisterMATHInEnv(env *environment.Environment) {
 	sin := &environment.Function{
 		Name:       "SIN",
 		ReturnType: "DUBBLE",
-		IsNative:   true,
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},
@@ -191,7 +183,6 @@ func RegisterMATHInEnv(env *environment.Environment) {
 	cos := &environment.Function{
 		Name:       "COS",
 		ReturnType: "DUBBLE",
-		IsNative:   true,
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},

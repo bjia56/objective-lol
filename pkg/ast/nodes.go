@@ -68,7 +68,6 @@ type FunctionDeclarationNode struct {
 	ReturnType string
 	Parameters []environment.Parameter
 	Body       *StatementBlockNode
-	IsNative   bool
 	IsShared   *bool // nil for global, true/false for class methods
 }
 
@@ -207,9 +206,9 @@ func (n *IdentifierNode) Accept(visitor Visitor) (types.Value, error) {
 
 // ObjectInstantiationNode represents object creation
 type ObjectInstantiationNode struct {
-	ClassName         string
-	SourceName        string // optional, for "NEW TYPE IN SOURCE"
-	ConstructorArgs   []Node // arguments for constructor call
+	ClassName       string
+	SourceName      string // optional, for "NEW TYPE IN SOURCE"
+	ConstructorArgs []Node // arguments for constructor call
 }
 
 func (n *ObjectInstantiationNode) Accept(visitor Visitor) (types.Value, error) {

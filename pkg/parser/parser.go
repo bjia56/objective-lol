@@ -124,7 +124,7 @@ func (p *Parser) parseDeclaration() ast.Node {
 	switch p.peekToken.Type {
 	case VARIABLE, LOCKD:
 		return p.parseVariableDeclaration()
-	case FUNCSHUN, NATIV:
+	case FUNCSHUN:
 		return p.parseFunctionDeclaration()
 	case CLAS:
 		return p.parseClassDeclaration()
@@ -264,12 +264,6 @@ func (p *Parser) parseImportStatement() *ast.ImportStatementNode {
 func (p *Parser) parseFunctionDeclaration() *ast.FunctionDeclarationNode {
 	node := &ast.FunctionDeclarationNode{}
 
-	// Check for NATIV
-	if p.peekTokenIs(NATIV) {
-		node.IsNative = true
-		p.nextToken()
-	}
-
 	if !p.expectPeek(FUNCSHUN) {
 		p.addError(fmt.Sprintf("expected 'FUNCSHUN', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
 		return nil
@@ -296,11 +290,6 @@ func (p *Parser) parseFunctionDeclaration() *ast.FunctionDeclarationNode {
 	if p.peekTokenIs(WIT) {
 		p.nextToken() // consume WIT
 		node.Parameters = p.parseParameterList()
-	}
-
-	// For native functions, we're done
-	if node.IsNative {
-		return node
 	}
 
 	// Parse function body

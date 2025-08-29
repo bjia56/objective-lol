@@ -502,14 +502,14 @@ I CAN HAS STDIO?  BTW Global import
 HAI ME TEH FUNCSHUN OUTER
     I HAS A VARIABLE LOCAL_VAR TEH STRIN ITZ "Available to inner functions"
     I CAN HAS MATH?  BTW Local import
-    
+
     HAI ME TEH FUNCSHUN INNER
         BTW Can access: GLOBAL_VAR, LOCAL_VAR, STDIO, MATH
         SAYZ WIT GLOBAL_VAR
         SAYZ WIT LOCAL_VAR
         I HAS A VARIABLE RESULT TEH DUBBLE ITZ ABS WIT -42
     KTHXBAI
-    
+
     INNER
 KTHXBAI
 ```
@@ -673,19 +673,19 @@ HAI ME TEH FUNCSHUN MAIN
     BTW Create objects with constructor arguments
     I HAS A VARIABLE ORIGIN TEH POINT ITZ NEW POINT WIT 0 AN WIT 0
     I HAS A VARIABLE CORNER TEH POINT ITZ NEW POINT WIT 10 AN WIT 5
-    
+
     ORIGIN DO DISPLAY    BTW Point(0, 0)
     CORNER DO DISPLAY    BTW Point(10, 5)
-    
+
     BTW Constructor with multiple parameters
     I HAS A VARIABLE RECT TEH RECTANGLE ITZ NEW RECTANGLE WIT 20 AN WIT 15 AN WIT "blue"
     SAYZ WIT RECT DO GET_AREA    BTW 300
-    
+
     BTW Parameterless constructor called automatically
     I HAS A VARIABLE COUNTER1 TEH COUNTER ITZ NEW COUNTER
     BTW Output: "Counter initialized!"
     SAYZ WIT COUNTER1 DO GET_VALUE    BTW 1 (set by constructor)
-    
+
     BTW Create without constructor (uses default values) - only for classes without constructors
     I HAS A VARIABLE DEFAULT_POINT TEH POINT ITZ NEW POINT
     DEFAULT_POINT DO DISPLAY    BTW Point(0, 0)
@@ -804,7 +804,7 @@ Standard library functions must be explicitly imported using the `I CAN HAS <mod
 
 ```lol
 I CAN HAS STDIO?    BTW Import I/O functions
-I CAN HAS MATH?     BTW Import mathematical functions  
+I CAN HAS MATH?     BTW Import mathematical functions
 I CAN HAS TIME?     BTW Import time functions
 ```
 
@@ -823,17 +823,17 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN OUTER_FUNCTION
     I CAN HAS MATH?  BTW Math available in OUTER_FUNCTION and its callees
-    
+
     HAI ME TEH FUNCSHUN INNER_FUNCTION
         BTW Can access STDIO (from global) and MATH (from OUTER_FUNCTION)
         SAYZ WIT "Hello from inner function"
         I HAS A VARIABLE RESULT TEH DUBBLE ITZ ABS WIT -42.5
     KTHXBAI
-    
+
     INNER_FUNCTION
 KTHXBAI
 
-HAI ME TEH FUNCSHUN SEPARATE_FUNCTION  
+HAI ME TEH FUNCSHUN SEPARATE_FUNCTION
     BTW Can access STDIO (global) but NOT MATH (not imported here)
     SAYZ WIT "This works"
     BTW I HAS A VARIABLE X TEH DUBBLE ITZ ABS WIT -5  BTW This would fail!
@@ -843,7 +843,7 @@ KTHXBAI
 **Scoping Rules:**
 
 1. **Lexical Scoping**: Functions inherit imports from their calling context
-2. **No Leakage**: Imports in one function don't affect sibling functions  
+2. **No Leakage**: Imports in one function don't affect sibling functions
 3. **Parent Access**: Child functions can access parent function imports
 4. **Similar to Bash**: Variable and function lookup walks up the parent environment chain
 
@@ -1189,7 +1189,6 @@ KTHXBAI
 - `AN` - Parameter separator
 - `GIVEZ` - Return statement
 - `UP` - Void return
-- `NATIV` - Native function marker
 
 #### Class Declaration
 - `CLAS` - Class keyword
