@@ -29,7 +29,7 @@ Create `hello.olol`:
 BTW This is a comment - Hello World program
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "Hello, World!"
+    SAYZ WIT "Hello, World!"
 KTHXBAI
 ```
 
@@ -61,8 +61,8 @@ I HAS A LOCKD VARIABLE PI TEH DUBBLE ITZ 3.14159  BTW Constant
 
 ```lol
 HAI ME TEH FUNCSHUN GREET WIT NAME TEH STRIN
-    VISIBLE WIT "Hello, "
-    VISIBLEZ WIT NAME
+    SAY WIT "Hello, "
+    SAYZ WIT NAME
 KTHXBAI
 
 HAI ME TEH FUNCSHUN ADD TEH INTEGR WIT X TEH INTEGR AN WIT Y TEH INTEGR
@@ -78,8 +78,8 @@ HAI ME TEH CLAS PERSON
     DIS TEH VARIABLE NAME TEH STRIN ITZ "Unknown"
 
     DIS TEH FUNCSHUN INTRODUCE
-        VISIBLE WIT "Hi, I'm "
-        VISIBLEZ WIT NAME
+        SAY WIT "Hi, I'm "
+        SAYZ WIT NAME
     KTHX
 KTHXBAI
 
@@ -94,14 +94,14 @@ KTHXBAI
 
 ```lol
 IZ AGE BIGGR THAN 17?
-    VISIBLEZ WIT "You are an adult!"
+    SAYZ WIT "You are an adult!"
 NOPE
-    VISIBLEZ WIT "You are a minor"
+    SAYZ WIT "You are a minor"
 KTHX
 
 I HAS A VARIABLE COUNTER TEH INTEGR ITZ 5
 WHILE COUNTER BIGGR THAN 0
-    VISIBLEZ WIT COUNTER
+    SAYZ WIT COUNTER
     COUNTER ITZ COUNTER LES 1
 KTHX
 ```
@@ -177,8 +177,8 @@ The interpreter follows a traditional architecture:
 ### Standard Library
 
 **I/O Functions:**
-- `VISIBLE WIT <value>` - Print without newline
-- `VISIBLEZ WIT <value>` - Print with newline
+- `SAY WIT <value>` - Print without newline
+- `SAYZ WIT <value>` - Print with newline
 - `GIMME` - Read user input
 
 **Math Functions:**

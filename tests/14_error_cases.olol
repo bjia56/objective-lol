@@ -4,7 +4,7 @@ I CAN HAS STDIO?
 BTW Function that might cause division by zero
 HAI ME TEH FUNCSHUN SAFE_DIVIDE TEH DUBBLE WIT X TEH DUBBLE AN WIT Y TEH DUBBLE
     IZ Y SAEM AS 0?
-        VISIBLEZ WIT "Error: Division by zero attempted"
+        SAYZ WIT "Error: Division by zero attempted"
         GIVEZ -1.0
     NOPE
         GIVEZ X DIVIDEZ Y
@@ -23,147 +23,147 @@ HAI ME TEH FUNCSHUN CHECK_BOUNDS TEH BOOL WIT VALUE TEH INTEGR AN WIT MIN TEH IN
 KTHXBAI
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Error Cases and Edge Conditions Test ==="
+    SAYZ WIT "=== Error Cases and Edge Conditions Test ==="
 
     BTW Test division operations
-    VISIBLEZ WIT "Division edge cases:"
+    SAYZ WIT "Division edge cases:"
 
     I HAS A VARIABLE X TEH DUBBLE ITZ 10.0
     I HAS A VARIABLE Y TEH DUBBLE ITZ 0.0
     I HAS A VARIABLE Z TEH DUBBLE ITZ 3.0
 
-    VISIBLE WIT "Safe division 10.0 / 3.0: "
-    VISIBLEZ WIT SAFE_DIVIDE WIT X AN WIT Z
+    SAY WIT "Safe division 10.0 / 3.0: "
+    SAYZ WIT SAFE_DIVIDE WIT X AN WIT Z
 
-    VISIBLE WIT "Safe division 10.0 / 0.0: "
-    VISIBLEZ WIT SAFE_DIVIDE WIT X AN WIT Y
+    SAY WIT "Safe division 10.0 / 0.0: "
+    SAYZ WIT SAFE_DIVIDE WIT X AN WIT Y
 
     BTW Test very large and small numbers
-    VISIBLEZ WIT "Large/small number tests:"
+    SAYZ WIT "Large/small number tests:"
 
     I HAS A VARIABLE VERY_LARGE TEH INTEGR ITZ 999999999
     I HAS A VARIABLE VERY_SMALL TEH INTEGR ITZ -999999999
     I HAS A VARIABLE ZERO TEH INTEGR ITZ 0
 
-    VISIBLE WIT "Very large number: "
-    VISIBLEZ WIT VERY_LARGE
-    VISIBLE WIT "Very small (negative) number: "
-    VISIBLEZ WIT VERY_SMALL
+    SAY WIT "Very large number: "
+    SAYZ WIT VERY_LARGE
+    SAY WIT "Very small (negative) number: "
+    SAYZ WIT VERY_SMALL
 
-    VISIBLE WIT "Large + Small: "
-    VISIBLEZ WIT VERY_LARGE MOAR VERY_SMALL
+    SAY WIT "Large + Small: "
+    SAYZ WIT VERY_LARGE MOAR VERY_SMALL
 
     BTW Test boundary conditions
-    VISIBLEZ WIT "Boundary condition tests:"
+    SAYZ WIT "Boundary condition tests:"
 
-    VISIBLE WIT "Check bounds (5, 0, 10): "
-    VISIBLEZ WIT CHECK_BOUNDS WIT 5 AN WIT 0 AN WIT 10
+    SAY WIT "Check bounds (5, 0, 10): "
+    SAYZ WIT CHECK_BOUNDS WIT 5 AN WIT 0 AN WIT 10
 
-    VISIBLE WIT "Check bounds (-1, 0, 10): "
-    VISIBLEZ WIT CHECK_BOUNDS WIT -1 AN WIT 0 AN WIT 10
+    SAY WIT "Check bounds (-1, 0, 10): "
+    SAYZ WIT CHECK_BOUNDS WIT -1 AN WIT 0 AN WIT 10
 
-    VISIBLE WIT "Check bounds (15, 0, 10): "
-    VISIBLEZ WIT CHECK_BOUNDS WIT 15 AN WIT 0 AN WIT 10
+    SAY WIT "Check bounds (15, 0, 10): "
+    SAYZ WIT CHECK_BOUNDS WIT 15 AN WIT 0 AN WIT 10
 
-    VISIBLE WIT "Check bounds (0, 0, 10) - edge case: "
-    VISIBLEZ WIT CHECK_BOUNDS WIT 0 AN WIT 0 AN WIT 10
+    SAY WIT "Check bounds (0, 0, 10) - edge case: "
+    SAYZ WIT CHECK_BOUNDS WIT 0 AN WIT 0 AN WIT 10
 
-    VISIBLE WIT "Check bounds (10, 0, 10) - edge case: "
-    VISIBLEZ WIT CHECK_BOUNDS WIT 10 AN WIT 0 AN WIT 10
+    SAY WIT "Check bounds (10, 0, 10) - edge case: "
+    SAYZ WIT CHECK_BOUNDS WIT 10 AN WIT 0 AN WIT 10
 
     BTW Test string edge cases
-    VISIBLEZ WIT "String edge cases:"
+    SAYZ WIT "String edge cases:"
 
     I HAS A VARIABLE EMPTY_STRING TEH STRIN ITZ ""
     I HAS A VARIABLE SPACE_STRING TEH STRIN ITZ " "
     I HAS A VARIABLE NEWLINE_STRING TEH STRIN ITZ "\n"
 
-    VISIBLE WIT "Empty string comparison: "
-    VISIBLEZ WIT EMPTY_STRING SAEM AS ""
+    SAY WIT "Empty string comparison: "
+    SAYZ WIT EMPTY_STRING SAEM AS ""
 
-    VISIBLE WIT "Space vs empty: "
-    VISIBLEZ WIT SPACE_STRING SAEM AS EMPTY_STRING
+    SAY WIT "Space vs empty: "
+    SAYZ WIT SPACE_STRING SAEM AS EMPTY_STRING
 
-    VISIBLE WIT "String with newline (visible between pipes): "
-    VISIBLE WIT "|"
-    VISIBLE WIT NEWLINE_STRING
-    VISIBLEZ WIT "|"
+    SAY WIT "String with newline (visible between pipes): "
+    SAY WIT "|"
+    SAY WIT NEWLINE_STRING
+    SAYZ WIT "|"
 
     BTW Test boolean edge cases
-    VISIBLEZ WIT "Boolean logic edge cases:"
+    SAYZ WIT "Boolean logic edge cases:"
 
     I HAS A VARIABLE TRUE_VAL TEH BOOL ITZ YEZ
     I HAS A VARIABLE FALSE_VAL TEH BOOL ITZ NO
 
     BTW Test short-circuit evaluation behavior
-    VISIBLEZ WIT "Complex boolean expressions:"
-    VISIBLE WIT "YEZ OR (anything): "
-    VISIBLEZ WIT TRUE_VAL OR FALSE_VAL
-    VISIBLE WIT "NO AND (anything): "
-    VISIBLEZ WIT FALSE_VAL AN TRUE_VAL
+    SAYZ WIT "Complex boolean expressions:"
+    SAY WIT "YEZ OR (anything): "
+    SAYZ WIT TRUE_VAL OR FALSE_VAL
+    SAY WIT "NO AND (anything): "
+    SAYZ WIT FALSE_VAL AN TRUE_VAL
 
     BTW Test math edge cases
-    VISIBLEZ WIT "Math edge cases:"
+    SAYZ WIT "Math edge cases:"
 
     BTW Test with zero
     I HAS A VARIABLE ZERO_VAL TEH INTEGR ITZ 0
-    VISIBLE WIT "0 * 999: "
-    VISIBLEZ WIT ZERO_VAL TIEMZ 999
+    SAY WIT "0 * 999: "
+    SAYZ WIT ZERO_VAL TIEMZ 999
 
-    VISIBLE WIT "999 * 0: "
-    VISIBLEZ WIT 999 TIEMZ ZERO_VAL
+    SAY WIT "999 * 0: "
+    SAYZ WIT 999 TIEMZ ZERO_VAL
 
-    VISIBLE WIT "0 + 5: "
-    VISIBLEZ WIT ZERO_VAL MOAR 5
+    SAY WIT "0 + 5: "
+    SAYZ WIT ZERO_VAL MOAR 5
 
-    VISIBLE WIT "5 - 5: "
-    VISIBLEZ WIT 5 LES 5
+    SAY WIT "5 - 5: "
+    SAYZ WIT 5 LES 5
 
     BTW Test negative arithmetic
     I HAS A VARIABLE NEG_FIVE TEH INTEGR ITZ -5
     I HAS A VARIABLE POS_THREE TEH INTEGR ITZ 3
 
-    VISIBLEZ WIT "Negative arithmetic:"
-    VISIBLE WIT "-5 + 3: "
-    VISIBLEZ WIT NEG_FIVE MOAR POS_THREE
+    SAYZ WIT "Negative arithmetic:"
+    SAY WIT "-5 + 3: "
+    SAYZ WIT NEG_FIVE MOAR POS_THREE
 
-    VISIBLE WIT "-5 - 3: "
-    VISIBLEZ WIT NEG_FIVE LES POS_THREE
+    SAY WIT "-5 - 3: "
+    SAYZ WIT NEG_FIVE LES POS_THREE
 
-    VISIBLE WIT "-5 * 3: "
-    VISIBLEZ WIT NEG_FIVE TIEMZ POS_THREE
+    SAY WIT "-5 * 3: "
+    SAYZ WIT NEG_FIVE TIEMZ POS_THREE
 
-    VISIBLE WIT "-5 * -3: "
+    SAY WIT "-5 * -3: "
     I HAS A VARIABLE NEG_THREE TEH INTEGR ITZ 0 LES POS_THREE
-    VISIBLEZ WIT NEG_FIVE TIEMZ NEG_THREE
+    SAYZ WIT NEG_FIVE TIEMZ NEG_THREE
 
     BTW Test comparison edge cases
-    VISIBLEZ WIT "Comparison edge cases:"
+    SAYZ WIT "Comparison edge cases:"
 
     I HAS A VARIABLE FLOAT_TEN TEH DUBBLE ITZ 10.0
     I HAS A VARIABLE INT_TEN TEH INTEGR ITZ 10
 
-    VISIBLE WIT "10.0 == 10 (mixed types): "
-    VISIBLEZ WIT FLOAT_TEN SAEM AS INT_TEN
+    SAY WIT "10.0 == 10 (mixed types): "
+    SAYZ WIT FLOAT_TEN SAEM AS INT_TEN
 
-    VISIBLE WIT "10 > 9.9: "
-    VISIBLEZ WIT INT_TEN BIGGR THAN 9.9
+    SAY WIT "10 > 9.9: "
+    SAYZ WIT INT_TEN BIGGR THAN 9.9
 
-    VISIBLE WIT "9.9 < 10: "
-    VISIBLEZ WIT 9.9 SMALLR THAN INT_TEN
+    SAY WIT "9.9 < 10: "
+    SAYZ WIT 9.9 SMALLR THAN INT_TEN
 
     BTW Test potential overflow scenarios (implementation dependent)
-    VISIBLEZ WIT "Large number operations:"
+    SAYZ WIT "Large number operations:"
     I HAS A VARIABLE BIG1 TEH INTEGR ITZ 1000000
     I HAS A VARIABLE BIG2 TEH INTEGR ITZ 1000000
 
-    VISIBLE WIT "1000000 + 1000000: "
-    VISIBLEZ WIT BIG1 MOAR BIG2
+    SAY WIT "1000000 + 1000000: "
+    SAYZ WIT BIG1 MOAR BIG2
 
-    VISIBLE WIT "1000000 * 1000000: "
-    VISIBLEZ WIT BIG1 TIEMZ BIG2
+    SAY WIT "1000000 * 1000000: "
+    SAYZ WIT BIG1 TIEMZ BIG2
 
-    VISIBLEZ WIT "=== Error Cases Test Complete ==="
-    VISIBLEZ WIT "Note: Some edge cases may behave differently"
-    VISIBLEZ WIT "depending on the implementation details."
+    SAYZ WIT "=== Error Cases Test Complete ==="
+    SAYZ WIT "Note: Some edge cases may behave differently"
+    SAYZ WIT "depending on the implementation details."
 KTHXBAI

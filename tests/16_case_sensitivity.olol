@@ -3,51 +3,51 @@ i can has stdio?
 i can has math?
 
 hai me teh funcshun main
-    visiblez wit "=== Case Sensitivity Test ==="
+    sayz wit "=== Case Sensitivity Test ==="
 
     BTW Test mixed case keywords
     i has a variable x teh integr itz 42
-    visible wit "Variable x: "
-    visiblez wit x
+    say wit "Variable x: "
+    sayz wit x
 
     BTW Test mixed case identifiers
-    visible wit "Variable X: "
-    visiblez wit X
+    say wit "Variable X: "
+    sayz wit X
 
     BTW Test lowercase keywords
     i has a variable name teh strin itz "Test"
-    visible wit "Name: "
-    visiblez wit name
+    say wit "Name: "
+    sayz wit name
 
     BTW Test uppercase keywords
     I HAS A VARIABLE Y TEH DUBBLE ITZ 3.14
-    VISIBLE WIT "Variable Y: "
-    VISIBLEZ WIT Y
+    SAY WIT "Variable Y: "
+    SAYZ WIT Y
 
     BTW Test random case mixing
     I hAs A vArIaBlE z TeH bOoL iTz YeZ
-    ViSiBlE wIt "Variable z: "
-    VISiBLEz WiT z
+    SaY wIt "Variable z: "
+    SAYz WiT z
 
     BTW Test function calls with different cases
     i has a variable result teh integr itz abs wit -25
-    visible wit "ABS result: "
-    visiblez wit result
+    say wit "ABS result: "
+    sayz wit result
 
     BTW Test control flow with mixed case
     iz x biggr than 30?
-        visiblez wit "x is bigger than 30"
+        sayz wit "x is bigger than 30"
     nope
-        visiblez wit "x is not bigger than 30"
+        sayz wit "x is not bigger than 30"
     kthx
 
     BTW Test while loop with mixed case
     i has a variable counter teh integr itz 1
     while counter smallr than 4
-        visible wit "Counter: "
-        visiblez wit counter
+        say wit "Counter: "
+        sayz wit counter
         counter itz counter moar 1
     kthx
 
-    visiblez wit "=== Case Sensitivity Test Complete ==="
+    sayz wit "=== Case Sensitivity Test Complete ==="
 kthxbai

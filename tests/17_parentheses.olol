@@ -2,7 +2,7 @@ BTW Parentheses support test
 I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Parentheses Support Test ==="
+    SAYZ WIT "=== Parentheses Support Test ==="
 
     BTW Setup test variables
     I HAS A VARIABLE AA TEH INTEGR ITZ 5
@@ -11,57 +11,57 @@ HAI ME TEH FUNCSHUN MAIN
     I HAS A VARIABLE DD TEH INTEGR ITZ 4
 
     BTW Test basic parentheses
-    VISIBLEZ WIT "Basic parentheses:"
-    VISIBLE WIT "(5 + 3) = "
-    VISIBLEZ WIT (AA MOAR BB)
+    SAYZ WIT "Basic parentheses:"
+    SAY WIT "(5 + 3) = "
+    SAYZ WIT (AA MOAR BB)
 
-    VISIBLE WIT "(5 - 3) = "
-    VISIBLEZ WIT (AA LES BB)
+    SAY WIT "(5 - 3) = "
+    SAYZ WIT (AA LES BB)
 
     BTW Test precedence override
-    VISIBLEZ WIT "Precedence override:"
-    VISIBLE WIT "2 * 3 + 4 = "
-    VISIBLEZ WIT CC TIEMZ BB MOAR DD
+    SAYZ WIT "Precedence override:"
+    SAY WIT "2 * 3 + 4 = "
+    SAYZ WIT CC TIEMZ BB MOAR DD
 
-    VISIBLE WIT "2 * (3 + 4) = "
-    VISIBLEZ WIT CC TIEMZ (BB MOAR DD)
+    SAY WIT "2 * (3 + 4) = "
+    SAYZ WIT CC TIEMZ (BB MOAR DD)
 
-    VISIBLE WIT "(2 + 3) * 4 = "
-    VISIBLEZ WIT (CC MOAR BB) TIEMZ DD
+    SAY WIT "(2 + 3) * 4 = "
+    SAYZ WIT (CC MOAR BB) TIEMZ DD
 
     BTW Test nested parentheses
-    VISIBLEZ WIT "Nested parentheses:"
-    VISIBLE WIT "((5 + 3) - 2) = "
-    VISIBLEZ WIT ((AA MOAR BB) LES CC)
+    SAYZ WIT "Nested parentheses:"
+    SAY WIT "((5 + 3) - 2) = "
+    SAYZ WIT ((AA MOAR BB) LES CC)
 
-    VISIBLE WIT "(5 + (3 * 2)) = "
-    VISIBLEZ WIT (AA MOAR (BB TIEMZ CC))
+    SAY WIT "(5 + (3 * 2)) = "
+    SAYZ WIT (AA MOAR (BB TIEMZ CC))
 
-    VISIBLE WIT "((2 + 3) * (4 - 2)) = "
-    VISIBLEZ WIT ((CC MOAR BB) TIEMZ (DD LES CC))
+    SAY WIT "((2 + 3) * (4 - 2)) = "
+    SAYZ WIT ((CC MOAR BB) TIEMZ (DD LES CC))
 
     BTW Test complex expressions
-    VISIBLEZ WIT "Complex expressions:"
-    VISIBLE WIT "(5 + 3) * 2 - (4 / 2) = "
-    VISIBLEZ WIT (AA MOAR BB) TIEMZ CC LES (DD DIVIDEZ CC)
+    SAYZ WIT "Complex expressions:"
+    SAY WIT "(5 + 3) * 2 - (4 / 2) = "
+    SAYZ WIT (AA MOAR BB) TIEMZ CC LES (DD DIVIDEZ CC)
 
-    VISIBLE WIT "((5 - 3) + 2) * (4 - 2) = "
-    VISIBLEZ WIT ((AA LES BB) MOAR CC) TIEMZ (DD LES CC)
+    SAY WIT "((5 - 3) + 2) * (4 - 2) = "
+    SAYZ WIT ((AA LES BB) MOAR CC) TIEMZ (DD LES CC)
 
     BTW Test with double values
     I HAS A VARIABLE E TEH DUBBLE ITZ 2.5
     I HAS A VARIABLE F TEH DUBBLE ITZ 1.5
-    VISIBLEZ WIT "With double values:"
-    VISIBLE WIT "(2.5 + 1.5) * 2 = "
-    VISIBLEZ WIT (E MOAR F) TIEMZ CC
+    SAYZ WIT "With double values:"
+    SAY WIT "(2.5 + 1.5) * 2 = "
+    SAYZ WIT (E MOAR F) TIEMZ CC
 
     BTW Test with comparisons and logical operators
-    VISIBLEZ WIT "With comparisons and logical:"
-    VISIBLE WIT "(5 > 3) AN (2 < 4) = "
-    VISIBLEZ WIT (AA BIGGR THAN BB) AN (CC SMALLR THAN DD)
+    SAYZ WIT "With comparisons and logical:"
+    SAY WIT "(5 > 3) AN (2 < 4) = "
+    SAYZ WIT (AA BIGGR THAN BB) AN (CC SMALLR THAN DD)
 
-    VISIBLE WIT "(5 < 3) OR (2 = 2) = "
-    VISIBLEZ WIT (AA SMALLR THAN BB) OR (CC SAEM AS CC)
+    SAY WIT "(5 < 3) OR (2 = 2) = "
+    SAYZ WIT (AA SMALLR THAN BB) OR (CC SAEM AS CC)
 
-    VISIBLEZ WIT "=== Parentheses Support Test Complete ==="
+    SAYZ WIT "=== Parentheses Support Test Complete ==="
 KTHXBAI

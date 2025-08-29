@@ -3,23 +3,23 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN MAIN
     BTW Test comments and basic output
-    VISIBLEZ WIT "=== Basic Syntax Test ==="
+    SAYZ WIT "=== Basic Syntax Test ==="
 
     BTW Test string literals
-    VISIBLEZ WIT "Hello, World!"
+    SAYZ WIT "Hello, World!"
 
     BTW Test numeric literals
-    VISIBLEZ WIT 42
-    VISIBLEZ WIT 3.14159
-    VISIBLEZ WIT -17
-    VISIBLEZ WIT -2.5
+    SAYZ WIT 42
+    SAYZ WIT 3.14159
+    SAYZ WIT -17
+    SAYZ WIT -2.5
 
     BTW Test boolean literals
-    VISIBLEZ WIT YEZ
-    VISIBLEZ WIT NO
+    SAYZ WIT YEZ
+    SAYZ WIT NO
 
     BTW Test NOTHIN value
-    VISIBLEZ WIT NOTHIN
+    SAYZ WIT NOTHIN
 
-    VISIBLEZ WIT "=== Basic Syntax Test Complete ==="
+    SAYZ WIT "=== Basic Syntax Test Complete ==="
 KTHXBAI

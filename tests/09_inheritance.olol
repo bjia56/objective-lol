@@ -25,7 +25,7 @@ HAI ME TEH CLAS ANIMAL
     KTHX
 
     DIS TEH FUNCSHUN SPEAK
-        VISIBLEZ WIT "Generic animal sound"
+        SAYZ WIT "Generic animal sound"
     KTHX
 
     DIS TEH FUNCSHUN GET_INFO TEH STRIN
@@ -33,11 +33,11 @@ HAI ME TEH CLAS ANIMAL
     KTHX
 
     DIS TEH FUNCSHUN DESCRIBE
-        VISIBLE WIT NAME
-        VISIBLE WIT " is a "
-        VISIBLE WIT SPECIES
-        VISIBLE WIT " aged "
-        VISIBLEZ WIT AGE
+        SAY WIT NAME
+        SAY WIT " is a "
+        SAY WIT SPECIES
+        SAY WIT " aged "
+        SAYZ WIT AGE
     KTHX
 KTHXBAI
 
@@ -58,25 +58,25 @@ HAI ME TEH CLAS CAT KITTEH OF ANIMAL
 
     BTW Override parent method
     DIS TEH FUNCSHUN SPEAK
-        VISIBLEZ WIT "Meow!"
+        SAYZ WIT "Meow!"
     KTHX
 
     DIS TEH FUNCSHUN PURR
-        VISIBLEZ WIT "Purrrrr..."
+        SAYZ WIT "Purrrrr..."
     KTHX
 
     BTW Override describe to include cat-specific info
     DIS TEH FUNCSHUN DESCRIBE
-        VISIBLE WIT NAME
-        VISIBLE WIT " is a "
-        VISIBLE WIT COLOR
-        VISIBLE WIT " "
-        VISIBLE WIT SPECIES
-        VISIBLE WIT " aged "
-        VISIBLE WIT AGE
-        VISIBLE WIT " with "
-        VISIBLE WIT LIVES
-        VISIBLEZ WIT " lives"
+        SAY WIT NAME
+        SAY WIT " is a "
+        SAY WIT COLOR
+        SAY WIT " "
+        SAY WIT SPECIES
+        SAY WIT " aged "
+        SAY WIT AGE
+        SAY WIT " with "
+        SAY WIT LIVES
+        SAYZ WIT " lives"
     KTHX
 KTHXBAI
 
@@ -97,39 +97,39 @@ HAI ME TEH CLAS DOG KITTEH OF ANIMAL
 
     BTW Override parent method
     DIS TEH FUNCSHUN SPEAK
-        VISIBLEZ WIT "Woof!"
+        SAYZ WIT "Woof!"
     KTHX
 
     DIS TEH FUNCSHUN FETCH
-        VISIBLEZ WIT "Fetching the ball!"
+        SAYZ WIT "Fetching the ball!"
     KTHX
 
     DIS TEH FUNCSHUN SIT
-        VISIBLEZ WIT "Sitting like a good dog"
+        SAYZ WIT "Sitting like a good dog"
     KTHX
 
     BTW Override describe
     DIS TEH FUNCSHUN DESCRIBE
-        VISIBLE WIT NAME
-        VISIBLE WIT " is a "
-        VISIBLE WIT BREED
-        VISIBLE WIT " "
-        VISIBLE WIT SPECIES
-        VISIBLE WIT " aged "
-        VISIBLE WIT AGE
+        SAY WIT NAME
+        SAY WIT " is a "
+        SAY WIT BREED
+        SAY WIT " "
+        SAY WIT SPECIES
+        SAY WIT " aged "
+        SAY WIT AGE
         IZ IS_GOOD_BOY SAEM AS YEZ?
-            VISIBLEZ WIT " and is a very good boy!"
+            SAYZ WIT " and is a very good boy!"
         NOPE
-            VISIBLEZ WIT " and needs more training."
+            SAYZ WIT " and needs more training."
         KTHX
     KTHX
 KTHXBAI
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Inheritance Test ==="
+    SAYZ WIT "=== Inheritance Test ==="
 
     BTW Test base class
-    VISIBLEZ WIT "Creating base animal:"
+    SAYZ WIT "Creating base animal:"
     I HAS A VARIABLE ANIMAL1 TEH ANIMAL ITZ NEW ANIMAL
     ANIMAL1 DO SET_NAME WIT "Generic Beast"
     ANIMAL1 DO SET_AGE WIT 5
@@ -137,54 +137,54 @@ HAI ME TEH FUNCSHUN MAIN
     ANIMAL1 DO SPEAK
 
     BTW Test cat inheritance
-    VISIBLEZ WIT "Creating cat:"
+    SAYZ WIT "Creating cat:"
     I HAS A VARIABLE FLUFFY TEH CAT ITZ NEW CAT
     FLUFFY DO SET_NAME WIT "Fluffy"
     FLUFFY DO SET_AGE WIT 3
     FLUFFY DO SET_COLOR WIT "Orange"
 
-    VISIBLEZ WIT "Cat info:"
+    SAYZ WIT "Cat info:"
     FLUFFY DO DESCRIBE
     FLUFFY DO SPEAK
     FLUFFY DO PURR
 
     BTW Test accessing parent class members
-    VISIBLE WIT "Cat's name (from parent): "
-    VISIBLEZ WIT FLUFFY DO GET_NAME
-    VISIBLE WIT "Cat's age (from parent): "
-    VISIBLEZ WIT FLUFFY DO GET_AGE
-    VISIBLE WIT "Cat's lives (own member): "
-    VISIBLEZ WIT FLUFFY DO GET_LIVES
+    SAY WIT "Cat's name (from parent): "
+    SAYZ WIT FLUFFY DO GET_NAME
+    SAY WIT "Cat's age (from parent): "
+    SAYZ WIT FLUFFY DO GET_AGE
+    SAY WIT "Cat's lives (own member): "
+    SAYZ WIT FLUFFY DO GET_LIVES
 
     BTW Test dog inheritance
-    VISIBLEZ WIT "Creating dog:"
+    SAYZ WIT "Creating dog:"
     I HAS A VARIABLE BUDDY TEH DOG ITZ NEW DOG
     BUDDY DO SET_NAME WIT "Buddy"
     BUDDY DO SET_AGE WIT 4
     BUDDY DO SET_BREED WIT "Golden Retriever"
 
-    VISIBLEZ WIT "Dog info:"
+    SAYZ WIT "Dog info:"
     BUDDY DO DESCRIBE
     BUDDY DO SPEAK
     BUDDY DO FETCH
     BUDDY DO SIT
 
     BTW Test polymorphism - same method, different behavior
-    VISIBLEZ WIT "Polymorphism test - all animals speak:"
+    SAYZ WIT "Polymorphism test - all animals speak:"
     ANIMAL1 DO SPEAK
     FLUFFY DO SPEAK
     BUDDY DO SPEAK
 
     BTW Test multiple objects of same derived class
-    VISIBLEZ WIT "Creating second cat:"
+    SAYZ WIT "Creating second cat:"
     I HAS A VARIABLE WHISKERS TEH CAT ITZ NEW CAT
     WHISKERS DO SET_NAME WIT "Whiskers"
     WHISKERS DO SET_AGE WIT 2
     WHISKERS DO SET_COLOR WIT "Black"
 
-    VISIBLEZ WIT "Comparing cats:"
+    SAYZ WIT "Comparing cats:"
     FLUFFY DO DESCRIBE
     WHISKERS DO DESCRIBE
 
-    VISIBLEZ WIT "=== Inheritance Test Complete ==="
+    SAYZ WIT "=== Inheritance Test Complete ==="
 KTHXBAI

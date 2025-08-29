@@ -3,126 +3,126 @@ I CAN HAS STDIO?
 I CAN HAS MATH?
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Math Library Test ==="
+    SAYZ WIT "=== Math Library Test ==="
 
     BTW Test basic random functions
-    VISIBLE WIT "Random number (0-1): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT RANDOM
-    VISIBLE WIT "Another random number: "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT RANDOM
+    SAY WIT "Random number (0-1): "
+    SAYZ WIT ""
+    SAYZ WIT RANDOM
+    SAY WIT "Another random number: "
+    SAYZ WIT ""
+    SAYZ WIT RANDOM
 
     BTW Test random integer
-    VISIBLE WIT "Random integer between 1 and 10: "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT RANDINT WIT 1 AN WIT 10
-    VISIBLE WIT "Another random integer (1-10): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT RANDINT WIT 1 AN WIT 10
+    SAY WIT "Random integer between 1 and 10: "
+    SAYZ WIT ""
+    SAYZ WIT RANDINT WIT 1 AN WIT 10
+    SAY WIT "Another random integer (1-10): "
+    SAYZ WIT ""
+    SAYZ WIT RANDINT WIT 1 AN WIT 10
 
     BTW Test absolute value
-    VISIBLE WIT "Absolute values: "
-    VISIBLEZ WIT ""
-    VISIBLE WIT "ABS(-5.5): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT ABS WIT -5.5
-    VISIBLE WIT "ABS(3.14): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT ABS WIT 3.14
-    VISIBLE WIT "ABS(-42): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT ABS WIT -42
+    SAY WIT "Absolute values: "
+    SAYZ WIT ""
+    SAY WIT "ABS(-5.5): "
+    SAYZ WIT ""
+    SAYZ WIT ABS WIT -5.5
+    SAY WIT "ABS(3.14): "
+    SAYZ WIT ""
+    SAYZ WIT ABS WIT 3.14
+    SAY WIT "ABS(-42): "
+    SAYZ WIT ""
+    SAYZ WIT ABS WIT -42
 
     BTW Test min and max
-    VISIBLE WIT "Min/Max functions: "
-    VISIBLEZ WIT ""
-    VISIBLE WIT "MIN(5, 10): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT MIN WIT 5 AN WIT 10
-    VISIBLE WIT "MAX(5, 10): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT MAX WIT 5 AN WIT 10
-    VISIBLE WIT "MIN(-3.5, 2.1): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT MIN WIT -3.5 AN WIT 2.1
-    VISIBLE WIT "MAX(-3.5, 2.1): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT MAX WIT -3.5 AN WIT 2.1
+    SAY WIT "Min/Max functions: "
+    SAYZ WIT ""
+    SAY WIT "MIN(5, 10): "
+    SAYZ WIT ""
+    SAYZ WIT MIN WIT 5 AN WIT 10
+    SAY WIT "MAX(5, 10): "
+    SAYZ WIT ""
+    SAYZ WIT MAX WIT 5 AN WIT 10
+    SAY WIT "MIN(-3.5, 2.1): "
+    SAYZ WIT ""
+    SAYZ WIT MIN WIT -3.5 AN WIT 2.1
+    SAY WIT "MAX(-3.5, 2.1): "
+    SAYZ WIT ""
+    SAYZ WIT MAX WIT -3.5 AN WIT 2.1
 
     BTW Test square root
-    VISIBLE WIT "Square root functions: "
-    VISIBLEZ WIT ""
-    VISIBLE WIT "SQRT(16): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT SQRT WIT 16
-    VISIBLE WIT "SQRT(2): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT SQRT WIT 2
-    VISIBLE WIT "SQRT(100): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT SQRT WIT 100
+    SAY WIT "Square root functions: "
+    SAYZ WIT ""
+    SAY WIT "SQRT(16): "
+    SAYZ WIT ""
+    SAYZ WIT SQRT WIT 16
+    SAY WIT "SQRT(2): "
+    SAYZ WIT ""
+    SAYZ WIT SQRT WIT 2
+    SAY WIT "SQRT(100): "
+    SAYZ WIT ""
+    SAYZ WIT SQRT WIT 100
 
     BTW Test power function
-    VISIBLE WIT "Power functions: "
-    VISIBLEZ WIT ""
-    VISIBLE WIT "POW(2, 3): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT POW WIT 2 AN WIT 3
-    VISIBLE WIT "POW(5, 2): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT POW WIT 5 AN WIT 2
-    VISIBLE WIT "POW(10, 0.5) (same as SQRT(10)): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT POW WIT 10 AN WIT 0.5
+    SAY WIT "Power functions: "
+    SAYZ WIT ""
+    SAY WIT "POW(2, 3): "
+    SAYZ WIT ""
+    SAYZ WIT POW WIT 2 AN WIT 3
+    SAY WIT "POW(5, 2): "
+    SAYZ WIT ""
+    SAYZ WIT POW WIT 5 AN WIT 2
+    SAY WIT "POW(10, 0.5) (same as SQRT(10)): "
+    SAYZ WIT ""
+    SAYZ WIT POW WIT 10 AN WIT 0.5
 
     BTW Test trigonometric functions
-    VISIBLE WIT "Trigonometric functions: "
-    VISIBLEZ WIT ""
-    VISIBLE WIT "SIN(0): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT SIN WIT 0
-    VISIBLE WIT "COS(0): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT COS WIT 0
-    VISIBLE WIT "SIN(1.5708) (approx pi/2): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT SIN WIT 1.5708
-    VISIBLE WIT "COS(1.5708) (approx pi/2): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT COS WIT 1.5708
+    SAY WIT "Trigonometric functions: "
+    SAYZ WIT ""
+    SAY WIT "SIN(0): "
+    SAYZ WIT ""
+    SAYZ WIT SIN WIT 0
+    SAY WIT "COS(0): "
+    SAYZ WIT ""
+    SAYZ WIT COS WIT 0
+    SAY WIT "SIN(1.5708) (approx pi/2): "
+    SAYZ WIT ""
+    SAYZ WIT SIN WIT 1.5708
+    SAY WIT "COS(1.5708) (approx pi/2): "
+    SAYZ WIT ""
+    SAYZ WIT COS WIT 1.5708
 
     BTW Test math in expressions
-    VISIBLE WIT "Math in expressions: "
-    VISIBLEZ WIT ""
+    SAY WIT "Math in expressions: "
+    SAYZ WIT ""
     I HAS A VARIABLE AA TEH INTEGR ITZ 5
     I HAS A VARIABLE BB TEH INTEGR ITZ 3
 
-    VISIBLE WIT "MAX(5+3, 5*3): "
-    VISIBLEZ WIT ""
+    SAY WIT "MAX(5+3, 5*3): "
+    SAYZ WIT ""
     I HAS A VARIABLE A_PLUS_B TEH INTEGR ITZ AA MOAR BB
     I HAS A VARIABLE A_TIMES_B TEH INTEGR ITZ AA TIEMZ BB
-    VISIBLEZ WIT MAX WIT A_PLUS_B AN WIT A_TIMES_B
+    SAYZ WIT MAX WIT A_PLUS_B AN WIT A_TIMES_B
 
-    VISIBLE WIT "SQRT(A^2 + B^2) (hypotenuse): "
-    VISIBLEZ WIT ""
+    SAY WIT "SQRT(A^2 + B^2) (hypotenuse): "
+    SAYZ WIT ""
     I HAS A VARIABLE A_SQUARED TEH DUBBLE ITZ POW WIT AA AN WIT 2
     I HAS A VARIABLE B_SQUARED TEH DUBBLE ITZ POW WIT BB AN WIT 2
     I HAS A VARIABLE HYPOTENUSE_SQ TEH DUBBLE ITZ A_SQUARED MOAR B_SQUARED
-    VISIBLEZ WIT SQRT WIT HYPOTENUSE_SQ
+    SAYZ WIT SQRT WIT HYPOTENUSE_SQ
 
     BTW Test edge cases
-    VISIBLE WIT "Edge cases: "
-    VISIBLEZ WIT ""
-    VISIBLE WIT "ABS(0): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT ABS WIT 0
-    VISIBLE WIT "POW(0, 5): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT POW WIT 0 AN WIT 5
-    VISIBLE WIT "POW(5, 0): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT POW WIT 5 AN WIT 0
+    SAY WIT "Edge cases: "
+    SAYZ WIT ""
+    SAY WIT "ABS(0): "
+    SAYZ WIT ""
+    SAYZ WIT ABS WIT 0
+    SAY WIT "POW(0, 5): "
+    SAYZ WIT ""
+    SAYZ WIT POW WIT 0 AN WIT 5
+    SAY WIT "POW(5, 0): "
+    SAYZ WIT ""
+    SAYZ WIT POW WIT 5 AN WIT 0
 
-    VISIBLEZ WIT "=== Math Library Test Complete ==="
+    SAYZ WIT "=== Math Library Test Complete ==="
 KTHXBAI

@@ -2,43 +2,43 @@ BTW Control flow structures test
 I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Control Flow Test ==="
+    SAYZ WIT "=== Control Flow Test ==="
 
     BTW Test basic if statement
     I HAS A VARIABLE X TEH INTEGR ITZ 10
 
-    VISIBLEZ WIT "Testing if X > 5:"
+    SAYZ WIT "Testing if X > 5:"
     IZ X BIGGR THAN 5?
-        VISIBLEZ WIT "X is greater than 5!"
+        SAYZ WIT "X is greater than 5!"
     KTHX
 
     BTW Test if-else statement
-    VISIBLEZ WIT "Testing if X > 20:"
+    SAYZ WIT "Testing if X > 20:"
     IZ X BIGGR THAN 20?
-        VISIBLEZ WIT "X is greater than 20!"
+        SAYZ WIT "X is greater than 20!"
     NOPE
-        VISIBLEZ WIT "X is not greater than 20!"
+        SAYZ WIT "X is not greater than 20!"
     KTHX
 
     BTW Test while loop
-    VISIBLEZ WIT "Counting down from 5:"
+    SAYZ WIT "Counting down from 5:"
     I HAS A VARIABLE COUNTER TEH INTEGR ITZ 5
     WHILE COUNTER BIGGR THAN 0
-        VISIBLEZ WIT COUNTER
+        SAYZ WIT COUNTER
         COUNTER ITZ COUNTER LES 1
     KTHX
 
     BTW Test nested control structures
-    VISIBLEZ WIT "Testing nested structures:"
+    SAYZ WIT "Testing nested structures:"
     I HAS A VARIABLE II TEH INTEGR ITZ 1
     WHILE II SMALLR THAN 4
-        VISIBLE WIT "Outer loop: "
-        VISIBLEZ WIT II
+        SAY WIT "Outer loop: "
+        SAYZ WIT II
 
         IZ II SAEM AS 2?
-            VISIBLEZ WIT "  Found number 2!"
+            SAYZ WIT "  Found number 2!"
         NOPE
-            VISIBLEZ WIT "  Not number 2"
+            SAYZ WIT "  Not number 2"
         KTHX
 
         II ITZ II MOAR 1
@@ -49,12 +49,12 @@ HAI ME TEH FUNCSHUN MAIN
     I HAS A VARIABLE BB TEH INTEGR ITZ 10
     I HAS A VARIABLE CC TEH INTEGR ITZ 15
 
-    VISIBLEZ WIT "Testing complex condition:"
+    SAYZ WIT "Testing complex condition:"
     I HAS A VARIABLE FIRST_TEST TEH BOOL ITZ AA SMALLR THAN BB
     I HAS A VARIABLE SECOND_TEST TEH BOOL ITZ BB SMALLR THAN CC
     IZ FIRST_TEST AN SECOND_TEST?
-        VISIBLEZ WIT "A < B < C is true!"
+        SAYZ WIT "A < B < C is true!"
     KTHX
 
-    VISIBLEZ WIT "=== Control Flow Test Complete ==="
+    SAYZ WIT "=== Control Flow Test Complete ==="
 KTHXBAI

@@ -60,7 +60,7 @@ Create a file named `hello.olol`:
 BTW This is a comment - Hello World program
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "Hello, World!"
+    SAYZ WIT "Hello, World!"
 KTHXBAI
 ```
 
@@ -90,7 +90,7 @@ Comments start with `BTW` and continue to the end of the line:
 
 ```lol
 BTW This is a single-line comment
-VISIBLEZ WIT "Hello"  BTW This is also a comment
+SAYZ WIT "Hello"  BTW This is also a comment
 ```
 
 ### Case Sensitivity
@@ -162,7 +162,7 @@ Represents absence of value:
 
 ```lol
 I HAS A VARIABLE EMPTY_VAR TEH STRIN ITZ NOTHIN
-VISIBLEZ WIT NOTHIN  BTW Prints "NOTHIN"
+SAYZ WIT NOTHIN  BTW Prints "NOTHIN"
 ```
 
 ---
@@ -229,10 +229,10 @@ BTW PI ITZ 3.14  BTW This would cause a runtime error!
 I HAS A VARIABLE A TEH INTEGR ITZ 10
 I HAS A VARIABLE B TEH INTEGR ITZ 3
 
-VISIBLEZ WIT A MOAR B      BTW 13
-VISIBLEZ WIT A LES B       BTW 7
-VISIBLEZ WIT A TIEMZ B     BTW 30
-VISIBLEZ WIT A DIVIDEZ B   BTW 3.333... (always returns DUBBLE)
+SAYZ WIT A MOAR B      BTW 13
+SAYZ WIT A LES B       BTW 7
+SAYZ WIT A TIEMZ B     BTW 30
+SAYZ WIT A DIVIDEZ B   BTW 3.333... (always returns DUBBLE)
 ```
 
 ### Comparison Operators
@@ -248,13 +248,13 @@ I HAS A VARIABLE X TEH INTEGR ITZ 10
 I HAS A VARIABLE Y TEH INTEGR ITZ 5
 
 IZ X BIGGR THAN Y?         BTW YEZ
-    VISIBLEZ WIT "X is bigger"
+    SAYZ WIT "X is bigger"
 KTHX
 
 IZ X SAEM AS Y?            BTW NO
-    VISIBLEZ WIT "Equal"
+    SAYZ WIT "Equal"
 NOPE
-    VISIBLEZ WIT "Not equal"
+    SAYZ WIT "Not equal"
 KTHX
 ```
 
@@ -322,7 +322,7 @@ I HAS A VARIABLE CONDITION TEH BOOL ITZ (A BIGGR THAN B) AN (C BIGGR THAN A)  BT
 I HAS A VARIABLE AGE TEH INTEGR ITZ 18
 
 IZ AGE BIGGR THAN 17?
-    VISIBLEZ WIT "You are an adult!"
+    SAYZ WIT "You are an adult!"
 KTHX
 ```
 
@@ -332,9 +332,9 @@ KTHX
 I HAS A VARIABLE SCORE TEH INTEGR ITZ 85
 
 IZ SCORE BIGGR THAN 89?
-    VISIBLEZ WIT "Grade A"
+    SAYZ WIT "Grade A"
 NOPE
-    VISIBLEZ WIT "Grade B or lower"
+    SAYZ WIT "Grade B or lower"
 KTHX
 ```
 
@@ -347,14 +347,14 @@ I HAS A VARIABLE IS_VALID TEH BOOL ITZ YEZ
 
 BTW Using boolean variables in conditions
 IZ IS_VALID?
-    VISIBLEZ WIT "Valid input"
+    SAYZ WIT "Valid input"
 KTHX
 
 BTW Using logical operators
 I HAS A VARIABLE TEST1 TEH BOOL ITZ X SMALLR THAN Y
 I HAS A VARIABLE TEST2 TEH BOOL ITZ Y BIGGR THAN 5
 IZ TEST1 AN TEST2?
-    VISIBLEZ WIT "Both conditions are true"
+    SAYZ WIT "Both conditions are true"
 KTHX
 ```
 
@@ -364,7 +364,7 @@ KTHX
 BTW Countdown loop
 I HAS A VARIABLE COUNTER TEH INTEGR ITZ 5
 WHILE COUNTER BIGGR THAN 0
-    VISIBLEZ WIT COUNTER
+    SAYZ WIT COUNTER
     COUNTER ITZ COUNTER LES 1
 KTHX
 
@@ -374,9 +374,9 @@ I HAS A VARIABLE J TEH INTEGR
 WHILE I SMALLR THAN 4
     J ITZ 1
     WHILE J SMALLR THAN 3
-        VISIBLE WIT I
-        VISIBLE WIT ", "
-        VISIBLEZ WIT J
+        SAY WIT I
+        SAY WIT ", "
+        SAYZ WIT J
         J ITZ J MOAR 1
     KTHX
     I ITZ I MOAR 1
@@ -394,13 +394,13 @@ Functions are declared using `HAI ME TEH FUNCSHUN`:
 ```lol
 BTW Function with no parameters or return value
 HAI ME TEH FUNCSHUN SAY_HELLO
-    VISIBLEZ WIT "Hello from function!"
+    SAYZ WIT "Hello from function!"
 KTHXBAI
 
 BTW Function with parameters
 HAI ME TEH FUNCSHUN GREET WIT NAME TEH STRIN
-    VISIBLE WIT "Hello, "
-    VISIBLEZ WIT NAME
+    SAY WIT "Hello, "
+    SAYZ WIT NAME
 KTHXBAI
 
 BTW Function with return value
@@ -443,7 +443,7 @@ KTHXBAI
 
 BTW Return nothing (void function)
 HAI ME TEH FUNCSHUN PRINT_INFO
-    VISIBLEZ WIT "Information printed"
+    SAYZ WIT "Information printed"
     GIVEZ UP    BTW Explicit void return (optional)
 KTHXBAI
 ```
@@ -460,10 +460,10 @@ HAI ME TEH FUNCSHUN MAIN
 
     BTW Call function and use return value
     I HAS A VARIABLE SUM TEH INTEGR ITZ ADD WIT 10 AN WIT 5
-    VISIBLEZ WIT SUM
+    SAYZ WIT SUM
 
     BTW Function call as expression
-    VISIBLEZ WIT GET_MAX WIT 15 AN WIT 23
+    SAYZ WIT GET_MAX WIT 15 AN WIT 23
 KTHXBAI
 ```
 
@@ -505,8 +505,8 @@ HAI ME TEH FUNCSHUN OUTER
     
     HAI ME TEH FUNCSHUN INNER
         BTW Can access: GLOBAL_VAR, LOCAL_VAR, STDIO, MATH
-        VISIBLEZ WIT GLOBAL_VAR
-        VISIBLEZ WIT LOCAL_VAR
+        SAYZ WIT GLOBAL_VAR
+        SAYZ WIT LOCAL_VAR
         I HAS A VARIABLE RESULT TEH DUBBLE ITZ ABS WIT -42
     KTHXBAI
     
@@ -540,11 +540,11 @@ HAI ME TEH CLAS PERSON
     KTHX
 
     DIS TEH FUNCSHUN INTRODUCE
-        VISIBLE WIT "Hi, I'm "
-        VISIBLE WIT NAME
-        VISIBLE WIT " and I'm "
-        VISIBLE WIT AGE
-        VISIBLEZ WIT " years old."
+        SAY WIT "Hi, I'm "
+        SAY WIT NAME
+        SAY WIT " and I'm "
+        SAY WIT AGE
+        SAYZ WIT " years old."
     KTHX
 KTHXBAI
 ```
@@ -585,8 +585,8 @@ HAI ME TEH FUNCSHUN MAIN
     PERSON1 AGE ITZ 25
 
     BTW Access member variables
-    VISIBLEZ WIT PERSON1 NAME
-    VISIBLEZ WIT PERSON1 AGE
+    SAYZ WIT PERSON1 NAME
+    SAYZ WIT PERSON1 AGE
 
     BTW Call methods with DO
     PERSON1 DO INTRODUCE
@@ -594,7 +594,7 @@ HAI ME TEH FUNCSHUN MAIN
 
     BTW Call methods with return values
     I HAS A VARIABLE CURRENT_NAME TEH STRIN ITZ PERSON1 DO GET_NAME
-    VISIBLEZ WIT CURRENT_NAME
+    SAYZ WIT CURRENT_NAME
 KTHXBAI
 ```
 
@@ -610,7 +610,7 @@ HAI ME TEH CLAS ANIMAL
     DIS TEH VARIABLE SPECIES TEH STRIN ITZ "Unknown"
 
     DIS TEH FUNCSHUN MAKE_SOUND
-        VISIBLEZ WIT "Some generic animal sound"
+        SAYZ WIT "Some generic animal sound"
     KTHX
 KTHXBAI
 
@@ -621,11 +621,11 @@ HAI ME TEH CLAS DOG KITTEH OF ANIMAL
 
     BTW Override parent method
     DIS TEH FUNCSHUN MAKE_SOUND
-        VISIBLEZ WIT "Woof!"
+        SAYZ WIT "Woof!"
     KTHX
 
     DIS TEH FUNCSHUN WAG_TAIL
-        VISIBLEZ WIT "Wagging tail happily!"
+        SAYZ WIT "Wagging tail happily!"
     KTHX
 KTHXBAI
 
@@ -687,7 +687,7 @@ HAI ME TEH FUNCSHUN OUTER_FUNCTION
     
     HAI ME TEH FUNCSHUN INNER_FUNCTION
         BTW Can access STDIO (from global) and MATH (from OUTER_FUNCTION)
-        VISIBLEZ WIT "Hello from inner function"
+        SAYZ WIT "Hello from inner function"
         I HAS A VARIABLE RESULT TEH DUBBLE ITZ ABS WIT -42.5
     KTHXBAI
     
@@ -696,7 +696,7 @@ KTHXBAI
 
 HAI ME TEH FUNCSHUN SEPARATE_FUNCTION  
     BTW Can access STDIO (global) but NOT MATH (not imported here)
-    VISIBLEZ WIT "This works"
+    SAYZ WIT "This works"
     BTW I HAS A VARIABLE X TEH DUBBLE ITZ ABS WIT -5  BTW This would fail!
 KTHXBAI
 ```
@@ -710,26 +710,26 @@ KTHXBAI
 
 #### Available Modules
 
-- **STDIO**: I/O functions (`VISIBLE`, `VISIBLEZ`, `GIMME`)
+- **STDIO**: I/O functions (`SAY`, `SAYZ`, `GIMME`)
 - **MATH**: Mathematical functions (`ABS`, `MAX`, `MIN`, `SQRT`, `POW`, `RANDOM`, `SIN`, `COS`, etc.)
 - **TIME**: Time functions (`NOW`, `YEAR`, `MONTH`, `DAY`, `HOUR`, `MINUTE`, `SECOND`, etc.)
 
 ### I/O Functions (STDIO)
 
-#### VISIBLE - Print without newline
+#### SAY - Print without newline
 
 ```lol
-VISIBLE WIT "Hello "
-VISIBLE WIT "World"
-VISIBLE WIT "!"
+SAY WIT "Hello "
+SAY WIT "World"
+SAY WIT "!"
 BTW Output: Hello World!
 ```
 
-#### VISIBLEZ - Print with newline
+#### SAYZ - Print with newline
 
 ```lol
-VISIBLEZ WIT "First line"
-VISIBLEZ WIT "Second line"
+SAYZ WIT "First line"
+SAYZ WIT "Second line"
 BTW Output:
 BTW First line
 BTW Second line
@@ -738,10 +738,10 @@ BTW Second line
 #### GIMME - Read input from user
 
 ```lol
-VISIBLEZ WIT "Enter your name: "
+SAYZ WIT "Enter your name: "
 I HAS A VARIABLE USER_INPUT TEH STRIN ITZ GIMME
-VISIBLE WIT "Hello, "
-VISIBLEZ WIT USER_INPUT
+SAY WIT "Hello, "
+SAYZ WIT USER_INPUT
 ```
 
 ### Math Functions
@@ -809,9 +809,9 @@ BTW FORMAT_TIME - Format Unix timestamp as string
 I HAS A VARIABLE FORMATTED TEH STRIN ITZ FORMAT_TIME WIT NOW AN WIT "2006-01-02 15:04:05"
 
 BTW SLEEP - Pause execution for specified seconds
-VISIBLEZ WIT "Waiting..."
+SAYZ WIT "Waiting..."
 SLEEP WIT 2.5  BTW Sleep for 2.5 seconds
-VISIBLEZ WIT "Done waiting!"
+SAYZ WIT "Done waiting!"
 ```
 
 ---
@@ -900,33 +900,33 @@ HAI ME TEH FUNCSHUN CALCULATE TEH DUBBLE WIT A TEH DUBBLE AN WIT OP TEH STRIN AN
 
     IZ OP SAEM AS "/"?
         IZ B SAEM AS 0.0?
-            VISIBLEZ WIT "Error: Division by zero!"
+            SAYZ WIT "Error: Division by zero!"
             GIVEZ 0.0
         KTHX
         GIVEZ A DIVIDEZ B
     KTHX
 
-    VISIBLEZ WIT "Error: Unknown operator"
+    SAYZ WIT "Error: Unknown operator"
     GIVEZ 0.0
 KTHXBAI
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Calculator ==="
+    SAYZ WIT "=== Calculator ==="
 
     I HAS A VARIABLE NUM1 TEH DUBBLE ITZ 10.5
     I HAS A VARIABLE NUM2 TEH DUBBLE ITZ 3.2
 
-    VISIBLE WIT NUM1
-    VISIBLE WIT " + "
-    VISIBLE WIT NUM2
-    VISIBLE WIT " = "
-    VISIBLEZ WIT CALCULATE WIT NUM1 AN WIT "+" AN WIT NUM2
+    SAY WIT NUM1
+    SAY WIT " + "
+    SAY WIT NUM2
+    SAY WIT " = "
+    SAYZ WIT CALCULATE WIT NUM1 AN WIT "+" AN WIT NUM2
 
-    VISIBLE WIT NUM1
-    VISIBLE WIT " * "
-    VISIBLE WIT NUM2
-    VISIBLE WIT " = "
-    VISIBLEZ WIT CALCULATE WIT NUM1 AN WIT "*" AN WIT NUM2
+    SAY WIT NUM1
+    SAY WIT " * "
+    SAY WIT NUM2
+    SAY WIT " = "
+    SAYZ WIT CALCULATE WIT NUM1 AN WIT "*" AN WIT NUM2
 KTHXBAI
 ```
 
@@ -959,11 +959,11 @@ HAI ME TEH CLAS CHARACTER
             HP ITZ 0
         KTHX
 
-        VISIBLE WIT NAME
-        VISIBLE WIT " takes "
-        VISIBLE WIT DAMAGE
-        VISIBLE WIT " damage! HP: "
-        VISIBLEZ WIT HP
+        SAY WIT NAME
+        SAY WIT " takes "
+        SAY WIT DAMAGE
+        SAY WIT " damage! HP: "
+        SAYZ WIT HP
     KTHX
 
     DIS TEH FUNCSHUN HEAL WIT AMOUNT TEH INTEGR
@@ -972,11 +972,11 @@ HAI ME TEH CLAS CHARACTER
             HP ITZ MAX_HP
         KTHX
 
-        VISIBLE WIT NAME
-        VISIBLE WIT " heals "
-        VISIBLE WIT AMOUNT
-        VISIBLE WIT " HP! Current HP: "
-        VISIBLEZ WIT HP
+        SAY WIT NAME
+        SAY WIT " heals "
+        SAY WIT AMOUNT
+        SAY WIT " HP! Current HP: "
+        SAYZ WIT HP
     KTHX
 
     DIS TEH FUNCSHUN IS_ALIVE TEH BOOL
@@ -988,16 +988,16 @@ HAI ME TEH CLAS WARRIOR KITTEH OF CHARACTER
     EVRYONE
     DIS TEH FUNCSHUN ATTACK WIT TARGET TEH CHARACTER
         I HAS A VARIABLE DAMAGE TEH INTEGR ITZ RANDINT WIT 15 AN WIT 26  BTW 15-25 damage
-        VISIBLE WIT NAME
-        VISIBLE WIT " attacks with sword for "
-        VISIBLE WIT DAMAGE
-        VISIBLEZ WIT " damage!"
+        SAY WIT NAME
+        SAY WIT " attacks with sword for "
+        SAY WIT DAMAGE
+        SAYZ WIT " damage!"
         TARGET DO TAKE_DAMAGE WIT DAMAGE
     KTHX
 KTHXBAI
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Battle Simulation ==="
+    SAYZ WIT "=== Battle Simulation ==="
 
     I HAS A VARIABLE HERO TEH WARRIOR ITZ NEW WARRIOR
     HERO DO SET_NAME WIT "Sir Lancelot"
@@ -1005,27 +1005,27 @@ HAI ME TEH FUNCSHUN MAIN
     I HAS A VARIABLE ENEMY TEH CHARACTER ITZ NEW CHARACTER
     ENEMY DO SET_NAME WIT "Goblin"
 
-    VISIBLEZ WIT "Battle begins!"
+    SAYZ WIT "Battle begins!"
 
     WHILE HERO DO IS_ALIVE AN ENEMY DO IS_ALIVE
         HERO DO ATTACK WIT ENEMY
 
         IZ ENEMY DO IS_ALIVE?
             I HAS A VARIABLE ENEMY_DAMAGE TEH INTEGR ITZ RANDINT WIT 5 AN WIT 16  BTW 5-15 damage
-            VISIBLE WIT "Goblin strikes back for "
-            VISIBLE WIT ENEMY_DAMAGE
-            VISIBLEZ WIT " damage!"
+            SAY WIT "Goblin strikes back for "
+            SAY WIT ENEMY_DAMAGE
+            SAYZ WIT " damage!"
             HERO DO TAKE_DAMAGE WIT ENEMY_DAMAGE
         KTHX
 
-        VISIBLEZ WIT "---"
+        SAYZ WIT "---"
         SLEEP WIT 1.0  BTW Dramatic pause
     KTHX
 
     IZ HERO DO IS_ALIVE?
-        VISIBLEZ WIT "Hero wins!"
+        SAYZ WIT "Hero wins!"
     NOPE
-        VISIBLEZ WIT "Hero defeated!"
+        SAYZ WIT "Hero defeated!"
     KTHX
 KTHXBAI
 ```
@@ -1104,8 +1104,8 @@ KTHXBAI
 ### Built-in Functions
 
 #### I/O Functions
-- `VISIBLE WIT <value>` - Print value without newline
-- `VISIBLEZ WIT <value>` - Print value with newline
+- `SAY WIT <value>` - Print value without newline
+- `SAYZ WIT <value>` - Print value with newline
 - `GIMME` - Read line from input → STRIN
 
 #### Math Functions
@@ -1177,7 +1177,7 @@ KTHX
 ```lol
 BTW Missing KTHXBAI
 HAI ME TEH FUNCSHUN TEST
-    VISIBLEZ WIT "Hello"
+    SAYZ WIT "Hello"
 BTW Error: Expected KTHXBAI
 
 BTW Missing TEH in variable declaration
@@ -1200,7 +1200,7 @@ BTW Returns 0.0 (handled gracefully)
 #### Runtime Errors
 ```lol
 BTW Accessing undefined variable
-VISIBLEZ WIT UNDEFINED_VAR
+SAYZ WIT UNDEFINED_VAR
 BTW Runtime Error: undefined variable 'UNDEFINED_VAR'
 
 BTW Modifying locked variable
@@ -1211,7 +1211,7 @@ BTW Runtime Error: cannot modify locked variable 'CONSTANT'
 
 ### Debugging Tips
 
-1. **Use VISIBLEZ for debugging**: Add temporary output statements to trace program flow
+1. **Use SAYZ for debugging**: Add temporary output statements to trace program flow
 2. **Check variable types**: Use explicit casting when mixing types
 3. **Verify function signatures**: Ensure parameter types match function definitions
 4. **Test boundary conditions**: Check division by zero, negative square roots, etc.

@@ -24,11 +24,11 @@ HAI ME TEH CLAS PERSON
     KTHX
 
     DIS TEH FUNCSHUN INTRODUCE
-        VISIBLE WIT "Hi, I'm "
-        VISIBLE WIT NAME
-        VISIBLE WIT " and I'm "
-        VISIBLE WIT AGE
-        VISIBLEZ WIT " years old."
+        SAY WIT "Hi, I'm "
+        SAY WIT NAME
+        SAY WIT " and I'm "
+        SAY WIT AGE
+        SAYZ WIT " years old."
     KTHX
 KTHXBAI
 
@@ -51,8 +51,8 @@ HAI ME TEH CLAS BANK_ACCOUNT
 
     DIS TEH FUNCSHUN DEPOSIT WIT AMOUNT TEH DUBBLE
         BALANCE ITZ BALANCE MOAR AMOUNT
-        VISIBLE WIT "Deposited "
-        VISIBLEZ WIT AMOUNT
+        SAY WIT "Deposited "
+        SAYZ WIT AMOUNT
     KTHX
 
     DIS TEH FUNCSHUN GET_BALANCE TEH DUBBLE
@@ -62,88 +62,88 @@ HAI ME TEH CLAS BANK_ACCOUNT
     DIS TEH FUNCSHUN WITHDRAW TEH BOOL WIT AMOUNT TEH DUBBLE
         IZ AMOUNT SMALLR THAN BALANCE?
             BALANCE ITZ BALANCE LES AMOUNT
-            VISIBLE WIT "Withdrew "
-            VISIBLEZ WIT AMOUNT
+            SAY WIT "Withdrew "
+            SAYZ WIT AMOUNT
             GIVEZ YEZ
         NOPE
-            VISIBLEZ WIT "Insufficient funds"
+            SAYZ WIT "Insufficient funds"
             GIVEZ NO
         KTHX
     KTHX
 KTHXBAI
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Basic Classes Test ==="
+    SAYZ WIT "=== Basic Classes Test ==="
 
     BTW Test basic object creation
-    VISIBLE WIT "Creating person object: "
+    SAY WIT "Creating person object: "
     I HAS A VARIABLE PERSON1 TEH PERSON ITZ NEW PERSON
-    VISIBLEZ WIT PERSON1
+    SAYZ WIT PERSON1
 
     BTW Test member variable access
-    VISIBLE WIT "Default name: "
-    VISIBLEZ WIT PERSON1 NAME
-    VISIBLE WIT "Default age: "
-    VISIBLEZ WIT PERSON1 AGE
+    SAY WIT "Default name: "
+    SAYZ WIT PERSON1 NAME
+    SAY WIT "Default age: "
+    SAYZ WIT PERSON1 AGE
 
     BTW Test member variable assignment
     PERSON1 NAME ITZ "Alice"
     PERSON1 AGE ITZ 25
 
-    VISIBLE WIT "After assignment name: "
-    VISIBLEZ WIT PERSON1 NAME
-    VISIBLE WIT "After assignment age: "
-    VISIBLEZ WIT PERSON1 AGE
+    SAY WIT "After assignment name: "
+    SAYZ WIT PERSON1 NAME
+    SAY WIT "After assignment age: "
+    SAYZ WIT PERSON1 AGE
 
     BTW Test method calls
-    VISIBLEZ WIT "Testing methods:"
+    SAYZ WIT "Testing methods:"
     PERSON1 DO INTRODUCE
 
     BTW Test method with parameters
     PERSON1 DO SET_NAME WIT "Bob"
     PERSON1 DO SET_AGE WIT 30
-    VISIBLEZ WIT "After method calls:"
+    SAYZ WIT "After method calls:"
     PERSON1 DO INTRODUCE
 
     BTW Test methods with return values
     I HAS A VARIABLE CURRENT_NAME TEH STRIN ITZ PERSON1 DO GET_NAME
     I HAS A VARIABLE CURRENT_AGE TEH INTEGR ITZ PERSON1 DO GET_AGE
-    VISIBLE WIT "Name from method: "
-    VISIBLEZ WIT CURRENT_NAME
-    VISIBLE WIT "Age from method: "
-    VISIBLEZ WIT CURRENT_AGE
+    SAY WIT "Name from method: "
+    SAYZ WIT CURRENT_NAME
+    SAY WIT "Age from method: "
+    SAYZ WIT CURRENT_AGE
 
     BTW Test multiple objects
-    VISIBLE WIT "Creating second person: "
+    SAY WIT "Creating second person: "
     I HAS A VARIABLE PERSON2 TEH PERSON ITZ NEW PERSON
     PERSON2 DO SET_NAME WIT "Charlie"
     PERSON2 DO SET_AGE WIT 35
-    VISIBLEZ WIT PERSON2
+    SAYZ WIT PERSON2
 
-    VISIBLEZ WIT "Person1:"
+    SAYZ WIT "Person1:"
     PERSON1 DO INTRODUCE
-    VISIBLEZ WIT "Person2:"
+    SAYZ WIT "Person2:"
     PERSON2 DO INTRODUCE
 
     BTW Test private members
-    VISIBLEZ WIT "Testing bank account:"
+    SAYZ WIT "Testing bank account:"
     I HAS A VARIABLE ACCOUNT TEH BANK_ACCOUNT ITZ NEW BANK_ACCOUNT
     ACCOUNT DO SET_OWNER WIT "Alice"
 
-    VISIBLE WIT "Account owner: "
-    VISIBLEZ WIT ACCOUNT DO GET_OWNER
-    VISIBLE WIT "Initial balance: "
-    VISIBLEZ WIT ACCOUNT DO GET_BALANCE
+    SAY WIT "Account owner: "
+    SAYZ WIT ACCOUNT DO GET_OWNER
+    SAY WIT "Initial balance: "
+    SAYZ WIT ACCOUNT DO GET_BALANCE
 
     ACCOUNT DO DEPOSIT WIT 100.0
-    VISIBLE WIT "Balance after deposit: "
-    VISIBLEZ WIT ACCOUNT DO GET_BALANCE
+    SAY WIT "Balance after deposit: "
+    SAYZ WIT ACCOUNT DO GET_BALANCE
 
     I HAS A VARIABLE SUCCESS TEH BOOL ITZ ACCOUNT DO WITHDRAW WIT 50.0
-    VISIBLE WIT "Withdrawal success: "
-    VISIBLEZ WIT SUCCESS
-    VISIBLE WIT "Final balance: "
-    VISIBLEZ WIT ACCOUNT DO GET_BALANCE
+    SAY WIT "Withdrawal success: "
+    SAYZ WIT SUCCESS
+    SAY WIT "Final balance: "
+    SAYZ WIT ACCOUNT DO GET_BALANCE
 
-    VISIBLEZ WIT "=== Basic Classes Test Complete ==="
+    SAYZ WIT "=== Basic Classes Test Complete ==="
 KTHXBAI

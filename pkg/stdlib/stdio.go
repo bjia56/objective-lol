@@ -12,9 +12,9 @@ import (
 
 // RegisterSTDIOInEnv registers all STDIO functions directly in the given environment
 func RegisterSTDIOInEnv(env *environment.Environment) {
-	// VISIBLE function - prints value to stdout
-	visible := &environment.Function{
-		Name:       "VISIBLE",
+	// SAY function - prints value to stdout
+	say := &environment.Function{
+		Name:       "SAY",
 		IsNative:   true,
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
 		NativeImpl: func(args []types.Value) (types.Value, error) {
@@ -22,11 +22,11 @@ func RegisterSTDIOInEnv(env *environment.Environment) {
 			return types.NOTHIN, nil
 		},
 	}
-	env.DefineFunction(visible)
+	env.DefineFunction(say)
 
-	// VISIBLEZ function - prints value with newline
-	visiblez := &environment.Function{
-		Name:       "VISIBLEZ",
+	// SAYZ function - prints value with newline
+	sayz := &environment.Function{
+		Name:       "SAYZ",
 		IsNative:   true,
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
 		NativeImpl: func(args []types.Value) (types.Value, error) {
@@ -34,7 +34,7 @@ func RegisterSTDIOInEnv(env *environment.Environment) {
 			return types.NOTHIN, nil
 		},
 	}
-	env.DefineFunction(visiblez)
+	env.DefineFunction(sayz)
 
 	// GIMME function - reads line from stdin
 	gimme := &environment.Function{

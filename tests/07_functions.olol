@@ -3,13 +3,13 @@ I CAN HAS STDIO?
 
 BTW Function with no parameters and no return value
 HAI ME TEH FUNCSHUN SAY_HELLO
-    VISIBLEZ WIT "Hello from function!"
+    SAYZ WIT "Hello from function!"
 KTHXBAI
 
 BTW Function with parameters
 HAI ME TEH FUNCSHUN GREET WIT NAME TEH STRIN
-    VISIBLE WIT "Hello "
-    VISIBLEZ WIT NAME
+    SAY WIT "Hello "
+    SAYZ WIT NAME
 KTHXBAI
 
 BTW Function with return value
@@ -42,43 +42,43 @@ HAI ME TEH FUNCSHUN CHECK_POSITIVE TEH STRIN WIT NUM TEH INTEGR
 KTHXBAI
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Functions Test ==="
+    SAYZ WIT "=== Functions Test ==="
 
     BTW Test simple function call
-    VISIBLEZ WIT "Testing simple function:"
+    SAYZ WIT "Testing simple function:"
     SAY_HELLO
 
     BTW Test function with parameters
-    VISIBLEZ WIT "Testing function with parameters:"
+    SAYZ WIT "Testing function with parameters:"
     GREET WIT "Bob"
 
     BTW Test function with return value
-    VISIBLEZ WIT "Testing function with return value:"
+    SAYZ WIT "Testing function with return value:"
     I HAS A VARIABLE SUM TEH INTEGR ITZ ADD WIT 5 AN WIT 3
-    VISIBLE WIT "5 + 3 = "
-    VISIBLEZ WIT SUM
+    SAY WIT "5 + 3 = "
+    SAYZ WIT SUM
 
     BTW Test complex function
-    VISIBLEZ WIT "Testing complex function:"
+    SAYZ WIT "Testing complex function:"
     I HAS A VARIABLE RESULT TEH DUBBLE ITZ MULTIPLY_AND_ADD WIT 2.5 AN WIT 4.0 AN WIT 1.0
-    VISIBLE WIT "(2.5 * 4.0) + 1.0 = "
-    VISIBLEZ WIT RESULT
+    SAY WIT "(2.5 * 4.0) + 1.0 = "
+    SAYZ WIT RESULT
 
     BTW Test recursive function
-    VISIBLEZ WIT "Testing recursive function:"
+    SAYZ WIT "Testing recursive function:"
     I HAS A VARIABLE FACT5 TEH INTEGR ITZ FACTORIAL WIT 5
-    VISIBLE WIT "5! = "
-    VISIBLEZ WIT FACT5
+    SAY WIT "5! = "
+    SAYZ WIT FACT5
 
     BTW Test early return function
-    VISIBLEZ WIT "Testing early return function:"
-    VISIBLEZ WIT CHECK_POSITIVE WIT 10
-    VISIBLEZ WIT CHECK_POSITIVE WIT -5
-    VISIBLEZ WIT CHECK_POSITIVE WIT 0
+    SAYZ WIT "Testing early return function:"
+    SAYZ WIT CHECK_POSITIVE WIT 10
+    SAYZ WIT CHECK_POSITIVE WIT -5
+    SAYZ WIT CHECK_POSITIVE WIT 0
 
     BTW Test zero-argument function calls as expressions
-    VISIBLEZ WIT "Testing zero-arg function as expression:"
-    VISIBLEZ WIT SAY_HELLO
+    SAYZ WIT "Testing zero-arg function as expression:"
+    SAYZ WIT SAY_HELLO
 
-    VISIBLEZ WIT "=== Functions Test Complete ==="
+    SAYZ WIT "=== Functions Test Complete ==="
 KTHXBAI

@@ -2,7 +2,7 @@ BTW Arithmetic operations test
 I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Arithmetic Operations Test ==="
+    SAYZ WIT "=== Arithmetic Operations Test ==="
 
     BTW Setup test variables
     I HAS A VARIABLE AA TEH INTEGR ITZ 15
@@ -11,37 +11,37 @@ HAI ME TEH FUNCSHUN MAIN
     I HAS A VARIABLE DD TEH DUBBLE ITZ 1.5
 
     BTW Test integer arithmetic
-    VISIBLEZ WIT "Integer arithmetic:"
-    VISIBLE WIT "15 + 3 = "
-    VISIBLEZ WIT AA MOAR BB
+    SAYZ WIT "Integer arithmetic:"
+    SAY WIT "15 + 3 = "
+    SAYZ WIT AA MOAR BB
 
-    VISIBLE WIT "15 - 3 = "
-    VISIBLEZ WIT AA LES BB
+    SAY WIT "15 - 3 = "
+    SAYZ WIT AA LES BB
 
-    VISIBLE WIT "15 * 3 = "
-    VISIBLEZ WIT AA TIEMZ BB
+    SAY WIT "15 * 3 = "
+    SAYZ WIT AA TIEMZ BB
 
-    VISIBLE WIT "15 / 3 = "
-    VISIBLEZ WIT AA DIVIDEZ BB
+    SAY WIT "15 / 3 = "
+    SAYZ WIT AA DIVIDEZ BB
 
     BTW Test double arithmetic
-    VISIBLEZ WIT "Double arithmetic:"
-    VISIBLE WIT "-2.5 + 1.5 = "
-    VISIBLEZ WIT CC MOAR DD
+    SAYZ WIT "Double arithmetic:"
+    SAY WIT "-2.5 + 1.5 = "
+    SAYZ WIT CC MOAR DD
 
-    VISIBLE WIT "-2.5 - 1.5 = "
-    VISIBLEZ WIT CC LES DD
+    SAY WIT "-2.5 - 1.5 = "
+    SAYZ WIT CC LES DD
 
-    VISIBLE WIT "-2.5 * 1.5 = "
-    VISIBLEZ WIT CC TIEMZ DD
+    SAY WIT "-2.5 * 1.5 = "
+    SAYZ WIT CC TIEMZ DD
 
-    VISIBLE WIT "-2.5 / 1.5 = "
-    VISIBLEZ WIT CC DIVIDEZ DD
+    SAY WIT "-2.5 / 1.5 = "
+    SAYZ WIT CC DIVIDEZ DD
 
     BTW Test mixed arithmetic
-    VISIBLEZ WIT "Mixed arithmetic:"
-    VISIBLE WIT "15 + -2.5 = "
-    VISIBLEZ WIT AA MOAR CC
+    SAYZ WIT "Mixed arithmetic:"
+    SAY WIT "15 + -2.5 = "
+    SAYZ WIT AA MOAR CC
 
-    VISIBLEZ WIT "=== Arithmetic Operations Test Complete ==="
+    SAYZ WIT "=== Arithmetic Operations Test Complete ==="
 KTHXBAI

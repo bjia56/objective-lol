@@ -2,104 +2,104 @@ BTW Standard library I/O functions test
 I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== I/O Library Test ==="
+    SAYZ WIT "=== I/O Library Test ==="
 
     BTW Test basic output functions
-    VISIBLE WIT "Testing VISIBLEZ (with newline): "
-    VISIBLEZ WIT ""
-    VISIBLEZ WIT "This is line 1"
-    VISIBLEZ WIT "This is line 2"
-    VISIBLEZ WIT 42
-    VISIBLEZ WIT 3.14159
-    VISIBLEZ WIT YEZ
-    VISIBLEZ WIT NO
+    SAY WIT "Testing SAYZ (with newline): "
+    SAYZ WIT ""
+    SAYZ WIT "This is line 1"
+    SAYZ WIT "This is line 2"
+    SAYZ WIT 42
+    SAYZ WIT 3.14159
+    SAYZ WIT YEZ
+    SAYZ WIT NO
 
-    VISIBLE WIT "Testing VISIBLE (without newline): "
-    VISIBLEZ WIT ""
-    VISIBLE WIT "Hello, "
-    VISIBLE WIT "World!"
-    VISIBLEZ WIT ""  BTW Add newline manually
+    SAY WIT "Testing SAY (without newline): "
+    SAYZ WIT ""
+    SAY WIT "Hello, "
+    SAY WIT "World!"
+    SAYZ WIT ""  BTW Add newline manually
 
     BTW Test output with variables
-    VISIBLE WIT "Testing output with variables: "
-    VISIBLEZ WIT ""
+    SAY WIT "Testing output with variables: "
+    SAYZ WIT ""
     I HAS A VARIABLE NAME TEH STRIN ITZ "Alice"
     I HAS A VARIABLE AGE TEH INTEGR ITZ 25
     I HAS A VARIABLE HEIGHT TEH DUBBLE ITZ 5.5
     I HAS A VARIABLE IS_STUDENT TEH BOOL ITZ YEZ
 
-    VISIBLE WIT "Name: "
-    VISIBLEZ WIT NAME
-    VISIBLE WIT "Age: "
-    VISIBLEZ WIT AGE
-    VISIBLE WIT "Height: "
-    VISIBLEZ WIT HEIGHT
-    VISIBLE WIT "Is student: "
-    VISIBLEZ WIT IS_STUDENT
+    SAY WIT "Name: "
+    SAYZ WIT NAME
+    SAY WIT "Age: "
+    SAYZ WIT AGE
+    SAY WIT "Height: "
+    SAYZ WIT HEIGHT
+    SAY WIT "Is student: "
+    SAYZ WIT IS_STUDENT
 
     BTW Test output formatting
-    VISIBLE WIT "Testing formatted output: "
-    VISIBLEZ WIT ""
-    VISIBLE WIT NAME
-    VISIBLE WIT " is "
-    VISIBLE WIT AGE
-    VISIBLE WIT " years old and "
-    VISIBLE WIT HEIGHT
-    VISIBLEZ WIT " feet tall."
+    SAY WIT "Testing formatted output: "
+    SAYZ WIT ""
+    SAY WIT NAME
+    SAY WIT " is "
+    SAY WIT AGE
+    SAY WIT " years old and "
+    SAY WIT HEIGHT
+    SAYZ WIT " feet tall."
 
     BTW Test expression output
-    VISIBLEZ WIT "Testing expression output: "
-    VISIBLE WIT "5 + 3 = "
-    VISIBLEZ WIT 5 MOAR 3
-    VISIBLE WIT "10 > 5 is "
-    VISIBLEZ WIT 10 BIGGR THAN 5
+    SAYZ WIT "Testing expression output: "
+    SAY WIT "5 + 3 = "
+    SAYZ WIT 5 MOAR 3
+    SAY WIT "10 > 5 is "
+    SAYZ WIT 10 BIGGR THAN 5
 
     BTW Test with computed values
     I HAS A VARIABLE AA TEH INTEGR ITZ 8
     I HAS A VARIABLE BB TEH INTEGR ITZ 3
-    VISIBLEZ WIT "Computed expressions: "
-    VISIBLE WIT AA
-    VISIBLE WIT " + "
-    VISIBLE WIT BB
-    VISIBLE WIT " = "
-    VISIBLEZ WIT AA MOAR BB
+    SAYZ WIT "Computed expressions: "
+    SAY WIT AA
+    SAY WIT " + "
+    SAY WIT BB
+    SAY WIT " = "
+    SAYZ WIT AA MOAR BB
 
-    VISIBLE WIT AA
-    VISIBLE WIT " * "
-    VISIBLE WIT BB
-    VISIBLE WIT " = "
-    VISIBLEZ WIT AA TIEMZ BB
+    SAY WIT AA
+    SAY WIT " * "
+    SAY WIT BB
+    SAY WIT " = "
+    SAYZ WIT AA TIEMZ BB
 
     BTW Test special values output
-    VISIBLE WIT "Testing special values: "
-    VISIBLEZ WIT ""
-    VISIBLE WIT "NOTHIN value: "
-    VISIBLEZ WIT NOTHIN
+    SAY WIT "Testing special values: "
+    SAYZ WIT ""
+    SAY WIT "NOTHIN value: "
+    SAYZ WIT NOTHIN
 
     I HAS A VARIABLE EMPTY_STRING TEH STRIN ITZ ""
-    VISIBLE WIT "Empty string (between quotes): "
-    VISIBLE WIT "'"
-    VISIBLE WIT EMPTY_STRING
-    VISIBLEZ WIT "'"
+    SAY WIT "Empty string (between quotes): "
+    SAY WIT "'"
+    SAY WIT EMPTY_STRING
+    SAYZ WIT "'"
 
     BTW Test large numbers
-    VISIBLEZ WIT "Testing large numbers: "
+    SAYZ WIT "Testing large numbers: "
     I HAS A VARIABLE LARGE_INT TEH INTEGR ITZ 1234567890
     I HAS A VARIABLE LARGE_DOUBLE TEH DUBBLE ITZ 123456.789
-    VISIBLE WIT "Large integer: "
-    VISIBLEZ WIT LARGE_INT
-    VISIBLE WIT "Large double: "
-    VISIBLEZ WIT LARGE_DOUBLE
+    SAY WIT "Large integer: "
+    SAYZ WIT LARGE_INT
+    SAY WIT "Large double: "
+    SAYZ WIT LARGE_DOUBLE
 
     BTW Test mixed output types in sequence
-    VISIBLE WIT "Mixed output sequence: "
-    VISIBLEZ WIT ""
+    SAY WIT "Mixed output sequence: "
+    SAYZ WIT ""
     I HAS A VARIABLE ITEMS TEH INTEGR ITZ 5
-    VISIBLE WIT "I have "
-    VISIBLE WIT ITEMS
-    VISIBLE WIT " items costing $"
-    VISIBLE WIT ITEMS TIEMZ 2.99
-    VISIBLEZ WIT " total."
+    SAY WIT "I have "
+    SAY WIT ITEMS
+    SAY WIT " items costing $"
+    SAY WIT ITEMS TIEMZ 2.99
+    SAYZ WIT " total."
 
-    VISIBLEZ WIT "=== I/O Library Test Complete ==="
+    SAYZ WIT "=== I/O Library Test Complete ==="
 KTHXBAI

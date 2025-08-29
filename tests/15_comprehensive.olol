@@ -19,7 +19,7 @@ HAI ME TEH CLAS CALCULATOR
 
     DIS TEH FUNCSHUN ADD TEH DUBBLE WIT X TEH DUBBLE AN WIT Y TEH DUBBLE
         IZ DEBUG_MODE SAEM AS YEZ?
-            VISIBLEZ WIT "DEBUG: Adding values"
+            SAYZ WIT "DEBUG: Adding values"
         KTHX
         RESULT ITZ X MOAR Y
         OPERATION_COUNT ITZ OPERATION_COUNT MOAR 1
@@ -28,7 +28,7 @@ HAI ME TEH CLAS CALCULATOR
 
     DIS TEH FUNCSHUN MULTIPLY TEH DUBBLE WIT X TEH DUBBLE AN WIT Y TEH DUBBLE
         IZ DEBUG_MODE SAEM AS YEZ?
-            VISIBLEZ WIT "DEBUG: Multiplying values"
+            SAYZ WIT "DEBUG: Multiplying values"
         KTHX
         RESULT ITZ X TIEMZ Y
         OPERATION_COUNT ITZ OPERATION_COUNT MOAR 1
@@ -43,7 +43,7 @@ HAI ME TEH CLAS CALCULATOR
         RESULT ITZ 0.0
         OPERATION_COUNT ITZ 0
         IZ DEBUG_MODE SAEM AS YEZ?
-            VISIBLEZ WIT "DEBUG: Calculator reset"
+            SAYZ WIT "DEBUG: Calculator reset"
         KTHX
     KTHX
 KTHXBAI
@@ -62,7 +62,7 @@ HAI ME TEH CLAS SCIENTIFIC_CALCULATOR KITTEH OF CALCULATOR
 
     DIS TEH FUNCSHUN SQUARE_ROOT TEH DUBBLE WIT VALUE TEH DUBBLE
         IZ VALUE SMALLR THAN 0?
-            VISIBLEZ WIT "Error: Cannot compute square root of negative number"
+            SAYZ WIT "Error: Cannot compute square root of negative number"
             GIVEZ -1.0
         KTHX
 
@@ -74,8 +74,8 @@ HAI ME TEH CLAS SCIENTIFIC_CALCULATOR KITTEH OF CALCULATOR
 
     DIS TEH FUNCSHUN STORE_MEMORY WIT VALUE TEH DUBBLE
         MEMORY ITZ VALUE
-        VISIBLE WIT "Stored in memory: "
-        VISIBLEZ WIT MEMORY
+        SAY WIT "Stored in memory: "
+        SAYZ WIT MEMORY
     KTHX
 
     DIS TEH FUNCSHUN RECALL_MEMORY TEH DUBBLE
@@ -117,79 +117,79 @@ HAI ME TEH FUNCSHUN IS_EVEN TEH BOOL WIT NUM TEH INTEGR
 KTHXBAI
 
 HAI ME TEH FUNCSHUN PRINT_ARRAY WIT SIZE TEH INTEGR AN WIT MULTIPLIER TEH INTEGR
-    VISIBLEZ WIT "Array values:"
+    SAYZ WIT "Array values:"
     I HAS A VARIABLE X TEH INTEGR ITZ 0
     I HAS A VARIABLE VALUE TEH INTEGR
     WHILE X SMALLR THAN SIZE
         VALUE ITZ X TIEMZ MULTIPLIER
-        VISIBLE WIT "["
-        VISIBLE WIT X
-        VISIBLE WIT "] = "
-        VISIBLEZ WIT VALUE
+        SAY WIT "["
+        SAY WIT X
+        SAY WIT "] = "
+        SAYZ WIT VALUE
         X ITZ X MOAR 1
     KTHX
 KTHXBAI
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Comprehensive Language Test ==="
-    VISIBLEZ WIT "Testing all major language features together"
+    SAYZ WIT "=== Comprehensive Language Test ==="
+    SAYZ WIT "Testing all major language features together"
 
     BTW Test basic calculator
-    VISIBLEZ WIT "1. Basic Calculator Test:"
+    SAYZ WIT "1. Basic Calculator Test:"
     I HAS A VARIABLE CALC TEH CALCULATOR ITZ NEW CALCULATOR
 
     I HAS A VARIABLE SUM TEH DUBBLE ITZ CALC DO ADD WIT 15.5 AN WIT 24.3
-    VISIBLE WIT "15.5 + 24.3 = "
-    VISIBLEZ WIT SUM
+    SAY WIT "15.5 + 24.3 = "
+    SAYZ WIT SUM
 
     I HAS A VARIABLE PRODUCT TEH DUBBLE ITZ CALC DO MULTIPLY WIT 4.5 AN WIT 6.0
-    VISIBLE WIT "4.5 * 6.0 = "
-    VISIBLEZ WIT PRODUCT
+    SAY WIT "4.5 * 6.0 = "
+    SAYZ WIT PRODUCT
 
-    VISIBLE WIT "Operations performed: "
-    VISIBLEZ WIT CALC DO GET_OPERATION_COUNT
+    SAY WIT "Operations performed: "
+    SAYZ WIT CALC DO GET_OPERATION_COUNT
 
     BTW Test inheritance and polymorphism
-    VISIBLEZ WIT "2. Scientific Calculator Test:"
+    SAYZ WIT "2. Scientific Calculator Test:"
     I HAS A VARIABLE SCI_CALC TEH SCIENTIFIC_CALCULATOR ITZ NEW SCIENTIFIC_CALCULATOR
     SCI_CALC DO SET_DEBUG WIT YEZ
 
     BTW Test inherited methods
     I HAS A VARIABLE INHERITED_RESULT TEH DUBBLE ITZ SCI_CALC DO ADD WIT 10.0 AN WIT 5.0
-    VISIBLE WIT "Inherited add result: "
-    VISIBLEZ WIT INHERITED_RESULT
+    SAY WIT "Inherited add result: "
+    SAYZ WIT INHERITED_RESULT
 
     BTW Test new methods
     I HAS A VARIABLE POWER_RESULT TEH DUBBLE ITZ SCI_CALC DO POWER WIT 2.0 AN WIT 8.0
-    VISIBLE WIT "2^8 = "
-    VISIBLEZ WIT POWER_RESULT
+    SAY WIT "2^8 = "
+    SAYZ WIT POWER_RESULT
 
     I HAS A VARIABLE SQRT_RESULT TEH DUBBLE ITZ SCI_CALC DO SQUARE_ROOT WIT 64.0
-    VISIBLE WIT "sqrt(64) = "
-    VISIBLEZ WIT SQRT_RESULT
+    SAY WIT "sqrt(64) = "
+    SAYZ WIT SQRT_RESULT
 
     BTW Test error handling
     I HAS A VARIABLE ERROR_RESULT TEH DUBBLE ITZ SCI_CALC DO SQUARE_ROOT WIT -4.0
-    VISIBLE WIT "sqrt(-4) result: "
-    VISIBLEZ WIT ERROR_RESULT
+    SAY WIT "sqrt(-4) result: "
+    SAYZ WIT ERROR_RESULT
 
     BTW Test memory functions
     SCI_CALC DO STORE_MEMORY WIT 42.0
     I HAS A VARIABLE RECALLED TEH DUBBLE ITZ SCI_CALC DO RECALL_MEMORY
-    VISIBLE WIT "Recalled from memory: "
-    VISIBLEZ WIT RECALLED
+    SAY WIT "Recalled from memory: "
+    SAYZ WIT RECALLED
 
     BTW Test trigonometry
     I HAS A VARIABLE PI_HALF TEH DUBBLE ITZ 1.5708  BTW Approximately pi/2
     I HAS A VARIABLE SIN_RESULT TEH DUBBLE ITZ SCI_CALC DO TRIG_SIN WIT PI_HALF
-    VISIBLE WIT "sin(pi/2) ≈ "
-    VISIBLEZ WIT SIN_RESULT
+    SAY WIT "sin(pi/2) ≈ "
+    SAYZ WIT SIN_RESULT
 
-    VISIBLE WIT "Scientific calc operations: "
-    VISIBLEZ WIT SCI_CALC DO GET_OPERATION_COUNT
+    SAY WIT "Scientific calc operations: "
+    SAYZ WIT SCI_CALC DO GET_OPERATION_COUNT
 
     BTW Test recursive functions with control flow
-    VISIBLEZ WIT "3. Recursive Functions Test:"
+    SAYZ WIT "3. Recursive Functions Test:"
     I HAS A VARIABLE N TEH INTEGR ITZ 1
     I HAS A VARIABLE FACT TEH INTEGR
     I HAS A VARIABLE FIB TEH INTEGR
@@ -197,19 +197,19 @@ HAI ME TEH FUNCSHUN MAIN
         FACT ITZ FACTORIAL WIT N
         FIB ITZ FIBONACCI WIT N
 
-        VISIBLE WIT N
-        VISIBLE WIT "! = "
-        VISIBLE WIT FACT
-        VISIBLE WIT ", fib("
-        VISIBLE WIT N
-        VISIBLE WIT ") = "
-        VISIBLEZ WIT FIB
+        SAY WIT N
+        SAY WIT "! = "
+        SAY WIT FACT
+        SAY WIT ", fib("
+        SAY WIT N
+        SAY WIT ") = "
+        SAYZ WIT FIB
 
         N ITZ N MOAR 1
     KTHX
 
     BTW Test complex boolean logic
-    VISIBLEZ WIT "4. Boolean Logic Test:"
+    SAYZ WIT "4. Boolean Logic Test:"
     I HAS A VARIABLE NUMBERS_TESTED TEH INTEGR ITZ 0
     I HAS A VARIABLE EVEN_COUNT TEH INTEGR ITZ 0
 
@@ -220,93 +220,93 @@ HAI ME TEH FUNCSHUN MAIN
 
         IZ EVEN_CHECK SAEM AS YEZ?
             EVEN_COUNT ITZ EVEN_COUNT MOAR 1
-            VISIBLE WIT TEST_NUM
-            VISIBLEZ WIT " is even"
+            SAY WIT TEST_NUM
+            SAYZ WIT " is even"
         NOPE
-            VISIBLE WIT TEST_NUM
-            VISIBLEZ WIT " is odd"
+            SAY WIT TEST_NUM
+            SAYZ WIT " is odd"
         KTHX
 
         NUMBERS_TESTED ITZ NUMBERS_TESTED MOAR 1
         TEST_NUM ITZ TEST_NUM MOAR 1
     KTHX
 
-    VISIBLE WIT "Even numbers found: "
-    VISIBLEZ WIT EVEN_COUNT
-    VISIBLE WIT "Total numbers tested: "
-    VISIBLEZ WIT NUMBERS_TESTED
+    SAY WIT "Even numbers found: "
+    SAYZ WIT EVEN_COUNT
+    SAY WIT "Total numbers tested: "
+    SAYZ WIT NUMBERS_TESTED
 
     BTW Test array-like operations
-    VISIBLEZ WIT "5. Array-like Operations:"
+    SAYZ WIT "5. Array-like Operations:"
     PRINT_ARRAY WIT 5 AN WIT 3
 
     BTW Test time and randomization
-    VISIBLEZ WIT "6. Time and Random Tests:"
+    SAYZ WIT "6. Time and Random Tests:"
     I HAS A VARIABLE CURRENT_TIME TEH INTEGR ITZ NOW
     I HAS A VARIABLE CURRENT_YEAR TEH INTEGR ITZ YEAR
 
-    VISIBLE WIT "Current timestamp: "
-    VISIBLEZ WIT CURRENT_TIME
-    VISIBLE WIT "Current year: "
-    VISIBLEZ WIT CURRENT_YEAR
+    SAY WIT "Current timestamp: "
+    SAYZ WIT CURRENT_TIME
+    SAY WIT "Current year: "
+    SAYZ WIT CURRENT_YEAR
 
-    VISIBLEZ WIT "Random calculations:"
+    SAYZ WIT "Random calculations:"
     I HAS A VARIABLE RANDOM1 TEH DUBBLE ITZ RANDOM
     I HAS A VARIABLE RANDOM2 TEH DUBBLE ITZ RANDOM
     I HAS A VARIABLE RANDOM_SUM TEH DUBBLE ITZ RANDOM1 MOAR RANDOM2
 
-    VISIBLE WIT "Random1 + Random2 = "
-    VISIBLEZ WIT RANDOM_SUM
+    SAY WIT "Random1 + Random2 = "
+    SAYZ WIT RANDOM_SUM
 
     BTW Test complex expressions
-    VISIBLEZ WIT "7. Complex Expression Test:"
+    SAYZ WIT "7. Complex Expression Test:"
     I HAS A VARIABLE STEP1 TEH DUBBLE ITZ 5.5 MOAR 3.3
     I HAS A VARIABLE STEP2 TEH DUBBLE ITZ STEP1 TIEMZ 2.0
     I HAS A VARIABLE STEP3 TEH DUBBLE ITZ STEP2 DIVIDEZ 4.0
     I HAS A VARIABLE STEP4 TEH DUBBLE ITZ SQRT WIT 16.0
     I HAS A VARIABLE COMPLEX_RESULT TEH DUBBLE ITZ STEP3 MOAR STEP4
-    VISIBLEZ WIT "((5.5 + 3.3) * 2.0) / 4.0 + sqrt(16) ="
-    VISIBLEZ WIT COMPLEX_RESULT
+    SAYZ WIT "((5.5 + 3.3) * 2.0) / 4.0 + sqrt(16) ="
+    SAYZ WIT COMPLEX_RESULT
 
     BTW Test type casting in complex scenario
     I HAS A VARIABLE RANDOM_SCALED TEH DUBBLE ITZ RANDOM TIEMZ 100.0
     I HAS A VARIABLE RANDOM_INT TEH INTEGR ITZ RANDOM_SCALED AS INTEGR
     I HAS A VARIABLE CONST_INT TEH INTEGR ITZ 42 AS INTEGR
     I HAS A VARIABLE MIXED_CALC TEH INTEGR ITZ RANDOM_INT MOAR CONST_INT
-    VISIBLE WIT "Mixed type calculation result: "
-    VISIBLEZ WIT MIXED_CALC
+    SAY WIT "Mixed type calculation result: "
+    SAYZ WIT MIXED_CALC
 
     BTW Final summary using all features
-    VISIBLEZ WIT "8. Final Summary:"
+    SAYZ WIT "8. Final Summary:"
 
     I HAS A VARIABLE CALC_OPS TEH INTEGR ITZ CALC DO GET_OPERATION_COUNT
     IZ CALC_OPS BIGGR THAN 0?
-        VISIBLEZ WIT "Basic calculator performed operations"
+        SAYZ WIT "Basic calculator performed operations"
     KTHX
 
     I HAS A VARIABLE SCI_CALC_OPS TEH INTEGR ITZ SCI_CALC DO GET_OPERATION_COUNT
     I HAS A VARIABLE CALC_OPS2 TEH INTEGR ITZ CALC DO GET_OPERATION_COUNT
     IZ SCI_CALC_OPS BIGGR THAN CALC_OPS2?
-        VISIBLEZ WIT "Scientific calculator performed more operations"
+        SAYZ WIT "Scientific calculator performed more operations"
     NOPE
-        VISIBLEZ WIT "Basic calculator performed equal or more operations"
+        SAYZ WIT "Basic calculator performed equal or more operations"
     KTHX
 
     I HAS A VARIABLE CALC_FINAL_OPS TEH INTEGR ITZ CALC DO GET_OPERATION_COUNT
     I HAS A VARIABLE SCI_FINAL_OPS TEH INTEGR ITZ SCI_CALC DO GET_OPERATION_COUNT
     I HAS A VARIABLE TOTAL_OPS TEH INTEGR ITZ CALC_FINAL_OPS MOAR SCI_FINAL_OPS
-    VISIBLE WIT "Total operations across all calculators: "
-    VISIBLEZ WIT TOTAL_OPS
+    SAY WIT "Total operations across all calculators: "
+    SAYZ WIT TOTAL_OPS
 
     BTW Test final memory cleanup
     CALC DO RESET
     SCI_CALC DO RESET
 
-    VISIBLE WIT "Calculators reset. Operations after reset: "
-    VISIBLE WIT CALC DO GET_OPERATION_COUNT
-    VISIBLE WIT " "
-    VISIBLEZ WIT SCI_CALC DO GET_OPERATION_COUNT
+    SAY WIT "Calculators reset. Operations after reset: "
+    SAY WIT CALC DO GET_OPERATION_COUNT
+    SAY WIT " "
+    SAYZ WIT SCI_CALC DO GET_OPERATION_COUNT
 
-    VISIBLEZ WIT "=== Comprehensive Test Complete ==="
-    VISIBLEZ WIT "All major language features tested successfully!"
+    SAYZ WIT "=== Comprehensive Test Complete ==="
+    SAYZ WIT "All major language features tested successfully!"
 KTHXBAI

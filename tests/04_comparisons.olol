@@ -2,7 +2,7 @@ BTW Comparison operators test
 I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN MAIN
-    VISIBLEZ WIT "=== Comparison Operations Test ==="
+    SAYZ WIT "=== Comparison Operations Test ==="
 
     BTW Setup test variables
     I HAS A VARIABLE W TEH INTEGR ITZ 10
@@ -11,55 +11,55 @@ HAI ME TEH FUNCSHUN MAIN
     I HAS A VARIABLE Z TEH DUBBLE ITZ 10.0
 
     BTW Test greater than
-    VISIBLEZ WIT "Greater than comparisons:"
-    VISIBLEZ WIT "10 > 5:"
-    VISIBLEZ WIT W BIGGR THAN X
+    SAYZ WIT "Greater than comparisons:"
+    SAYZ WIT "10 > 5:"
+    SAYZ WIT W BIGGR THAN X
 
-    VISIBLEZ WIT "5 > 10:"
-    VISIBLEZ WIT X BIGGR THAN W
+    SAYZ WIT "5 > 10:"
+    SAYZ WIT X BIGGR THAN W
 
     BTW Test less than
-    VISIBLEZ WIT "Less than comparisons:"
-    VISIBLEZ WIT "5 < 10:"
-    VISIBLEZ WIT X SMALLR THAN W
+    SAYZ WIT "Less than comparisons:"
+    SAYZ WIT "5 < 10:"
+    SAYZ WIT X SMALLR THAN W
 
-    VISIBLEZ WIT "10 < 5:"
-    VISIBLEZ WIT W SMALLR THAN X
+    SAYZ WIT "10 < 5:"
+    SAYZ WIT W SMALLR THAN X
 
     BTW Test equality
-    VISIBLEZ WIT "Equality comparisons:"
-    VISIBLEZ WIT "10 == 10:"
-    VISIBLEZ WIT W SAEM AS Y
+    SAYZ WIT "Equality comparisons:"
+    SAYZ WIT "10 == 10:"
+    SAYZ WIT W SAEM AS Y
 
-    VISIBLEZ WIT "10 == 5:"
-    VISIBLEZ WIT W SAEM AS X
+    SAYZ WIT "10 == 5:"
+    SAYZ WIT W SAEM AS X
 
-    VISIBLEZ WIT "10 == 10.0:"
-    VISIBLEZ WIT W SAEM AS Z
+    SAYZ WIT "10 == 10.0:"
+    SAYZ WIT W SAEM AS Z
 
     BTW Test string comparisons
     I HAS A VARIABLE STR1 TEH STRIN ITZ "hello"
     I HAS A VARIABLE STR2 TEH STRIN ITZ "hello"
     I HAS A VARIABLE STR3 TEH STRIN ITZ "world"
 
-    VISIBLEZ WIT "String equality:"
-    VISIBLEZ WIT "hello == hello:"
-    VISIBLEZ WIT STR1 SAEM AS STR2
+    SAYZ WIT "String equality:"
+    SAYZ WIT "hello == hello:"
+    SAYZ WIT STR1 SAEM AS STR2
 
-    VISIBLEZ WIT "hello == world:"
-    VISIBLEZ WIT STR1 SAEM AS STR3
+    SAYZ WIT "hello == world:"
+    SAYZ WIT STR1 SAEM AS STR3
 
     BTW Test boolean comparisons
     I HAS A VARIABLE TRUE1 TEH BOOL ITZ YEZ
     I HAS A VARIABLE TRUE2 TEH BOOL ITZ YEZ
     I HAS A VARIABLE FALSE1 TEH BOOL ITZ NO
 
-    VISIBLEZ WIT "Boolean equality:"
-    VISIBLEZ WIT "YEZ == YEZ:"
-    VISIBLEZ WIT TRUE1 SAEM AS TRUE2
+    SAYZ WIT "Boolean equality:"
+    SAYZ WIT "YEZ == YEZ:"
+    SAYZ WIT TRUE1 SAEM AS TRUE2
 
-    VISIBLEZ WIT "YEZ == NO:"
-    VISIBLEZ WIT TRUE1 SAEM AS FALSE1
+    SAYZ WIT "YEZ == NO:"
+    SAYZ WIT TRUE1 SAEM AS FALSE1
 
-    VISIBLEZ WIT "=== Comparison Operations Test Complete ==="
+    SAYZ WIT "=== Comparison Operations Test Complete ==="
 KTHXBAI
