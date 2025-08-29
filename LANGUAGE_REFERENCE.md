@@ -605,7 +605,8 @@ Constructor methods are special methods with the same name as the class that are
 - Must have the same name as the class (case-insensitive)
 - Should not declare a return type (treated as void)
 - Can accept parameters for initialization
-- Are called using `NEW classname WIT arg1 AN WIT arg2` syntax
+- Are called automatically when using `NEW classname` (parameterless) or `NEW classname WIT arg1 AN WIT arg2` (with parameters)
+- Parameterless constructors are called even with simple `NEW classname` syntax
 
 #### Class with Constructor
 
@@ -648,6 +649,21 @@ HAI ME TEH CLAS RECTANGLE
         GIVEZ WIDTH TIEMZ HEIGHT
     KTHX
 KTHXBAI
+
+HAI ME TEH CLAS COUNTER
+    EVRYONE
+    DIS TEH VARIABLE VALUE TEH INTEGR ITZ 0
+
+    BTW Parameterless constructor - called automatically with NEW COUNTER
+    DIS TEH FUNCSHUN COUNTER
+        VALUE ITZ 1
+        SAYZ WIT "Counter initialized!"
+    KTHX
+
+    DIS TEH FUNCSHUN GET_VALUE TEH INTEGR
+        GIVEZ VALUE
+    KTHX
+KTHXBAI
 ```
 
 #### Using Constructors
@@ -665,7 +681,12 @@ HAI ME TEH FUNCSHUN MAIN
     I HAS A VARIABLE RECT TEH RECTANGLE ITZ NEW RECTANGLE WIT 20 AN WIT 15 AN WIT "blue"
     SAYZ WIT RECT DO GET_AREA    BTW 300
     
-    BTW Create without constructor (uses default values)
+    BTW Parameterless constructor called automatically
+    I HAS A VARIABLE COUNTER1 TEH COUNTER ITZ NEW COUNTER
+    BTW Output: "Counter initialized!"
+    SAYZ WIT COUNTER1 DO GET_VALUE    BTW 1 (set by constructor)
+    
+    BTW Create without constructor (uses default values) - only for classes without constructors
     I HAS A VARIABLE DEFAULT_POINT TEH POINT ITZ NEW POINT
     DEFAULT_POINT DO DISPLAY    BTW Point(0, 0)
 KTHXBAI
@@ -674,9 +695,10 @@ KTHXBAI
 #### Constructor Best Practices
 
 - **Initialization**: Use constructors to set up object state during creation
+- **Parameterless Constructors**: Constructors with no parameters are called automatically with `NEW class` syntax
 - **Validation**: Constructors can validate input parameters
-- **Required Parameters**: Constructors make certain parameters mandatory
-- **Backward Compatibility**: Classes with constructors still support `NEW class` without arguments
+- **Required Parameters**: Constructors with parameters require `NEW class WIT args` syntax
+- **Backward Compatibility**: Classes without constructors work as before with `NEW class`
 
 ```lol
 HAI ME TEH CLAS BANK_ACCOUNT

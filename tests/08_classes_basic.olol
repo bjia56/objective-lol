@@ -84,17 +84,28 @@ HAI ME TEH CLAS BANK_ACCOUNT
     KTHX
 KTHXBAI
 
+BTW Class with parameterless constructor
+HAI ME TEH CLAS COUNTER
+    EVRYONE
+    DIS TEH VARIABLE VALUE TEH INTEGR ITZ 0
+
+    BTW Parameterless constructor
+    DIS TEH FUNCSHUN COUNTER
+        VALUE ITZ 1
+        SAYZ WIT "Counter initialized to 1"
+    KTHX
+
+    DIS TEH FUNCSHUN INCREMENT
+        VALUE ITZ VALUE MOAR 1
+    KTHX
+
+    DIS TEH FUNCSHUN GET_VALUE TEH INTEGR
+        GIVEZ VALUE
+    KTHX
+KTHXBAI
+
 HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT "=== Basic Classes Test ==="
-
-    BTW Test basic object creation without constructor
-    SAY WIT "Creating person object without constructor: "
-    I HAS A VARIABLE PERSON0 TEH PERSON ITZ NEW PERSON
-    SAYZ WIT PERSON0
-    SAY WIT "Default name: "
-    SAYZ WIT PERSON0 NAME
-    SAY WIT "Default age: "
-    SAYZ WIT PERSON0 AGE
 
     BTW Test constructor-style initialization
     SAY WIT "Creating person with constructor: "
@@ -168,6 +179,21 @@ HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT ACCOUNT2 DO GET_OWNER
     SAY WIT "Second account initial balance: "
     SAYZ WIT ACCOUNT2 DO GET_BALANCE
+
+    BTW Test parameterless constructor
+    SAYZ WIT "Testing parameterless constructor:"
+    I HAS A VARIABLE COUNTER1 TEH COUNTER ITZ NEW COUNTER
+    SAY WIT "Counter1 initial value: "
+    SAYZ WIT COUNTER1 DO GET_VALUE
+
+    COUNTER1 DO INCREMENT
+    SAY WIT "Counter1 after increment: "
+    SAYZ WIT COUNTER1 DO GET_VALUE
+
+    BTW Test second instance of parameterless constructor
+    I HAS A VARIABLE COUNTER2 TEH COUNTER ITZ NEW COUNTER
+    SAY WIT "Counter2 initial value: "
+    SAYZ WIT COUNTER2 DO GET_VALUE
 
     SAYZ WIT "=== Basic Classes Test Complete ==="
 KTHXBAI

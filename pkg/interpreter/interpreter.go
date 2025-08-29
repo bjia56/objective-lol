@@ -621,16 +621,14 @@ func (i *Interpreter) VisitObjectInstantiation(node *ast.ObjectInstantiationNode
 
 	objectValue := types.NewObjectValue(instance, strings.ToUpper(node.ClassName))
 
-	// Check for constructor call if arguments are provided
-	if len(node.ConstructorArgs) > 0 {
-		if obj, ok := instance.(*environment.ObjectInstance); ok {
-			// Look for a constructor method with the same name as the class
-			constructorName := strings.ToUpper(node.ClassName)
-			function, err := obj.GetMemberFunction(constructorName, i.currentClass, i.environment)
-			if err != nil {
-				return types.NOTHIN, fmt.Errorf("constructor '%s' not found in class '%s': %v", constructorName, node.ClassName, err)
-			}
+	// Check for constructor call
+	if obj, ok := instance.(*environment.ObjectInstance); ok {
+		// Look for a constructor method with the same name as the class
+		constructorName := strings.ToUpper(node.ClassName)
+		function, err := obj.GetMemberFunction(constructorName, i.currentClass, i.environment)
 
+		// Only proceed if constructor exists
+		if err == nil {
 			// Evaluate constructor arguments
 			args := make([]types.Value, len(node.ConstructorArgs))
 			for j, arg := range node.ConstructorArgs {
@@ -641,11 +639,13 @@ func (i *Interpreter) VisitObjectInstantiation(node *ast.ObjectInstantiationNode
 				args[j] = val
 			}
 
-			// Call the constructor method
+			// Call the constructor method with arguments
 			_, err = i.callMemberFunction(function, obj, args)
 			if err != nil {
 				return types.NOTHIN, fmt.Errorf("constructor call failed: %v", err)
 			}
+		} else if len(node.ConstructorArgs) > 0 {
+			return types.NOTHIN, fmt.Errorf("default constructor '%s' expects %d arguments, got %d", constructorName, len(function.Parameters), len(node.ConstructorArgs))
 		}
 	}
 
