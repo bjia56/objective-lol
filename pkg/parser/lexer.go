@@ -48,7 +48,6 @@ const (
 	GIVEZ
 	UP
 	NEW
-	IN
 	AS
 	BTW
 	I
@@ -76,8 +75,8 @@ const (
 
 	// Punctuation
 	QUESTION
-	LPAREN  // (
-	RPAREN  // )
+	LPAREN // (
+	RPAREN // )
 
 	// Special values
 	YEZ
@@ -154,8 +153,6 @@ func (t TokenType) String() string {
 		return "UP"
 	case NEW:
 		return "NEW"
-	case IN:
-		return "IN"
 	case AS:
 		return "AS"
 	case BTW:
@@ -270,7 +267,6 @@ var keywords = map[string]TokenType{
 	"GIVEZ":    GIVEZ,
 	"UP":       UP,
 	"NEW":      NEW,
-	"IN":       IN,
 	"AS":       AS,
 	"BTW":      BTW,
 	"MOAR":     MOAR,

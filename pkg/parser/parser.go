@@ -80,7 +80,7 @@ func (p *Parser) ParseProgram() *ast.ProgramNode {
 
 	for !p.currentTokenIs(EOF) {
 		var node ast.Node
-		
+
 		// Check if this is an import statement or a regular declaration
 		if p.currentTokenIs(I) && p.peekTokenIs(CAN) {
 			// This is an import statement
@@ -93,7 +93,7 @@ func (p *Parser) ParseProgram() *ast.ProgramNode {
 			p.nextToken()
 			continue
 		}
-		
+
 		if node != nil {
 			program.Declarations = append(program.Declarations, node)
 		}
@@ -1043,16 +1043,6 @@ func (p *Parser) parseObjectInstantiation() *ast.ObjectInstantiationNode {
 	}
 
 	node.ClassName = p.currentToken.Literal
-
-	// Check for IN source
-	if p.peekTokenIs(IN) {
-		p.nextToken() // consume IN
-		if !p.expectPeek(IDENTIFIER) {
-			p.addError(fmt.Sprintf("expected source name after 'IN', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
-			return nil
-		}
-		node.SourceName = p.currentToken.Literal
-	}
 
 	return node
 }
