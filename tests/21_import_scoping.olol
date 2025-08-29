@@ -15,10 +15,10 @@ HAI ME TEH FUNCSHUN TEST_LOCAL_MATH_IMPORT
     BTW VISIBLEZ WIT "This would fail - no STDIO here"
 KTHXBAI
 
-BTW Function that imports both STDIO and TIEM locally
+BTW Function that imports both STDIO and TIME locally
 HAI ME TEH FUNCSHUN TEST_MULTIPLE_LOCAL_IMPORTS
     I CAN HAS STDIO?
-    I CAN HAS TIEM?
+    I CAN HAS TIME?
     VISIBLEZ WIT "Testing multiple local imports:"
     I HAS A VARIABLE CURRENT_YEAR TEH INTEGR ITZ YEAR
     VISIBLE WIT "Current year: "

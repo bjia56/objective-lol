@@ -8,8 +8,8 @@ import (
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
-// RegisterTIEMInEnv registers all TIEM functions directly in the given environment
-func RegisterTIEMInEnv(env *environment.Environment) {
+// RegisterTIMEInEnv registers all TIME functions directly in the given environment
+func RegisterTIMEInEnv(env *environment.Environment) {
 	// NOW function - current timestamp in seconds
 	now := &environment.Function{
 		Name:       "NOW",

@@ -81,8 +81,8 @@ func (i *Interpreter) VisitImportStatement(node *ast.ImportStatementNode) (types
 		stdlib.RegisterSTDIOInEnv(i.environment)
 	case "MATH":
 		stdlib.RegisterMATHInEnv(i.environment)
-	case "TIEM":
-		stdlib.RegisterTIEMInEnv(i.environment)
+	case "TIME":
+		stdlib.RegisterTIMEInEnv(i.environment)
 	default:
 		return types.NOTHIN, fmt.Errorf("unknown module: %s", moduleName)
 	}

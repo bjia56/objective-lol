@@ -54,7 +54,7 @@ The codebase is organized into several key packages:
 Located in `pkg/stdlib/`:
 - **stdio.go**: I/O functions (VISIBLEZ, VISIBLE, GIMME)
 - **math.go**: Mathematical functions (ABS, MAX, MIN, SQRT, POW, SIN, COS, RANDOM)
-- **tiem.go**: Time-related functions (YEAR, MONTH, DAY, NOW, FORMAT_TIME, SLEEP)
+- **time.go**: Time-related functions (YEAR, MONTH, DAY, NOW, FORMAT_TIME, SLEEP)
 
 ### Language Features
 The interpreter supports:

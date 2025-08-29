@@ -666,7 +666,7 @@ Standard library functions must be explicitly imported using the `I CAN HAS <mod
 ```lol
 I CAN HAS STDIO?    BTW Import I/O functions
 I CAN HAS MATH?     BTW Import mathematical functions  
-I CAN HAS TIEM?     BTW Import time functions
+I CAN HAS TIME?     BTW Import time functions
 ```
 
 #### Function-Scoped Imports
@@ -712,7 +712,7 @@ KTHXBAI
 
 - **STDIO**: I/O functions (`VISIBLE`, `VISIBLEZ`, `GIMME`)
 - **MATH**: Mathematical functions (`ABS`, `MAX`, `MIN`, `SQRT`, `POW`, `RANDOM`, `SIN`, `COS`, etc.)
-- **TIEM**: Time functions (`NOW`, `YEAR`, `MONTH`, `DAY`, `HOUR`, `MINUTE`, `SECOND`, etc.)
+- **TIME**: Time functions (`NOW`, `YEAR`, `MONTH`, `DAY`, `HOUR`, `MINUTE`, `SECOND`, etc.)
 
 ### I/O Functions (STDIO)
 
@@ -782,7 +782,7 @@ BTW RANDINT - Random integer in range [min, max)
 I HAS A VARIABLE DICE_ROLL TEH INTEGR ITZ RANDINT WIT 1 AN WIT 7  BTW 1-6
 ```
 
-### Time Functions (TIEM)
+### Time Functions (TIME)
 
 #### Current Time
 
