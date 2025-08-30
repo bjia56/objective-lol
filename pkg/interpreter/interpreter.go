@@ -2,29 +2,41 @@ package interpreter
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/bjia56/objective-lol/pkg/modules"
 	"github.com/bjia56/objective-lol/pkg/stdlib"
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // Interpreter implements the tree-walking interpreter for Objective-LOL
 type Interpreter struct {
-	runtime       *environment.RuntimeEnvironment
-	environment   *environment.Environment
-	currentClass  string                      // For tracking visibility context
-	currentObject *environment.ObjectInstance // For tracking current object instance in method calls
+	runtime        *environment.RuntimeEnvironment
+	environment    *environment.Environment
+	currentClass   string                      // For tracking visibility context
+	currentObject  *environment.ObjectInstance // For tracking current object instance in method calls
+	moduleResolver *modules.ModuleResolver     // For resolving and caching module imports
+	currentFile    string                      // For tracking current file being processed (for relative imports)
 }
 
 // NewInterpreter creates a new interpreter instance
 func NewInterpreter() *Interpreter {
 	runtime := environment.NewRuntimeEnvironment()
+	// Use current working directory as base for module resolution
+	workingDir, _ := filepath.Abs(".")
 	return &Interpreter{
-		runtime:     runtime,
-		environment: runtime.GlobalEnv,
+		runtime:        runtime,
+		environment:    runtime.GlobalEnv,
+		moduleResolver: modules.NewModuleResolver(workingDir),
 	}
+}
+
+// SetCurrentFile sets the current file being processed for relative import resolution
+func (i *Interpreter) SetCurrentFile(filename string) {
+	i.currentFile = filename
 }
 
 // Interpret executes the given AST
@@ -73,15 +85,20 @@ func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
 
 // VisitImportStatement handles module import statements
 func (i *Interpreter) VisitImportStatement(node *ast.ImportStatementNode) (types.Value, error) {
-	moduleName := strings.ToUpper(node.ModuleName)
-
-	// Prepare declarations list (empty for full import, specific for selective import)
-	var declarations []string
-	if node.IsSelective {
-		declarations = node.Declarations
+	if node.IsFileImport {
+		// Handle file module import
+		return i.handleFileImport(node.ModuleName, node.Declarations)
+	} else {
+		// Handle built-in module import
+		return i.handleBuiltinImport(node.ModuleName, node.Declarations)
 	}
+}
 
-	// Load the requested module into the current environment scope
+// handleBuiltinImport handles imports of built-in modules (STDIO, MATH, TIME)
+func (i *Interpreter) handleBuiltinImport(moduleName string, declarations []string) (types.Value, error) {
+	moduleName = strings.ToUpper(moduleName)
+
+	// Load the requested built-in module into the current environment scope
 	switch moduleName {
 	case "STDIO":
 		err := stdlib.RegisterSTDIOInEnv(i.environment, declarations)
@@ -99,7 +116,185 @@ func (i *Interpreter) VisitImportStatement(node *ast.ImportStatementNode) (types
 			return types.NOTHIN, err
 		}
 	default:
-		return types.NOTHIN, fmt.Errorf("unknown module: %s", moduleName)
+		return types.NOTHIN, fmt.Errorf("unknown built-in module: %s", moduleName)
+	}
+
+	return types.NOTHIN, nil
+}
+
+// handleFileImport handles imports of .olol file modules
+func (i *Interpreter) handleFileImport(filePath string, declarations []string) (types.Value, error) {
+	// Determine the directory of the current file for relative path resolution
+	var importingDir string
+	if i.currentFile != "" {
+		importingDir = filepath.Dir(i.currentFile)
+	}
+
+	// Load the module using the resolver with context-aware path resolution
+	moduleAST, resolvedPath, err := i.moduleResolver.LoadModuleFromWithPath(filePath, importingDir)
+	if err != nil {
+		return types.NOTHIN, fmt.Errorf("failed to load module %s: %v", filePath, err)
+	}
+
+	var moduleEnv *environment.Environment
+
+	// Check for circular imports during execution
+	if i.moduleResolver.IsInExecutingStack(resolvedPath) {
+		return types.NOTHIN, fmt.Errorf("circular import detected during execution: %s", filePath)
+	}
+
+	// Check if we have a cached environment for this module
+	if cachedEnv, exists := i.moduleResolver.GetCachedEnvironment(resolvedPath); exists {
+		moduleEnv = cachedEnv
+	} else {
+		// Add to execution stack to detect circular imports
+		i.moduleResolver.AddToExecutingStack(resolvedPath)
+		defer i.moduleResolver.RemoveFromExecutingStack()
+
+		// Create a separate environment for the module to execute in
+		moduleEnv = i.runtime.NewLocalEnv()
+
+		// Save current context and switch to module context
+		originalEnv := i.environment
+		originalFile := i.currentFile
+		i.environment = moduleEnv
+
+		// Set current file to the module's resolved path for nested import resolution
+		i.currentFile = resolvedPath
+
+		// Execute the module in its own environment
+		// First pass: declare functions and classes
+		for _, decl := range moduleAST.Declarations {
+			switch n := decl.(type) {
+			case *ast.FunctionDeclarationNode:
+				if _, err := i.VisitFunctionDeclaration(n); err != nil {
+					i.environment = originalEnv // Restore context before returning error
+					i.currentFile = originalFile
+					return types.NOTHIN, fmt.Errorf("error declaring function in module %s: %v", filePath, err)
+				}
+			case *ast.ClassDeclarationNode:
+				if _, err := i.VisitClassDeclaration(n); err != nil {
+					i.environment = originalEnv // Restore context before returning error
+					i.currentFile = originalFile
+					return types.NOTHIN, fmt.Errorf("error declaring class in module %s: %v", filePath, err)
+				}
+			}
+		}
+
+		// Second pass: execute variable declarations and import statements
+		for _, decl := range moduleAST.Declarations {
+			switch n := decl.(type) {
+			case *ast.VariableDeclarationNode:
+				if _, err := i.VisitVariableDeclaration(n); err != nil {
+					i.environment = originalEnv // Restore context before returning error
+					i.currentFile = originalFile
+					return types.NOTHIN, fmt.Errorf("error declaring variable in module %s: %v", filePath, err)
+				}
+			case *ast.ImportStatementNode:
+				if _, err := i.VisitImportStatement(n); err != nil {
+					i.environment = originalEnv // Restore context before returning error
+					i.currentFile = originalFile
+					return types.NOTHIN, fmt.Errorf("error processing import in module %s: %v", filePath, err)
+				}
+			}
+		}
+
+		// Cache the executed environment
+		i.moduleResolver.CacheEnvironment(resolvedPath, moduleEnv)
+
+		// Restore original context
+		i.environment = originalEnv
+		i.currentFile = originalFile
+	}
+
+	// Import the requested declarations from module environment to current environment
+	if len(declarations) > 0 {
+		// Import only specified declarations
+		return i.importSelectiveDeclarations(moduleEnv, declarations, filePath)
+	} else {
+		// Import all public declarations
+		return i.importAllDeclarations(moduleEnv, filePath)
+	}
+}
+
+// importSelectiveDeclarations imports only the specified declarations from module environment
+func (i *Interpreter) importSelectiveDeclarations(moduleEnv *environment.Environment, declarations []string, filePath string) (types.Value, error) {
+	for _, declName := range declarations {
+		declName = strings.ToUpper(declName)
+		if strings.HasPrefix(declName, "_") {
+			return types.NOTHIN, fmt.Errorf("importing private declaration %s from module %s is not allowed", declName, filePath)
+		}
+
+		// Try to import as function
+		if function, err := moduleEnv.GetFunction(declName); err == nil {
+			if err := i.environment.DefineFunction(function); err != nil {
+				return types.NOTHIN, fmt.Errorf("failed to import function %s from module %s: %v", declName, filePath, err)
+			}
+			continue
+		}
+
+		// Try to import as class
+		if class, err := moduleEnv.GetClass(declName); err == nil {
+			if err := i.environment.DefineClass(class); err != nil {
+				return types.NOTHIN, fmt.Errorf("failed to import class %s from module %s: %v", declName, filePath, err)
+			}
+			continue
+		}
+
+		// Try to import as variable
+		if variable, err := moduleEnv.GetVariable(declName); err == nil {
+			if err := i.environment.DefineVariable(declName, variable.Type, variable.Value, variable.IsLocked); err != nil {
+				return types.NOTHIN, fmt.Errorf("failed to import variable %s from module %s: %v", declName, filePath, err)
+			}
+			continue
+		}
+
+		// Declaration not found
+		return types.NOTHIN, fmt.Errorf("declaration %s not found in module %s", declName, filePath)
+	}
+
+	return types.NOTHIN, nil
+}
+
+// importAllDeclarations imports all public declarations from module environment
+func (i *Interpreter) importAllDeclarations(moduleEnv *environment.Environment, filePath string) (types.Value, error) {
+	// Import all functions (assuming all are public for now)
+	if functions := moduleEnv.GetAllFunctions(); len(functions) > 0 {
+		for name, function := range functions {
+			// Skip private functions (starting with _)
+			if strings.HasPrefix(name, "_") {
+				continue
+			}
+			if err := i.environment.DefineFunction(function); err != nil {
+				return types.NOTHIN, fmt.Errorf("failed to import function %s from module %s: %v", name, filePath, err)
+			}
+		}
+	}
+
+	// Import all classes (assuming all are public for now)
+	if classes := moduleEnv.GetAllClasses(); len(classes) > 0 {
+		for name, class := range classes {
+			// Skip private classes (starting with _)
+			if strings.HasPrefix(name, "_") {
+				continue
+			}
+			if err := i.environment.DefineClass(class); err != nil {
+				return types.NOTHIN, fmt.Errorf("failed to import class %s from module %s: %v", name, filePath, err)
+			}
+		}
+	}
+
+	// Import all variables (assuming all are public for now)
+	if variables := moduleEnv.GetAllVariables(); len(variables) > 0 {
+		for name, variable := range variables {
+			// Skip private variables (starting with _)
+			if strings.HasPrefix(name, "_") {
+				continue
+			}
+			if err := i.environment.DefineVariable(name, variable.Type, variable.Value, variable.IsLocked); err != nil {
+				return types.NOTHIN, fmt.Errorf("failed to import variable %s from module %s: %v", name, filePath, err)
+			}
+		}
 	}
 
 	return types.NOTHIN, nil
@@ -344,11 +539,6 @@ func (i *Interpreter) VisitFunctionCall(node *ast.FunctionCallNode) (types.Value
 
 		// Check local environment first
 		if function, err := i.environment.GetFunction(functionName); err == nil {
-			return i.callFunction(function, args)
-		}
-
-		// Check native functions
-		if function, exists := i.runtime.GetNative(functionName); exists {
 			return i.callFunction(function, args)
 		}
 
@@ -603,11 +793,6 @@ func (i *Interpreter) VisitIdentifier(node *ast.IdentifierNode) (types.Value, er
 
 	// Check if it's a zero-argument function call
 	if function, err := i.environment.GetFunction(name); err == nil {
-		return i.callFunction(function, []types.Value{})
-	}
-
-	// Check native functions
-	if function, exists := i.runtime.GetNative(name); exists {
 		return i.callFunction(function, []types.Value{})
 	}
 

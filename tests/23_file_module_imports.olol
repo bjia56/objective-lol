@@ -1,0 +1,62 @@
+BTW Test file module import functionality
+BTW Expected output:
+BTW Testing full file import
+BTW 25
+BTW 125
+BTW 3.14159
+BTW Testing selective import
+BTW Hello, World!
+BTW Welcome to Objective-LOL!
+BTW Testing nested path import
+BTW 500
+BTW Testing transitive imports
+BTW 625
+
+I CAN HAS STDIO?
+
+BTW Test 1: Full import from file
+I CAN HAS "test_modules/math_utils"?
+
+HAI ME TEH FUNCSHUN TEST_FULL_IMPORT
+    SAYZ WIT "Testing full file import"
+    I HAS A VARIABLE RESULT1 TEH INTEGR ITZ SQUARE WIT 5
+    SAYZ WIT RESULT1
+    I HAS A VARIABLE RESULT2 TEH INTEGR ITZ CUBE WIT 5
+    SAYZ WIT RESULT2
+    SAYZ WIT PI
+KTHXBAI
+
+BTW Test 2: Selective import from file
+I CAN HAS GREETING AN WELCOME_MSG FROM "test_modules/string_utils"?
+
+HAI ME TEH FUNCSHUN TEST_SELECTIVE_IMPORT
+    SAYZ WIT "Testing selective import"
+    I HAS A VARIABLE MSG TEH STRIN ITZ GREETING
+    SAYZ WIT MSG
+    SAYZ WIT WELCOME_MSG
+KTHXBAI
+
+BTW Test 3: Import from nested directory
+I CAN HAS DEEP_FUNC FROM "test_modules/nested/deep_module"?
+
+HAI ME TEH FUNCSHUN TEST_NESTED_IMPORT
+    SAYZ WIT "Testing nested path import"
+    I HAS A VARIABLE RESULT TEH INTEGR ITZ DEEP_FUNC WIT 5
+    SAYZ WIT RESULT
+KTHXBAI
+
+BTW Test 4: Transitive imports (module that imports another module)
+I CAN HAS E FROM "test_modules/importer"?
+
+HAI ME TEH FUNCSHUN TEST_TRANSITIVE_IMPORT
+    SAYZ WIT "Testing transitive imports"
+    SAYZ WIT E
+KTHXBAI
+
+BTW Main function
+HAI ME TEH FUNCSHUN MAIN
+    TEST_FULL_IMPORT
+    TEST_SELECTIVE_IMPORT
+    TEST_NESTED_IMPORT
+    TEST_TRANSITIVE_IMPORT
+KTHXBAI

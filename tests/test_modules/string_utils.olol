@@ -1,0 +1,12 @@
+BTW String utilities module
+
+HAI ME TEH FUNCSHUN GREETING TEH STRIN
+    GIVEZ "Hello, World!"
+KTHXBAI
+
+HAI ME TEH VARIABLE WELCOME_MSG TEH STRIN ITZ "Welcome to Objective-LOL!"
+
+BTW Private function (starts with _) - should not be importable
+HAI ME TEH FUNCSHUN _PRIVATE_HELPER WIT TEXT TEH STRIN
+    GIVEZ "SECRET: " MOAR TEXT
+KTHXBAI

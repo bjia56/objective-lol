@@ -244,46 +244,61 @@ func (p *Parser) parseImportStatement() *ast.ImportStatementNode {
 		return nil
 	}
 
-	// Expect identifier (could be module name or first declaration)
-	if !p.expectPeek(IDENTIFIER) {
-		p.addError(fmt.Sprintf("expected identifier, got %v at line %d", p.peekToken.Type, p.peekToken.Line))
-		return nil
-	}
-	
-	firstIdentifier := p.currentToken.Literal
+	// Check if first token is STRING (file import) or IDENTIFIER (built-in module or selective import)
+	if p.peekTokenIs(STRING) {
+		// File import: I CAN HAS "filepath"?
+		p.nextToken() // consume STRING
+		node.IsFileImport = true
+		node.ModuleName = p.currentToken.Literal
+	} else if p.peekTokenIs(IDENTIFIER) {
+		// Either built-in module import or selective import
+		p.nextToken() // consume IDENTIFIER
+		firstIdentifier := p.currentToken.Literal
 
-	// Check if this is selective import (next token is AN or FROM)
-	if p.peekToken.Type == AN || p.peekToken.Type == FROM {
-		// This is a selective import: I CAN HAS decl1 [AN decl2 ...] FROM module?
-		node.IsSelective = true
-		node.Declarations = []string{firstIdentifier}
+		// Check if this is selective import (next token is AN or FROM)
+		if p.peekToken.Type == AN || p.peekToken.Type == FROM {
+			// Selective import: I CAN HAS decl1 [AN decl2 ...] FROM module?
+			node.Declarations = []string{firstIdentifier}
 
-		// Parse additional declarations separated by AN
-		for p.peekToken.Type == AN {
-			p.nextToken() // consume AN
-			if !p.expectPeek(IDENTIFIER) {
-				p.addError(fmt.Sprintf("expected declaration name after 'AN', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+			// Parse additional declarations separated by AN
+			for p.peekToken.Type == AN {
+				p.nextToken() // consume AN
+				if !p.expectPeek(IDENTIFIER) {
+					p.addError(fmt.Sprintf("expected declaration name after 'AN', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+					return nil
+				}
+				node.Declarations = append(node.Declarations, p.currentToken.Literal)
+			}
+
+			// Expect FROM
+			if !p.expectPeek(FROM) {
+				p.addError(fmt.Sprintf("expected 'FROM', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
 				return nil
 			}
-			node.Declarations = append(node.Declarations, p.currentToken.Literal)
-		}
 
-		// Expect FROM
-		if !p.expectPeek(FROM) {
-			p.addError(fmt.Sprintf("expected 'FROM', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
-			return nil
+			// Module name can be either IDENTIFIER (built-in) or STRING (file)
+			if p.peekTokenIs(STRING) {
+				// Selective import from file: I CAN HAS FUNC FROM "file"?
+				p.nextToken() // consume STRING
+				node.IsFileImport = true
+				node.ModuleName = p.currentToken.Literal
+			} else if p.peekTokenIs(IDENTIFIER) {
+				// Selective import from built-in: I CAN HAS FUNC FROM STDIO?
+				p.nextToken() // consume IDENTIFIER
+				node.IsFileImport = false
+				node.ModuleName = p.currentToken.Literal
+			} else {
+				p.addError(fmt.Sprintf("expected module name (identifier or string) after 'FROM', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+				return nil
+			}
+		} else {
+			// Traditional built-in import: I CAN HAS STDIO?
+			node.IsFileImport = false
+			node.ModuleName = firstIdentifier
 		}
-
-		// Expect module name
-		if !p.expectPeek(IDENTIFIER) {
-			p.addError(fmt.Sprintf("expected module name after 'FROM', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
-			return nil
-		}
-		node.ModuleName = p.currentToken.Literal
 	} else {
-		// This is a traditional import: I CAN HAS module?
-		node.IsSelective = false
-		node.ModuleName = firstIdentifier
+		p.addError(fmt.Sprintf("expected module name (identifier) or file path (string) after 'HAS', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+		return nil
 	}
 
 	// Expect '?' at the end

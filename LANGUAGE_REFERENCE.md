@@ -14,11 +14,12 @@
 7. [Control Flow](#control-flow)
 8. [Functions](#functions)
 9. [Object-Oriented Programming](#object-oriented-programming)
-10. [Standard Library](#standard-library)
-11. [Type System](#type-system)
-12. [Examples](#examples)
-13. [Complete Language Reference](#complete-language-reference)
-14. [Error Handling](#error-handling)
+10. [Module System](#module-system)
+11. [Standard Library](#standard-library)
+12. [Type System](#type-system)
+13. [Examples](#examples)
+14. [Complete Language Reference](#complete-language-reference)
+15. [Error Handling](#error-handling)
 
 ---
 
@@ -27,8 +28,9 @@
 Objective-LOL is a programming language inspired by LOLCODE, implemented in Go. It features:
 
 - Strong type system with automatic casting
-- Object-oriented programming with classes, inheritance, and constructors
+- Object-oriented programming with classes, inheritance, and constructors  
 - Functions with parameters and return values
+- **Module system** with file imports, built-in modules, and cross-platform compatibility
 - Standard library for I/O, mathematics, and time operations
 - Control flow structures (conditionals and loops)
 
@@ -794,9 +796,148 @@ I HAS A VARIABLE GREETING TEH STRIN ITZ PERSON1 DO GET_NAME
 
 ---
 
+## Module System
+
+Objective-LOL features a comprehensive module system that supports both built-in standard library modules and custom file modules. This enables code organization, reusability, and modular development across projects.
+
+### Import Syntax
+
+All imports use the `I CAN HAS` syntax with two main variants:
+
+#### Full Import
+Import all public declarations from a module:
+
+```lol
+I CAN HAS STDIO?              BTW Built-in module (all I/O functions)  
+I CAN HAS "math_utils"?       BTW File module (all functions/classes/variables)
+```
+
+#### Selective Import
+Import only specific declarations from a module:
+
+```lol
+I CAN HAS SAY AN SAYZ FROM STDIO?                    BTW Built-in module
+I CAN HAS CALCULATE AN PI FROM "math_utils"?         BTW File module
+```
+
+### File Module Imports
+
+File modules allow you to organize code across multiple `.olol` files and import functions, classes, and variables between them.
+
+#### File Path Syntax
+
+- **Extension**: The `.olol` extension is automatically appended - don't include it in import paths
+- **Path Style**: Always use POSIX-style forward slashes `/` in import paths (converted automatically for Windows)
+- **Relative Paths**: Resolved relative to the importing file's directory
+- **Nested Directories**: Support for organized directory structures
+
+```lol
+BTW Import from same directory
+I CAN HAS "math_helpers"?
+
+BTW Import from subdirectory  
+I CAN HAS "utils/string_helpers"?
+
+BTW Import from parent directory
+I CAN HAS "../shared/common"?
+
+BTW Import from nested structure
+I CAN HAS "algorithms/sorting/quick_sort"?
+```
+
+#### Full File Import Example
+
+**math_utils.olol:**
+```lol
+HAI ME TEH FUNCSHUN SQUARE WIT N TEH INTEGR
+    GIVEZ N TIEMZ N
+KTHXBAI
+
+HAI ME TEH FUNCSHUN CUBE WIT N TEH INTEGR  
+    GIVEZ N TIEMZ N TIEMZ N
+KTHXBAI
+
+HAI ME TEH VARIABLE PI TEH DUBBLE ITZ 3.14159
+```
+
+**main.olol:**
+```lol
+I CAN HAS "math_utils"?
+
+HAI ME TEH FUNCSHUN MAIN
+    I HAS A VARIABLE RESULT TEH INTEGR ITZ SQUARE WIT 5    BTW Result: 25
+    I HAS A VARIABLE VOLUME TEH INTEGR ITZ CUBE WIT 3      BTW Result: 27
+    I HAS A VARIABLE CIRCLE TEH DUBBLE ITZ PI TIEMZ 2      BTW Result: 6.28318
+KTHXBAI
+```
+
+#### Selective File Import Example
+
+```lol
+BTW Import only specific declarations
+I CAN HAS SQUARE AN PI FROM "math_utils"?
+
+HAI ME TEH FUNCSHUN MAIN
+    I HAS A VARIABLE AREA TEH DUBBLE ITZ PI TIEMZ SQUARE WIT 5
+    BTW CUBE function is not available (not imported)
+KTHXBAI
+```
+
+### Module Features
+
+#### Transitive Imports
+Modules can import other modules, creating dependency chains:
+
+**string_utils.olol:**
+```lol
+I CAN HAS "math_utils"?
+
+HAI ME TEH FUNCSHUN REPEAT_STRING WIT TEXT TEH STRIN AN TIMES TEH INTEGR
+    BTW Uses SQUARE from math_utils
+    GIVEZ TEXT  BTW Simplified for example
+KTHXBAI
+```
+
+#### Private Declarations
+Functions, classes, and variables starting with underscore `_` are private and cannot be imported:
+
+```lol
+HAI ME TEH FUNCSHUN PUBLIC_FUNCTION
+    GIVEZ 42
+KTHXBAI
+
+HAI ME TEH FUNCSHUN _PRIVATE_HELPER
+    BTW This cannot be imported by other modules
+    GIVEZ "secret"
+KTHXBAI
+```
+
+#### Circular Import Detection
+The module system automatically detects and prevents circular imports with clear error messages:
+
+```
+Error: circular import detected during execution: circular_module_a
+```
+
+### Module Caching and Performance
+
+- **AST Caching**: Each module is parsed once and cached for subsequent imports
+- **Environment Caching**: Executed module environments are cached to prevent re-execution
+- **Path Normalization**: Absolute path resolution ensures consistent caching across different import contexts
+
+### Cross-Platform Compatibility
+
+- **Path Conversion**: POSIX paths in source code are automatically converted to native OS paths at runtime
+- **Universal Syntax**: Same import syntax works on Windows, macOS, and Linux without modification
+- **Directory Separators**: Always use `/` in import paths regardless of target platform
+
+---
+
 ## Standard Library
 
 ### Module Import System
+
+> **Note**: For complete documentation of the module system including file imports, see the [Module System](#module-system) section.
 
 Standard library functions must be explicitly imported using the `I CAN HAS <module>?` syntax before they can be used. The language supports both full module imports and selective imports of specific declarations.
 

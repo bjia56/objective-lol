@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/bjia56/objective-lol/pkg/interpreter"
@@ -66,6 +67,10 @@ func executeFile(interp *interpreter.Interpreter, filename string) error {
 		return fmt.Errorf("parsing failed with %d errors", len(errors))
 	}
 
+	// Set current file for relative import resolution
+	absFilename, _ := filepath.Abs(filename)
+	interp.SetCurrentFile(absFilename)
+	
 	// Execute the program
 	if err := interp.Interpret(program); err != nil {
 		return err

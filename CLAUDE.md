@@ -48,6 +48,7 @@ The codebase is organized into several key packages:
 - **pkg/ast**: AST node definitions using visitor pattern for tree traversal
 - **pkg/interpreter**: Tree-walking interpreter that executes AST nodes
 - **pkg/environment**: Runtime environment and scoping system
+- **pkg/modules**: Cross-platform module resolution and caching system for file imports
 - **pkg/types**: Value types and object system for the language
 
 ### Standard Library
@@ -61,6 +62,7 @@ The interpreter supports:
 - Variables with type declarations (INTEGR, DUBBLE, STRIN, BOOL, NOTHIN)
 - Functions with parameters and return values
 - Classes with inheritance (KITTEH OF), visibility modifiers (EVRYONE/MAHSELF)
+- **Module system with file imports**: Cross-platform POSIX path resolution, caching, circular import detection
 - Control flow (IZ/NOPE conditionals, WHILE loops)
 - Arithmetic, comparison, and logical operators
 - Parentheses for expression grouping and precedence override
@@ -99,12 +101,32 @@ Implements visitor pattern:
 - Runtime environment manages global functions and classes
 - Object instance tracking for method calls and member access
 
+### Module System
+**File Import Architecture** (`pkg/modules/`):
+- **ModuleResolver**: Cross-platform path resolution with POSIX-to-native conversion
+- **AST Caching**: Each `.olol` file parsed once and cached by absolute path
+- **Environment Caching**: Executed module environments cached to prevent re-execution
+- **Circular Import Detection**: Execution-level tracking prevents infinite recursion
+- **Context-Aware Resolution**: Import paths resolved relative to importing file's directory
+
+**Import Syntax**:
+- Built-in modules: `I CAN HAS STDIO?`
+- File modules: `I CAN HAS "math_utils"?` (auto-appends `.olol` extension)
+- Selective imports: `I CAN HAS FUNC1 AN FUNC2 FROM "module"?`
+- Private declarations: Functions/classes/variables starting with `_` are not importable
+
+**Path Handling**:
+- Source code uses POSIX paths: `"utils/helpers"` → `utils/helpers.olol`
+- Runtime conversion to native paths (Windows: `utils\helpers.olol`)
+- Supports relative: `"../shared"`, absolute: `"/project/modules"`, and nested: `"dir/subdir/module"`
+
 ### Testing
 Comprehensive test suite in `tests/` directory:
 - Files covering basic to advanced features
 - Each test file is self-documenting with expected outputs
 - Tests use `.olol` extension to distinguish from examples
 - `run_tests.sh` provides automated test execution with pass/fail reporting
+- Module import tests in `tests/test_modules/` demonstrate file import capabilities
 
 ## Development Notes
 

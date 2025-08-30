@@ -320,7 +320,6 @@ type RuntimeEnvironment struct {
 	GlobalEnv *Environment
 	ExecDir   string
 	Sources   map[string]*Environment // Loaded source files
-	Natives   map[string]*Function    // Native function implementations
 }
 
 // NewRuntimeEnvironment creates a new runtime environment
@@ -328,7 +327,6 @@ func NewRuntimeEnvironment() *RuntimeEnvironment {
 	return &RuntimeEnvironment{
 		GlobalEnv: NewEnvironment(nil),
 		Sources:   make(map[string]*Environment),
-		Natives:   make(map[string]*Function),
 	}
 }
 
@@ -343,13 +341,34 @@ func (rt *RuntimeEnvironment) GetSource(name string) (*Environment, bool) {
 	return env, exists
 }
 
-// RegisterNative registers a native function implementation
-func (rt *RuntimeEnvironment) RegisterNative(name string, function *Function) {
-	rt.Natives[name] = function
+// NewLocalEnv creates a new local environment with the global environment as parent
+func (rt *RuntimeEnvironment) NewLocalEnv() *Environment {
+	return NewEnvironment(rt.GlobalEnv)
 }
 
-// GetNative retrieves a native function implementation
-func (rt *RuntimeEnvironment) GetNative(name string) (*Function, bool) {
-	function, exists := rt.Natives[name]
-	return function, exists
+// GetAllFunctions returns a copy of all functions in the environment (current scope only)
+func (e *Environment) GetAllFunctions() map[string]*Function {
+	result := make(map[string]*Function)
+	for name, function := range e.functions {
+		result[name] = function
+	}
+	return result
+}
+
+// GetAllClasses returns a copy of all classes in the environment (current scope only)
+func (e *Environment) GetAllClasses() map[string]*Class {
+	result := make(map[string]*Class)
+	for name, class := range e.classes {
+		result[name] = class
+	}
+	return result
+}
+
+// GetAllVariables returns a copy of all variables in the environment (current scope only)
+func (e *Environment) GetAllVariables() map[string]*Variable {
+	result := make(map[string]*Variable)
+	for name, variable := range e.variables {
+		result[name] = variable
+	}
+	return result
 }
