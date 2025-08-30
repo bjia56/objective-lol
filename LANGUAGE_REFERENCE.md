@@ -108,7 +108,7 @@ HAI ME TEH FUNCSHUN MAIN    BTW Keywords converted to uppercase
 
 ## Data Types
 
-Objective-LOL has five built-in data types:
+Objective-LOL has six built-in data types:
 
 ### INTEGR (Integer)
 
@@ -166,6 +166,42 @@ Represents absence of value:
 I HAS A VARIABLE EMPTY_VAR TEH STRIN ITZ NOTHIN
 SAYZ WIT NOTHIN  BTW Prints "NOTHIN"
 ```
+
+### BUKKIT (Array)
+
+Dynamic arrays that can hold any type of values. BUKKIT is a built-in class that provides comprehensive array functionality:
+
+```lol
+BTW Create empty array
+I HAS A VARIABLE NUMS TEH BUKKIT ITZ NEW BUKKIT
+SAYZ WIT NUMS SIZ                    BTW Output: 0
+
+BTW Add elements
+NUMS DO PUSH WIT 10
+NUMS DO PUSH WIT 20
+NUMS DO PUSH WIT 30
+SAYZ WIT NUMS SIZ                    BTW Output: 3
+
+BTW Access elements
+SAYZ WIT NUMS DO AT WIT 0            BTW Output: 10
+SAYZ WIT NUMS DO AT WIT 2            BTW Output: 30
+
+BTW Modify elements
+NUMS DO SET WIT 1 AN WIT 99          BTW Set second element
+SAYZ WIT NUMS DO AT WIT 1            BTW Output: 99
+
+BTW Array operations
+I HAS A VARIABLE LAST TEH INTEGR ITZ NUMS DO POP     BTW Remove last element
+NUMS DO UNSHIFT WIT 5                BTW Add to beginning
+I HAS A VARIABLE CSV TEH STRIN ITZ NUMS DO JOIN WIT ", "
+SAYZ WIT CSV                         BTW Output: "5, 10, 99"
+```
+
+**Key Features:**
+- **Dynamic Size**: Arrays grow and shrink automatically
+- **Mixed Types**: Can store any combination of INTEGR, DUBBLE, STRIN, BOOL, NOTHIN, or objects
+- **Rich Methods**: Full set of array manipulation methods
+- **SIZ Member**: Read-only property that always reflects current array size
 
 ---
 
@@ -1414,6 +1450,93 @@ HAI ME TEH FUNCSHUN MAIN
 KTHXBAI
 ```
 
+#### Array Processing Program
+
+```lol
+BTW Array processing and data analysis
+I CAN HAS SAY AN SAYZ FROM STDIO?
+
+HAI ME TEH FUNCSHUN ANALYZE_DATA WIT DATA TEH BUKKIT
+    SAYZ WIT "=== Data Analysis ==="
+    
+    BTW Display array info
+    SAY WIT "Array size: "
+    SAYZ WIT DATA SIZ
+    
+    BTW Find min and max values
+    I HAS A VARIABLE MIN TEH INTEGR ITZ DATA DO AT WIT 0
+    I HAS A VARIABLE MAX TEH INTEGR ITZ DATA DO AT WIT 0
+    I HAS A VARIABLE SUM TEH INTEGR ITZ 0
+    I HAS A VARIABLE INDEX TEH INTEGR ITZ 0
+    I HAS A VARIABLE CURRENT TEH INTEGR
+    
+    WHILE INDEX SMALLR THAN DATA SIZ
+        CURRENT ITZ DATA DO AT WIT INDEX
+        SUM ITZ SUM MOAR CURRENT
+        
+        IZ CURRENT SMALLR THAN MIN?
+            MIN ITZ CURRENT
+        KTHX
+        IZ CURRENT BIGGR THAN MAX?
+            MAX ITZ CURRENT
+        KTHX
+        
+        INDEX ITZ INDEX MOAR 1
+    KTHX
+    
+    SAY WIT "Min: "
+    SAY WIT MIN
+    SAY WIT ", Max: "
+    SAY WIT MAX
+    SAY WIT ", Average: "
+    SAYZ WIT SUM DIVIDEZ DATA SIZ AS INTEGR
+    
+    BTW Sort and display
+    DATA DO SORT
+    SAY WIT "Sorted: "
+    SAYZ WIT DATA DO JOIN WIT " "
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    BTW Create and populate array
+    I HAS A VARIABLE NUMBERS TEH BUKKIT ITZ NEW BUKKIT
+    NUMBERS DO PUSH WIT 42
+    NUMBERS DO PUSH WIT 17
+    NUMBERS DO PUSH WIT 89
+    NUMBERS DO PUSH WIT 3
+    NUMBERS DO PUSH WIT 56
+    
+    BTW Process the data
+    ANALYZE_DATA WIT NUMBERS
+    
+    BTW String processing example
+    I HAS A VARIABLE WORDS TEH BUKKIT ITZ NEW BUKKIT
+    WORDS DO PUSH WIT "objective"
+    WORDS DO PUSH WIT "lol"
+    WORDS DO PUSH WIT "programming"
+    WORDS DO PUSH WIT "language"
+    
+    BTW Create sentence from words
+    I HAS A VARIABLE SENTENCE TEH STRIN ITZ WORDS DO JOIN WIT " "
+    SAY WIT "Generated sentence: "
+    SAYZ WIT SENTENCE
+    
+    BTW Array manipulation
+    WORDS DO REVERSE
+    SAY WIT "Reversed words: "
+    SAYZ WIT WORDS DO JOIN WIT " "
+    
+    BTW Search operations
+    IZ WORDS DO CONTAINS WIT "lol"?
+        I HAS A VARIABLE INDEX TEH INTEGR ITZ WORDS DO FIND WIT "lol"
+        SAY WIT "'lol' found at index: "
+        SAYZ WIT INDEX
+    NOPE
+        SAYZ WIT "'lol' not found"
+    KTHX
+KTHXBAI
+```
+
 ---
 
 ## Complete Language Reference
@@ -1462,6 +1585,7 @@ KTHXBAI
 - `DUBBLE` - Double/float type
 - `STRIN` - String type
 - `BOOL` - Boolean type
+- `BUKKIT` - Array type
 - `NOTHIN` - Null/void type
 
 #### Operators
@@ -1519,6 +1643,25 @@ KTHXBAI
 
 **Global Functions**:
 - `SLEEP WIT <seconds>` - Sleep for duration → NOTHIN
+
+#### Array Functions
+
+**BUKKIT Class Methods** (called on BUKKIT objects with `DO`):
+- `NEW BUKKIT` - Create new empty array → BUKKIT
+- `<bukkit> SIZ` - Get array size (read-only member) → INTEGR
+- `<bukkit> DO AT WIT <index>` - Get element at index → varies
+- `<bukkit> DO SET WIT <index> AN WIT <value>` - Set element at index → NOTHIN
+- `<bukkit> DO PUSH WIT <element>` - Add element to end → INTEGR (new size)
+- `<bukkit> DO POP` - Remove and return last element → varies
+- `<bukkit> DO SHIFT` - Remove and return first element → varies
+- `<bukkit> DO UNSHIFT WIT <element>` - Add element to beginning → INTEGR (new size)
+- `<bukkit> DO CLEAR` - Remove all elements → NOTHIN
+- `<bukkit> DO REVERSE` - Reverse array in-place → NOTHIN
+- `<bukkit> DO SORT` - Sort elements in-place → NOTHIN
+- `<bukkit> DO JOIN WIT <separator>` - Join elements into string → STRIN
+- `<bukkit> DO SLICE WIT <start> AN WIT <end>` - Create sub-array → BUKKIT
+- `<bukkit> DO FIND WIT <value>` - Find index of value (-1 if not found) → INTEGR
+- `<bukkit> DO CONTAINS WIT <value>` - Check if array contains value → BOOL
 
 ### Syntax Patterns
 
