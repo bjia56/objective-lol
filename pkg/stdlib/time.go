@@ -2,16 +2,16 @@ package stdlib
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
-// RegisterTIMEInEnv registers the DATE class and SLEEP function in the given environment
-func RegisterTIMEInEnv(env *environment.Environment) {
-	// DATE class - represents datetime
-	date := &environment.Class{
+// Global TIME class and function definitions - created once and reused
+var timeClasses = map[string]*environment.Class{
+	"DATE": {
 		Name: "DATE",
 		PublicFunctions: map[string]*environment.Function{
 			"DATE": {
@@ -118,11 +118,11 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 				},
 			},
 		},
-	}
-	env.DefineClass(date)
+	},
+}
 
-	// SLEEP function - sleep for specified seconds
-	sleep := &environment.Function{
+var timeFunctions = map[string]*environment.Function{
+	"SLEEP": {
 		Name: "SLEEP",
 		Parameters: []environment.Parameter{
 			{Name: "seconds", Type: "INTEGR"},
@@ -137,6 +137,37 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 
 			return types.NOTHIN, fmt.Errorf("SLEEP: invalid argument type")
 		},
+	},
+}
+
+// RegisterTIMEInEnv registers TIME classes and functions in the given environment
+// declarations: empty slice means import all, otherwise import only specified declarations
+func RegisterTIMEInEnv(env *environment.Environment, declarations []string) error {
+	// If declarations is empty, import all classes and functions
+	if len(declarations) == 0 {
+		for _, class := range timeClasses {
+			env.DefineClass(class)
+		}
+		for _, fn := range timeFunctions {
+			env.DefineFunction(fn)
+		}
+		return nil
 	}
-	env.DefineFunction(sleep)
+
+	// Otherwise, import only specified declarations
+	for _, decl := range declarations {
+		declUpper := strings.ToUpper(decl)
+		
+		// Check if it's a class
+		if class, exists := timeClasses[declUpper]; exists {
+			env.DefineClass(class)
+		} else if fn, exists := timeFunctions[declUpper]; exists {
+			// Check if it's a function
+			env.DefineFunction(fn)
+		} else {
+			return fmt.Errorf("unknown TIME declaration: %s", decl)
+		}
+	}
+
+	return nil
 }

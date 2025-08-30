@@ -1,0 +1,56 @@
+BTW Test selective import functionality
+BTW Expected output: 
+BTW Testing selective STDIO import
+BTW Hello World!
+BTW Testing multiple selective imports
+BTW Hello from multiple imports!
+BTW Testing MATH selective import
+BTW 42.5
+BTW 15.5
+BTW Testing TIME selective import
+BTW Current year displayed
+
+BTW Test 1: Single selective import
+I CAN HAS SAYZ FROM STDIO?
+
+HAI ME TEH FUNCSHUN TEST_SINGLE
+    SAYZ WIT "Testing selective STDIO import"
+KTHXBAI
+
+BTW Test 2: Multiple selective imports from same module
+I CAN HAS SAY AN SAYZ FROM STDIO?
+
+HAI ME TEH FUNCSHUN TEST_MULTIPLE
+    SAYZ WIT "Testing multiple selective imports"
+    SAY WIT "Hello "
+    SAYZ WIT "from multiple imports!"
+KTHXBAI
+
+BTW Test 3: MATH selective imports
+I CAN HAS ABS AN MAX FROM MATH?
+
+HAI ME TEH FUNCSHUN TEST_MATH
+    SAYZ WIT "Testing MATH selective import"
+    I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ABS WIT -42.5
+    SAYZ WIT RESULT1
+    I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ MAX WIT 10.5 AN WIT 15.5
+    SAYZ WIT RESULT2
+KTHXBAI
+
+BTW Test 4: TIME selective import (class)
+I CAN HAS DATE FROM TIME?
+
+HAI ME TEH FUNCSHUN TEST_TIME
+    SAYZ WIT "Testing TIME selective import"
+    I HAS A VARIABLE NOW_DATE TEH DATE ITZ NEW DATE
+    I HAS A VARIABLE YEAR TEH INTEGR ITZ NOW_DATE DO YEAR
+    SAYZ WIT "Current year displayed"
+KTHXBAI
+
+BTW Main function
+HAI ME TEH FUNCSHUN MAIN
+    TEST_SINGLE
+    TEST_MULTIPLE  
+    TEST_MATH
+    TEST_TIME
+KTHXBAI

@@ -230,7 +230,7 @@ func (p *Parser) parseIHasAVariableDeclaration() *ast.VariableDeclarationNode {
 	return node
 }
 
-// parseImportStatement parses "I CAN HAS module?" import statements
+// parseImportStatement parses both "I CAN HAS module?" and "I CAN HAS decl1 AN decl2 FROM module?" import statements
 func (p *Parser) parseImportStatement() *ast.ImportStatementNode {
 	node := &ast.ImportStatementNode{}
 
@@ -244,16 +244,51 @@ func (p *Parser) parseImportStatement() *ast.ImportStatementNode {
 		return nil
 	}
 
-	// Expect module name (identifier)
+	// Expect identifier (could be module name or first declaration)
 	if !p.expectPeek(IDENTIFIER) {
-		p.addError(fmt.Sprintf("expected module name, got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+		p.addError(fmt.Sprintf("expected identifier, got %v at line %d", p.peekToken.Type, p.peekToken.Line))
 		return nil
 	}
-	node.ModuleName = p.currentToken.Literal
+	
+	firstIdentifier := p.currentToken.Literal
+
+	// Check if this is selective import (next token is AN or FROM)
+	if p.peekToken.Type == AN || p.peekToken.Type == FROM {
+		// This is a selective import: I CAN HAS decl1 [AN decl2 ...] FROM module?
+		node.IsSelective = true
+		node.Declarations = []string{firstIdentifier}
+
+		// Parse additional declarations separated by AN
+		for p.peekToken.Type == AN {
+			p.nextToken() // consume AN
+			if !p.expectPeek(IDENTIFIER) {
+				p.addError(fmt.Sprintf("expected declaration name after 'AN', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+				return nil
+			}
+			node.Declarations = append(node.Declarations, p.currentToken.Literal)
+		}
+
+		// Expect FROM
+		if !p.expectPeek(FROM) {
+			p.addError(fmt.Sprintf("expected 'FROM', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+			return nil
+		}
+
+		// Expect module name
+		if !p.expectPeek(IDENTIFIER) {
+			p.addError(fmt.Sprintf("expected module name after 'FROM', got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+			return nil
+		}
+		node.ModuleName = p.currentToken.Literal
+	} else {
+		// This is a traditional import: I CAN HAS module?
+		node.IsSelective = false
+		node.ModuleName = firstIdentifier
+	}
 
 	// Expect '?' at the end
 	if !p.expectPeek(QUESTION) {
-		p.addError(fmt.Sprintf("expected '?' after module name, got %v at line %d", p.peekToken.Type, p.peekToken.Line))
+		p.addError(fmt.Sprintf("expected '?' at end of import statement, got %v at line %d", p.peekToken.Type, p.peekToken.Line))
 		return nil
 	}
 

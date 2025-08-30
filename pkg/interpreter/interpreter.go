@@ -75,14 +75,29 @@ func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
 func (i *Interpreter) VisitImportStatement(node *ast.ImportStatementNode) (types.Value, error) {
 	moduleName := strings.ToUpper(node.ModuleName)
 
+	// Prepare declarations list (empty for full import, specific for selective import)
+	var declarations []string
+	if node.IsSelective {
+		declarations = node.Declarations
+	}
+
 	// Load the requested module into the current environment scope
 	switch moduleName {
 	case "STDIO":
-		stdlib.RegisterSTDIOInEnv(i.environment)
+		err := stdlib.RegisterSTDIOInEnv(i.environment, declarations)
+		if err != nil {
+			return types.NOTHIN, err
+		}
 	case "MATH":
-		stdlib.RegisterMATHInEnv(i.environment)
+		err := stdlib.RegisterMATHInEnv(i.environment, declarations)
+		if err != nil {
+			return types.NOTHIN, err
+		}
 	case "TIME":
-		stdlib.RegisterTIMEInEnv(i.environment)
+		err := stdlib.RegisterTIMEInEnv(i.environment, declarations)
+		if err != nil {
+			return types.NOTHIN, err
+		}
 	default:
 		return types.NOTHIN, fmt.Errorf("unknown module: %s", moduleName)
 	}

@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
-// RegisterMATHInEnv registers all MATH functions directly in the given environment
-func RegisterMATHInEnv(env *environment.Environment) {
-	// Initialize random seed
+func init() {
+	// Initialize random seed once - using the new approach for Go 1.20+
 	rand.Seed(time.Now().UnixNano())
+}
 
-	// ABS function - absolute value
-	abs := &environment.Function{
+// Global MATH function definitions - created once and reused
+var mathFunctions = map[string]*environment.Function{
+	"ABS": {
 		Name:       "ABS",
 		ReturnType: "DUBBLE",
 		Parameters: []environment.Parameter{
@@ -31,11 +33,8 @@ func RegisterMATHInEnv(env *environment.Environment) {
 
 			return types.NOTHIN, fmt.Errorf("ABS: invalid numeric type")
 		},
-	}
-	env.DefineFunction(abs)
-
-	// MAX function - maximum of two values
-	max := &environment.Function{
+	},
+	"MAX": {
 		Name:       "MAX",
 		ReturnType: "DUBBLE",
 		Parameters: []environment.Parameter{
@@ -53,11 +52,8 @@ func RegisterMATHInEnv(env *environment.Environment) {
 
 			return types.NOTHIN, fmt.Errorf("MAX: invalid numeric types")
 		},
-	}
-	env.DefineFunction(max)
-
-	// MIN function - minimum of two values
-	min := &environment.Function{
+	},
+	"MIN": {
 		Name:       "MIN",
 		ReturnType: "DUBBLE",
 		Parameters: []environment.Parameter{
@@ -75,11 +71,8 @@ func RegisterMATHInEnv(env *environment.Environment) {
 
 			return types.NOTHIN, fmt.Errorf("MIN: invalid numeric types")
 		},
-	}
-	env.DefineFunction(min)
-
-	// SQRT function - square root
-	sqrt := &environment.Function{
+	},
+	"SQRT": {
 		Name:       "SQRT",
 		ReturnType: "DUBBLE",
 		Parameters: []environment.Parameter{
@@ -97,11 +90,8 @@ func RegisterMATHInEnv(env *environment.Environment) {
 
 			return types.NOTHIN, fmt.Errorf("SQRT: invalid numeric type")
 		},
-	}
-	env.DefineFunction(sqrt)
-
-	// POW function - power
-	pow := &environment.Function{
+	},
+	"POW": {
 		Name:       "POW",
 		ReturnType: "DUBBLE",
 		Parameters: []environment.Parameter{
@@ -120,22 +110,16 @@ func RegisterMATHInEnv(env *environment.Environment) {
 
 			return types.NOTHIN, fmt.Errorf("POW: invalid numeric types")
 		},
-	}
-	env.DefineFunction(pow)
-
-	// RANDOM function - random number between 0 and 1
-	random := &environment.Function{
+	},
+	"RANDOM": {
 		Name:       "RANDOM",
 		ReturnType: "DUBBLE",
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			return types.DoubleValue(rand.Float64()), nil
 		},
-	}
-	env.DefineFunction(random)
-
-	// RANDINT function - random integer in range
-	randint := &environment.Function{
+	},
+	"RANDINT": {
 		Name:       "RANDINT",
 		ReturnType: "INTEGR",
 		Parameters: []environment.Parameter{
@@ -157,11 +141,8 @@ func RegisterMATHInEnv(env *environment.Environment) {
 
 			return types.NOTHIN, fmt.Errorf("RANDINT: invalid integer types")
 		},
-	}
-	env.DefineFunction(randint)
-
-	// SIN function - sine
-	sin := &environment.Function{
+	},
+	"SIN": {
 		Name:       "SIN",
 		ReturnType: "DUBBLE",
 		Parameters: []environment.Parameter{
@@ -176,11 +157,8 @@ func RegisterMATHInEnv(env *environment.Environment) {
 
 			return types.NOTHIN, fmt.Errorf("SIN: invalid numeric type")
 		},
-	}
-	env.DefineFunction(sin)
-
-	// COS function - cosine
-	cos := &environment.Function{
+	},
+	"COS": {
 		Name:       "COS",
 		ReturnType: "DUBBLE",
 		Parameters: []environment.Parameter{
@@ -195,6 +173,29 @@ func RegisterMATHInEnv(env *environment.Environment) {
 
 			return types.NOTHIN, fmt.Errorf("COS: invalid numeric type")
 		},
+	},
+}
+
+// RegisterMATHInEnv registers MATH functions in the given environment
+// declarations: empty slice means import all, otherwise import only specified functions
+func RegisterMATHInEnv(env *environment.Environment, declarations []string) error {
+	// If declarations is empty, import all functions
+	if len(declarations) == 0 {
+		for _, fn := range mathFunctions {
+			env.DefineFunction(fn)
+		}
+		return nil
 	}
-	env.DefineFunction(cos)
+
+	// Otherwise, import only specified functions
+	for _, decl := range declarations {
+		declUpper := strings.ToUpper(decl)
+		if fn, exists := mathFunctions[declUpper]; exists {
+			env.DefineFunction(fn)
+		} else {
+			return fmt.Errorf("unknown MATH function: %s", decl)
+		}
+	}
+
+	return nil
 }

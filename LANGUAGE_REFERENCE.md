@@ -798,15 +798,33 @@ I HAS A VARIABLE GREETING TEH STRIN ITZ PERSON1 DO GET_NAME
 
 ### Module Import System
 
-Standard library functions must be explicitly imported using the `I CAN HAS <module>?` syntax before they can be used.
+Standard library functions must be explicitly imported using the `I CAN HAS <module>?` syntax before they can be used. The language supports both full module imports and selective imports of specific declarations.
 
 #### Import Syntax
 
+**Full Module Import** - Import all functions and classes from a module:
+
 ```lol
-I CAN HAS STDIO?    BTW Import I/O functions
-I CAN HAS MATH?     BTW Import mathematical functions
-I CAN HAS TIME?     BTW Import time functions
+I CAN HAS STDIO?    BTW Import all I/O functions (SAY, SAYZ, GIMME)
+I CAN HAS MATH?     BTW Import all mathematical functions
+I CAN HAS TIME?     BTW Import all time functions and classes
 ```
+
+**Selective Import** - Import only specific declarations from a module:
+
+```lol
+I CAN HAS SAY FROM STDIO?                       BTW Import only SAY function
+I CAN HAS SAY AN SAYZ FROM STDIO?               BTW Import SAY and SAYZ functions
+I CAN HAS ABS AN MAX AN SQRT FROM MATH?         BTW Import specific math functions
+I CAN HAS DATE FROM TIME?                       BTW Import only DATE class
+I CAN HAS DATE AN SLEEP FROM TIME?              BTW Import DATE class and SLEEP function
+```
+
+**Syntax Rules:**
+- Use `AN` to separate multiple declarations in selective imports
+- Declaration names are case-insensitive (converted to uppercase internally)
+- Unknown declarations result in runtime errors with helpful messages
+- Both syntaxes can be mixed within the same program
 
 #### Function-Scoped Imports
 
@@ -818,24 +836,27 @@ I CAN HAS TIME?     BTW Import time functions
 - No import leakage between sibling functions
 
 ```lol
-BTW Global import - available everywhere
-I CAN HAS STDIO?
+BTW Global imports - available everywhere
+I CAN HAS SAYZ FROM STDIO?         BTW Selective global import
+I CAN HAS TIME?                    BTW Full module import
 
 HAI ME TEH FUNCSHUN OUTER_FUNCTION
-    I CAN HAS MATH?  BTW Math available in OUTER_FUNCTION and its callees
+    I CAN HAS ABS AN MAX FROM MATH?    BTW Selective math functions
 
     HAI ME TEH FUNCSHUN INNER_FUNCTION
-        BTW Can access STDIO (from global) and MATH (from OUTER_FUNCTION)
+        BTW Can access SAYZ (global), TIME functions (global), ABS/MAX (parent)
         SAYZ WIT "Hello from inner function"
         I HAS A VARIABLE RESULT TEH DUBBLE ITZ ABS WIT -42.5
+        I HAS A VARIABLE NOW_DATE TEH DATE ITZ NEW DATE
     KTHXBAI
 
     INNER_FUNCTION
 KTHXBAI
 
 HAI ME TEH FUNCSHUN SEPARATE_FUNCTION
-    BTW Can access STDIO (global) but NOT MATH (not imported here)
+    BTW Can access SAYZ and TIME (global) but NOT MATH (not imported here)
     SAYZ WIT "This works"
+    I HAS A VARIABLE DATE_OBJ TEH DATE ITZ NEW DATE
     BTW I HAS A VARIABLE X TEH DUBBLE ITZ ABS WIT -5  BTW This would fail!
 KTHXBAI
 ```
@@ -850,8 +871,27 @@ KTHXBAI
 #### Available Modules
 
 - **STDIO**: I/O functions (`SAY`, `SAYZ`, `GIMME`)
-- **MATH**: Mathematical functions (`ABS`, `MAX`, `MIN`, `SQRT`, `POW`, `RANDOM`, `SIN`, `COS`, etc.)
-- **TIME**: Time functions (`NOW`, `YEAR`, `MONTH`, `DAY`, `HOUR`, `MINUTE`, `SECOND`, etc.)
+- **MATH**: Mathematical functions (`ABS`, `MAX`, `MIN`, `SQRT`, `POW`, `RANDOM`, `RANDINT`, `SIN`, `COS`)
+- **TIME**: Time classes and functions (`DATE` class, `SLEEP` function)
+
+#### Selective Import Examples
+
+```lol
+BTW STDIO selective imports
+I CAN HAS SAY FROM STDIO?                    BTW Only SAY function
+I CAN HAS SAYZ AN GIMME FROM STDIO?          BTW SAYZ and GIMME functions
+
+BTW MATH selective imports  
+I CAN HAS ABS FROM MATH?                     BTW Only ABS function
+I CAN HAS ABS AN MAX AN MIN FROM MATH?       BTW Basic math functions
+I CAN HAS SIN AN COS FROM MATH?              BTW Trigonometric functions
+I CAN HAS RANDOM AN RANDINT FROM MATH?       BTW Random functions
+
+BTW TIME selective imports
+I CAN HAS DATE FROM TIME?                    BTW Only DATE class
+I CAN HAS SLEEP FROM TIME?                   BTW Only SLEEP function
+I CAN HAS DATE AN SLEEP FROM TIME?           BTW Both DATE class and SLEEP function
+```
 
 ### I/O Functions (STDIO)
 

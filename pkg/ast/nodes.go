@@ -43,7 +43,9 @@ func (n *ProgramNode) Accept(visitor Visitor) (types.Value, error) {
 
 // ImportStatementNode represents module import statements
 type ImportStatementNode struct {
-	ModuleName string
+	ModuleName   string
+	Declarations []string // Specific declarations to import (empty means import all)
+	IsSelective  bool     // Whether this is a selective import
 }
 
 func (n *ImportStatementNode) Accept(visitor Visitor) (types.Value, error) {

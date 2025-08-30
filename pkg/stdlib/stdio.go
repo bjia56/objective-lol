@@ -10,32 +10,25 @@ import (
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
-// RegisterSTDIOInEnv registers all STDIO functions directly in the given environment
-func RegisterSTDIOInEnv(env *environment.Environment) {
-	// SAY function - prints value to stdout
-	say := &environment.Function{
+// Global STDIO function definitions - created once and reused
+var stdioFunctions = map[string]*environment.Function{
+	"SAY": {
 		Name:       "SAY",
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
 		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			fmt.Print(args[0].String())
 			return types.NOTHIN, nil
 		},
-	}
-	env.DefineFunction(say)
-
-	// SAYZ function - prints value with newline
-	sayz := &environment.Function{
+	},
+	"SAYZ": {
 		Name:       "SAYZ",
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
 		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			fmt.Println(args[0].String())
 			return types.NOTHIN, nil
 		},
-	}
-	env.DefineFunction(sayz)
-
-	// GIMME function - reads line from stdin
-	gimme := &environment.Function{
+	},
+	"GIMME": {
 		Name:       "GIMME",
 		ReturnType: "STRIN",
 		Parameters: []environment.Parameter{},
@@ -52,6 +45,29 @@ func RegisterSTDIOInEnv(env *environment.Environment) {
 
 			return types.StringValue(line), nil
 		},
+	},
+}
+
+// RegisterSTDIOInEnv registers STDIO functions in the given environment
+// declarations: empty slice means import all, otherwise import only specified functions
+func RegisterSTDIOInEnv(env *environment.Environment, declarations []string) error {
+	// If declarations is empty, import all functions
+	if len(declarations) == 0 {
+		for _, fn := range stdioFunctions {
+			env.DefineFunction(fn)
+		}
+		return nil
 	}
-	env.DefineFunction(gimme)
+
+	// Otherwise, import only specified functions
+	for _, decl := range declarations {
+		declUpper := strings.ToUpper(decl)
+		if fn, exists := stdioFunctions[declUpper]; exists {
+			env.DefineFunction(fn)
+		} else {
+			return fmt.Errorf("unknown STDIO function: %s", decl)
+		}
+	}
+
+	return nil
 }
