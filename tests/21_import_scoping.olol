@@ -20,14 +20,15 @@ HAI ME TEH FUNCSHUN TEST_MULTIPLE_LOCAL_IMPORTS
     I CAN HAS STDIO?
     I CAN HAS TIME?
     SAYZ WIT "Testing multiple local imports:"
-    I HAS A VARIABLE CURRENT_YEAR TEH INTEGR ITZ YEAR
+    I HAS A VARIABLE DATE_OBJ TEH DATE ITZ NEW DATE
+    I HAS A VARIABLE CURRENT_YEAR TEH INTEGR ITZ DATE_OBJ DO YEAR
     SAY WIT "Current year: "
     SAYZ WIT CURRENT_YEAR
 KTHXBAI
 
 BTW Function that has no imports - cannot use any stdlib functions
 HAI ME TEH FUNCSHUN TEST_NO_IMPORTS
-    BTW Cannot use SAYZ, ABS, YEAR, etc. without importing
+    BTW Cannot use SAYZ, ABS, DATE, etc. without importing
     BTW SAYZ WIT "This would fail"
     I HAS A VARIABLE X TEH INTEGR ITZ 42
     BTW Can only use basic language features

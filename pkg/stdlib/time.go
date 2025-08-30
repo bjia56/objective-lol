@@ -10,27 +10,116 @@ import (
 
 // RegisterTIMEInEnv registers all TIME functions directly in the given environment
 func RegisterTIMEInEnv(env *environment.Environment) {
-	// NOW function - current timestamp in seconds
-	now := &environment.Function{
-		Name:       "NOW",
-		ReturnType: "INTEGR",
-		Parameters: []environment.Parameter{},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(time.Now().Unix()), nil
+	// DATE class - represents datetime
+	date := &environment.Class{
+		Name: "DATE",
+		PublicFunctions: map[string]*environment.Function{
+			"DATE": {
+				Name:       "DATE",
+				Parameters: []environment.Parameter{},
+				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					currentObject.NativeData = time.Now()
+					return types.NOTHIN, nil
+				},
+			},
+			"YEAR": {
+				Name:       "YEAR",
+				Parameters: []environment.Parameter{},
+				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					if date, ok := currentObject.NativeData.(time.Time); ok {
+						return types.IntegerValue(date.Year()), nil
+					}
+					return types.NOTHIN, fmt.Errorf("YEAR: invalid context")
+				},
+			},
+			"MONTH": {
+				Name:       "MONTH",
+				Parameters: []environment.Parameter{},
+				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					if date, ok := currentObject.NativeData.(time.Time); ok {
+						return types.IntegerValue(date.Month()), nil
+					}
+					return types.NOTHIN, fmt.Errorf("MONTH: invalid context")
+				},
+			},
+			"DAY": {
+				Name:       "DAY",
+				Parameters: []environment.Parameter{},
+				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					if date, ok := currentObject.NativeData.(time.Time); ok {
+						return types.IntegerValue(date.Day()), nil
+					}
+					return types.NOTHIN, fmt.Errorf("DAY: invalid context")
+				},
+			},
+			"HOUR": {
+				Name:       "HOUR",
+				Parameters: []environment.Parameter{},
+				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					if date, ok := currentObject.NativeData.(time.Time); ok {
+						return types.IntegerValue(date.Hour()), nil
+					}
+					return types.NOTHIN, fmt.Errorf("HOUR: invalid context")
+				},
+			},
+			"MINUTE": {
+				Name:       "MINUTE",
+				Parameters: []environment.Parameter{},
+				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					if date, ok := currentObject.NativeData.(time.Time); ok {
+						return types.IntegerValue(date.Minute()), nil
+					}
+					return types.NOTHIN, fmt.Errorf("MINUTE: invalid context")
+				},
+			},
+			"SECOND": {
+				Name:       "SECOND",
+				Parameters: []environment.Parameter{},
+				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					if date, ok := currentObject.NativeData.(time.Time); ok {
+						return types.IntegerValue(date.Second()), nil
+					}
+					return types.NOTHIN, fmt.Errorf("SECOND: invalid context")
+				},
+			},
+			"MILLISECOND": {
+				Name:       "MILLISECOND",
+				Parameters: []environment.Parameter{},
+				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					if date, ok := currentObject.NativeData.(time.Time); ok {
+						return types.IntegerValue(date.Nanosecond() / 1e6), nil
+					}
+					return types.NOTHIN, fmt.Errorf("MILLISECOND: invalid context")
+				},
+			},
+			"NANOSECOND": {
+				Name:       "NANOSECOND",
+				Parameters: []environment.Parameter{},
+				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					if date, ok := currentObject.NativeData.(time.Time); ok {
+						return types.IntegerValue(date.Nanosecond()), nil
+					}
+					return types.NOTHIN, fmt.Errorf("NANOSECOND: invalid context")
+				},
+			},
+			"FORMAT": {
+				Name: "FORMAT",
+				Parameters: []environment.Parameter{
+					{Name: "layout", Type: "STRIN"},
+				},
+				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					layout := args[0]
+					if stringVal, ok := layout.(types.StringValue); ok {
+						if date, ok := currentObject.NativeData.(time.Time); ok {
+							return types.StringValue(date.Format(string(stringVal))), nil
+						}
+					}
+					return types.NOTHIN, fmt.Errorf("FORMAT: invalid context")
+				},
+			},
 		},
 	}
-	env.DefineFunction(now)
-
-	// MILLIS function - current timestamp in milliseconds
-	millis := &environment.Function{
-		Name:       "MILLIS",
-		ReturnType: "INTEGR",
-		Parameters: []environment.Parameter{},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(time.Now().UnixMilli()), nil
-		},
-	}
-	env.DefineFunction(millis)
+	env.DefineClass(date)
 
 	// SLEEP function - sleep for specified seconds
 	sleep := &environment.Function{
@@ -38,7 +127,7 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 		Parameters: []environment.Parameter{
 			{Name: "seconds", Type: "INTEGR"},
 		},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			seconds := args[0]
 
 			if secondsVal, ok := seconds.(types.IntegerValue); ok {
@@ -50,94 +139,4 @@ func RegisterTIMEInEnv(env *environment.Environment) {
 		},
 	}
 	env.DefineFunction(sleep)
-
-	// YEAR function - current year
-	year := &environment.Function{
-		Name:       "YEAR",
-		ReturnType: "INTEGR",
-		Parameters: []environment.Parameter{},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(time.Now().Year()), nil
-		},
-	}
-	env.DefineFunction(year)
-
-	// MONTH function - current month (1-12)
-	month := &environment.Function{
-		Name:       "MONTH",
-		ReturnType: "INTEGR",
-		Parameters: []environment.Parameter{},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(int(time.Now().Month())), nil
-		},
-	}
-	env.DefineFunction(month)
-
-	// DAY function - current day of month
-	day := &environment.Function{
-		Name:       "DAY",
-		ReturnType: "INTEGR",
-		Parameters: []environment.Parameter{},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(time.Now().Day()), nil
-		},
-	}
-	env.DefineFunction(day)
-
-	// HOUR function - current hour (0-23)
-	hour := &environment.Function{
-		Name:       "HOUR",
-		ReturnType: "INTEGR",
-		Parameters: []environment.Parameter{},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(time.Now().Hour()), nil
-		},
-	}
-	env.DefineFunction(hour)
-
-	// MINUTE function - current minute (0-59)
-	minute := &environment.Function{
-		Name:       "MINUTE",
-		ReturnType: "INTEGR",
-		Parameters: []environment.Parameter{},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(time.Now().Minute()), nil
-		},
-	}
-	env.DefineFunction(minute)
-
-	// SECOND function - current second (0-59)
-	second := &environment.Function{
-		Name:       "SECOND",
-		ReturnType: "INTEGR",
-		Parameters: []environment.Parameter{},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
-			return types.IntegerValue(time.Now().Second()), nil
-		},
-	}
-	env.DefineFunction(second)
-
-	// FORMAT_TIME function - format timestamp using Go time format
-	formatTime := &environment.Function{
-		Name:       "FORMAT_TIME",
-		ReturnType: "STRIN",
-		Parameters: []environment.Parameter{
-			{Name: "timestamp", Type: "INTEGR"},
-			{Name: "format", Type: "STRIN"},
-		},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
-			timestamp, format := args[0], args[1]
-
-			if timestampVal, ok := timestamp.(types.IntegerValue); ok {
-				if formatVal, ok := format.(types.StringValue); ok {
-					t := time.Unix(int64(timestampVal), 0)
-					formatted := t.Format(formatVal.String())
-					return types.StringValue(formatted), nil
-				}
-			}
-
-			return types.NOTHIN, fmt.Errorf("FORMAT_TIME: invalid argument types")
-		},
-	}
-	env.DefineFunction(formatTime)
 }

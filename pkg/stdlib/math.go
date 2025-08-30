@@ -22,7 +22,7 @@ func RegisterMATHInEnv(env *environment.Environment) {
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			value := args[0]
 
 			if doubleVal, ok := value.(types.DoubleValue); ok {
@@ -42,7 +42,7 @@ func RegisterMATHInEnv(env *environment.Environment) {
 			{Name: "a", Type: "DUBBLE"},
 			{Name: "b", Type: "DUBBLE"},
 		},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			a, b := args[0], args[1]
 
 			if val1, ok := a.(types.DoubleValue); ok {
@@ -64,7 +64,7 @@ func RegisterMATHInEnv(env *environment.Environment) {
 			{Name: "a", Type: "DUBBLE"},
 			{Name: "b", Type: "DUBBLE"},
 		},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			a, b := args[0], args[1]
 
 			if val1, ok := a.(types.DoubleValue); ok {
@@ -85,7 +85,7 @@ func RegisterMATHInEnv(env *environment.Environment) {
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			value := args[0]
 
 			if doubleVal, ok := value.(types.DoubleValue); ok {
@@ -108,7 +108,7 @@ func RegisterMATHInEnv(env *environment.Environment) {
 			{Name: "base", Type: "DUBBLE"},
 			{Name: "exponent", Type: "DUBBLE"},
 		},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			base, exp := args[0], args[1]
 
 			if baseVal, ok := base.(types.DoubleValue); ok {
@@ -128,7 +128,7 @@ func RegisterMATHInEnv(env *environment.Environment) {
 		Name:       "RANDOM",
 		ReturnType: "DUBBLE",
 		Parameters: []environment.Parameter{},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			return types.DoubleValue(rand.Float64()), nil
 		},
 	}
@@ -142,7 +142,7 @@ func RegisterMATHInEnv(env *environment.Environment) {
 			{Name: "min", Type: "INTEGR"},
 			{Name: "max", Type: "INTEGR"},
 		},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			min, max := args[0], args[1]
 
 			if minVal, ok := min.(types.IntegerValue); ok {
@@ -167,7 +167,7 @@ func RegisterMATHInEnv(env *environment.Environment) {
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			value := args[0]
 
 			if doubleVal, ok := value.(types.DoubleValue); ok {
@@ -186,7 +186,7 @@ func RegisterMATHInEnv(env *environment.Environment) {
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			value := args[0]
 
 			if doubleVal, ok := value.(types.DoubleValue); ok {

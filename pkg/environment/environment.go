@@ -31,7 +31,7 @@ type Function struct {
 	Body        interface{} // Will hold AST nodes
 	IsShared    *bool       // nil for global functions, true/false for class methods
 	ParentClass string
-	NativeImpl  func(args []types.Value) (types.Value, error)
+	NativeImpl  func(this *ObjectInstance, args []types.Value) (types.Value, error)
 }
 
 // Parameter represents a function parameter
@@ -187,6 +187,7 @@ type ObjectInstance struct {
 	Class           *Class
 	Variables       map[string]*Variable
 	SharedVariables map[string]*Variable // Reference to class shared variables
+	NativeData      any                  // For native classes, stores internal data
 }
 
 // NewObjectInstance creates a new instance of the specified class

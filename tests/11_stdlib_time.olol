@@ -5,71 +5,77 @@ I CAN HAS TIME?
 HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT "=== Time Library Test ==="
 
-    BTW Test current time functions
+    BTW Create DATE object to test class functionality
+    I HAS A VARIABLE NOW_DATE TEH DATE ITZ NEW DATE
+    
+    BTW Test current time functions using DATE class methods
     SAYZ WIT "Current date/time information:"
     SAY WIT "Current year: "
-    SAYZ WIT YEAR
+    SAYZ WIT NOW_DATE DO YEAR
     SAY WIT "Current month: "
-    SAYZ WIT MONTH
+    SAYZ WIT NOW_DATE DO MONTH
     SAY WIT "Current day: "
-    SAYZ WIT DAY
+    SAYZ WIT NOW_DATE DO DAY
 
     SAYZ WIT "Current time:"
     SAY WIT "Hour: "
-    SAYZ WIT HOUR
+    SAYZ WIT NOW_DATE DO HOUR
     SAY WIT "Minute: "
-    SAYZ WIT MINUTE
+    SAYZ WIT NOW_DATE DO MINUTE
     SAY WIT "Second: "
-    SAYZ WIT SECOND
+    SAYZ WIT NOW_DATE DO SECOND
 
-    BTW Test timestamp functions
-    SAYZ WIT "Timestamp information:"
-    SAY WIT "Current Unix timestamp (seconds): "
-    I HAS A VARIABLE TIMESTAMP TEH INTEGR ITZ NOW
-    SAYZ WIT TIMESTAMP
+    BTW Test additional time precision methods
+    SAYZ WIT "High precision time information:"
+    SAY WIT "Millisecond: "
+    SAYZ WIT NOW_DATE DO MILLISECOND
+    SAY WIT "Nanosecond: "
+    SAYZ WIT NOW_DATE DO NANOSECOND
 
-    SAY WIT "Current timestamp (milliseconds): "
-    I HAS A VARIABLE MILLIS_TIME TEH INTEGR ITZ MILLIS
-    SAYZ WIT MILLIS_TIME
-
-    BTW Test time formatting
+    BTW Test time formatting using DATE class
     SAYZ WIT "Formatted time:"
-    I HAS A VARIABLE FORMATTED TEH STRIN ITZ FORMAT_TIME WIT TIMESTAMP AN WIT "2006-01-02 15:04:05"
+    I HAS A VARIABLE FORMATTED TEH STRIN ITZ NOW_DATE DO FORMAT WIT "2006-01-02 15:04:05"
     SAY WIT "ISO format: "
     SAYZ WIT FORMATTED
 
     BTW Test sleep function (brief sleep to avoid long test)
-    SAYZ WIT "Testing sleep (2 seconds)..."
-    I HAS A VARIABLE BEFORE_SLEEP TEH INTEGR ITZ SECOND
-    SLEEP WIT 2
-    I HAS A VARIABLE AFTER_SLEEP TEH INTEGR ITZ SECOND
-    SAY WIT "Sleep completed. Before: "
-    SAYZ WIT BEFORE_SLEEP
-    SAY WIT "After: "
-    SAYZ WIT AFTER_SLEEP
+    SAYZ WIT "Testing sleep (1 second)..."
+    I HAS A VARIABLE BEFORE_DATE TEH DATE ITZ NEW DATE
+    I HAS A VARIABLE BEFORE_SECOND TEH INTEGR ITZ BEFORE_DATE DO SECOND
+    SLEEP WIT 1
+    I HAS A VARIABLE AFTER_DATE TEH DATE ITZ NEW DATE
+    I HAS A VARIABLE AFTER_SECOND TEH INTEGR ITZ AFTER_DATE DO SECOND
+    SAY WIT "Sleep completed. Before second: "
+    SAYZ WIT BEFORE_SECOND
+    SAY WIT " After second: "
+    SAYZ WIT AFTER_SECOND
 
-    BTW Test time calculations
+    BTW Test time calculations using DATE object
     SAYZ WIT "Time calculations:"
-    I HAS A VARIABLE CURRENT_YEAR TEH INTEGR ITZ YEAR
+    I HAS A VARIABLE CURRENT_YEAR TEH INTEGR ITZ NOW_DATE DO YEAR
     I HAS A VARIABLE BIRTH_YEAR TEH INTEGR ITZ 1990
     I HAS A VARIABLE AGE TEH INTEGR ITZ CURRENT_YEAR LES BIRTH_YEAR
     SAY WIT "If born in 1990, current age would be approximately: "
     SAYZ WIT AGE
 
-    BTW Test multiple timestamp calls
-    SAYZ WIT "Multiple timestamp calls:"
-    SAY WIT "First call: "
-    SAYZ WIT NOW
-    SAY WIT "Second call: "
-    SAYZ WIT NOW
-    SAY WIT "Third call: "
-    SAYZ WIT NOW
+    BTW Test multiple DATE object creation and usage
+    SAYZ WIT "Multiple DATE object calls:"
+    I HAS A VARIABLE DATE1 TEH DATE ITZ NEW DATE
+    I HAS A VARIABLE DATE2 TEH DATE ITZ NEW DATE
+    I HAS A VARIABLE DATE3 TEH DATE ITZ NEW DATE
+    SAY WIT "First call second: "
+    SAYZ WIT DATE1 DO SECOND
+    SAY WIT "Second call second: "
+    SAYZ WIT DATE2 DO SECOND
+    SAY WIT "Third call second: "
+    SAYZ WIT DATE3 DO SECOND
 
-    BTW Test different format patterns
+    BTW Test different format patterns using DATE class
     SAYZ WIT "Different time formats:"
-    I HAS A VARIABLE FORMAT1 TEH STRIN ITZ FORMAT_TIME WIT TIMESTAMP AN WIT "2006/01/02"
-    I HAS A VARIABLE FORMAT2 TEH STRIN ITZ FORMAT_TIME WIT TIMESTAMP AN WIT "15:04:05"
-    I HAS A VARIABLE FORMAT3 TEH STRIN ITZ FORMAT_TIME WIT TIMESTAMP AN WIT "Jan 02, 2006"
+    I HAS A VARIABLE FORMAT1 TEH STRIN ITZ NOW_DATE DO FORMAT WIT "2006/01/02"
+    I HAS A VARIABLE FORMAT2 TEH STRIN ITZ NOW_DATE DO FORMAT WIT "15:04:05"
+    I HAS A VARIABLE FORMAT3 TEH STRIN ITZ NOW_DATE DO FORMAT WIT "Jan 02, 2006"
+    I HAS A VARIABLE FORMAT4 TEH STRIN ITZ NOW_DATE DO FORMAT WIT "Monday, January 2, 2006"
 
     SAY WIT "Date only: "
     SAYZ WIT FORMAT1
@@ -77,13 +83,37 @@ HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT FORMAT2
     SAY WIT "Readable format: "
     SAYZ WIT FORMAT3
+    SAY WIT "Full weekday format: "
+    SAYZ WIT FORMAT4
 
-    BTW Test edge cases
-    SAYZ WIT "Testing historical timestamp:"
-    I HAS A VARIABLE OLD_TIMESTAMP TEH INTEGR ITZ 0
-    I HAS A VARIABLE OLD_FORMATTED TEH STRIN ITZ FORMAT_TIME WIT OLD_TIMESTAMP AN WIT "2006-01-02 15:04:05"
-    SAY WIT "Unix epoch (1970-01-01): "
-    SAYZ WIT OLD_FORMATTED
+    BTW Test edge cases with custom format strings
+    SAYZ WIT "Custom format patterns:"
+    I HAS A VARIABLE CUSTOM1 TEH STRIN ITZ NOW_DATE DO FORMAT WIT "2006-01-02T15:04:05Z07:00"
+    I HAS A VARIABLE CUSTOM2 TEH STRIN ITZ NOW_DATE DO FORMAT WIT "02/01/2006 3:04 PM"
+    SAY WIT "RFC3339 format: "
+    SAYZ WIT CUSTOM1
+    SAY WIT "US format with AM/PM: "
+    SAYZ WIT CUSTOM2
+
+    BTW Test all DATE methods individually for completeness
+    SAYZ WIT "Complete DATE method test:"
+    I HAS A VARIABLE TEST_DATE TEH DATE ITZ NEW DATE
+    SAY WIT "Year: "
+    SAYZ WIT TEST_DATE DO YEAR
+    SAY WIT "Month: "
+    SAYZ WIT TEST_DATE DO MONTH
+    SAY WIT "Day: "
+    SAYZ WIT TEST_DATE DO DAY
+    SAY WIT "Hour: "
+    SAYZ WIT TEST_DATE DO HOUR
+    SAY WIT "Minute: "
+    SAYZ WIT TEST_DATE DO MINUTE
+    SAY WIT "Second: "
+    SAYZ WIT TEST_DATE DO SECOND
+    SAY WIT "Millisecond: "
+    SAYZ WIT TEST_DATE DO MILLISECOND
+    SAY WIT "Nanosecond: "
+    SAYZ WIT TEST_DATE DO NANOSECOND
 
     SAYZ WIT "=== Time Library Test Complete ==="
 KTHXBAI

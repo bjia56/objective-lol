@@ -381,7 +381,7 @@ func (i *Interpreter) callFunction(function *environment.Function, args []types.
 			}
 			argsCasted[i] = casted
 		}
-		return function.NativeImpl(argsCasted)
+		return function.NativeImpl(i.currentObject, argsCasted)
 	}
 
 	// Create new environment for function execution

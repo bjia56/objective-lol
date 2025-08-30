@@ -16,7 +16,7 @@ func RegisterSTDIOInEnv(env *environment.Environment) {
 	say := &environment.Function{
 		Name:       "SAY",
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			fmt.Print(args[0].String())
 			return types.NOTHIN, nil
 		},
@@ -27,7 +27,7 @@ func RegisterSTDIOInEnv(env *environment.Environment) {
 	sayz := &environment.Function{
 		Name:       "SAYZ",
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			fmt.Println(args[0].String())
 			return types.NOTHIN, nil
 		},
@@ -39,7 +39,7 @@ func RegisterSTDIOInEnv(env *environment.Environment) {
 		Name:       "GIMME",
 		ReturnType: "STRIN",
 		Parameters: []environment.Parameter{},
-		NativeImpl: func(args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			reader := bufio.NewReader(os.Stdin)
 			line, err := reader.ReadString('\n')
 			if err != nil {
