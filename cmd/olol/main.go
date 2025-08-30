@@ -70,7 +70,7 @@ func executeFile(interp *interpreter.Interpreter, filename string) error {
 	// Set current file for relative import resolution
 	absFilename, _ := filepath.Abs(filename)
 	interp.SetCurrentFile(absFilename)
-	
+
 	// Execute the program
 	if err := interp.Interpret(program); err != nil {
 		return err

@@ -27,11 +27,17 @@ func NewInterpreter() *Interpreter {
 	runtime := environment.NewRuntimeEnvironment()
 	// Use current working directory as base for module resolution
 	workingDir, _ := filepath.Abs(".")
-	return &Interpreter{
+
+	interpreter := &Interpreter{
 		runtime:        runtime,
 		environment:    runtime.GlobalEnv,
 		moduleResolver: modules.NewModuleResolver(workingDir),
 	}
+
+	// Register built-in types globally
+	stdlib.RegisterArrays(interpreter.environment)
+
+	return interpreter
 }
 
 // SetCurrentFile sets the current file being processed for relative import resolution

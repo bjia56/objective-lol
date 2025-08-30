@@ -157,7 +157,7 @@ func RegisterTIMEInEnv(env *environment.Environment, declarations []string) erro
 	// Otherwise, import only specified declarations
 	for _, decl := range declarations {
 		declUpper := strings.ToUpper(decl)
-		
+
 		// Check if it's a class
 		if class, exists := timeClasses[declUpper]; exists {
 			env.DefineClass(class)
