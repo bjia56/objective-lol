@@ -8,7 +8,7 @@ import (
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
-// RegisterTIMEInEnv registers all TIME functions directly in the given environment
+// RegisterTIMEInEnv registers the DATE class and SLEEP function in the given environment
 func RegisterTIMEInEnv(env *environment.Environment) {
 	// DATE class - represents datetime
 	date := &environment.Class{

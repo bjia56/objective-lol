@@ -187,8 +187,8 @@ The interpreter follows a traditional architecture:
 - `RANDOM`, `RANDINT` (random number generation)
 
 **Time Functions:**
-- `NOW`, `YEAR`, `MONTH`, `DAY`, `HOUR`, `MINUTE`, `SECOND`
-- `FORMAT_TIME`, `SLEEP`
+- `DATE` class with methods: `YEAR`, `MONTH`, `DAY`, `HOUR`, `MINUTE`, `SECOND`, `MILLISECOND`, `NANOSECOND`, `FORMAT`
+- `SLEEP` (global function)
 
 ### Type Casting
 

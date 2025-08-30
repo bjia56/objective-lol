@@ -923,34 +923,98 @@ I HAS A VARIABLE DICE_ROLL TEH INTEGR ITZ RANDINT WIT 1 AN WIT 7  BTW 1-6
 
 ### Time Functions (TIME)
 
-#### Current Time
+The TIME module provides date and time functionality through a `DATE` class and a global `SLEEP` function.
+
+#### DATE Class
+
+The `DATE` class represents a datetime object that captures the current time when instantiated:
 
 ```lol
-BTW NOW - Current Unix timestamp (seconds)
-I HAS A VARIABLE TIMESTAMP TEH INTEGR ITZ NOW
+BTW Create a DATE object with current date/time
+I HAS A VARIABLE NOW_DATE TEH DATE ITZ NEW DATE
 
-BTW MILLIS - Current Unix timestamp (milliseconds)
-I HAS A VARIABLE TIMESTAMP_MS TEH INTEGR ITZ MILLIS
+BTW Get date components
+I HAS A VARIABLE CURRENT_YEAR TEH INTEGR ITZ NOW_DATE DO YEAR      BTW e.g., 2025
+I HAS A VARIABLE CURRENT_MONTH TEH INTEGR ITZ NOW_DATE DO MONTH    BTW 1-12
+I HAS A VARIABLE CURRENT_DAY TEH INTEGR ITZ NOW_DATE DO DAY        BTW 1-31
 
-BTW Date/time components
-I HAS A VARIABLE CURRENT_YEAR TEH INTEGR ITZ YEAR      BTW e.g., 2024
-I HAS A VARIABLE CURRENT_MONTH TEH INTEGR ITZ MONTH    BTW 1-12
-I HAS A VARIABLE CURRENT_DAY TEH INTEGR ITZ DAY        BTW 1-31
-I HAS A VARIABLE CURRENT_HOUR TEH INTEGR ITZ HOUR      BTW 0-23
-I HAS A VARIABLE CURRENT_MIN TEH INTEGR ITZ MINUTE     BTW 0-59
-I HAS A VARIABLE CURRENT_SEC TEH INTEGR ITZ SECOND     BTW 0-59
+BTW Get time components
+I HAS A VARIABLE CURRENT_HOUR TEH INTEGR ITZ NOW_DATE DO HOUR      BTW 0-23
+I HAS A VARIABLE CURRENT_MIN TEH INTEGR ITZ NOW_DATE DO MINUTE     BTW 0-59
+I HAS A VARIABLE CURRENT_SEC TEH INTEGR ITZ NOW_DATE DO SECOND     BTW 0-59
+
+BTW Get high precision time components
+I HAS A VARIABLE MILLIS TEH INTEGR ITZ NOW_DATE DO MILLISECOND     BTW 0-999
+I HAS A VARIABLE NANOS TEH INTEGR ITZ NOW_DATE DO NANOSECOND       BTW Full nanoseconds
 ```
 
-#### Time Formatting and Delays
+#### DATE Methods
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `YEAR` | INTEGR | Current year (e.g., 2025) |
+| `MONTH` | INTEGR | Current month (1-12) |
+| `DAY` | INTEGR | Current day of month (1-31) |
+| `HOUR` | INTEGR | Current hour (0-23) |
+| `MINUTE` | INTEGR | Current minute (0-59) |
+| `SECOND` | INTEGR | Current second (0-59) |
+| `MILLISECOND` | INTEGR | Current millisecond (0-999) |
+| `NANOSECOND` | INTEGR | Current nanosecond component |
+| `FORMAT WIT layout` | STRIN | Format date using Go time format |
+
+#### Time Formatting
+
+Use the `FORMAT` method with Go's time formatting layout strings:
 
 ```lol
-BTW FORMAT_TIME - Format Unix timestamp as string
-I HAS A VARIABLE FORMATTED TEH STRIN ITZ FORMAT_TIME WIT NOW AN WIT "2006-01-02 15:04:05"
+I HAS A VARIABLE DATE_OBJ TEH DATE ITZ NEW DATE
 
-BTW SLEEP - Pause execution for specified seconds
+BTW Standard formats
+I HAS A VARIABLE ISO_FORMAT TEH STRIN ITZ DATE_OBJ DO FORMAT WIT "2006-01-02 15:04:05"
+I HAS A VARIABLE US_FORMAT TEH STRIN ITZ DATE_OBJ DO FORMAT WIT "01/02/2006 3:04 PM"
+I HAS A VARIABLE READABLE TEH STRIN ITZ DATE_OBJ DO FORMAT WIT "January 2, 2006"
+
+BTW RFC3339 format
+I HAS A VARIABLE RFC3339 TEH STRIN ITZ DATE_OBJ DO FORMAT WIT "2006-01-02T15:04:05Z07:00"
+
+SAYZ WIT ISO_FORMAT    BTW "2025-08-29 22:53:08"
+SAYZ WIT US_FORMAT     BTW "08/29/2025 10:53 PM"
+SAYZ WIT READABLE      BTW "August 29, 2025"
+```
+
+**Go Time Format Reference:**
+- `2006` - Year
+- `01` - Month (with zero padding)
+- `02` - Day (with zero padding)
+- `15` - Hour (24-hour format)
+- `03` - Hour (12-hour format)
+- `04` - Minute
+- `05` - Second
+- `PM` - AM/PM
+- `Monday` - Weekday name
+- `January` - Month name
+
+#### Sleep Function
+
+```lol
+BTW SLEEP - Pause execution for specified seconds (global function)
 SAYZ WIT "Waiting..."
-SLEEP WIT 2.5  BTW Sleep for 2.5 seconds
+SLEEP WIT 2     BTW Sleep for 2 seconds (integer)
 SAYZ WIT "Done waiting!"
+```
+
+#### Multiple DATE Objects
+
+Each `NEW DATE` creates a new object with the current time:
+
+```lol
+I HAS A VARIABLE TIME1 TEH DATE ITZ NEW DATE
+SLEEP WIT 1
+I HAS A VARIABLE TIME2 TEH DATE ITZ NEW DATE
+
+BTW These will show different seconds
+SAYZ WIT TIME1 DO SECOND
+SAYZ WIT TIME2 DO SECOND
 ```
 
 ---
@@ -1259,15 +1323,20 @@ KTHXBAI
 - `RANDINT WIT <min> AN WIT <max>` - Random integer [min,max) → INTEGR
 
 #### Time Functions
-- `NOW` - Current Unix timestamp → INTEGR
-- `MILLIS` - Current timestamp in milliseconds → INTEGR
-- `YEAR` - Current year → INTEGR
-- `MONTH` - Current month (1-12) → INTEGR
-- `DAY` - Current day of month → INTEGR
-- `HOUR` - Current hour (0-23) → INTEGR
-- `MINUTE` - Current minute (0-59) → INTEGR
-- `SECOND` - Current second (0-59) → INTEGR
-- `FORMAT_TIME WIT <timestamp> AN WIT <format>` - Format timestamp → STRIN
+
+**DATE Class Methods** (called on DATE objects with `DO`):
+- `NEW DATE` - Create new datetime object with current time → DATE
+- `<date> DO YEAR` - Get year → INTEGR
+- `<date> DO MONTH` - Get month (1-12) → INTEGR
+- `<date> DO DAY` - Get day of month (1-31) → INTEGR
+- `<date> DO HOUR` - Get hour (0-23) → INTEGR
+- `<date> DO MINUTE` - Get minute (0-59) → INTEGR
+- `<date> DO SECOND` - Get second (0-59) → INTEGR
+- `<date> DO MILLISECOND` - Get millisecond (0-999) → INTEGR
+- `<date> DO NANOSECOND` - Get nanosecond component → INTEGR
+- `<date> DO FORMAT WIT <layout>` - Format using Go time layout → STRIN
+
+**Global Functions**:
 - `SLEEP WIT <seconds>` - Sleep for duration → NOTHIN
 
 ### Syntax Patterns
