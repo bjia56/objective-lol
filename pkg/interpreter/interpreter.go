@@ -121,6 +121,11 @@ func (i *Interpreter) handleBuiltinImport(moduleName string, declarations []stri
 		if err != nil {
 			return types.NOTHIN, err
 		}
+	case "TEST":
+		err := stdlib.RegisterTESTInEnv(i.environment, declarations)
+		if err != nil {
+			return types.NOTHIN, err
+		}
 	default:
 		return types.NOTHIN, fmt.Errorf("unknown built-in module: %s", moduleName)
 	}

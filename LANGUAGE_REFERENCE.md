@@ -986,6 +986,7 @@ Standard library functions must be explicitly imported using the `I CAN HAS <mod
 I CAN HAS STDIO?    BTW Import all I/O functions (SAY, SAYZ, GIMME)
 I CAN HAS MATH?     BTW Import all mathematical functions
 I CAN HAS TIME?     BTW Import all time functions and classes
+I CAN HAS TEST?     BTW Import all testing functions (ASSERT)
 ```
 
 **Selective Import** - Import only specific declarations from a module:
@@ -1051,6 +1052,7 @@ KTHXBAI
 - **STDIO**: I/O functions (`SAY`, `SAYZ`, `GIMME`)
 - **MATH**: Mathematical functions (`ABS`, `MAX`, `MIN`, `SQRT`, `POW`, `RANDOM`, `RANDINT`, `SIN`, `COS`)
 - **TIME**: Time classes and functions (`DATE` class, `SLEEP` function)
+- **TEST**: Testing and assertion functions (`ASSERT`)
 
 #### Selective Import Examples
 
@@ -1069,6 +1071,9 @@ BTW TIME selective imports
 I CAN HAS DATE FROM TIME?                    BTW Only DATE class
 I CAN HAS SLEEP FROM TIME?                   BTW Only SLEEP function
 I CAN HAS DATE AN SLEEP FROM TIME?           BTW Both DATE class and SLEEP function
+
+BTW TEST selective imports
+I CAN HAS ASSERT FROM TEST?                  BTW Only ASSERT function
 ```
 
 ### I/O Functions (STDIO)
@@ -1233,6 +1238,55 @@ I HAS A VARIABLE TIME2 TEH DATE ITZ NEW DATE
 BTW These will show different seconds
 SAYZ WIT TIME1 DO SECOND
 SAYZ WIT TIME2 DO SECOND
+```
+
+### Testing Functions (TEST)
+
+The TEST module provides assertion functions for testing and validation.
+
+#### ASSERT - Assert condition is true
+
+Throws an exception if the condition is falsy (false, zero, empty string, or NOTHIN).
+
+```lol
+I CAN HAS TEST?
+
+HAI ME TEH FUNCSHUN TEST_EXAMPLE
+    BTW Successful assertions (pass silently)
+    ASSERT WIT YEZ
+    ASSERT WIT 42
+    ASSERT WIT "NOT EMPTY"
+    ASSERT WIT (5 BIGGR THAN 3)
+    
+    BTW Failed assertion with exception handling
+    MAYB
+        ASSERT WIT NO              BTW This will throw an exception
+        SAYZ WIT "This won't print"
+    OOPSIE ERROR_MSG
+        SAYZ WIT "Assertion failed: " 
+        SAYZ WIT ERROR_MSG         BTW Prints "Assertion failed"
+    KTHX
+KTHXBAI
+```
+
+**Truthiness Rules:**
+- `YEZ` and `NO` - boolean true/false
+- Numbers: non-zero values are truthy, zero is falsy
+- Strings: non-empty strings are truthy, empty strings are falsy
+- `NOTHIN` is always falsy
+- Objects and arrays are always truthy
+
+**Usage Patterns:**
+```lol
+BTW Test function return values
+ASSERT WIT (CALCULATE_RESULT BIGGR THAN 0)
+
+BTW Test variable states
+I HAS A VARIABLE COUNT TEH INTEGR ITZ GET_COUNT
+ASSERT WIT COUNT
+
+BTW Test complex conditions
+ASSERT WIT ((A BIGGR THAN B) AN (B BIGGR THAN 0))
 ```
 
 ---
@@ -1650,6 +1704,9 @@ KTHXBAI
 
 **Global Functions**:
 - `SLEEP WIT <seconds>` - Sleep for duration → NOTHIN
+
+#### Test Functions
+- `ASSERT WIT <condition>` - Throw exception if condition is falsy → NOTHIN
 
 #### Array Functions
 

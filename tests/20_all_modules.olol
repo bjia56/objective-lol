@@ -2,6 +2,7 @@ BTW Test all module imports
 I CAN HAS STDIO?
 I CAN HAS MATH?
 I CAN HAS TIME?
+I CAN HAS TEST?
 
 HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT "Testing STDIO functions"
@@ -15,4 +16,10 @@ HAI ME TEH FUNCSHUN MAIN
     I HAS A VARIABLE CURRENT_YEAR TEH INTEGR ITZ DATE_OBJ DO YEAR
     SAYZ WIT "Current year: "
     SAYZ WIT CURRENT_YEAR
+    
+    BTW Test TEST module
+    SAYZ WIT "Testing TEST functions"
+    ASSERT WIT (Y BIGGR THAN 0)
+    ASSERT WIT YEZ
+    SAYZ WIT "All assertions passed"
 KTHXBAI

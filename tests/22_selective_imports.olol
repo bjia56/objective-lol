@@ -9,6 +9,8 @@ BTW 42.5
 BTW 15.5
 BTW Testing TIME selective import
 BTW Current year displayed
+BTW Testing TEST selective import
+BTW Assertion passed
 
 BTW Test 1: Single selective import
 I CAN HAS SAYZ FROM STDIO?
@@ -47,10 +49,20 @@ HAI ME TEH FUNCSHUN TEST_TIME
     SAYZ WIT "Current year displayed"
 KTHXBAI
 
+BTW Test 5: TEST selective import
+I CAN HAS ASSERT FROM TEST?
+
+HAI ME TEH FUNCSHUN TEST_TEST
+    SAYZ WIT "Testing TEST selective import"
+    ASSERT WIT YEZ
+    SAYZ WIT "Assertion passed"
+KTHXBAI
+
 BTW Main function
 HAI ME TEH FUNCSHUN MAIN
     TEST_SINGLE
     TEST_MULTIPLE  
     TEST_MATH
     TEST_TIME
+    TEST_TEST
 KTHXBAI

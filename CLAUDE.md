@@ -56,6 +56,7 @@ Located in `pkg/stdlib/`:
 - **stdio.go**: I/O functions (SAYZ, SAY, GIMME)
 - **math.go**: Mathematical functions (ABS, MAX, MIN, SQRT, POW, SIN, COS, RANDOM)
 - **time.go**: Time-related functions using DATE class (DATE class with YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, MILLISECOND, NANOSECOND, FORMAT methods) and global SLEEP function
+- **test.go**: Testing and assertion functions (ASSERT)
 
 ### Language Features
 The interpreter supports:
