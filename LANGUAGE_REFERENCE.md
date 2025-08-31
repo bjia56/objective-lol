@@ -28,10 +28,10 @@
 Objective-LOL is a programming language inspired by LOLCODE, implemented in Go. It features:
 
 - Strong type system with automatic casting
-- Object-oriented programming with classes, inheritance, and constructors  
+- Object-oriented programming with classes, inheritance, and constructors
 - Functions with parameters and return values
-- **Module system** with file imports, built-in modules, and cross-platform compatibility
-- **Exception handling** with try-catch-finally blocks using MAYB/OOPS/OOPSIE syntax
+- Module system with file imports, built-in modules, and cross-platform compatibility
+- Exception handling with try-catch-finally blocks using MAYB/OOPS/OOPSIE syntax
 - Standard library for I/O, mathematics, and time operations
 - Control flow structures (conditionals and loops)
 
@@ -737,7 +737,7 @@ KTHXBAI
 - **Parameterless Constructors**: Constructors with no parameters are called automatically with `NEW class` syntax
 - **Validation**: Constructors can validate input parameters
 - **Required Parameters**: Constructors with parameters require `NEW class WIT args` syntax
-- **Backward Compatibility**: Classes without constructors work as before with `NEW class`
+- **Default constructor**: Classes without constructors use a default empty constructor with `NEW class` syntax
 
 ```lol
 HAI ME TEH CLAS BANK_ACCOUNT
@@ -845,7 +845,7 @@ All imports use the `I CAN HAS` syntax with two main variants:
 Import all public declarations from a module:
 
 ```lol
-I CAN HAS STDIO?              BTW Built-in module (all I/O functions)  
+I CAN HAS STDIO?              BTW Built-in module (all I/O functions)
 I CAN HAS "math_utils"?       BTW File module (all functions/classes/variables)
 ```
 
@@ -872,7 +872,7 @@ File modules allow you to organize code across multiple `.olol` files and import
 BTW Import from same directory
 I CAN HAS "math_helpers"?
 
-BTW Import from subdirectory  
+BTW Import from subdirectory
 I CAN HAS "utils/string_helpers"?
 
 BTW Import from parent directory
@@ -890,7 +890,7 @@ HAI ME TEH FUNCSHUN SQUARE WIT N TEH INTEGR
     GIVEZ N TIEMZ N
 KTHXBAI
 
-HAI ME TEH FUNCSHUN CUBE WIT N TEH INTEGR  
+HAI ME TEH FUNCSHUN CUBE WIT N TEH INTEGR
     GIVEZ N TIEMZ N TIEMZ N
 KTHXBAI
 
@@ -1061,7 +1061,7 @@ BTW STDIO selective imports
 I CAN HAS SAY FROM STDIO?                    BTW Only SAY function
 I CAN HAS SAYZ AN GIMME FROM STDIO?          BTW SAYZ and GIMME functions
 
-BTW MATH selective imports  
+BTW MATH selective imports
 I CAN HAS ABS FROM MATH?                     BTW Only ABS function
 I CAN HAS ABS AN MAX AN MIN FROM MATH?       BTW Basic math functions
 I CAN HAS SIN AN COS FROM MATH?              BTW Trigonometric functions
@@ -1257,13 +1257,13 @@ HAI ME TEH FUNCSHUN TEST_EXAMPLE
     ASSERT WIT 42
     ASSERT WIT "NOT EMPTY"
     ASSERT WIT (5 BIGGR THAN 3)
-    
+
     BTW Failed assertion with exception handling
     MAYB
         ASSERT WIT NO              BTW This will throw an exception
         SAYZ WIT "This won't print"
     OOPSIE ERROR_MSG
-        SAYZ WIT "Assertion failed: " 
+        SAYZ WIT "Assertion failed: "
         SAYZ WIT ERROR_MSG         BTW Prints "Assertion failed"
     KTHX
 KTHXBAI
@@ -1513,39 +1513,39 @@ I CAN HAS SAY AN SAYZ FROM STDIO?
 
 HAI ME TEH FUNCSHUN ANALYZE_DATA WIT DATA TEH BUKKIT
     SAYZ WIT "=== Data Analysis ==="
-    
+
     BTW Display array info
     SAY WIT "Array size: "
     SAYZ WIT DATA SIZ
-    
+
     BTW Find min and max values
     I HAS A VARIABLE MIN TEH INTEGR ITZ DATA DO AT WIT 0
     I HAS A VARIABLE MAX TEH INTEGR ITZ DATA DO AT WIT 0
     I HAS A VARIABLE SUM TEH INTEGR ITZ 0
     I HAS A VARIABLE INDEX TEH INTEGR ITZ 0
     I HAS A VARIABLE CURRENT TEH INTEGR
-    
+
     WHILE INDEX SMALLR THAN DATA SIZ
         CURRENT ITZ DATA DO AT WIT INDEX
         SUM ITZ SUM MOAR CURRENT
-        
+
         IZ CURRENT SMALLR THAN MIN?
             MIN ITZ CURRENT
         KTHX
         IZ CURRENT BIGGR THAN MAX?
             MAX ITZ CURRENT
         KTHX
-        
+
         INDEX ITZ INDEX MOAR 1
     KTHX
-    
+
     SAY WIT "Min: "
     SAY WIT MIN
     SAY WIT ", Max: "
     SAY WIT MAX
     SAY WIT ", Average: "
     SAYZ WIT SUM DIVIDEZ DATA SIZ AS INTEGR
-    
+
     BTW Sort and display
     DATA DO SORT
     SAY WIT "Sorted: "
@@ -1560,27 +1560,27 @@ HAI ME TEH FUNCSHUN MAIN
     NUMBERS DO PUSH WIT 89
     NUMBERS DO PUSH WIT 3
     NUMBERS DO PUSH WIT 56
-    
+
     BTW Process the data
     ANALYZE_DATA WIT NUMBERS
-    
+
     BTW String processing example
     I HAS A VARIABLE WORDS TEH BUKKIT ITZ NEW BUKKIT
     WORDS DO PUSH WIT "objective"
     WORDS DO PUSH WIT "lol"
     WORDS DO PUSH WIT "programming"
     WORDS DO PUSH WIT "language"
-    
+
     BTW Create sentence from words
     I HAS A VARIABLE SENTENCE TEH STRIN ITZ WORDS DO JOIN WIT " "
     SAY WIT "Generated sentence: "
     SAYZ WIT SENTENCE
-    
+
     BTW Array manipulation
     WORDS DO REVERSE
     SAY WIT "Reversed words: "
     SAYZ WIT WORDS DO JOIN WIT " "
-    
+
     BTW Search operations
     IZ WORDS DO CONTAINS WIT "lol"?
         I HAS A VARIABLE INDEX TEH INTEGR ITZ WORDS DO FIND WIT "lol"
@@ -1801,7 +1801,7 @@ MAYB
     OOPS "Something went wrong!"
     SAYZ WIT "This line won't execute"
 OOPSIE ERROR_MESSAGE
-    SAYZ WIT "Caught exception: " 
+    SAYZ WIT "Caught exception: "
     SAYZ WIT ERROR_MESSAGE
 KTHX
 ```
@@ -1831,7 +1831,7 @@ MAYB
     SAYZ WIT "Opening file..."
     OOPS "File not found!"
 OOPSIE FILE_ERROR
-    SAYZ WIT "File error: " 
+    SAYZ WIT "File error: "
     SAYZ WIT FILE_ERROR
 ALWAYZ
     SAYZ WIT "Cleaning up resources"
@@ -1849,12 +1849,12 @@ MAYB
         SAYZ WIT "Inner try block"
         OOPS "Inner error!"
     OOPSIE INNER_ERR
-        SAYZ WIT "Caught inner: " 
+        SAYZ WIT "Caught inner: "
         SAYZ WIT INNER_ERR
         OOPS "Re-throwing as outer error!"
     KTHX
 OOPSIE OUTER_ERR
-    SAYZ WIT "Caught outer: " 
+    SAYZ WIT "Caught outer: "
     SAYZ WIT OUTER_ERR
 KTHX
 ```
@@ -1868,7 +1868,7 @@ The interpreter automatically throws exceptions for common runtime errors:
 MAYB
     I HAS A VARIABLE RESULT TEH DUBBLE ITZ 10.0 DIVIDEZ 0.0
 OOPSIE MATH_ERROR
-    SAYZ WIT "Math error: " 
+    SAYZ WIT "Math error: "
     SAYZ WIT MATH_ERROR  BTW "Division by zero"
 KTHX
 ```
@@ -1878,7 +1878,7 @@ KTHX
 MAYB
     I HAS A VARIABLE NUM TEH INTEGR ITZ "not_a_number" AS INTEGR
 OOPSIE CAST_ERROR
-    SAYZ WIT "Cast error: " 
+    SAYZ WIT "Cast error: "
     SAYZ WIT CAST_ERROR  BTW "cannot cast string 'not_a_number' to INTEGR"
 KTHX
 ```
@@ -1889,7 +1889,7 @@ MAYB
     I HAS A VARIABLE ARR TEH BUKKIT ITZ NEW BUKKIT
     I HAS A VARIABLE ITEM TEH INTEGR ITZ ARR DO AT WIT 10
 OOPSIE BOUNDS_ERROR
-    SAYZ WIT "Array error: " 
+    SAYZ WIT "Array error: "
     SAYZ WIT BOUNDS_ERROR  BTW "Array index 10 out of bounds (size 0)"
 KTHX
 ```
@@ -1899,7 +1899,7 @@ KTHX
 MAYB
     SAYZ WIT UNDEFINED_VARIABLE
 OOPSIE UNDEF_ERROR
-    SAYZ WIT "Variable error: " 
+    SAYZ WIT "Variable error: "
     SAYZ WIT UNDEF_ERROR  BTW "Undefined variable or function 'UNDEFINED_VARIABLE'"
 KTHX
 ```
@@ -1921,7 +1921,7 @@ HAI ME TEH FUNCSHUN MAIN
     MAYB
         CALLER
     OOPSIE ERR
-        SAYZ WIT "Caught propagated exception: " 
+        SAYZ WIT "Caught propagated exception: "
         SAYZ WIT ERR
     KTHX
 KTHXBAI
@@ -1939,7 +1939,7 @@ KTHXBAI
 
 Before exception handling, runtime errors would terminate the program. With the new system:
 
-- **Old behavior**: `10.0 DIVIDEZ 0.0` would return `0.0`  
+- **Old behavior**: `10.0 DIVIDEZ 0.0` would return `0.0`
 - **New behavior**: `10.0 DIVIDEZ 0.0` throws "Division by zero" exception
 
 Programs can now gracefully handle errors and continue execution.
