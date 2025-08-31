@@ -1,0 +1,18 @@
+BTW Simple exception test
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "Testing simple exception handling"
+    
+    BTW Test that exception properly propagates and gets caught
+    MAYB
+        SAYZ WIT "About to throw exception"
+        OOPS "This is a test exception!"
+        SAYZ WIT "This should not be printed"
+    OOPSIE ERR
+        SAYZ WIT "Successfully caught exception: " 
+        SAYZ WIT ERR
+    KTHX
+    
+    SAYZ WIT "Exception handling test completed successfully"
+KTHXBAI

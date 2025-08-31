@@ -55,6 +55,10 @@ const (
 	A
 	DO
 	FROM
+	MAYB
+	OOPS
+	OOPSIE
+	ALWAYZ
 
 	// Operators
 	MOAR    // +
@@ -167,6 +171,14 @@ func (t TokenType) String() string {
 		return "DO"
 	case FROM:
 		return "FROM"
+	case MAYB:
+		return "MAYB"
+	case OOPS:
+		return "OOPS"
+	case OOPSIE:
+		return "OOPSIE"
+	case ALWAYZ:
+		return "ALWAYZ"
 	case MOAR:
 		return "MOAR"
 	case LES:
@@ -289,6 +301,10 @@ var keywords = map[string]TokenType{
 	"A":        A,
 	"DO":       DO,
 	"FROM":     FROM,
+	"MAYB":     MAYB,
+	"OOPS":     OOPS,
+	"OOPSIE":   OOPSIE,
+	"ALWAYZ":   ALWAYZ,
 	"NOTHIN":   NOTHIN,
 }
 

@@ -716,10 +716,14 @@ func (i *Interpreter) VisitBinaryOp(node *ast.BinaryOpNode) (types.Value, error)
 	case "DIVIDEZ": // Division
 		if leftNum, ok := left.(types.NumberValue); ok {
 			if rightNum, ok := right.(types.NumberValue); ok {
+				// Check for division by zero
+				if (rightNum == types.IntegerValue(0)) || (rightNum == types.DoubleValue(0.0)) {
+					return types.NOTHIN, ast.Exception{Message: "Division by zero"}
+				}
 				return leftNum.Divide(rightNum), nil
 			}
 		}
-		return types.NOTHIN, fmt.Errorf("operands must be numbers for division")
+		return types.NOTHIN, ast.Exception{Message: "Operands must be numbers for division"}
 
 	case "BIGGR THAN": // Greater than
 		if leftNum, ok := left.(types.NumberValue); ok {
@@ -773,7 +777,11 @@ func (i *Interpreter) VisitCast(node *ast.CastNode) (types.Value, error) {
 		return types.NOTHIN, err
 	}
 
-	return value.Cast(strings.ToUpper(node.TargetType))
+	result, castErr := value.Cast(strings.ToUpper(node.TargetType))
+	if castErr != nil {
+		return types.NOTHIN, ast.Exception{Message: castErr.Error()}
+	}
+	return result, nil
 }
 
 // VisitLiteral handles literal values
@@ -802,7 +810,7 @@ func (i *Interpreter) VisitIdentifier(node *ast.IdentifierNode) (types.Value, er
 		return i.callFunction(function, []types.Value{})
 	}
 
-	return types.NOTHIN, fmt.Errorf("undefined variable or function '%s'", name)
+	return types.NOTHIN, ast.Exception{Message: fmt.Sprintf("Undefined variable or function '%s'", name)}
 }
 
 // VisitObjectInstantiation handles object creation
@@ -869,6 +877,64 @@ func (i *Interpreter) VisitStatementBlock(node *ast.StatementBlockNode) (types.V
 	}
 
 	return result, nil
+}
+
+// VisitTryStatement handles try-catch-finally blocks
+func (i *Interpreter) VisitTryStatement(node *ast.TryStatementNode) (types.Value, error) {
+	var result types.Value = types.NOTHIN
+	var tryErr error
+	
+	// Execute try block
+	result, tryErr = node.TryBody.Accept(i)
+	
+	// If an exception occurred, handle it with the catch block
+	if tryErr != nil && ast.IsException(tryErr) {
+		// Create new environment for catch block with exception variable
+		catchEnv := environment.NewEnvironment(i.environment)
+		oldEnv := i.environment
+		i.environment = catchEnv
+		
+		// Bind the exception message to the catch variable
+		exceptionMsg := ast.GetExceptionMessage(tryErr)
+		i.environment.DefineVariable(node.CatchVar, "STRIN", types.StringValue(exceptionMsg), false)
+		
+		// Execute catch block
+		result, tryErr = node.CatchBody.Accept(i)
+		
+		// Restore environment
+		i.environment = oldEnv
+	}
+	
+	// Execute finally block if present (always runs)
+	if node.FinallyBody != nil {
+		// Finally block runs regardless of exceptions, but doesn't override result
+		_, finallyErr := node.FinallyBody.Accept(i)
+		// If finally block throws an exception, it takes precedence
+		if finallyErr != nil {
+			return types.NOTHIN, finallyErr
+		}
+	}
+	
+	return result, tryErr
+}
+
+// VisitThrowStatement handles throw statements
+func (i *Interpreter) VisitThrowStatement(node *ast.ThrowStatementNode) (types.Value, error) {
+	// Evaluate the expression to get the error message
+	msgValue, err := node.Expression.Accept(i)
+	if err != nil {
+		return types.NOTHIN, err
+	}
+	
+	// Cast to string if needed
+	strValue, err := msgValue.Cast("STRIN")
+	if err != nil {
+		return types.NOTHIN, fmt.Errorf("exception message must be a string, got %s", msgValue.Type())
+	}
+	
+	// Create and throw the exception
+	exceptionMsg := strValue.String()
+	return types.NOTHIN, ast.Exception{Message: exceptionMsg}
 }
 
 // GetRuntime returns the runtime environment

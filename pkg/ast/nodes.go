@@ -30,6 +30,8 @@ type Visitor interface {
 	VisitIdentifier(node *IdentifierNode) (types.Value, error)
 	VisitObjectInstantiation(node *ObjectInstantiationNode) (types.Value, error)
 	VisitStatementBlock(node *StatementBlockNode) (types.Value, error)
+	VisitTryStatement(node *TryStatementNode) (types.Value, error)
+	VisitThrowStatement(node *ThrowStatementNode) (types.Value, error)
 }
 
 // ProgramNode represents the root of the AST
@@ -247,4 +249,48 @@ func GetReturnValue(err error) types.Value {
 		return retVal.Value
 	}
 	return types.NOTHIN
+}
+
+// TryStatementNode represents try-catch-finally blocks
+type TryStatementNode struct {
+	TryBody     *StatementBlockNode
+	CatchVar    string              // Variable name to bind the exception message
+	CatchBody   *StatementBlockNode
+	FinallyBody *StatementBlockNode // Optional finally block
+}
+
+func (n *TryStatementNode) Accept(visitor Visitor) (types.Value, error) {
+	return visitor.VisitTryStatement(n)
+}
+
+// ThrowStatementNode represents throw statements
+type ThrowStatementNode struct {
+	Expression Node // Expression that evaluates to the error message (string)
+}
+
+func (n *ThrowStatementNode) Accept(visitor Visitor) (types.Value, error) {
+	return visitor.VisitThrowStatement(n)
+}
+
+// Exception represents a thrown exception with string message
+type Exception struct {
+	Message string
+}
+
+func (e Exception) Error() string {
+	return e.Message
+}
+
+// Helper function to check if an error is an exception
+func IsException(err error) bool {
+	_, ok := err.(Exception)
+	return ok
+}
+
+// Helper function to extract exception message from error
+func GetExceptionMessage(err error) string {
+	if exc, ok := err.(Exception); ok {
+		return exc.Message
+	}
+	return err.Error()
 }

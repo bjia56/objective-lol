@@ -1,0 +1,45 @@
+BTW Test built-in exceptions
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "Testing built-in exceptions"
+    
+    BTW Test division by zero
+    SAYZ WIT "=== Division by Zero ==="
+    MAYB
+        I HAS A VARIABLE RESULT TEH DUBBLE ITZ 10.0 DIVIDEZ 0.0
+        SAYZ WIT "Should not print: " 
+        SAYZ WIT RESULT
+    OOPSIE ERR
+        SAYZ WIT "Division error: " 
+        SAYZ WIT ERR
+    KTHX
+    
+    BTW Test type casting error
+    SAYZ WIT "=== Type Casting Error ==="
+    MAYB
+        I HAS A VARIABLE NUM TEH INTEGR ITZ "not_a_number" AS INTEGR
+        SAYZ WIT "Should not print: " 
+        SAYZ WIT NUM
+    OOPSIE CAST_ERR
+        SAYZ WIT "Cast error: " 
+        SAYZ WIT CAST_ERR
+    KTHX
+    
+    BTW Test successful operations
+    SAYZ WIT "=== Successful Operations ==="
+    MAYB
+        I HAS A VARIABLE GOOD_RESULT TEH DUBBLE ITZ 10.0 DIVIDEZ 2.0
+        SAYZ WIT "Good division: " 
+        SAYZ WIT GOOD_RESULT
+        
+        I HAS A VARIABLE GOOD_CAST TEH INTEGR ITZ "42" AS INTEGR  
+        SAYZ WIT "Good cast: " 
+        SAYZ WIT GOOD_CAST
+    OOPSIE UNEXPECTED_ERR
+        SAYZ WIT "Unexpected error: " 
+        SAYZ WIT UNEXPECTED_ERR
+    KTHX
+    
+    SAYZ WIT "All tests completed!"
+KTHXBAI

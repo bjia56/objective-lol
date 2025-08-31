@@ -63,6 +63,7 @@ The interpreter supports:
 - Functions with parameters and return values
 - Classes with inheritance (KITTEH OF), visibility modifiers (EVRYONE/MAHSELF)
 - **Module system with file imports**: Cross-platform POSIX path resolution, caching, circular import detection
+- **Exception handling system**: MAYB/OOPS/OOPSIE/ALWAYZ try-catch-finally blocks with string-based exceptions
 - Control flow (IZ/NOPE conditionals, WHILE loops)
 - Arithmetic, comparison, and logical operators
 - Parentheses for expression grouping and precedence override
@@ -101,6 +102,19 @@ Implements visitor pattern:
 - Runtime environment manages global functions and classes
 - Object instance tracking for method calls and member access
 
+### Exception Handling Architecture
+**Exception System** (`pkg/ast/nodes.go`):
+- **TryStatementNode**: AST node for MAYB/OOPSIE/ALWAYZ blocks
+- **ThrowStatementNode**: AST node for OOPS statements
+- **Exception Type**: String-based exception type implementing Go's error interface
+- **Exception Propagation**: Exceptions propagate via error return values until caught
+
+**Built-in Exception Integration**:
+- Division by zero in arithmetic operations
+- Type casting failures in value conversion
+- Array bounds violations in BUKKIT operations
+- Undefined variable/function access
+
 ### Module System
 **File Import Architecture** (`pkg/modules/`):
 - **ModuleResolver**: Cross-platform path resolution with POSIX-to-native conversion
@@ -127,6 +141,7 @@ Comprehensive test suite in `tests/` directory:
 - Tests use `.olol` extension to distinguish from examples
 - `run_tests.sh` provides automated test execution with pass/fail reporting
 - Module import tests in `tests/test_modules/` demonstrate file import capabilities
+- Exception handling tests (`tests/25_exception_handling.olol`, `tests/27_basic_try_catch.olol`, `tests/28_builtin_exceptions.olol`) validate exception system
 
 ## Development Notes
 
@@ -135,9 +150,12 @@ Comprehensive test suite in `tests/` directory:
 - Go source follows standard Go conventions
 
 ### Error Handling
-- Parser collects all errors before failing
-- Interpreter returns detailed error messages
-- Test runner shows specific failure reasons
+- **Exception System**: Comprehensive exception handling with MAYB/OOPS/OOPSIE/ALWAYZ syntax
+- **Built-in Exceptions**: Automatic exception throwing for division by zero, type casting errors, array bounds errors, undefined variables
+- **Exception Propagation**: Exceptions propagate up the call stack until caught
+- **Parser Error Collection**: Parser collects all errors before failing
+- **Runtime Error Messages**: Interpreter provides detailed error messages
+- **Test Error Reporting**: Test runner shows specific failure reasons
 
 ### Code Style
 - Follows standard Go formatting (use `go fmt`)

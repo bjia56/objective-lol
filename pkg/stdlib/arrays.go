@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/types"
 )
@@ -60,7 +61,7 @@ var arrayClasses = map[string]*environment.Class{
 						}
 						idx := int(indexVal)
 						if idx < 0 || idx >= len(slice) {
-							return nil, fmt.Errorf("array index %d out of bounds (size %d)", idx, len(slice))
+							return nil, ast.Exception{Message: fmt.Sprintf("Array index %d out of bounds (size %d)", idx, len(slice))}
 						}
 						return slice[idx], nil
 					}
@@ -81,7 +82,7 @@ var arrayClasses = map[string]*environment.Class{
 						}
 						idx := int(indexVal)
 						if idx < 0 || idx >= len(slice) {
-							return nil, fmt.Errorf("array index %d out of bounds (size %d)", idx, len(slice))
+							return nil, ast.Exception{Message: fmt.Sprintf("Array index %d out of bounds (size %d)", idx, len(slice))}
 						}
 						slice[idx] = args[1]
 						return types.NOTHIN, nil
@@ -287,7 +288,7 @@ var arrayClasses = map[string]*environment.Class{
 
 						// Bounds checking
 						if startIdx < 0 || startIdx > size || endIdx < 0 || endIdx > size || startIdx > endIdx {
-							return nil, fmt.Errorf("slice indices out of bounds: start=%d, end=%d, size=%d", startIdx, endIdx, size)
+							return nil, ast.Exception{Message: fmt.Sprintf("Slice indices out of bounds: start=%d, end=%d, size=%d", startIdx, endIdx, size)}
 						}
 
 						newSlice := make([]types.Value, endIdx-startIdx)

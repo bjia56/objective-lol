@@ -31,6 +31,7 @@ Objective-LOL is a programming language inspired by LOLCODE, implemented in Go. 
 - Object-oriented programming with classes, inheritance, and constructors  
 - Functions with parameters and return values
 - **Module system** with file imports, built-in modules, and cross-platform compatibility
+- **Exception handling** with try-catch-finally blocks using MAYB/OOPS/OOPSIE syntax
 - Standard library for I/O, mathematics, and time operations
 - Control flow structures (conditionals and loops)
 
@@ -1580,6 +1581,12 @@ KTHXBAI
 - `WHILE` - While loop
 - `DO` - Method call
 
+#### Exception Handling
+- `MAYB` - Start try block
+- `OOPS` - Throw exception
+- `OOPSIE` - Catch exception
+- `ALWAYZ` - Finally block
+
 #### Data Types
 - `INTEGR` - Integer type
 - `DUBBLE` - Double/float type
@@ -1706,55 +1713,188 @@ WHILE <condition>
 KTHX
 ```
 
+#### Exception Handling
+```
+MAYB
+    <statements>
+OOPSIE <variable_name>
+    <statements>
+[ALWAYZ
+    <statements>]
+KTHX
+
+OOPS <message>                                       BTW Throw exception
+```
+
 ---
 
 ## Error Handling
 
-### Common Errors
+Objective-LOL features a comprehensive exception handling system that allows graceful error management using try-catch-finally blocks with playful LOLCODE-inspired syntax.
 
-#### Syntax Errors
+### Exception Handling Syntax
+
+#### Basic Try-Catch Block
+
+Use `MAYB` to start a try block, `OOPS` to throw exceptions, and `OOPSIE` to catch them:
+
 ```lol
-BTW Missing KTHXBAI
-HAI ME TEH FUNCSHUN TEST
-    SAYZ WIT "Hello"
-BTW Error: Expected KTHXBAI
-
-BTW Missing TEH in variable declaration
-I HAS A VARIABLE X INTEGR ITZ 5
-BTW Error: Expected TEH after VARIABLE X
+MAYB
+    SAYZ WIT "Attempting risky operation"
+    OOPS "Something went wrong!"
+    SAYZ WIT "This line won't execute"
+OOPSIE ERROR_MESSAGE
+    SAYZ WIT "Caught exception: " 
+    SAYZ WIT ERROR_MESSAGE
+KTHX
 ```
 
-#### Type Errors
-```lol
-BTW Cannot cast incompatible types
-I HAS A VARIABLE STR TEH STRIN ITZ "not a number"
-I HAS A VARIABLE NUM TEH INTEGR ITZ STR AS INTEGR
-BTW Runtime Error: cannot cast string 'not a number' to INTEGR
+#### Exception Throwing
 
-BTW Division by zero
-I HAS A VARIABLE RESULT TEH DUBBLE ITZ 10.0 DIVIDEZ 0.0
-BTW Returns 0.0 (handled gracefully)
+Throw exceptions using `OOPS` followed by a string message:
+
+```lol
+HAI ME TEH FUNCSHUN VALIDATE_AGE WIT AGE TEH INTEGR
+    IZ AGE SMALLR THAN 0?
+        OOPS "Age cannot be negative!"
+    KTHX
+    IZ AGE BIGGR THAN 150?
+        OOPS "Age seems unrealistic!"
+    KTHX
+    GIVEZ AGE
+KTHXBAI
 ```
 
-#### Runtime Errors
-```lol
-BTW Accessing undefined variable
-SAYZ WIT UNDEFINED_VAR
-BTW Runtime Error: undefined variable 'UNDEFINED_VAR'
+#### Finally Blocks
 
-BTW Modifying locked variable
-I HAS A LOCKD VARIABLE CONSTANT TEH INTEGR ITZ 42
-CONSTANT ITZ 100
-BTW Runtime Error: cannot modify locked variable 'CONSTANT'
+Use `ALWAYZ` for cleanup code that always executes:
+
+```lol
+MAYB
+    SAYZ WIT "Opening file..."
+    OOPS "File not found!"
+OOPSIE FILE_ERROR
+    SAYZ WIT "File error: " 
+    SAYZ WIT FILE_ERROR
+ALWAYZ
+    SAYZ WIT "Cleaning up resources"
+KTHX
 ```
 
-### Debugging Tips
+#### Nested Exception Handling
 
-1. **Use SAYZ for debugging**: Add temporary output statements to trace program flow
-2. **Check variable types**: Use explicit casting when mixing types
-3. **Verify function signatures**: Ensure parameter types match function definitions
-4. **Test boundary conditions**: Check division by zero, negative square roots, etc.
-5. **Use the test runner**: Run `./run_tests.sh` to verify interpreter behavior
+Exception handling blocks can be nested for complex error management:
+
+```lol
+MAYB
+    SAYZ WIT "Outer try block"
+    MAYB
+        SAYZ WIT "Inner try block"
+        OOPS "Inner error!"
+    OOPSIE INNER_ERR
+        SAYZ WIT "Caught inner: " 
+        SAYZ WIT INNER_ERR
+        OOPS "Re-throwing as outer error!"
+    KTHX
+OOPSIE OUTER_ERR
+    SAYZ WIT "Caught outer: " 
+    SAYZ WIT OUTER_ERR
+KTHX
+```
+
+### Built-in Exceptions
+
+The interpreter automatically throws exceptions for common runtime errors:
+
+#### Division by Zero
+```lol
+MAYB
+    I HAS A VARIABLE RESULT TEH DUBBLE ITZ 10.0 DIVIDEZ 0.0
+OOPSIE MATH_ERROR
+    SAYZ WIT "Math error: " 
+    SAYZ WIT MATH_ERROR  BTW "Division by zero"
+KTHX
+```
+
+#### Type Casting Errors
+```lol
+MAYB
+    I HAS A VARIABLE NUM TEH INTEGR ITZ "not_a_number" AS INTEGR
+OOPSIE CAST_ERROR
+    SAYZ WIT "Cast error: " 
+    SAYZ WIT CAST_ERROR  BTW "cannot cast string 'not_a_number' to INTEGR"
+KTHX
+```
+
+#### Array Bounds Errors
+```lol
+MAYB
+    I HAS A VARIABLE ARR TEH BUKKIT ITZ NEW BUKKIT
+    I HAS A VARIABLE ITEM TEH INTEGR ITZ ARR DO AT WIT 10
+OOPSIE BOUNDS_ERROR
+    SAYZ WIT "Array error: " 
+    SAYZ WIT BOUNDS_ERROR  BTW "Array index 10 out of bounds (size 0)"
+KTHX
+```
+
+#### Undefined Variables/Functions
+```lol
+MAYB
+    SAYZ WIT UNDEFINED_VARIABLE
+OOPSIE UNDEF_ERROR
+    SAYZ WIT "Variable error: " 
+    SAYZ WIT UNDEF_ERROR  BTW "Undefined variable or function 'UNDEFINED_VARIABLE'"
+KTHX
+```
+
+### Exception Propagation
+
+Exceptions automatically propagate up the call stack until caught:
+
+```lol
+HAI ME TEH FUNCSHUN RISKY_OPERATION
+    OOPS "Operation failed!"
+KTHXBAI
+
+HAI ME TEH FUNCSHUN CALLER
+    RISKY_OPERATION  BTW Exception propagates from here
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    MAYB
+        CALLER
+    OOPSIE ERR
+        SAYZ WIT "Caught propagated exception: " 
+        SAYZ WIT ERR
+    KTHX
+KTHXBAI
+```
+
+### Exception Handling Best Practices
+
+1. **Use Specific Error Messages**: Make error messages descriptive and helpful
+2. **Clean Up in Finally Blocks**: Use `ALWAYZ` for resource cleanup
+3. **Don't Ignore Exceptions**: Always handle or re-throw exceptions appropriately
+4. **Use Exceptions for Exceptional Cases**: Don't use exceptions for normal control flow
+5. **Test Exception Paths**: Ensure your exception handling code is tested
+
+### Legacy Error Handling
+
+Before exception handling, runtime errors would terminate the program. With the new system:
+
+- **Old behavior**: `10.0 DIVIDEZ 0.0` would return `0.0`  
+- **New behavior**: `10.0 DIVIDEZ 0.0` throws "Division by zero" exception
+
+Programs can now gracefully handle errors and continue execution.
+
+### Syntax Summary
+
+| Construct | Syntax | Purpose |
+|-----------|--------|---------|
+| Try Block | `MAYB ... OOPSIE variable ... KTHX` | Handle exceptions |
+| Throw | `OOPS "message"` | Throw an exception |
+| Catch | `OOPSIE variable_name` | Catch and bind exception |
+| Finally | `ALWAYZ ... KTHX` | Always-execute cleanup |
 
 ### File Extensions
 

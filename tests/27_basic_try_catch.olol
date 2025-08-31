@@ -1,0 +1,17 @@
+BTW Basic try-catch test
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "Testing basic try-catch"
+    
+    MAYB
+        SAYZ WIT "Before exception"
+        OOPS "Test exception message"
+        SAYZ WIT "This should not print"
+    OOPSIE ERR
+        SAYZ WIT "Caught: " 
+        SAYZ WIT ERR
+    KTHX
+    
+    SAYZ WIT "After try-catch block"
+KTHXBAI
