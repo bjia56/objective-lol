@@ -254,7 +254,7 @@ func GetReturnValue(err error) types.Value {
 // TryStatementNode represents try-catch-finally blocks
 type TryStatementNode struct {
 	TryBody     *StatementBlockNode
-	CatchVar    string              // Variable name to bind the exception message
+	CatchVar    string // Variable name to bind the exception message
 	CatchBody   *StatementBlockNode
 	FinallyBody *StatementBlockNode // Optional finally block
 }

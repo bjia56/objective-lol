@@ -1099,21 +1099,21 @@ func (p *Parser) parseObjectInstantiation() *ast.ObjectInstantiationNode {
 // parseTryStatement parses try-catch-finally blocks
 func (p *Parser) parseTryStatement() *ast.TryStatementNode {
 	node := &ast.TryStatementNode{}
-	
+
 	// Parse try block: MAYB ... statements ... until OOPSIE WIT
 	// Now we can use parseStatementBlock and look for OOPSIE WIT pattern
 	block := &ast.StatementBlockNode{Statements: []ast.Node{}}
-	
+
 	p.nextToken() // move past MAYB
 	p.skipNewlines()
-	
+
 	// Parse statements until we find OOPSIE IDENTIFIER (catch clause)
 	for !p.currentTokenIs(EOF) {
 		if p.currentTokenIs(OOPSIE) && p.peekTokenIs(IDENTIFIER) {
 			// Found catch clause
 			break
 		}
-		
+
 		stmt := p.parseStatement()
 		if stmt != nil {
 			block.Statements = append(block.Statements, stmt)
@@ -1121,47 +1121,47 @@ func (p *Parser) parseTryStatement() *ast.TryStatementNode {
 		p.nextToken()
 		p.skipNewlines()
 	}
-	
+
 	node.TryBody = block
-	
+
 	if !p.currentTokenIs(OOPSIE) || !p.peekTokenIs(IDENTIFIER) {
 		p.addError(fmt.Sprintf("expected 'OOPSIE identifier' to start catch block, got %v %v at line %d", p.currentToken.Type, p.peekToken.Type, p.currentToken.Line))
 		return nil
 	}
-	
+
 	// Parse catch clause: OOPSIE variable_name
 	p.nextToken() // consume OOPSIE
-	
+
 	if !p.currentTokenIs(IDENTIFIER) {
 		p.addError(fmt.Sprintf("expected identifier after 'OOPSIE', got %v at line %d", p.currentToken.Type, p.currentToken.Line))
 		return nil
 	}
 	node.CatchVar = p.currentToken.Literal
-	
+
 	// Parse catch body until KTHX or ALWAYZ
 	node.CatchBody = p.parseStatementBlock(KTHX, ALWAYZ)
-	
+
 	// Check for optional finally block: ALWAYZ ... statements ... KTHX
 	if p.currentTokenIs(ALWAYZ) {
 		node.FinallyBody = p.parseStatementBlock(KTHX)
 	}
-	
+
 	if !p.currentTokenIs(KTHX) {
 		p.addError(fmt.Sprintf("expected 'KTHX' to close try statement, got %v at line %d", p.currentToken.Type, p.currentToken.Line))
 		return nil
 	}
-	
+
 	return node
 }
 
 // parseThrowStatement parses throw statements
 func (p *Parser) parseThrowStatement() *ast.ThrowStatementNode {
 	node := &ast.ThrowStatementNode{}
-	
+
 	// Parse: OOPSIE expression (no WIT for throw)
 	p.nextToken() // move to expression
 	node.Expression = p.parseExpression()
-	
+
 	return node
 }
 

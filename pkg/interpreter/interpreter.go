@@ -888,28 +888,28 @@ func (i *Interpreter) VisitStatementBlock(node *ast.StatementBlockNode) (types.V
 func (i *Interpreter) VisitTryStatement(node *ast.TryStatementNode) (types.Value, error) {
 	var result types.Value = types.NOTHIN
 	var tryErr error
-	
+
 	// Execute try block
 	result, tryErr = node.TryBody.Accept(i)
-	
+
 	// If an exception occurred, handle it with the catch block
 	if tryErr != nil && ast.IsException(tryErr) {
 		// Create new environment for catch block with exception variable
 		catchEnv := environment.NewEnvironment(i.environment)
 		oldEnv := i.environment
 		i.environment = catchEnv
-		
+
 		// Bind the exception message to the catch variable
 		exceptionMsg := ast.GetExceptionMessage(tryErr)
 		i.environment.DefineVariable(node.CatchVar, "STRIN", types.StringValue(exceptionMsg), false)
-		
+
 		// Execute catch block
 		result, tryErr = node.CatchBody.Accept(i)
-		
+
 		// Restore environment
 		i.environment = oldEnv
 	}
-	
+
 	// Execute finally block if present (always runs)
 	if node.FinallyBody != nil {
 		// Finally block runs regardless of exceptions, but doesn't override result
@@ -919,7 +919,7 @@ func (i *Interpreter) VisitTryStatement(node *ast.TryStatementNode) (types.Value
 			return types.NOTHIN, finallyErr
 		}
 	}
-	
+
 	return result, tryErr
 }
 
@@ -930,13 +930,13 @@ func (i *Interpreter) VisitThrowStatement(node *ast.ThrowStatementNode) (types.V
 	if err != nil {
 		return types.NOTHIN, err
 	}
-	
+
 	// Cast to string if needed
 	strValue, err := msgValue.Cast("STRIN")
 	if err != nil {
 		return types.NOTHIN, fmt.Errorf("exception message must be a string, got %s", msgValue.Type())
 	}
-	
+
 	// Create and throw the exception
 	exceptionMsg := strValue.String()
 	return types.NOTHIN, ast.Exception{Message: exceptionMsg}

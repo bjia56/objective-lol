@@ -3,6 +3,7 @@ package stdlib
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -10,13 +11,35 @@ import (
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
+// Global I/O configuration - defaults to standard streams
+var (
+	StdoutWriter io.Writer = os.Stdout
+	StdinReader  io.Reader = os.Stdin
+)
+
+// SetOutput sets the output writer for SAY and SAYZ functions
+func SetOutput(w io.Writer) {
+	StdoutWriter = w
+}
+
+// SetInput sets the input reader for GIMME function
+func SetInput(r io.Reader) {
+	StdinReader = r
+}
+
+// ResetToStandardStreams resets to os.Stdout and os.Stdin
+func ResetToStandardStreams() {
+	StdoutWriter = os.Stdout
+	StdinReader = os.Stdin
+}
+
 // Global STDIO function definitions - created once and reused
 var stdioFunctions = map[string]*environment.Function{
 	"SAY": {
 		Name:       "SAY",
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
 		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-			fmt.Print(args[0].String())
+			fmt.Fprint(StdoutWriter, args[0].String())
 			return types.NOTHIN, nil
 		},
 	},
@@ -24,7 +47,7 @@ var stdioFunctions = map[string]*environment.Function{
 		Name:       "SAYZ",
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
 		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-			fmt.Println(args[0].String())
+			fmt.Fprintln(StdoutWriter, args[0].String())
 			return types.NOTHIN, nil
 		},
 	},
@@ -33,7 +56,7 @@ var stdioFunctions = map[string]*environment.Function{
 		ReturnType: "STRIN",
 		Parameters: []environment.Parameter{},
 		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-			reader := bufio.NewReader(os.Stdin)
+			reader := bufio.NewReader(StdinReader)
 			line, err := reader.ReadString('\n')
 			if err != nil {
 				return types.StringValue(""), nil

@@ -1,4 +1,4 @@
-package main
+package olol
 
 import (
 	"fmt"
@@ -11,25 +11,22 @@ import (
 	"github.com/bjia56/objective-lol/pkg/parser"
 )
 
-func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s <file.olol>\n", os.Args[0])
-		os.Exit(1)
+func Run(args []string) int {
+	if len(args) != 1 {
+		return 1
 	}
 
-	filename := os.Args[1]
+	filename := args[0]
 
 	// Create interpreter
 	interp := interpreter.NewInterpreter()
 
-	// Note: Standard library functions are now loaded on-demand via import statements
-	// e.g., "I CAN HAS STDIO?" will load STDIO functions
-
 	// Execute the file
 	if err := executeFile(interp, filename); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		return 1
 	}
+	return 0
 }
 
 func executeFile(interp *interpreter.Interpreter, filename string) error {

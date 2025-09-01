@@ -16,12 +16,12 @@ var testFunctions = map[string]*environment.Function{
 		Parameters: []environment.Parameter{{Name: "CONDITION", Type: ""}}, // Accept any type
 		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			condition := args[0]
-			
+
 			// Check if condition is truthy
 			if !isTruthy(condition) {
 				return types.NOTHIN, ast.Exception{Message: "Assertion failed"}
 			}
-			
+
 			return types.NOTHIN, nil
 		},
 	},
