@@ -15,15 +15,20 @@ go build -o olol cmd/olol/main.go
 
 ### Running Tests
 ```bash
-# Run all tests with the provided script
-./run_tests.sh
+# Run all Go unit tests
+go test ./...
 
 # Run with verbose output to see detailed test results
-./run_tests.sh -v
+go test -v ./...
 
-# Run individual test files
-./olol tests/01_basic_syntax.olol
-./olol tests/15_comprehensive.olol
+# Run specific package tests
+go test ./pkg/parser
+go test ./pkg/interpreter
+go test ./pkg/integration
+
+# Run individual .olol test files
+./olol pkg/integration/tests/18_precedence_test.olol
+./olol pkg/integration/tests/26_simple_exception_test.olol
 ```
 
 ### Code Quality
@@ -136,13 +141,13 @@ Implements visitor pattern:
 - Supports relative: `"../shared"`, absolute: `"/project/modules"`, and nested: `"dir/subdir/module"`
 
 ### Testing
-Comprehensive test suite in `tests/` directory:
-- Files covering basic to advanced features
-- Each test file is self-documenting with expected outputs
-- Tests use `.olol` extension to distinguish from examples
-- `run_tests.sh` provides automated test execution with pass/fail reporting
-- Module import tests in `tests/test_modules/` demonstrate file import capabilities
-- Exception handling tests (`tests/25_exception_handling.olol`, `tests/27_basic_try_catch.olol`, `tests/28_builtin_exceptions.olol`) validate exception system
+Comprehensive test suite with both Go unit tests and .olol integration tests:
+- **Go unit tests**: Located in `*_test.go` files throughout the codebase, run with `go test ./...`
+- **Integration tests**: Located in `pkg/integration/tests/` directory with `.olol` extension
+- **Functional tests**: `pkg/integration/functional_test.go` automatically runs all `.olol` files in tests directory
+- Each .olol test file is self-documenting with expected outputs
+- Module import tests in `pkg/integration/tests/test_modules/` demonstrate file import capabilities  
+- Exception handling integration tests validate the exception system
 
 ## Development Notes
 
