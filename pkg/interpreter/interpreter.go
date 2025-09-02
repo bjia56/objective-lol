@@ -76,6 +76,11 @@ func (i *Interpreter) checkContext() error {
 func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
 	// First pass: declare all functions and classes
 	for _, decl := range node.Declarations {
+		// Check for context cancellation
+		if err := i.checkContext(); err != nil {
+			return types.NOTHIN, err
+		}
+
 		switch n := decl.(type) {
 		case *ast.FunctionDeclarationNode:
 			if _, err := i.VisitFunctionDeclaration(n); err != nil {
@@ -90,6 +95,11 @@ func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
 
 	// Second pass: execute variable declarations, import statements, and other statements
 	for _, decl := range node.Declarations {
+		// Check for context cancellation
+		if err := i.checkContext(); err != nil {
+			return types.NOTHIN, err
+		}
+
 		switch n := decl.(type) {
 		case *ast.VariableDeclarationNode:
 			if _, err := i.VisitVariableDeclaration(n); err != nil {
@@ -140,6 +150,11 @@ func (i *Interpreter) handleBuiltinImport(moduleName string, declarations []stri
 
 // handleFileImport handles imports of .olol file modules
 func (i *Interpreter) handleFileImport(filePath string, declarations []string) (types.Value, error) {
+	// Check for context cancellation
+	if err := i.checkContext(); err != nil {
+		return types.NOTHIN, err
+	}
+
 	// Determine the directory of the current file for relative path resolution
 	var importingDir string
 	if i.currentFile != "" {
@@ -376,6 +391,11 @@ func (i *Interpreter) VisitClassDeclaration(node *ast.ClassDeclarationNode) (typ
 
 	// Process class members
 	for _, member := range node.Members {
+		// Check for context cancellation
+		if err := i.checkContext(); err != nil {
+			return types.NOTHIN, err
+		}
+
 		if member.IsVariable {
 			// Handle member variables
 			var value types.Value = types.NOTHIN
@@ -543,6 +563,11 @@ func (i *Interpreter) VisitReturnStatement(node *ast.ReturnStatementNode) (types
 
 // VisitFunctionCall handles function calls
 func (i *Interpreter) VisitFunctionCall(node *ast.FunctionCallNode) (types.Value, error) {
+	// Check for context cancellation
+	if err := i.checkContext(); err != nil {
+		return types.NOTHIN, err
+	}
+
 	// Evaluate arguments
 	args := make([]types.Value, len(node.Arguments))
 	for j, arg := range node.Arguments {
@@ -888,6 +913,10 @@ func (i *Interpreter) VisitStatementBlock(node *ast.StatementBlockNode) (types.V
 	var result types.Value = types.NOTHIN
 
 	for _, stmt := range node.Statements {
+		// Check for context cancellation
+		if err := i.checkContext(); err != nil {
+			return types.NOTHIN, err
+		}
 		val, err := stmt.Accept(i)
 		if err != nil {
 			return types.NOTHIN, err
@@ -900,6 +929,11 @@ func (i *Interpreter) VisitStatementBlock(node *ast.StatementBlockNode) (types.V
 
 // VisitTryStatement handles try-catch-finally blocks
 func (i *Interpreter) VisitTryStatement(node *ast.TryStatementNode) (types.Value, error) {
+	// Check for context cancellation
+	if err := i.checkContext(); err != nil {
+		return types.NOTHIN, err
+	}
+
 	var result types.Value = types.NOTHIN
 	var tryErr error
 
