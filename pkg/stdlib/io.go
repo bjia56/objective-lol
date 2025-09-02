@@ -22,6 +22,13 @@ type BufferedReaderData struct {
 	EOF        bool
 }
 
+// BufferedWriterData stores the internal state of a BUFFERED_WRITER
+type BufferedWriterData struct {
+	Writer     *environment.ObjectInstance
+	Buffer     string
+	BufferSize int
+}
+
 // Global IO class definitions - created once and reused
 var ioClassesOnce = sync.Once{}
 var ioClasses map[string]*environment.Class
@@ -275,6 +282,229 @@ func getIoClasses() map[string]*environment.Class {
 							bufferData.Buffer = ""
 							bufferData.Position = 0
 							bufferData.EOF = true
+
+							return types.NOTHIN, nil
+						},
+					},
+				},
+				PublicVariables: map[string]*environment.Variable{
+					"SIZ": {
+						Name:     "SIZ",
+						Type:     "INTEGR",
+						Value:    types.IntegerValue(defaultBufferSize),
+						IsLocked: false,
+						IsPublic: true,
+					},
+				},
+			},
+			"BUFFERED_WRITER": {
+				Name: "BUFFERED_WRITER",
+				PublicFunctions: map[string]*environment.Function{
+					// Constructor
+					"BUFFERED_WRITER": {
+						Name: "BUFFERED_WRITER",
+						Parameters: []environment.Parameter{
+							{Name: "writer", Type: "WRITER"},
+						},
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							writer := args[0]
+
+							// Validate that the argument is an object with WRITE and CLOSE methods
+							writerObj, ok := writer.(types.ObjectValue)
+							if !ok {
+								return types.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor expects WRITER object, got %s", args[0].Type())
+							}
+
+							// Type assert to get the concrete ObjectInstance
+							writerInstance, ok := writerObj.Instance.(*environment.ObjectInstance)
+							if !ok {
+								return types.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor: invalid object instance type")
+							}
+
+							// Check if writer has WRITE method
+							_, err := writerInstance.GetMemberFunction("WRITE", "BUFFERED_WRITER", nil)
+							if err != nil {
+								return types.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor: provided object does not have WRITE method: %v", err)
+							}
+
+							// Check if writer has CLOSE method
+							_, err = writerInstance.GetMemberFunction("CLOSE", "BUFFERED_WRITER", nil)
+							if err != nil {
+								return types.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor: provided object does not have CLOSE method: %v", err)
+							}
+
+							// Initialize the buffered writer data
+							bufferData := &BufferedWriterData{
+								Writer:     writerInstance,
+								Buffer:     "",
+								BufferSize: defaultBufferSize,
+							}
+							this.NativeData = bufferData
+
+							return types.NOTHIN, nil
+						},
+					},
+					// SET_SIZ method
+					"SET_SIZ": {
+						Name: "SET_SIZ",
+						Parameters: []environment.Parameter{
+							{Name: "new_size", Type: "INTEGR"},
+						},
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							if len(args) != 1 {
+								return types.NOTHIN, fmt.Errorf("SET_SIZ expects 1 argument, got %d", len(args))
+							}
+
+							newSizeVal, ok := args[0].(types.IntegerValue)
+							if !ok {
+								return types.NOTHIN, fmt.Errorf("SET_SIZ expects INTEGR, got %s", args[0].Type())
+							}
+
+							newSize := int(newSizeVal)
+							if newSize <= 0 {
+								return types.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", newSize)
+							}
+
+							if bufferData, ok := this.NativeData.(*BufferedWriterData); ok {
+								functionCtx, ok := ctx.(*interpreter.FunctionContext)
+								if !ok {
+									return types.NOTHIN, fmt.Errorf("SET_SIZ: invalid function context")
+								}
+
+								// Flush existing buffer before changing size
+								if len(bufferData.Buffer) > 0 {
+									_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(bufferData.Buffer)})
+									if err != nil {
+										return types.NOTHIN, fmt.Errorf("SET_SIZ: error flushing buffer: %v", err)
+									}
+									bufferData.Buffer = ""
+								}
+
+								bufferData.BufferSize = newSize
+
+								// Update SIZ variable
+								if sizVar, exists := this.Variables["SIZ"]; exists {
+									sizVar.Value = types.IntegerValue(newSize)
+								}
+
+								return types.NOTHIN, nil
+							}
+							return types.NOTHIN, fmt.Errorf("SET_SIZ: invalid context")
+						},
+					},
+					// WRITE method
+					"WRITE": {
+						Name:       "WRITE",
+						ReturnType: "INTEGR",
+						Parameters: []environment.Parameter{
+							{Name: "data", Type: "STRIN"},
+						},
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							if len(args) != 1 {
+								return types.NOTHIN, fmt.Errorf("WRITE expects 1 argument, got %d", len(args))
+							}
+
+							dataVal, ok := args[0].(types.StringValue)
+							if !ok {
+								return types.NOTHIN, fmt.Errorf("WRITE expects STRIN data, got %s", args[0].Type())
+							}
+
+							data := string(dataVal)
+							originalLength := len(data)
+
+							bufferData, ok := this.NativeData.(*BufferedWriterData)
+							if !ok {
+								return types.NOTHIN, fmt.Errorf("WRITE: invalid context")
+							}
+
+							functionCtx, ok := ctx.(*interpreter.FunctionContext)
+							if !ok {
+								return types.NOTHIN, fmt.Errorf("WRITE: invalid function context")
+							}
+
+							// If data fits in remaining buffer space, just buffer it
+							if len(bufferData.Buffer)+len(data) <= bufferData.BufferSize {
+								bufferData.Buffer += data
+								return types.IntegerValue(originalLength), nil
+							}
+
+							// Buffer is full or will be full, need to flush
+							if len(bufferData.Buffer) > 0 {
+								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(bufferData.Buffer)})
+								if err != nil {
+									return types.NOTHIN, fmt.Errorf("WRITE: error flushing buffer: %v", err)
+								}
+								bufferData.Buffer = ""
+							}
+
+							// If data is larger than buffer size, write it directly
+							if len(data) >= bufferData.BufferSize {
+								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(data)})
+								if err != nil {
+									return types.NOTHIN, fmt.Errorf("WRITE: error writing large data: %v", err)
+								}
+								return types.IntegerValue(originalLength), nil
+							}
+
+							// Otherwise, buffer the data
+							bufferData.Buffer = data
+							return types.IntegerValue(originalLength), nil
+						},
+					},
+					// FLUSH method
+					"FLUSH": {
+						Name: "FLUSH",
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							bufferData, ok := this.NativeData.(*BufferedWriterData)
+							if !ok {
+								return types.NOTHIN, fmt.Errorf("FLUSH: invalid context")
+							}
+
+							functionCtx, ok := ctx.(*interpreter.FunctionContext)
+							if !ok {
+								return types.NOTHIN, fmt.Errorf("FLUSH: invalid function context")
+							}
+
+							// Flush buffer if it has data
+							if len(bufferData.Buffer) > 0 {
+								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(bufferData.Buffer)})
+								if err != nil {
+									return types.NOTHIN, fmt.Errorf("FLUSH: error flushing buffer: %v", err)
+								}
+								bufferData.Buffer = ""
+							}
+
+							return types.NOTHIN, nil
+						},
+					},
+					// CLOSE method
+					"CLOSE": {
+						Name: "CLOSE",
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							bufferData, ok := this.NativeData.(*BufferedWriterData)
+							if !ok {
+								return types.NOTHIN, fmt.Errorf("CLOSE: invalid context")
+							}
+
+							functionCtx, ok := ctx.(*interpreter.FunctionContext)
+							if !ok {
+								return types.NOTHIN, fmt.Errorf("CLOSE: invalid function context")
+							}
+
+							// Flush buffer before closing
+							if len(bufferData.Buffer) > 0 {
+								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(bufferData.Buffer)})
+								if err != nil {
+									return types.NOTHIN, fmt.Errorf("CLOSE: error flushing buffer: %v", err)
+								}
+								bufferData.Buffer = ""
+							}
+
+							// Call the CLOSE method on the underlying writer
+							_, err := functionCtx.CallMethod(bufferData.Writer, "CLOSE", "BUFFERED_WRITER", []types.Value{})
+							if err != nil {
+								return types.NOTHIN, fmt.Errorf("CLOSE: error closing underlying writer: %v", err)
+							}
 
 							return types.NOTHIN, nil
 						},

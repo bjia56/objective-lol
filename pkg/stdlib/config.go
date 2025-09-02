@@ -8,11 +8,12 @@ import (
 // used by the Objective-LOL interpreter
 func DefaultStdlibInitializers() map[string]interpreter.StdlibInitializer {
 	return map[string]interpreter.StdlibInitializer{
-		"TIME":  RegisterTIMEInEnv,
-		"STDIO": RegisterSTDIOInEnv,
-		"MATH":  RegisterMATHInEnv,
-		"TEST":  RegisterTESTInEnv,
-		"IO":    RegisterIOInEnv,
+		"IO":     RegisterIOInEnv,
+		"MATH":   RegisterMATHInEnv,
+		"STDIO":  RegisterSTDIOInEnv,
+		"STRING": RegisterSTRINGInEnv,
+		"TEST":   RegisterTESTInEnv,
+		"TIME":   RegisterTIMEInEnv,
 	}
 }
 
@@ -23,4 +24,3 @@ func DefaultGlobalInitializers() []interpreter.StdlibInitializer {
 		RegisterArraysInEnv,
 	}
 }
-

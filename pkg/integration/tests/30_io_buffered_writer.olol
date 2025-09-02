@@ -1,0 +1,130 @@
+BTW IO module BUFFERED_WRITER test
+I CAN HAS IO?
+I CAN HAS STDIO?
+I CAN HAS STRING?
+
+BTW Create a simple writer class for testing that extends WRITER
+HAI ME TEH CLAS TestWriter KITTEH OF WRITER
+    EVRYONE
+    DIS TEH VARIABLE write_count TEH INTEGR ITZ 0
+    DIS TEH VARIABLE data TEH STRIN ITZ ""
+    DIS TEH VARIABLE close_count TEH INTEGR ITZ 0
+
+    DIS TEH FUNCSHUN WRITE TEH INTEGR WIT D TEH STRIN
+        write_count ITZ write_count MOAR 1
+        SAY WIT "TestWriter.WRITE called #"
+        SAY WIT write_count
+        SAY WIT " with data: '"
+        SAY WIT D
+        SAYZ WIT "'"
+
+        BTW Append data to internal storage
+        data ITZ CONCAT WIT data AN WIT D
+
+        BTW Return the number of bytes written using LEN function
+        GIVEZ LEN WIT D
+    KTHX
+
+    DIS TEH FUNCSHUN CLOSE
+        close_count ITZ close_count MOAR 1
+        SAYZ WIT "TestWriter closed"
+    KTHX
+
+    DIS TEH FUNCSHUN get_write_count TEH INTEGR
+        GIVEZ write_count
+    KTHX
+
+    DIS TEH FUNCSHUN get_data TEH STRIN
+        GIVEZ data
+    KTHX
+
+    DIS TEH FUNCSHUN get_close_count TEH INTEGR
+        GIVEZ close_count
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== IO BUFFERED_WRITER Test ==="
+
+    BTW Test 1: Basic functionality
+    SAYZ WIT "Test 1: Creating BUFFERED_WRITER"
+    I HAS A VARIABLE writer TEH TestWriter ITZ NEW TestWriter
+    I HAS A VARIABLE buffered TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT writer
+
+    SAY WIT "Default buffer size: "
+    SAYZ WIT buffered SIZ
+
+    BTW Test 2: Writing small chunks should be buffered efficiently
+    SAYZ WIT "Test 2: Writing small chunks (should be buffered)"
+    I HAS A VARIABLE result1 TEH INTEGR ITZ buffered DO WRITE WIT "Hello"
+    SAY WIT "Wrote 'Hello', returned: "
+    SAYZ WIT result1
+
+    I HAS A VARIABLE result2 TEH INTEGR ITZ buffered DO WRITE WIT ", World!"
+    SAY WIT "Wrote ', World!', returned: "
+    SAYZ WIT result2
+
+    SAY WIT "Write count after 2 small writes: "
+    SAYZ WIT writer DO get_write_count
+    SAY WIT "Data in underlying writer: '"
+    SAY WIT writer DO get_data
+    SAYZ WIT "'"
+
+    BTW Test 3: Manual flush
+    SAYZ WIT "Test 3: Manual flush"
+    buffered DO FLUSH
+    SAY WIT "Write count after flush: "
+    SAYZ WIT writer DO get_write_count
+    SAY WIT "Data in underlying writer after flush: '"
+    SAY WIT writer DO get_data
+    SAYZ WIT "'"
+
+    BTW Test 4: Buffer size modification
+    SAYZ WIT "Test 4: Changing buffer size"
+    buffered DO SET_SIZ WIT 512
+    SAY WIT "New buffer size: "
+    SAYZ WIT buffered SIZ
+
+    BTW Test 5: Writing after buffer size change
+    SAYZ WIT "Test 5: Writing after buffer size change"
+    I HAS A VARIABLE result3 TEH INTEGR ITZ buffered DO WRITE WIT " - New buffer test"
+    SAY WIT "Wrote ' - New buffer test', returned: "
+    SAYZ WIT result3
+
+    SAY WIT "Write count after buffer resize: "
+    SAYZ WIT writer DO get_write_count
+
+    BTW Test 6: Large write request (should bypass buffer)
+    SAYZ WIT "Test 6: Large write request (should bypass buffer)"
+    BTW Create a string longer than buffer size (512)
+    I HAS A VARIABLE large_data TEH STRIN ITZ "This is a very long string that is designed to be larger than the buffer size to test the bypass mechanism. It needs to be over 512 characters long to properly test this feature. Let me add more text here to make sure it exceeds the buffer size limit. This should trigger an immediate write to the underlying writer without buffering the data first. The string continues with more content to ensure we definitely exceed 512 characters in total length. And even more content to be absolutely sure we trigger the large write path in the buffered writer implementation."
+
+    I HAS A VARIABLE result4 TEH INTEGR ITZ buffered DO WRITE WIT large_data
+    SAY WIT "Wrote large data, returned: "
+    SAYZ WIT result4
+
+    SAY WIT "Write count after large write: "
+    SAYZ WIT writer DO get_write_count
+
+    BTW Test 7: Close functionality (should flush remaining buffer)
+    SAYZ WIT "Test 7: Final close functionality"
+    I HAS A VARIABLE result5 TEH INTEGR ITZ buffered DO WRITE WIT " - Final data"
+    SAY WIT "Wrote ' - Final data', returned: "
+    SAYZ WIT result5
+
+    SAY WIT "Write count before close: "
+    SAYZ WIT writer DO get_write_count
+
+    buffered DO CLOSE
+
+    SAY WIT "Write count after close: "
+    SAYZ WIT writer DO get_write_count
+    SAY WIT "Close count: "
+    SAYZ WIT writer DO get_close_count
+
+    SAY WIT "Final data in underlying writer: '"
+    SAY WIT writer DO get_data
+    SAYZ WIT "'"
+
+    SAYZ WIT "=== BUFFERED_WRITER Test Complete ==="
+KTHXBAI
