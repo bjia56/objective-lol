@@ -2,11 +2,16 @@ package types
 
 import (
 	"fmt"
+	"slices"
 )
+
+type ObjectInstance interface {
+	GetHierarchy() []string
+}
 
 // ObjectValue wraps an object instance to implement the Value interface
 type ObjectValue struct {
-	Instance  interface{} // Will hold *environment.ObjectInstance
+	Instance  ObjectInstance // Will hold *environment.ObjectInstance
 	ClassName string
 }
 
@@ -20,7 +25,7 @@ func (o ObjectValue) Cast(targetType string) (Value, error) {
 	if targetType == "" {
 		return o, nil
 	}
-	if targetType == o.ClassName || targetType == "OBJECT" {
+	if slices.Contains(o.Instance.GetHierarchy(), targetType) {
 		return o, nil
 	}
 	if targetType == "STRIN" {
@@ -46,7 +51,7 @@ func (o ObjectValue) EqualTo(other Value) (BoolValue, error) {
 }
 
 // NewObjectValue creates a new ObjectValue
-func NewObjectValue(instance interface{}, className string) ObjectValue {
+func NewObjectValue(instance ObjectInstance, className string) ObjectValue {
 	return ObjectValue{
 		Instance:  instance,
 		ClassName: className,

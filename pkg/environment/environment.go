@@ -185,20 +185,35 @@ func NewClass(name, parentClass string) *Class {
 // ObjectInstance represents an instance of a class
 type ObjectInstance struct {
 	Class           *Class
+	Hierarchy       []string
 	Variables       map[string]*Variable
 	SharedVariables map[string]*Variable // Reference to class shared variables
 	NativeData      any                  // For native classes, stores internal data
 }
 
 // NewObjectInstance creates a new instance of the specified class
-func (e *Environment) NewObjectInstance(className string) (interface{}, error) {
+func (e *Environment) NewObjectInstance(className string) (types.ObjectInstance, error) {
 	class, err := e.GetClass(className)
 	if err != nil {
 		return nil, err
 	}
 
+	hierarchy := []string{}
+	curr := class
+	for {
+		hierarchy = append(hierarchy, curr.Name)
+		if curr.ParentClass == "" {
+			break
+		}
+		curr, err = e.GetClass(curr.ParentClass)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	instance := &ObjectInstance{
 		Class:           class,
+		Hierarchy:       hierarchy,
 		Variables:       make(map[string]*Variable),
 		SharedVariables: class.SharedVariables,
 	}
@@ -283,6 +298,11 @@ func (obj *ObjectInstance) SetMemberVariable(name string, value types.Value, fro
 // GetMemberFunction retrieves a member function from the object's class
 func (obj *ObjectInstance) GetMemberFunction(name string, fromContext string, env *Environment) (*Function, error) {
 	return obj.Class.getMemberFunction(name, fromContext, env)
+}
+
+// GetHierarchy returns the class hierarchy as a slice of class names
+func (obj *ObjectInstance) GetHierarchy() []string {
+	return obj.Hierarchy
 }
 
 // getMemberFunction is a helper that recursively searches for a function in the class hierarchy

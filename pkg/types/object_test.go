@@ -8,7 +8,10 @@ import (
 )
 
 func TestObjectValue(t *testing.T) {
-	instance := &MockObjectInstance{name: "test"}
+	instance := &MockObjectInstance{
+		name:      "test",
+		hierarchy: []string{"TestClass"},
+	}
 	obj := NewObjectValue(instance, "TestClass")
 
 	assert.Equal(t, "TestClass", obj.Type())
@@ -28,7 +31,10 @@ func TestObjectValueWithNilInstance(t *testing.T) {
 }
 
 func TestObjectValueCasting(t *testing.T) {
-	instance := &MockObjectInstance{name: "test"}
+	instance := &MockObjectInstance{
+		name:      "test",
+		hierarchy: []string{"TestClass", "TestParent"},
+	}
 	obj := NewObjectValue(instance, "TestClass")
 
 	tests := []struct {
@@ -38,7 +44,7 @@ func TestObjectValueCasting(t *testing.T) {
 		shouldErr  bool
 	}{
 		{"Same class", "TestClass", obj, false},
-		{"Generic object", "OBJECT", obj, false},
+		{"Parent class", "TestParent", obj, false},
 		{"Empty type", "", obj, false},
 		{"To string", "STRIN", StringValue("<TestClass object>"), false},
 		{"To bool", "BOOL", YEZ, false},
@@ -59,8 +65,14 @@ func TestObjectValueCasting(t *testing.T) {
 }
 
 func TestObjectValueEquality(t *testing.T) {
-	instance1 := &MockObjectInstance{name: "test1"}
-	instance2 := &MockObjectInstance{name: "test2"}
+	instance1 := &MockObjectInstance{
+		name:      "test1",
+		hierarchy: []string{"TestClass"},
+	}
+	instance2 := &MockObjectInstance{
+		name:      "test2",
+		hierarchy: []string{"TestClass"},
+	}
 
 	obj1a := NewObjectValue(instance1, "TestClass")
 	obj1b := NewObjectValue(instance1, "TestClass") // Same instance
@@ -100,7 +112,12 @@ func TestNewObjectValue(t *testing.T) {
 
 // MockObjectInstance is a simple mock for testing
 type MockObjectInstance struct {
-	name string
+	name      string
+	hierarchy []string
+}
+
+func (m *MockObjectInstance) GetHierarchy() []string {
+	return m.hierarchy
 }
 
 func (m *MockObjectInstance) GetName() string {
