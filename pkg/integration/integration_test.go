@@ -2,6 +2,7 @@ package integration
 
 import (
 	"bytes"
+	"context"
 	"strings"
 	"testing"
 
@@ -30,7 +31,8 @@ func executeProgram(t *testing.T, program string) error {
 	)
 
 	// Execute the program
-	return interp.Interpret(ast)
+	_, err := interp.Interpret(context.Background(), ast)
+	return err
 }
 
 // executeProgramWithOutput parses and executes a program, capturing output

@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -20,6 +21,7 @@ type Interpreter struct {
 	moduleResolver    *modules.ModuleResolver      // For resolving and caching module imports
 	stdlibInitializer map[string]StdlibInitializer // For loading standard library modules
 	currentFile       string                       // For tracking current file being processed (for relative imports)
+	ctx               context.Context              // For cancellation and timeout support
 }
 
 type StdlibInitializer func(*environment.Environment, ...string) error
@@ -35,6 +37,7 @@ func NewInterpreter(stdlib map[string]StdlibInitializer, globals ...StdlibInitia
 		environment:       runtime.GlobalEnv,
 		moduleResolver:    modules.NewModuleResolver(workingDir),
 		stdlibInitializer: stdlib,
+		ctx:               context.Background(),
 	}
 
 	// Register global types
@@ -50,10 +53,23 @@ func (i *Interpreter) SetCurrentFile(filename string) {
 	i.currentFile = filename
 }
 
-// Interpret executes the given AST
-func (i *Interpreter) Interpret(program *ast.ProgramNode) error {
-	_, err := program.Accept(i)
-	return err
+// Interpret executes the given AST with context support for cancellation
+func (i *Interpreter) Interpret(ctx context.Context, program *ast.ProgramNode) (types.Value, error) {
+	oldCtx := i.ctx
+	i.ctx = ctx
+	defer func() { i.ctx = oldCtx }()
+
+	return program.Accept(i)
+}
+
+// checkContext checks if the context has been cancelled and returns an error if so
+func (i *Interpreter) checkContext() error {
+	select {
+	case <-i.ctx.Done():
+		return i.ctx.Err()
+	default:
+		return nil
+	}
 }
 
 // VisitProgram executes the entire program
@@ -484,6 +500,11 @@ func (i *Interpreter) VisitIfStatement(node *ast.IfStatementNode) (types.Value, 
 // VisitWhileStatement handles while loops
 func (i *Interpreter) VisitWhileStatement(node *ast.WhileStatementNode) (types.Value, error) {
 	for {
+		// Check for context cancellation
+		if err := i.checkContext(); err != nil {
+			return types.NOTHIN, err
+		}
+
 		condition, err := node.Condition.Accept(i)
 		if err != nil {
 			return types.NOTHIN, err
@@ -938,4 +959,14 @@ func (i *Interpreter) VisitThrowStatement(node *ast.ThrowStatementNode) (types.V
 // GetRuntime returns the runtime environment
 func (i *Interpreter) GetRuntime() *environment.RuntimeEnvironment {
 	return i.runtime
+}
+
+// GetEnvironment returns the current environment
+func (i *Interpreter) GetEnvironment() *environment.Environment {
+	return i.environment
+}
+
+// CallFunction calls a function with the provided arguments (for API use)
+func (i *Interpreter) CallFunction(function *environment.Function, args []types.Value) (types.Value, error) {
+	return i.callFunction(function, args)
 }

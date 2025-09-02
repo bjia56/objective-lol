@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"context"
 	"testing"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
@@ -224,7 +225,7 @@ KTHXBAI`
 	// We expect parsing errors since this is complex syntax
 	if len(p.Errors()) == 0 {
 		interp := NewInterpreter(nil)
-		err := interp.Interpret(program)
+		_, err := interp.Interpret(context.Background(), program)
 
 		// Log any interpretation errors for debugging
 		if err != nil {

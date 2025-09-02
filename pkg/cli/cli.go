@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -69,7 +70,7 @@ func executeFile(interp *interpreter.Interpreter, filename string) error {
 	interp.SetCurrentFile(absFilename)
 
 	// Execute the program
-	if err := interp.Interpret(program); err != nil {
+	if _, err := interp.Interpret(context.Background(), program); err != nil {
 		return err
 	}
 
