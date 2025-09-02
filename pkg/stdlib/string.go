@@ -38,10 +38,6 @@ func getStringFunctions() map[string]*environment.Function {
 					{Name: "STR2", Type: "STRIN"},
 				},
 				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-					if len(args) != 2 {
-						return types.NOTHIN, fmt.Errorf("CONCAT expects 2 arguments, got %d", len(args))
-					}
-
 					str1, ok1 := args[0].(types.StringValue)
 					str2, ok2 := args[1].(types.StringValue)
 
