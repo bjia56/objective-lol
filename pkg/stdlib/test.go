@@ -20,7 +20,7 @@ func getTestFunctions() map[string]*environment.Function {
 			"ASSERT": {
 				Name:       "ASSERT",
 				Parameters: []environment.Parameter{{Name: "CONDITION", Type: ""}}, // Accept any type
-				NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					condition := args[0]
 
 					// Check if condition is truthy

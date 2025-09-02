@@ -23,8 +23,8 @@ func getTimeClasses() map[string]*environment.Class {
 					"DATE": {
 						Name:       "DATE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							currentObject.NativeData = time.Now()
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							this.NativeData = time.Now()
 							return types.NOTHIN, nil
 						},
 					},
@@ -32,8 +32,8 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "YEAR",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if date, ok := currentObject.NativeData.(time.Time); ok {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							if date, ok := this.NativeData.(time.Time); ok {
 								return types.IntegerValue(date.Year()), nil
 							}
 							return types.NOTHIN, fmt.Errorf("YEAR: invalid context")
@@ -43,8 +43,8 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "MONTH",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if date, ok := currentObject.NativeData.(time.Time); ok {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							if date, ok := this.NativeData.(time.Time); ok {
 								return types.IntegerValue(date.Month()), nil
 							}
 							return types.NOTHIN, fmt.Errorf("MONTH: invalid context")
@@ -54,8 +54,8 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "DAY",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if date, ok := currentObject.NativeData.(time.Time); ok {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							if date, ok := this.NativeData.(time.Time); ok {
 								return types.IntegerValue(date.Day()), nil
 							}
 							return types.NOTHIN, fmt.Errorf("DAY: invalid context")
@@ -65,8 +65,8 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "HOUR",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if date, ok := currentObject.NativeData.(time.Time); ok {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							if date, ok := this.NativeData.(time.Time); ok {
 								return types.IntegerValue(date.Hour()), nil
 							}
 							return types.NOTHIN, fmt.Errorf("HOUR: invalid context")
@@ -76,8 +76,8 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "MINUTE",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if date, ok := currentObject.NativeData.(time.Time); ok {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							if date, ok := this.NativeData.(time.Time); ok {
 								return types.IntegerValue(date.Minute()), nil
 							}
 							return types.NOTHIN, fmt.Errorf("MINUTE: invalid context")
@@ -87,8 +87,8 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "SECOND",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if date, ok := currentObject.NativeData.(time.Time); ok {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							if date, ok := this.NativeData.(time.Time); ok {
 								return types.IntegerValue(date.Second()), nil
 							}
 							return types.NOTHIN, fmt.Errorf("SECOND: invalid context")
@@ -98,8 +98,8 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "MILLISECOND",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if date, ok := currentObject.NativeData.(time.Time); ok {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							if date, ok := this.NativeData.(time.Time); ok {
 								return types.IntegerValue(date.Nanosecond() / 1e6), nil
 							}
 							return types.NOTHIN, fmt.Errorf("MILLISECOND: invalid context")
@@ -109,8 +109,8 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "NANOSECOND",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if date, ok := currentObject.NativeData.(time.Time); ok {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+							if date, ok := this.NativeData.(time.Time); ok {
 								return types.IntegerValue(date.Nanosecond()), nil
 							}
 							return types.NOTHIN, fmt.Errorf("NANOSECOND: invalid context")
@@ -122,10 +122,10 @@ func getTimeClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "layout", Type: "STRIN"},
 						},
-						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							layout := args[0]
 							if stringVal, ok := layout.(types.StringValue); ok {
-								if date, ok := currentObject.NativeData.(time.Time); ok {
+								if date, ok := this.NativeData.(time.Time); ok {
 									return types.StringValue(date.Format(string(stringVal))), nil
 								}
 							}
@@ -152,7 +152,7 @@ func getTimeFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "seconds", Type: "INTEGR"},
 				},
-				NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					seconds := args[0]
 
 					if secondsVal, ok := seconds.(types.IntegerValue); ok {
