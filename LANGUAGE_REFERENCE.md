@@ -49,7 +49,7 @@ git clone https://github.com/bjia56/objective-lol.git
 cd objective-lol
 
 # Build the interpreter
-go build -o olol cmd/olol/main.go
+go build -o olol main.go
 
 # Run a program
 ./olol program.olol
@@ -1053,6 +1053,8 @@ KTHXBAI
 - **MATH**: Mathematical functions (`ABS`, `MAX`, `MIN`, `SQRT`, `POW`, `RANDOM`, `RANDINT`, `SIN`, `COS`)
 - **TIME**: Time classes and functions (`DATE` class, `SLEEP` function)
 - **TEST**: Testing and assertion functions (`ASSERT`)
+- **STRING**: String utility functions (`LEN`, `CONCAT`)
+- **IO**: I/O classes for buffered operations (`READER`, `WRITER`, `BUFFERED_READER`, `BUFFERED_WRITER`)
 
 #### Selective Import Examples
 
@@ -1074,6 +1076,14 @@ I CAN HAS DATE AN SLEEP FROM TIME?           BTW Both DATE class and SLEEP funct
 
 BTW TEST selective imports
 I CAN HAS ASSERT FROM TEST?                  BTW Only ASSERT function
+
+BTW STRING selective imports
+I CAN HAS LEN FROM STRING?                   BTW Only LEN function
+I CAN HAS LEN AN CONCAT FROM STRING?         BTW LEN and CONCAT functions
+
+BTW IO selective imports
+I CAN HAS READER FROM IO?                    BTW Only READER class
+I CAN HAS BUFFERED_READER AN BUFFERED_WRITER FROM IO?  BTW Buffered I/O classes
 ```
 
 ### I/O Functions (STDIO)
@@ -1238,6 +1248,212 @@ I HAS A VARIABLE TIME2 TEH DATE ITZ NEW DATE
 BTW These will show different seconds
 SAYZ WIT TIME1 DO SECOND
 SAYZ WIT TIME2 DO SECOND
+```
+
+### String Functions (STRING)
+
+The STRING module provides utility functions for string manipulation.
+
+#### LEN - Get string length
+
+```lol
+I CAN HAS STRING?
+
+I HAS A VARIABLE MESSAGE TEH STRIN ITZ "Hello, World!"
+I HAS A VARIABLE LENGTH TEH INTEGR ITZ LEN WIT MESSAGE
+SAYZ WIT LENGTH  BTW Output: 13
+```
+
+#### CONCAT - Concatenate strings
+
+```lol
+I CAN HAS STRING?
+
+I HAS A VARIABLE FIRST TEH STRIN ITZ "Hello"
+I HAS A VARIABLE SECOND TEH STRIN ITZ "World"
+I HAS A VARIABLE RESULT TEH STRIN ITZ CONCAT WIT FIRST AN WIT SECOND
+SAYZ WIT RESULT  BTW Output: "HelloWorld"
+
+BTW With separator
+I HAS A VARIABLE GREETING TEH STRIN ITZ CONCAT WIT FIRST AN WIT ", World!"
+SAYZ WIT GREETING  BTW Output: "Hello, World!"
+```
+
+### I/O Classes (IO)
+
+The IO module provides advanced I/O functionality through a class hierarchy that supports buffered operations for improved performance.
+
+#### Base Classes
+
+##### READER Class
+
+Base class for reading operations. Provides the interface that all readers must implement:
+
+```lol
+BTW READER is typically extended by custom reader implementations
+HAI ME TEH CLAS CustomReader KITTEH OF READER
+    EVRYONE
+    DIS TEH VARIABLE data TEH STRIN ITZ "Sample data to read"
+    
+    DIS TEH FUNCSHUN READ TEH STRIN WIT SIZE TEH INTEGR
+        GIVEZ data  BTW Return the data
+    KTHX
+    
+    DIS TEH FUNCSHUN CLOSE
+        BTW Cleanup operations
+    KTHX
+KTHXBAI
+```
+
+##### WRITER Class
+
+Base class for writing operations:
+
+```lol
+BTW WRITER is typically extended by custom writer implementations  
+HAI ME TEH CLAS CustomWriter KITTEH OF WRITER
+    EVRYONE
+    DIS TEH VARIABLE output TEH STRIN ITZ ""
+    
+    DIS TEH FUNCSHUN WRITE TEH INTEGR WIT DATA TEH STRIN
+        output ITZ CONCAT WIT output AN WIT DATA
+        GIVEZ LEN WIT DATA  BTW Return bytes written
+    KTHX
+    
+    DIS TEH FUNCSHUN CLOSE
+        BTW Cleanup operations
+    KTHX
+KTHXBAI
+```
+
+#### Buffered I/O Classes
+
+##### BUFFERED_READER Class
+
+Provides buffered reading capabilities that improve performance by reducing the number of underlying read operations:
+
+```lol
+I CAN HAS IO?
+
+BTW Create a custom reader first
+I HAS A VARIABLE reader TEH CustomReader ITZ NEW CustomReader
+
+BTW Wrap it in a buffered reader
+I HAS A VARIABLE buffered TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT reader
+
+BTW Configure buffer size (default is 1024)
+buffered DO SET_SIZ WIT 2048
+SAY WIT "Buffer size: "
+SAYZ WIT buffered SIZ
+
+BTW Read data in chunks - buffering reduces underlying read calls
+I HAS A VARIABLE CHUNK1 TEH STRIN ITZ buffered DO READ WIT 10
+I HAS A VARIABLE CHUNK2 TEH STRIN ITZ buffered DO READ WIT 15
+
+SAYZ WIT CHUNK1
+SAYZ WIT CHUNK2
+
+BTW Close when done
+buffered DO CLOSE
+```
+
+**BUFFERED_READER Methods:**
+- `NEW BUFFERED_READER WIT reader` - Constructor taking a READER object
+- `SET_SIZ WIT size` - Set buffer size (clears current buffer)
+- `READ WIT size` - Read up to size characters from buffer
+- `CLOSE` - Close the buffered reader and underlying reader
+
+**BUFFERED_READER Variables:**
+- `SIZ` - Current buffer size (default: 1024, modifiable)
+
+##### BUFFERED_WRITER Class
+
+Provides buffered writing capabilities that improve performance by batching write operations:
+
+```lol
+I CAN HAS IO?
+
+BTW Create a custom writer first
+I HAS A VARIABLE writer TEH CustomWriter ITZ NEW CustomWriter
+
+BTW Wrap it in a buffered writer
+I HAS A VARIABLE buffered TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT writer
+
+BTW Configure buffer size
+buffered DO SET_SIZ WIT 512
+SAY WIT "Buffer size: "
+SAYZ WIT buffered SIZ
+
+BTW Write data - buffered until buffer is full or explicitly flushed
+I HAS A VARIABLE BYTES1 TEH INTEGR ITZ buffered DO WRITE WIT "Hello, "
+I HAS A VARIABLE BYTES2 TEH INTEGR ITZ buffered DO WRITE WIT "World!"
+
+SAY WIT "Bytes written: "
+SAYZ WIT BYTES1 MOAR BYTES2
+
+BTW Force flush buffer contents
+buffered DO FLUSH
+
+BTW Close automatically flushes
+buffered DO CLOSE
+```
+
+**BUFFERED_WRITER Methods:**
+- `NEW BUFFERED_WRITER WIT writer` - Constructor taking a WRITER object
+- `SET_SIZ WIT size` - Set buffer size (flushes current buffer first)
+- `WRITE WIT data` - Write data to buffer, returns bytes written
+- `FLUSH` - Force write buffered data to underlying writer
+- `CLOSE` - Flush buffer and close underlying writer
+
+**BUFFERED_WRITER Variables:**
+- `SIZ` - Current buffer size (default: 1024, modifiable)
+
+#### Performance Benefits
+
+**Buffered Reading:**
+- Reduces system calls by reading larger chunks internally
+- Provides smaller chunks to application as requested
+- Automatically manages buffer refilling
+
+**Buffered Writing:**
+- Accumulates small writes in memory buffer
+- Writes to underlying writer only when buffer is full
+- Improves performance for frequent small write operations
+
+#### Usage Patterns
+
+```lol
+BTW Efficient file-like operations
+I CAN HAS IO?
+
+HAI ME TEH FUNCSHUN PROCESS_DATA
+    I HAS A VARIABLE source TEH MyFileReader ITZ NEW MyFileReader WIT "data.txt"
+    I HAS A VARIABLE dest TEH MyFileWriter ITZ NEW MyFileWriter WIT "output.txt"
+    
+    I HAS A VARIABLE buffered_in TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT source
+    I HAS A VARIABLE buffered_out TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT dest
+    
+    BTW Configure for optimal performance
+    buffered_in DO SET_SIZ WIT 4096   BTW Large read buffer
+    buffered_out DO SET_SIZ WIT 1024  BTW Smaller write buffer
+    
+    BTW Process data in chunks
+    I HAS A VARIABLE chunk TEH STRIN
+    WHILE YEZ  BTW Continue until no more data
+        chunk ITZ buffered_in DO READ WIT 1024
+        IZ LEN WIT chunk SAEM AS 0?  BTW Check if empty
+            BREAK  BTW Exit loop
+        KTHX
+        
+        BTW Process chunk and write result
+        I HAS A VARIABLE processed TEH STRIN ITZ PROCESS_CHUNK WIT chunk
+        buffered_out DO WRITE WIT processed
+    KTHX
+    
+    BTW Cleanup
+    buffered_in DO CLOSE
+    buffered_out DO CLOSE
+KTHXBAI
 ```
 
 ### Testing Functions (TEST)
@@ -1707,6 +1923,33 @@ KTHXBAI
 
 #### Test Functions
 - `ASSERT WIT <condition>` - Throw exception if condition is falsy → NOTHIN
+
+#### String Functions
+- `LEN WIT <string>` - Get string length → INTEGR
+- `CONCAT WIT <str1> AN WIT <str2>` - Concatenate strings → STRIN
+
+#### I/O Classes
+
+**Base Classes:**
+- `READER` - Base reader class with `READ` and `CLOSE` methods
+- `WRITER` - Base writer class with `WRITE` and `CLOSE` methods
+
+**Buffered I/O Classes:**
+- `NEW BUFFERED_READER WIT <reader>` - Create buffered reader wrapping a READER
+- `NEW BUFFERED_WRITER WIT <writer>` - Create buffered writer wrapping a WRITER
+
+**BUFFERED_READER Methods:**
+- `<buffered_reader> DO READ WIT <size>` - Read up to size characters → STRIN
+- `<buffered_reader> DO SET_SIZ WIT <size>` - Set buffer size → NOTHIN
+- `<buffered_reader> DO CLOSE` - Close reader → NOTHIN
+- `<buffered_reader> SIZ` - Get current buffer size → INTEGR
+
+**BUFFERED_WRITER Methods:**
+- `<buffered_writer> DO WRITE WIT <data>` - Write data to buffer → INTEGR
+- `<buffered_writer> DO FLUSH` - Flush buffer to underlying writer → NOTHIN
+- `<buffered_writer> DO SET_SIZ WIT <size>` - Set buffer size → NOTHIN
+- `<buffered_writer> DO CLOSE` - Flush and close writer → NOTHIN
+- `<buffered_writer> SIZ` - Get current buffer size → INTEGR
 
 #### Array Functions
 

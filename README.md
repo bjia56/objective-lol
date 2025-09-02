@@ -4,11 +4,13 @@ A programming language interpreter inspired by LOLCODE, implemented in Go. Objec
 
 ## Features
 
-- **Strong Type System**: Five built-in types with automatic type conversion and explicit casting
-- **Object-Oriented Programming**: Classes with inheritance, visibility modifiers, and method overriding
-- **Functions**: Support for parameters, return values, and recursion
+- **Strong Type System**: Six built-in types including arrays with automatic type conversion and explicit casting
+- **Object-Oriented Programming**: Classes with inheritance, constructors, visibility modifiers, and method overriding
+- **Functions**: Support for parameters, return values, and recursion with lexical scoping
 - **Control Flow**: Conditional statements and loops with intuitive syntax
-- **Standard Library**: I/O operations, mathematical functions, and time utilities
+- **Module System**: Import system supporting both built-in and file modules with selective imports
+- **Exception Handling**: Comprehensive try-catch-finally blocks with built-in and custom exceptions
+- **Standard Library**: I/O operations, mathematical functions, time utilities, string functions, and buffered I/O
 - **Case-Insensitive**: Keywords automatically converted to uppercase for consistency
 
 ## Quick Start
@@ -18,7 +20,7 @@ A programming language interpreter inspired by LOLCODE, implemented in Go. Objec
 ```bash
 git clone https://github.com/bjia56/objective-lol.git
 cd objective-lol
-go build -o olol cmd/olol/main.go
+go build -o olol main.go
 ```
 
 ### Hello World
@@ -47,6 +49,7 @@ Run it:
 - **DUBBLE**: 64-bit floating point numbers (`3.14159`, `-2.5`)
 - **STRIN**: Strings with escape sequences (`"Hello \"World\"!"`)
 - **BOOL**: Boolean values (`YEZ` for true, `NO` for false)
+- **BUKKIT**: Dynamic arrays with rich manipulation methods
 - **NOTHIN**: Null/void type
 
 ### Variables
@@ -112,7 +115,7 @@ KTHX
 
 ```bash
 # Build the interpreter
-go build -o olol cmd/olol/main.go
+go build -o olol main.go
 
 # Format Go code
 go fmt ./...
@@ -131,7 +134,7 @@ go build ./...
 ./run_tests.sh -v
 
 # Run individual test file
-./olol tests/01_basic_syntax.olol
+./olol pkg/integration/tests/01_basic_syntax.olol
 ```
 
 The test suite includes comprehensive test files covering:
@@ -139,8 +142,12 @@ The test suite includes comprehensive test files covering:
 - Basic syntax and variables
 - Arithmetic and comparison operations
 - Control flow and functions
-- Object-oriented features
-- Standard library functions
+- Object-oriented features with constructors
+- Standard library functions across all modules
+- Module system with file imports and selective imports
+- Exception handling with try-catch-finally blocks
+- Array operations with BUKKIT
+- Buffered I/O operations
 - Error handling and edge cases
 
 ## Documentation
@@ -174,21 +181,136 @@ The interpreter follows a traditional architecture:
 | Logical AND | `AN` | `YEZ AN NO` → NO |
 | Logical OR | `OR` | `YEZ OR NO` → YEZ |
 
-### Standard Library
+### Module System and Standard Library
 
-**I/O Functions:**
+Objective-LOL features a comprehensive module system supporting both built-in standard library modules and custom file modules.
+
+#### Import Syntax
+
+```lol
+BTW Import entire modules
+I CAN HAS STDIO?    BTW All I/O functions
+I CAN HAS MATH?     BTW All mathematical functions
+I CAN HAS TIME?     BTW Time functions and DATE class
+I CAN HAS STRING?   BTW String utility functions
+I CAN HAS IO?       BTW Advanced I/O classes
+I CAN HAS TEST?     BTW Testing functions
+
+BTW Selective imports
+I CAN HAS SAY AN SAYZ FROM STDIO?
+I CAN HAS ABS AN MAX FROM MATH?
+I CAN HAS DATE AN SLEEP FROM TIME?
+
+BTW File module imports
+I CAN HAS "my_module"?              BTW Full import
+I CAN HAS FUNC1 AN FUNC2 FROM "utils"?  BTW Selective import
+```
+
+#### Available Modules
+
+**STDIO Module:**
 - `SAY WIT <value>` - Print without newline
 - `SAYZ WIT <value>` - Print with newline
 - `GIMME` - Read user input
 
-**Math Functions:**
+**MATH Module:**
 - `ABS`, `MAX`, `MIN`, `SQRT`, `POW`
 - `SIN`, `COS` (trigonometric functions)
 - `RANDOM`, `RANDINT` (random number generation)
 
-**Time Functions:**
+**TIME Module:**
 - `DATE` class with methods: `YEAR`, `MONTH`, `DAY`, `HOUR`, `MINUTE`, `SECOND`, `MILLISECOND`, `NANOSECOND`, `FORMAT`
 - `SLEEP` (global function)
+
+**STRING Module:**
+- `LEN WIT <string>` - Get string length
+- `CONCAT WIT <str1> AN WIT <str2>` - Concatenate strings
+
+**IO Module:**
+- `READER`, `WRITER` - Base I/O classes
+- `BUFFERED_READER`, `BUFFERED_WRITER` - Buffered I/O for performance
+
+**TEST Module:**
+- `ASSERT WIT <condition>` - Assertion for testing
+
+**Built-in BUKKIT Arrays:**
+- Dynamic arrays with methods like `PUSH`, `POP`, `AT`, `SET`, `SORT`, `REVERSE`, `JOIN`, `FIND`, `CONTAINS`
+
+### Exception Handling
+
+Objective-LOL supports comprehensive exception handling with try-catch-finally blocks:
+
+```lol
+MAYB
+    I HAS A VARIABLE RESULT TEH DUBBLE ITZ 10.0 DIVIDEZ 0.0  BTW Throws exception
+    SAYZ WIT "This won't print"
+OOPSIE ERROR_MSG
+    SAYZ WIT "Caught exception: "
+    SAYZ WIT ERROR_MSG  BTW "Division by zero"
+ALWAYZ
+    SAYZ WIT "This always executes"
+KTHX
+
+BTW Throwing custom exceptions
+HAI ME TEH FUNCSHUN VALIDATE_AGE WIT AGE TEH INTEGR
+    IZ AGE SMALLR THAN 0?
+        OOPS "Age cannot be negative!"
+    KTHX
+    GIVEZ AGE
+KTHXBAI
+```
+
+**Built-in exceptions are automatically thrown for:**
+- Division by zero
+- Array bounds violations
+- Type casting errors
+- Undefined variables/functions
+
+### Constructor Methods
+
+Classes can have constructor methods with the same name as the class:
+
+```lol
+HAI ME TEH CLAS POINT
+    EVRYONE
+    DIS TEH VARIABLE X TEH INTEGR ITZ 0
+    DIS TEH VARIABLE Y TEH INTEGR ITZ 0
+    
+    BTW Constructor - same name as class
+    DIS TEH FUNCSHUN POINT WIT X_VAL TEH INTEGR AN WIT Y_VAL TEH INTEGR
+        X ITZ X_VAL
+        Y ITZ Y_VAL
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    BTW Create with constructor arguments
+    I HAS A VARIABLE ORIGIN TEH POINT ITZ NEW POINT WIT 0 AN WIT 0
+    I HAS A VARIABLE CORNER TEH POINT ITZ NEW POINT WIT 10 AN WIT 5
+KTHXBAI
+```
+
+### Arrays (BUKKIT)
+
+Dynamic arrays with rich functionality:
+
+```lol
+I HAS A VARIABLE NUMS TEH BUKKIT ITZ NEW BUKKIT
+NUMS DO PUSH WIT 10
+NUMS DO PUSH WIT 20
+NUMS DO PUSH WIT 30
+
+SAYZ WIT NUMS SIZ                    BTW 3
+SAYZ WIT NUMS DO AT WIT 1           BTW 20
+NUMS DO SET WIT 1 AN WIT 99         BTW Set element
+I HAS A VARIABLE CSV TEH STRIN ITZ NUMS DO JOIN WIT ", "  BTW "10, 99, 30"
+
+BTW Rich array operations
+NUMS DO SORT                        BTW Sort in-place
+NUMS DO REVERSE                     BTW Reverse in-place
+SAYZ WIT NUMS DO FIND WIT 99        BTW Find index
+SAYZ WIT NUMS DO CONTAINS WIT 10    BTW Check existence
+```
 
 ### Type Casting
 
@@ -202,7 +324,7 @@ I HAS A VARIABLE TRUNCATED TEH INTEGR ITZ PI AS INTEGR  BTW 3
 
 ## Examples
 
-See the `tests/` directory for comprehensive examples ranging from basic syntax to complete programs with classes and inheritance.
+See the `pkg/integration/tests/` directory for comprehensive examples ranging from basic syntax to complete programs with classes, inheritance, module imports, and exception handling.
 
 ## Requirements
 

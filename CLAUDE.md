@@ -48,6 +48,7 @@ go build ./...
 The codebase is organized into several key packages:
 
 ### Core Components
+- **main.go**: Root entry point (canonical build: `go build -o olol main.go`)
 - **cmd/olol/main.go**: Entry point that creates interpreter, registers stdlib, and executes .olol files
 - **pkg/parser**: Lexer and recursive descent parser that converts source code to AST
 - **pkg/ast**: AST node definitions using visitor pattern for tree traversal
@@ -62,12 +63,15 @@ Located in `pkg/stdlib/`:
 - **math.go**: Mathematical functions (ABS, MAX, MIN, SQRT, POW, SIN, COS, RANDOM)
 - **time.go**: Time-related functions using DATE class (DATE class with YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, MILLISECOND, NANOSECOND, FORMAT methods) and global SLEEP function
 - **test.go**: Testing and assertion functions (ASSERT)
+- **arrays.go**: BUKKIT array type with methods (PUSH, POP, AT, SET, SIZ, SORT, REVERSE, JOIN, FIND, CONTAINS)
+- **string.go**: String utility functions (LEN, CONCAT)
+- **io.go**: Advanced I/O classes (READER, WRITER, BUFFERED_READER, BUFFERED_WRITER)
 
 ### Language Features
 The interpreter supports:
-- Variables with type declarations (INTEGR, DUBBLE, STRIN, BOOL, NOTHIN)
+- Variables with type declarations (INTEGR, DUBBLE, STRIN, BOOL, NOTHIN, BUKKIT)
 - Functions with parameters and return values
-- Classes with inheritance (KITTEH OF), visibility modifiers (EVRYONE/MAHSELF)
+- Classes with inheritance (KITTEH OF), visibility modifiers (EVRYONE/MAHSELF), constructor methods
 - **Module system with file imports**: Cross-platform POSIX path resolution, caching, circular import detection
 - **Exception handling system**: MAYB/OOPS/OOPSIE/ALWAYZ try-catch-finally blocks with string-based exceptions
 - Control flow (IZ/NOPE conditionals, WHILE loops)
