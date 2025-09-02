@@ -38,7 +38,7 @@ var stdioFunctions = map[string]*environment.Function{
 	"SAY": {
 		Name:       "SAY",
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			fmt.Fprint(StdoutWriter, args[0].String())
 			return types.NOTHIN, nil
 		},
@@ -46,7 +46,7 @@ var stdioFunctions = map[string]*environment.Function{
 	"SAYZ": {
 		Name:       "SAYZ",
 		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			fmt.Fprintln(StdoutWriter, args[0].String())
 			return types.NOTHIN, nil
 		},
@@ -55,7 +55,7 @@ var stdioFunctions = map[string]*environment.Function{
 		Name:       "GIMME",
 		ReturnType: "STRIN",
 		Parameters: []environment.Parameter{},
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			reader := bufio.NewReader(StdinReader)
 			line, err := reader.ReadString('\n')
 			if err != nil {

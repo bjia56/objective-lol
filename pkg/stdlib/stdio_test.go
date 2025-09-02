@@ -68,7 +68,7 @@ func TestStdioSAY(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			args := []types.Value{test.input}
-			result, err := sayFunc.NativeImpl(nil, args)
+			result, err := sayFunc.NativeImpl(nil, nil, args)
 			require.NoError(t, err)
 			assert.Equal(t, types.NOTHIN, result)
 		})
@@ -93,7 +93,7 @@ func TestStdioSAYZ(t *testing.T) {
 	defer ResetToStandardStreams() // Clean up
 
 	args := []types.Value{types.StringValue("Hello World")}
-	result, err := sayzFunc.NativeImpl(nil, args)
+	result, err := sayzFunc.NativeImpl(nil, nil, args)
 	require.NoError(t, err)
 	assert.Equal(t, types.NOTHIN, result)
 
@@ -144,7 +144,7 @@ func TestStdioGIMME(t *testing.T) {
 			defer ResetToStandardStreams() // Clean up
 
 			args := []types.Value{}
-			result, err := gimmeFunc.NativeImpl(nil, args)
+			result, err := gimmeFunc.NativeImpl(nil, nil, args)
 			require.NoError(t, err)
 
 			stringResult, ok := result.(types.StringValue)

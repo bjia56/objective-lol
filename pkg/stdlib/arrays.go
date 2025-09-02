@@ -26,7 +26,7 @@ var arrayClasses = map[string]*environment.Class{
 			"BUKKIT": {
 				Name:       "BUKKIT",
 				Parameters: []environment.Parameter{}, // Empty constructor - no arguments
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					// Create empty slice and store in NativeData
 					slice := make([]types.Value, 0)
 					currentObject.NativeData = slice
@@ -50,7 +50,7 @@ var arrayClasses = map[string]*environment.Class{
 			"AT": {
 				Name:       "AT",
 				Parameters: []environment.Parameter{{Name: "INDEX", Type: "INTEGR"}},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 1 {
 						return nil, fmt.Errorf("AT expects 1 argument, got %d", len(args))
 					}
@@ -71,7 +71,7 @@ var arrayClasses = map[string]*environment.Class{
 			"SET": {
 				Name:       "SET",
 				Parameters: []environment.Parameter{{Name: "INDEX", Type: "INTEGR"}, {Name: "VALUE", Type: ""}},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 2 {
 						return nil, fmt.Errorf("SET expects 2 arguments, got %d", len(args))
 					}
@@ -93,7 +93,7 @@ var arrayClasses = map[string]*environment.Class{
 			"PUSH": {
 				Name:       "PUSH",
 				Parameters: []environment.Parameter{{Name: "ELEMENT", Type: ""}},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 1 {
 						return nil, fmt.Errorf("PUSH expects 1 argument, got %d", len(args))
 					}
@@ -109,7 +109,7 @@ var arrayClasses = map[string]*environment.Class{
 			"POP": {
 				Name:       "POP",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 0 {
 						return nil, fmt.Errorf("POP expects no arguments, got %d", len(args))
 					}
@@ -130,7 +130,7 @@ var arrayClasses = map[string]*environment.Class{
 			"SHIFT": {
 				Name:       "SHIFT",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 0 {
 						return nil, fmt.Errorf("SHIFT expects no arguments, got %d", len(args))
 					}
@@ -150,7 +150,7 @@ var arrayClasses = map[string]*environment.Class{
 			"UNSHIFT": {
 				Name:       "UNSHIFT",
 				Parameters: []environment.Parameter{{Name: "ELEMENT", Type: ""}},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 1 {
 						return nil, fmt.Errorf("UNSHIFT expects 1 argument, got %d", len(args))
 					}
@@ -166,7 +166,7 @@ var arrayClasses = map[string]*environment.Class{
 			"CLEAR": {
 				Name:       "CLEAR",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 0 {
 						return nil, fmt.Errorf("CLEAR expects no arguments, got %d", len(args))
 					}
@@ -179,7 +179,7 @@ var arrayClasses = map[string]*environment.Class{
 			"REVERSE": {
 				Name:       "REVERSE",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 0 {
 						return nil, fmt.Errorf("REVERSE expects no arguments, got %d", len(args))
 					}
@@ -196,7 +196,7 @@ var arrayClasses = map[string]*environment.Class{
 			"SORT": {
 				Name:       "SORT",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 0 {
 						return nil, fmt.Errorf("SORT expects no arguments, got %d", len(args))
 					}
@@ -235,7 +235,7 @@ var arrayClasses = map[string]*environment.Class{
 			"JOIN": {
 				Name:       "JOIN",
 				Parameters: []environment.Parameter{{Name: "SEPARATOR", Type: "STRIN"}},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 1 {
 						return nil, fmt.Errorf("JOIN expects 1 argument, got %d", len(args))
 					}
@@ -261,7 +261,7 @@ var arrayClasses = map[string]*environment.Class{
 			"SLICE": {
 				Name:       "SLICE",
 				Parameters: []environment.Parameter{{Name: "START", Type: "INTEGR"}, {Name: "END", Type: "INTEGR"}},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 2 {
 						return nil, fmt.Errorf("SLICE expects 2 arguments, got %d", len(args))
 					}
@@ -314,7 +314,7 @@ var arrayClasses = map[string]*environment.Class{
 			"FIND": {
 				Name:       "FIND",
 				Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 1 {
 						return nil, fmt.Errorf("FIND expects 1 argument, got %d", len(args))
 					}
@@ -333,7 +333,7 @@ var arrayClasses = map[string]*environment.Class{
 			"CONTAINS": {
 				Name:       "CONTAINS",
 				Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
-				NativeImpl: func(currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 					if len(args) != 1 {
 						return nil, fmt.Errorf("CONTAINS expects 1 argument, got %d", len(args))
 					}

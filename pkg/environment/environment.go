@@ -31,7 +31,7 @@ type Function struct {
 	Body        interface{} // Will hold AST nodes
 	IsShared    *bool       // nil for global functions, true/false for class methods
 	ParentClass string
-	NativeImpl  func(this *ObjectInstance, args []types.Value) (types.Value, error)
+	NativeImpl  func(ctx interface{}, this *ObjectInstance, args []types.Value) (types.Value, error)
 }
 
 // Parameter represents a function parameter

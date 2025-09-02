@@ -95,7 +95,7 @@ func TestASSERTFunction(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			args := []types.Value{test.condition}
-			result, err := assertFunc.NativeImpl(nil, args)
+			result, err := assertFunc.NativeImpl(nil, nil, args)
 
 			if test.shouldErr {
 				assert.Error(t, err, "ASSERT should fail for falsy condition")

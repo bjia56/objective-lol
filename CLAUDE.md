@@ -10,7 +10,7 @@ Objective-LOL is a programming language interpreter written in Go that implement
 
 ### Building the Interpreter
 ```bash
-go build -o olol cmd/olol/main.go
+go build -o olol main.go
 ```
 
 ### Running Tests
@@ -87,7 +87,7 @@ Uses recursive descent parsing with:
 #### Expression Parsing and Operator Precedence
 The parser implements a precedence-climbing algorithm with the following precedence levels (lowest to highest):
 1. **OR** - Logical OR operations
-2. **AN** - Logical AND operations  
+2. **AN** - Logical AND operations
 3. **SAEM AS** - Equality comparisons
 4. **BIGGR THAN, SMALLR THAN** - Relational comparisons
 5. **MOAR, LES** - Addition and subtraction
@@ -146,7 +146,7 @@ Comprehensive test suite with both Go unit tests and .olol integration tests:
 - **Integration tests**: Located in `pkg/integration/tests/` directory with `.olol` extension
 - **Functional tests**: `pkg/integration/functional_test.go` automatically runs all `.olol` files in tests directory
 - Each .olol test file is self-documenting with expected outputs
-- Module import tests in `pkg/integration/tests/test_modules/` demonstrate file import capabilities  
+- Module import tests in `pkg/integration/tests/test_modules/` demonstrate file import capabilities
 - Exception handling integration tests validate the exception system
 
 ## Development Notes

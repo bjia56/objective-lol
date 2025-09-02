@@ -24,7 +24,7 @@ var mathFunctions = map[string]*environment.Function{
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			value := args[0]
 
 			if doubleVal, ok := value.(types.DoubleValue); ok {
@@ -41,7 +41,7 @@ var mathFunctions = map[string]*environment.Function{
 			{Name: "a", Type: "DUBBLE"},
 			{Name: "b", Type: "DUBBLE"},
 		},
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			a, b := args[0], args[1]
 
 			if val1, ok := a.(types.DoubleValue); ok {
@@ -60,7 +60,7 @@ var mathFunctions = map[string]*environment.Function{
 			{Name: "a", Type: "DUBBLE"},
 			{Name: "b", Type: "DUBBLE"},
 		},
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			a, b := args[0], args[1]
 
 			if val1, ok := a.(types.DoubleValue); ok {
@@ -78,7 +78,7 @@ var mathFunctions = map[string]*environment.Function{
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			value := args[0]
 
 			if doubleVal, ok := value.(types.DoubleValue); ok {
@@ -98,7 +98,7 @@ var mathFunctions = map[string]*environment.Function{
 			{Name: "base", Type: "DUBBLE"},
 			{Name: "exponent", Type: "DUBBLE"},
 		},
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			base, exp := args[0], args[1]
 
 			if baseVal, ok := base.(types.DoubleValue); ok {
@@ -115,7 +115,7 @@ var mathFunctions = map[string]*environment.Function{
 		Name:       "RANDOM",
 		ReturnType: "DUBBLE",
 		Parameters: []environment.Parameter{},
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			return types.DoubleValue(rand.Float64()), nil
 		},
 	},
@@ -126,7 +126,7 @@ var mathFunctions = map[string]*environment.Function{
 			{Name: "min", Type: "INTEGR"},
 			{Name: "max", Type: "INTEGR"},
 		},
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			min, max := args[0], args[1]
 
 			if minVal, ok := min.(types.IntegerValue); ok {
@@ -148,7 +148,7 @@ var mathFunctions = map[string]*environment.Function{
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			value := args[0]
 
 			if doubleVal, ok := value.(types.DoubleValue); ok {
@@ -164,7 +164,7 @@ var mathFunctions = map[string]*environment.Function{
 		Parameters: []environment.Parameter{
 			{Name: "value", Type: "DUBBLE"},
 		},
-		NativeImpl: func(_ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 			value := args[0]
 
 			if doubleVal, ok := value.(types.DoubleValue); ok {

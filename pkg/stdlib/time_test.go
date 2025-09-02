@@ -44,7 +44,7 @@ func TestTimeDATEClass(t *testing.T) {
 	require.True(t, exists, "DATE constructor should exist")
 
 	before := time.Now()
-	_, err = constructor.NativeImpl(instance, []types.Value{})
+	_, err = constructor.NativeImpl(nil, instance, []types.Value{})
 	require.NoError(t, err)
 	after := time.Now()
 
@@ -91,7 +91,7 @@ func TestTimeDATEMethods(t *testing.T) {
 			method, exists := dateClass.PublicFunctions[test.method]
 			require.True(t, exists, "Method %s should exist", test.method)
 
-			result, err := method.NativeImpl(instance, []types.Value{})
+			result, err := method.NativeImpl(nil, instance, []types.Value{})
 			require.NoError(t, err)
 			assert.Equal(t, test.expected, result)
 		})
@@ -143,7 +143,7 @@ func TestTimeDATEFormat(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			args := []types.Value{types.StringValue(test.layout)}
-			result, err := formatMethod.NativeImpl(instance, args)
+			result, err := formatMethod.NativeImpl(nil, instance, args)
 			require.NoError(t, err)
 
 			stringResult, ok := result.(types.StringValue)
@@ -175,7 +175,7 @@ func TestTimeDATEErrorHandling(t *testing.T) {
 			method, exists := dateClass.PublicFunctions[methodName]
 			require.True(t, exists)
 
-			_, err := method.NativeImpl(instance, []types.Value{})
+			_, err := method.NativeImpl(nil, instance, []types.Value{})
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "invalid context")
 		})
@@ -193,7 +193,7 @@ func TestTimeSLEEPFunction(t *testing.T) {
 	// We'll use 0 seconds to just test the function works
 	before := time.Now()
 	args := []types.Value{types.IntegerValue(0)}
-	result, err := sleepFunc.NativeImpl(nil, args)
+	result, err := sleepFunc.NativeImpl(nil, nil, args)
 	after := time.Now()
 
 	require.NoError(t, err)
@@ -213,7 +213,7 @@ func TestTimeSLEEPErrorHandling(t *testing.T) {
 
 	// Test with invalid argument type
 	args := []types.Value{types.StringValue("not a number")}
-	_, err = sleepFunc.NativeImpl(nil, args)
+	_, err = sleepFunc.NativeImpl(nil, nil, args)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "SLEEP: invalid argument type")

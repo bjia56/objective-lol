@@ -37,7 +37,7 @@ func TestBUKKITConstructor(t *testing.T) {
 	constructor, exists := bukkitClass.PublicFunctions["BUKKIT"]
 	require.True(t, exists, "BUKKIT constructor should exist")
 
-	result, err := constructor.NativeImpl(instance, []types.Value{})
+	result, err := constructor.NativeImpl(nil, instance, []types.Value{})
 	require.NoError(t, err)
 	assert.Equal(t, types.NOTHIN, result)
 
@@ -78,7 +78,7 @@ func TestBUKKITPUSH(t *testing.T) {
 	for i, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			args := []types.Value{test.value}
-			result, err := pushFunc.NativeImpl(instance, args)
+			result, err := pushFunc.NativeImpl(nil, instance, args)
 			require.NoError(t, err)
 
 			// PUSH should return new size
@@ -107,12 +107,12 @@ func TestBUKKITPOP(t *testing.T) {
 	popFunc := bukkitClass.PublicFunctions["POP"]
 
 	// Add some values first
-	pushFunc.NativeImpl(instance, []types.Value{types.IntegerValue(1)})
-	pushFunc.NativeImpl(instance, []types.Value{types.IntegerValue(2)})
-	pushFunc.NativeImpl(instance, []types.Value{types.IntegerValue(3)})
+	pushFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(1)})
+	pushFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(2)})
+	pushFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(3)})
 
 	// Test popping values
-	result, err := popFunc.NativeImpl(instance, []types.Value{})
+	result, err := popFunc.NativeImpl(nil, instance, []types.Value{})
 	require.NoError(t, err)
 	assert.Equal(t, types.IntegerValue(3), result, "Should pop last element")
 
@@ -122,11 +122,11 @@ func TestBUKKITPOP(t *testing.T) {
 	assert.Equal(t, types.IntegerValue(2), instance.Variables["SIZ"].Value)
 
 	// Test error case: pop from empty array
-	popFunc.NativeImpl(instance, []types.Value{}) // Pop 2
-	popFunc.NativeImpl(instance, []types.Value{}) // Pop 1
+	popFunc.NativeImpl(nil, instance, []types.Value{}) // Pop 2
+	popFunc.NativeImpl(nil, instance, []types.Value{}) // Pop 1
 
 	// Now should error
-	_, err = popFunc.NativeImpl(instance, []types.Value{})
+	_, err = popFunc.NativeImpl(nil, instance, []types.Value{})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot pop from empty array")
 }
@@ -149,12 +149,12 @@ func TestBUKKITAT(t *testing.T) {
 	}
 
 	for _, val := range values {
-		pushFunc.NativeImpl(instance, []types.Value{val})
+		pushFunc.NativeImpl(nil, instance, []types.Value{val})
 	}
 
 	// Test accessing valid indices
 	for i, expectedVal := range values {
-		result, err := atFunc.NativeImpl(instance, []types.Value{types.IntegerValue(i)})
+		result, err := atFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(i)})
 		require.NoError(t, err)
 		assert.Equal(t, expectedVal, result)
 	}
@@ -171,7 +171,7 @@ func TestBUKKITAT(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := atFunc.NativeImpl(instance, []types.Value{test.index})
+			_, err := atFunc.NativeImpl(nil, instance, []types.Value{test.index})
 			assert.Error(t, err)
 		})
 	}
@@ -189,12 +189,12 @@ func TestBUKKITSET(t *testing.T) {
 	atFunc := bukkitClass.PublicFunctions["AT"]
 
 	// Add some values
-	pushFunc.NativeImpl(instance, []types.Value{types.IntegerValue(1)})
-	pushFunc.NativeImpl(instance, []types.Value{types.IntegerValue(2)})
-	pushFunc.NativeImpl(instance, []types.Value{types.IntegerValue(3)})
+	pushFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(1)})
+	pushFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(2)})
+	pushFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(3)})
 
 	// Test setting value at valid index
-	result, err := setFunc.NativeImpl(instance, []types.Value{
+	result, err := setFunc.NativeImpl(nil, instance, []types.Value{
 		types.IntegerValue(1),
 		types.StringValue("changed"),
 	})
@@ -202,12 +202,12 @@ func TestBUKKITSET(t *testing.T) {
 	assert.Equal(t, types.NOTHIN, result)
 
 	// Verify value was changed
-	result, err = atFunc.NativeImpl(instance, []types.Value{types.IntegerValue(1)})
+	result, err = atFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(1)})
 	require.NoError(t, err)
 	assert.Equal(t, types.StringValue("changed"), result)
 
 	// Test error case: index out of bounds
-	_, err = setFunc.NativeImpl(instance, []types.Value{
+	_, err = setFunc.NativeImpl(nil, instance, []types.Value{
 		types.IntegerValue(10),
 		types.StringValue("invalid"),
 	})
@@ -225,11 +225,11 @@ func TestBUKKITSHIFTUNSHIFT(t *testing.T) {
 	shiftFunc := bukkitClass.PublicFunctions["SHIFT"]
 
 	// Test unshift (add to front)
-	result, err := unshiftFunc.NativeImpl(instance, []types.Value{types.IntegerValue(1)})
+	result, err := unshiftFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(1)})
 	require.NoError(t, err)
 	assert.Equal(t, types.IntegerValue(1), result, "UNSHIFT should return new size")
 
-	result, err = unshiftFunc.NativeImpl(instance, []types.Value{types.IntegerValue(2)})
+	result, err = unshiftFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(2)})
 	require.NoError(t, err)
 	assert.Equal(t, types.IntegerValue(2), result)
 
@@ -239,7 +239,7 @@ func TestBUKKITSHIFTUNSHIFT(t *testing.T) {
 	assert.Equal(t, types.IntegerValue(1), slice[1])
 
 	// Test shift (remove from front)
-	result, err = shiftFunc.NativeImpl(instance, []types.Value{})
+	result, err = shiftFunc.NativeImpl(nil, instance, []types.Value{})
 	require.NoError(t, err)
 	assert.Equal(t, types.IntegerValue(2), result, "Should shift first element")
 
@@ -249,9 +249,9 @@ func TestBUKKITSHIFTUNSHIFT(t *testing.T) {
 	assert.Equal(t, types.IntegerValue(1), slice[0])
 
 	// Test error case: shift from empty array
-	shiftFunc.NativeImpl(instance, []types.Value{}) // Remove last element
+	shiftFunc.NativeImpl(nil, instance, []types.Value{}) // Remove last element
 
-	_, err = shiftFunc.NativeImpl(instance, []types.Value{})
+	_, err = shiftFunc.NativeImpl(nil, instance, []types.Value{})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot shift from empty array")
 }
@@ -267,11 +267,11 @@ func TestBUKKITCLEAR(t *testing.T) {
 	clearFunc := bukkitClass.PublicFunctions["CLEAR"]
 
 	// Add some values
-	pushFunc.NativeImpl(instance, []types.Value{types.IntegerValue(1)})
-	pushFunc.NativeImpl(instance, []types.Value{types.IntegerValue(2)})
+	pushFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(1)})
+	pushFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(2)})
 
 	// Clear the array
-	result, err := clearFunc.NativeImpl(instance, []types.Value{})
+	result, err := clearFunc.NativeImpl(nil, instance, []types.Value{})
 	require.NoError(t, err)
 	assert.Equal(t, types.NOTHIN, result)
 
@@ -298,11 +298,11 @@ func TestBUKKITREVERSE(t *testing.T) {
 		types.IntegerValue(3),
 	}
 	for _, val := range values {
-		pushFunc.NativeImpl(instance, []types.Value{val})
+		pushFunc.NativeImpl(nil, instance, []types.Value{val})
 	}
 
 	// Reverse the array
-	result, err := reverseFunc.NativeImpl(instance, []types.Value{})
+	result, err := reverseFunc.NativeImpl(nil, instance, []types.Value{})
 	require.NoError(t, err)
 	assert.Equal(t, types.NOTHIN, result)
 
@@ -331,11 +331,11 @@ func TestBUKKITSORT(t *testing.T) {
 		types.IntegerValue(2),
 	}
 	for _, val := range values {
-		pushFunc.NativeImpl(instance, []types.Value{val})
+		pushFunc.NativeImpl(nil, instance, []types.Value{val})
 	}
 
 	// Sort the array
-	result, err := sortFunc.NativeImpl(instance, []types.Value{})
+	result, err := sortFunc.NativeImpl(nil, instance, []types.Value{})
 	require.NoError(t, err)
 	assert.Equal(t, types.NOTHIN, result)
 
@@ -358,7 +358,7 @@ func TestBUKKITJOIN(t *testing.T) {
 	joinFunc := bukkitClass.PublicFunctions["JOIN"]
 
 	// Test empty array
-	result, err := joinFunc.NativeImpl(instance, []types.Value{types.StringValue(",")})
+	result, err := joinFunc.NativeImpl(nil, instance, []types.Value{types.StringValue(",")})
 	require.NoError(t, err)
 	assert.Equal(t, types.StringValue(""), result)
 
@@ -369,16 +369,16 @@ func TestBUKKITJOIN(t *testing.T) {
 		types.DoubleValue(3.14),
 	}
 	for _, val := range values {
-		pushFunc.NativeImpl(instance, []types.Value{val})
+		pushFunc.NativeImpl(nil, instance, []types.Value{val})
 	}
 
 	// Test join with comma
-	result, err = joinFunc.NativeImpl(instance, []types.Value{types.StringValue(",")})
+	result, err = joinFunc.NativeImpl(nil, instance, []types.Value{types.StringValue(",")})
 	require.NoError(t, err)
 	assert.Equal(t, types.StringValue("hello,42,3.14"), result)
 
 	// Test join with space
-	result, err = joinFunc.NativeImpl(instance, []types.Value{types.StringValue(" ")})
+	result, err = joinFunc.NativeImpl(nil, instance, []types.Value{types.StringValue(" ")})
 	require.NoError(t, err)
 	assert.Equal(t, types.StringValue("hello 42 3.14"), result)
 }
@@ -400,20 +400,20 @@ func TestBUKKITFIND(t *testing.T) {
 		types.DoubleValue(3.14),
 	}
 	for _, val := range values {
-		pushFunc.NativeImpl(instance, []types.Value{val})
+		pushFunc.NativeImpl(nil, instance, []types.Value{val})
 	}
 
 	// Test finding existing values
-	result, err := findFunc.NativeImpl(instance, []types.Value{types.IntegerValue(42)})
+	result, err := findFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(42)})
 	require.NoError(t, err)
 	assert.Equal(t, types.IntegerValue(1), result)
 
-	result, err = findFunc.NativeImpl(instance, []types.Value{types.StringValue("hello")})
+	result, err = findFunc.NativeImpl(nil, instance, []types.Value{types.StringValue("hello")})
 	require.NoError(t, err)
 	assert.Equal(t, types.IntegerValue(0), result)
 
 	// Test finding non-existing value
-	result, err = findFunc.NativeImpl(instance, []types.Value{types.StringValue("not found")})
+	result, err = findFunc.NativeImpl(nil, instance, []types.Value{types.StringValue("not found")})
 	require.NoError(t, err)
 	assert.Equal(t, types.IntegerValue(-1), result)
 }
@@ -429,16 +429,16 @@ func TestBUKKITCONTAINS(t *testing.T) {
 	containsFunc := bukkitClass.PublicFunctions["CONTAINS"]
 
 	// Add values
-	pushFunc.NativeImpl(instance, []types.Value{types.IntegerValue(42)})
-	pushFunc.NativeImpl(instance, []types.Value{types.StringValue("test")})
+	pushFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(42)})
+	pushFunc.NativeImpl(nil, instance, []types.Value{types.StringValue("test")})
 
 	// Test contains existing value
-	result, err := containsFunc.NativeImpl(instance, []types.Value{types.IntegerValue(42)})
+	result, err := containsFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(42)})
 	require.NoError(t, err)
 	assert.Equal(t, types.YEZ, result)
 
 	// Test contains non-existing value
-	result, err = containsFunc.NativeImpl(instance, []types.Value{types.StringValue("not found")})
+	result, err = containsFunc.NativeImpl(nil, instance, []types.Value{types.StringValue("not found")})
 	require.NoError(t, err)
 	assert.Equal(t, types.NO, result)
 }
@@ -455,11 +455,11 @@ func TestBUKKITSLICE(t *testing.T) {
 
 	// Add values [0, 1, 2, 3, 4]
 	for i := 0; i < 5; i++ {
-		pushFunc.NativeImpl(instance, []types.Value{types.IntegerValue(i)})
+		pushFunc.NativeImpl(nil, instance, []types.Value{types.IntegerValue(i)})
 	}
 
 	// Test normal slice [1:4] -> [1, 2, 3]
-	result, err := sliceFunc.NativeImpl(instance, []types.Value{
+	result, err := sliceFunc.NativeImpl(nil, instance, []types.Value{
 		types.IntegerValue(1),
 		types.IntegerValue(4),
 	})
@@ -481,7 +481,7 @@ func TestBUKKITSLICE(t *testing.T) {
 	assert.Equal(t, types.IntegerValue(3), newInstance.Variables["SIZ"].Value)
 
 	// Test error case: invalid bounds
-	_, err = sliceFunc.NativeImpl(instance, []types.Value{
+	_, err = sliceFunc.NativeImpl(nil, instance, []types.Value{
 		types.IntegerValue(10),
 		types.IntegerValue(15),
 	})
@@ -525,7 +525,7 @@ func createBUKKITInstance(t *testing.T, env *environment.Environment) *environme
 
 	// Initialize with constructor
 	constructor := bukkitClass.PublicFunctions["BUKKIT"]
-	_, err = constructor.NativeImpl(instance, []types.Value{})
+	_, err = constructor.NativeImpl(nil, instance, []types.Value{})
 	require.NoError(t, err)
 
 	return instance

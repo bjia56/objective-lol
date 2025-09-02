@@ -597,7 +597,14 @@ func (i *Interpreter) callFunction(function *environment.Function, args []types.
 			}
 			argsCasted[i] = casted
 		}
-		return function.NativeImpl(i.currentObject, argsCasted)
+		
+		// Create function context
+		ctx := &FunctionContext{
+			interpreter: i,
+			environment: i.environment,
+		}
+		
+		return function.NativeImpl(ctx, i.currentObject, argsCasted)
 	}
 
 	// Create new environment for function execution

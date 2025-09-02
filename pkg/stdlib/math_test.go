@@ -67,7 +67,7 @@ func TestMathABS(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			args := []types.Value{test.input}
-			result, err := absFunc.NativeImpl(nil, args)
+			result, err := absFunc.NativeImpl(nil, nil, args)
 			require.NoError(t, err)
 			assert.Equal(t, test.expected, result)
 		})
@@ -116,7 +116,7 @@ func TestMathMAX(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			args := []types.Value{test.a, test.b}
-			result, err := maxFunc.NativeImpl(nil, args)
+			result, err := maxFunc.NativeImpl(nil, nil, args)
 			require.NoError(t, err)
 			assert.Equal(t, test.expected, result)
 		})
@@ -159,7 +159,7 @@ func TestMathMIN(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			args := []types.Value{test.a, test.b}
-			result, err := minFunc.NativeImpl(nil, args)
+			result, err := minFunc.NativeImpl(nil, nil, args)
 			require.NoError(t, err)
 			assert.Equal(t, test.expected, result)
 		})
@@ -203,7 +203,7 @@ func TestMathSQRT(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			args := []types.Value{test.input}
-			result, err := sqrtFunc.NativeImpl(nil, args)
+			result, err := sqrtFunc.NativeImpl(nil, nil, args)
 			require.NoError(t, err)
 
 			doubleResult, ok := result.(types.DoubleValue)
@@ -255,7 +255,7 @@ func TestMathPOW(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			args := []types.Value{test.base, test.exponent}
-			result, err := powFunc.NativeImpl(nil, args)
+			result, err := powFunc.NativeImpl(nil, nil, args)
 			require.NoError(t, err)
 
 			doubleResult, ok := result.(types.DoubleValue)
@@ -297,7 +297,7 @@ func TestMathSIN(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			args := []types.Value{test.input}
-			result, err := sinFunc.NativeImpl(nil, args)
+			result, err := sinFunc.NativeImpl(nil, nil, args)
 			require.NoError(t, err)
 
 			doubleResult, ok := result.(types.DoubleValue)
@@ -339,7 +339,7 @@ func TestMathCOS(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			args := []types.Value{test.input}
-			result, err := cosFunc.NativeImpl(nil, args)
+			result, err := cosFunc.NativeImpl(nil, nil, args)
 			require.NoError(t, err)
 
 			doubleResult, ok := result.(types.DoubleValue)
@@ -359,7 +359,7 @@ func TestMathRANDOM(t *testing.T) {
 	// Test that RANDOM returns values in expected range
 	for i := 0; i < 100; i++ {
 		args := []types.Value{}
-		result, err := randomFunc.NativeImpl(nil, args)
+		result, err := randomFunc.NativeImpl(nil, nil, args)
 		require.NoError(t, err)
 
 		doubleResult, ok := result.(types.DoubleValue)
@@ -381,7 +381,7 @@ func TestMathRANDINT(t *testing.T) {
 	// Test that RANDINT returns values in expected range
 	for i := 0; i < 50; i++ {
 		args := []types.Value{types.IntegerValue(1), types.IntegerValue(10)}
-		result, err := randintFunc.NativeImpl(nil, args)
+		result, err := randintFunc.NativeImpl(nil, nil, args)
 		require.NoError(t, err)
 
 		intResult, ok := result.(types.IntegerValue)
@@ -394,7 +394,7 @@ func TestMathRANDINT(t *testing.T) {
 
 	// Test error case: min >= max
 	args := []types.Value{types.IntegerValue(10), types.IntegerValue(5)}
-	_, err = randintFunc.NativeImpl(nil, args)
+	_, err = randintFunc.NativeImpl(nil, nil, args)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "min must be less than max")
 }
@@ -408,7 +408,7 @@ func TestMathErrorHandling(t *testing.T) {
 	require.NoError(t, err)
 
 	args := []types.Value{types.DoubleValue(-4.0)}
-	_, err = sqrtFunc.NativeImpl(nil, args)
+	_, err = sqrtFunc.NativeImpl(nil, nil, args)
 
 	// Should return error for negative numbers in this implementation
 	assert.Error(t, err)
