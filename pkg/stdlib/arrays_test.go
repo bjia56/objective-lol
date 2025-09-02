@@ -304,7 +304,7 @@ func TestBUKKITREVERSE(t *testing.T) {
 	// Reverse the array
 	result, err := reverseFunc.NativeImpl(nil, instance, []types.Value{})
 	require.NoError(t, err)
-	assert.Equal(t, types.NOTHIN, result)
+	assert.Equal(t, instance, result.(types.ObjectValue).Instance)
 
 	// Check array is reversed [3, 2, 1]
 	slice := instance.NativeData.([]types.Value)
@@ -337,7 +337,7 @@ func TestBUKKITSORT(t *testing.T) {
 	// Sort the array
 	result, err := sortFunc.NativeImpl(nil, instance, []types.Value{})
 	require.NoError(t, err)
-	assert.Equal(t, types.NOTHIN, result)
+	assert.Equal(t, instance, result.(types.ObjectValue).Instance)
 
 	// Check array is sorted
 	slice := instance.NativeData.([]types.Value)
