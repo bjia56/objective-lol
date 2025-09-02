@@ -20,7 +20,7 @@ A programming language interpreter inspired by LOLCODE, implemented in Go. Objec
 ```bash
 git clone https://github.com/bjia56/objective-lol.git
 cd objective-lol
-go build -o olol main.go
+go build -o olol cmd/olol/main.go
 ```
 
 ### Hello World
@@ -115,7 +115,7 @@ KTHX
 
 ```bash
 # Build the interpreter
-go build -o olol main.go
+go build -o olol cmd/olol/main.go
 
 # Format Go code
 go fmt ./...

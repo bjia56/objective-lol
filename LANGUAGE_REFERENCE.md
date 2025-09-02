@@ -49,7 +49,7 @@ git clone https://github.com/bjia56/objective-lol.git
 cd objective-lol
 
 # Build the interpreter
-go build -o olol main.go
+go build -o olol cmd/olol/main.go
 
 # Run a program
 ./olol program.olol

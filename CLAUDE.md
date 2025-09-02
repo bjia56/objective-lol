@@ -10,7 +10,7 @@ Objective-LOL is a programming language interpreter written in Go that implement
 
 ### Building the Interpreter
 ```bash
-go build -o olol main.go
+go build -o olol cmd/olol/main.go
 ```
 
 ### Running Tests
@@ -48,8 +48,8 @@ go build ./...
 The codebase is organized into several key packages:
 
 ### Core Components
-- **main.go**: Root entry point (canonical build: `go build -o olol main.go`)
-- **cmd/olol/main.go**: Entry point that creates interpreter, registers stdlib, and executes .olol files
+- **cmd/olol/main.go**: Main entry point (canonical build: `go build -o olol cmd/olol/main.go`)
+- **pkg/cli/cli.go**: CLI package with Run() and executeFile() functions used by both main and tests
 - **pkg/parser**: Lexer and recursive descent parser that converts source code to AST
 - **pkg/ast**: AST node definitions using visitor pattern for tree traversal
 - **pkg/interpreter**: Tree-walking interpreter that executes AST nodes

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bjia56/objective-lol/cmd/olol"
+	"github.com/bjia56/objective-lol/pkg/cli"
 )
 
 func TestFunctionalScripts(t *testing.T) {
@@ -30,7 +30,7 @@ func TestFunctionalScripts(t *testing.T) {
 	for _, file := range testFiles {
 		file := file // capture range variable
 		t.Run(path.Base(file), func(t *testing.T) {
-			exitCode := olol.Run([]string{file})
+			exitCode := cli.Run([]string{file})
 			if exitCode != 0 {
 				t.Errorf("Test failed for %s: exit code %d", file, exitCode)
 			}
