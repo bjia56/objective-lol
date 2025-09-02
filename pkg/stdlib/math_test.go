@@ -13,7 +13,7 @@ import (
 func TestRegisterMath(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
-	err := RegisterMATHInEnv(env, []string{}) // Empty slice imports all
+	err := RegisterMATHInEnv(env) // Empty slice imports all
 	require.NoError(t, err)
 
 	// Test that math functions are registered
@@ -27,7 +27,7 @@ func TestRegisterMath(t *testing.T) {
 
 func TestMathABS(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env, []string{})
+	RegisterMATHInEnv(env)
 
 	absFunc, err := env.GetFunction("ABS")
 	require.NoError(t, err)
@@ -76,7 +76,7 @@ func TestMathABS(t *testing.T) {
 
 func TestMathMAX(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env, []string{})
+	RegisterMATHInEnv(env)
 
 	maxFunc, err := env.GetFunction("MAX")
 	require.NoError(t, err)
@@ -125,7 +125,7 @@ func TestMathMAX(t *testing.T) {
 
 func TestMathMIN(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env, []string{})
+	RegisterMATHInEnv(env)
 
 	minFunc, err := env.GetFunction("MIN")
 	require.NoError(t, err)
@@ -168,7 +168,7 @@ func TestMathMIN(t *testing.T) {
 
 func TestMathSQRT(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env, []string{})
+	RegisterMATHInEnv(env)
 
 	sqrtFunc, err := env.GetFunction("SQRT")
 	require.NoError(t, err)
@@ -215,7 +215,7 @@ func TestMathSQRT(t *testing.T) {
 
 func TestMathPOW(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env, []string{})
+	RegisterMATHInEnv(env)
 
 	powFunc, err := env.GetFunction("POW")
 	require.NoError(t, err)
@@ -267,7 +267,7 @@ func TestMathPOW(t *testing.T) {
 
 func TestMathSIN(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env, []string{})
+	RegisterMATHInEnv(env)
 
 	sinFunc, err := env.GetFunction("SIN")
 	require.NoError(t, err)
@@ -309,7 +309,7 @@ func TestMathSIN(t *testing.T) {
 
 func TestMathCOS(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env, []string{})
+	RegisterMATHInEnv(env)
 
 	cosFunc, err := env.GetFunction("COS")
 	require.NoError(t, err)
@@ -351,7 +351,7 @@ func TestMathCOS(t *testing.T) {
 
 func TestMathRANDOM(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env, []string{})
+	RegisterMATHInEnv(env)
 
 	randomFunc, err := env.GetFunction("RANDOM")
 	require.NoError(t, err)
@@ -373,7 +373,7 @@ func TestMathRANDOM(t *testing.T) {
 
 func TestMathRANDINT(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env, []string{})
+	RegisterMATHInEnv(env)
 
 	randintFunc, err := env.GetFunction("RANDINT")
 	require.NoError(t, err)
@@ -401,7 +401,7 @@ func TestMathRANDINT(t *testing.T) {
 
 func TestMathErrorHandling(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env, []string{})
+	RegisterMATHInEnv(env)
 
 	// Test SQRT with negative number
 	sqrtFunc, err := env.GetFunction("SQRT")

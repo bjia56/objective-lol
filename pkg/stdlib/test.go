@@ -3,6 +3,7 @@ package stdlib
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
@@ -10,21 +11,29 @@ import (
 )
 
 // Global TEST function definitions - created once and reused
-var testFunctions = map[string]*environment.Function{
-	"ASSERT": {
-		Name:       "ASSERT",
-		Parameters: []environment.Parameter{{Name: "CONDITION", Type: ""}}, // Accept any type
-		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-			condition := args[0]
+var testFunctionsOnce = sync.Once{}
+var testFunctions map[string]*environment.Function
 
-			// Check if condition is truthy
-			if !isTruthy(condition) {
-				return types.NOTHIN, ast.Exception{Message: "Assertion failed"}
-			}
+func getTestFunctions() map[string]*environment.Function {
+	testFunctionsOnce.Do(func() {
+		testFunctions = map[string]*environment.Function{
+			"ASSERT": {
+				Name:       "ASSERT",
+				Parameters: []environment.Parameter{{Name: "CONDITION", Type: ""}}, // Accept any type
+				NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					condition := args[0]
 
-			return types.NOTHIN, nil
-		},
-	},
+					// Check if condition is truthy
+					if !isTruthy(condition) {
+						return types.NOTHIN, ast.Exception{Message: "Assertion failed"}
+					}
+
+					return types.NOTHIN, nil
+				},
+			},
+		}
+	})
+	return testFunctions
 }
 
 // isTruthy determines if a value is considered truthy in Objective-LOL
@@ -47,7 +56,9 @@ func isTruthy(value types.Value) bool {
 
 // RegisterTESTInEnv registers TEST functions in the given environment
 // declarations: empty slice means import all, otherwise import only specified functions
-func RegisterTESTInEnv(env *environment.Environment, declarations []string) error {
+func RegisterTESTInEnv(env *environment.Environment, declarations ...string) error {
+	testFunctions := getTestFunctions()
+
 	// If declarations is empty, import all functions
 	if len(declarations) == 0 {
 		for _, fn := range testFunctions {

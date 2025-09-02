@@ -8,34 +8,39 @@ import (
 	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/modules"
-	"github.com/bjia56/objective-lol/pkg/stdlib"
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // Interpreter implements the tree-walking interpreter for Objective-LOL
 type Interpreter struct {
-	runtime        *environment.RuntimeEnvironment
-	environment    *environment.Environment
-	currentClass   string                      // For tracking visibility context
-	currentObject  *environment.ObjectInstance // For tracking current object instance in method calls
-	moduleResolver *modules.ModuleResolver     // For resolving and caching module imports
-	currentFile    string                      // For tracking current file being processed (for relative imports)
+	runtime           *environment.RuntimeEnvironment
+	environment       *environment.Environment
+	currentClass      string                       // For tracking visibility context
+	currentObject     *environment.ObjectInstance  // For tracking current object instance in method calls
+	moduleResolver    *modules.ModuleResolver      // For resolving and caching module imports
+	stdlibInitializer map[string]StdlibInitializer // For loading standard library modules
+	currentFile       string                       // For tracking current file being processed (for relative imports)
 }
 
+type StdlibInitializer func(*environment.Environment, ...string) error
+
 // NewInterpreter creates a new interpreter instance
-func NewInterpreter() *Interpreter {
+func NewInterpreter(stdlib map[string]StdlibInitializer, globals ...StdlibInitializer) *Interpreter {
 	runtime := environment.NewRuntimeEnvironment()
 	// Use current working directory as base for module resolution
 	workingDir, _ := filepath.Abs(".")
 
 	interpreter := &Interpreter{
-		runtime:        runtime,
-		environment:    runtime.GlobalEnv,
-		moduleResolver: modules.NewModuleResolver(workingDir),
+		runtime:           runtime,
+		environment:       runtime.GlobalEnv,
+		moduleResolver:    modules.NewModuleResolver(workingDir),
+		stdlibInitializer: stdlib,
 	}
 
-	// Register built-in types globally
-	stdlib.RegisterArrays(interpreter.environment)
+	// Register global types
+	for _, init := range globals {
+		init(interpreter.environment)
+	}
 
 	return interpreter
 }
@@ -105,28 +110,12 @@ func (i *Interpreter) handleBuiltinImport(moduleName string, declarations []stri
 	moduleName = strings.ToUpper(moduleName)
 
 	// Load the requested built-in module into the current environment scope
-	switch moduleName {
-	case "STDIO":
-		err := stdlib.RegisterSTDIOInEnv(i.environment, declarations)
+	if init, ok := i.stdlibInitializer[moduleName]; ok {
+		err := init(i.environment, declarations...)
 		if err != nil {
-			return types.NOTHIN, err
+			return types.NOTHIN, fmt.Errorf("failed to initialize module %s: %v", moduleName, err)
 		}
-	case "MATH":
-		err := stdlib.RegisterMATHInEnv(i.environment, declarations)
-		if err != nil {
-			return types.NOTHIN, err
-		}
-	case "TIME":
-		err := stdlib.RegisterTIMEInEnv(i.environment, declarations)
-		if err != nil {
-			return types.NOTHIN, err
-		}
-	case "TEST":
-		err := stdlib.RegisterTESTInEnv(i.environment, declarations)
-		if err != nil {
-			return types.NOTHIN, err
-		}
-	default:
+	} else {
 		return types.NOTHIN, fmt.Errorf("unknown built-in module: %s", moduleName)
 	}
 
@@ -597,13 +586,13 @@ func (i *Interpreter) callFunction(function *environment.Function, args []types.
 			}
 			argsCasted[i] = casted
 		}
-		
+
 		// Create function context
 		ctx := &FunctionContext{
 			interpreter: i,
 			environment: i.environment,
 		}
-		
+
 		return function.NativeImpl(ctx, i.currentObject, argsCasted)
 	}
 

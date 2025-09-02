@@ -13,7 +13,7 @@ import (
 func TestRegisterTEST(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
-	err := RegisterTESTInEnv(env, []string{}) // Empty slice imports all
+	err := RegisterTESTInEnv(env)
 	require.NoError(t, err)
 
 	// Test that TEST functions are registered
@@ -27,7 +27,7 @@ func TestRegisterTEST(t *testing.T) {
 
 func TestASSERTFunction(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterTESTInEnv(env, []string{})
+	RegisterTESTInEnv(env)
 
 	assertFunc, err := env.GetFunction("ASSERT")
 	require.NoError(t, err)
@@ -147,7 +147,7 @@ func TestTESTSelectiveImport(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
 	// Import only ASSERT function
-	err := RegisterTESTInEnv(env, []string{"ASSERT"})
+	err := RegisterTESTInEnv(env, "ASSERT")
 	require.NoError(t, err)
 
 	// ASSERT should be available
@@ -159,7 +159,7 @@ func TestTESTInvalidFunction(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
 	// Try to import non-existent function
-	err := RegisterTESTInEnv(env, []string{"INVALID"})
+	err := RegisterTESTInEnv(env, "INVALID")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "unknown TEST function: INVALID")
 }
@@ -168,7 +168,7 @@ func TestTESTCaseInsensitive(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
 	// Import using lowercase
-	err := RegisterTESTInEnv(env, []string{"assert"})
+	err := RegisterTESTInEnv(env, "assert")
 	require.NoError(t, err)
 
 	// Function should be available (stored in uppercase)

@@ -11,7 +11,7 @@ import (
 )
 
 func TestNewInterpreter(t *testing.T) {
-	interp := NewInterpreter()
+	interp := NewInterpreter(nil)
 
 	assert.NotNil(t, interp)
 	assert.NotNil(t, interp.runtime)
@@ -20,7 +20,7 @@ func TestNewInterpreter(t *testing.T) {
 }
 
 func TestInterpreterLiterals(t *testing.T) {
-	interp := NewInterpreter()
+	interp := NewInterpreter(nil)
 
 	tests := []struct {
 		name     string
@@ -59,7 +59,7 @@ func TestInterpreterLiterals(t *testing.T) {
 }
 
 func TestInterpreterBinaryOperations(t *testing.T) {
-	interp := NewInterpreter()
+	interp := NewInterpreter(nil)
 
 	tests := []struct {
 		name     string
@@ -128,7 +128,7 @@ func TestInterpreterBinaryOperations(t *testing.T) {
 }
 
 func TestInterpreterVariableOperations(t *testing.T) {
-	interp := NewInterpreter()
+	interp := NewInterpreter(nil)
 
 	// Define a variable
 	varDecl := &ast.VariableDeclarationNode{
@@ -162,7 +162,7 @@ func TestInterpreterVariableOperations(t *testing.T) {
 }
 
 func TestInterpreterTypeCasting(t *testing.T) {
-	interp := NewInterpreter()
+	interp := NewInterpreter(nil)
 
 	tests := []struct {
 		name       string
@@ -223,7 +223,7 @@ KTHXBAI`
 
 	// We expect parsing errors since this is complex syntax
 	if len(p.Errors()) == 0 {
-		interp := NewInterpreter()
+		interp := NewInterpreter(nil)
 		err := interp.Interpret(program)
 
 		// Log any interpretation errors for debugging
@@ -236,7 +236,7 @@ KTHXBAI`
 }
 
 func TestInterpreterErrorHandling(t *testing.T) {
-	interp := NewInterpreter()
+	interp := NewInterpreter(nil)
 
 	// Test division by zero
 	divByZero := &ast.BinaryOpNode{
@@ -262,7 +262,7 @@ func TestInterpreterErrorHandling(t *testing.T) {
 }
 
 func TestInterpreterFunctionCall(t *testing.T) {
-	interp := NewInterpreter()
+	interp := NewInterpreter(nil)
 
 	// Test calling a function (using identifier as function)
 	functionCall := &ast.FunctionCallNode{
@@ -280,7 +280,7 @@ func TestInterpreterFunctionCall(t *testing.T) {
 }
 
 func TestInterpreterStatementBlock(t *testing.T) {
-	interp := NewInterpreter()
+	interp := NewInterpreter(nil)
 
 	// Create a statement block with multiple statements
 	block := &ast.StatementBlockNode{
@@ -314,7 +314,7 @@ func TestInterpreterStatementBlock(t *testing.T) {
 }
 
 func TestInterpreterReturnStatement(t *testing.T) {
-	interp := NewInterpreter()
+	interp := NewInterpreter(nil)
 
 	// Test return statement
 	returnStmt := &ast.ReturnStatementNode{

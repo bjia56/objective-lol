@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRegisterArrays(t *testing.T) {
+func TestRegisterArraysInEnv(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	// Test that BUKKIT class is registered
 	_, err := env.GetClass("BUKKIT")
@@ -21,7 +21,7 @@ func TestRegisterArrays(t *testing.T) {
 
 func TestBUKKITConstructor(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	bukkitClass, err := env.GetClass("BUKKIT")
 	require.NoError(t, err)
@@ -56,7 +56,7 @@ func TestBUKKITConstructor(t *testing.T) {
 
 func TestBUKKITPUSH(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 
@@ -98,7 +98,7 @@ func TestBUKKITPUSH(t *testing.T) {
 
 func TestBUKKITPOP(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 	bukkitClass, _ := env.GetClass("BUKKIT")
@@ -133,7 +133,7 @@ func TestBUKKITPOP(t *testing.T) {
 
 func TestBUKKITAT(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 	bukkitClass, _ := env.GetClass("BUKKIT")
@@ -179,7 +179,7 @@ func TestBUKKITAT(t *testing.T) {
 
 func TestBUKKITSET(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 	bukkitClass, _ := env.GetClass("BUKKIT")
@@ -216,7 +216,7 @@ func TestBUKKITSET(t *testing.T) {
 
 func TestBUKKITSHIFTUNSHIFT(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 	bukkitClass, _ := env.GetClass("BUKKIT")
@@ -258,7 +258,7 @@ func TestBUKKITSHIFTUNSHIFT(t *testing.T) {
 
 func TestBUKKITCLEAR(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 	bukkitClass, _ := env.GetClass("BUKKIT")
@@ -283,7 +283,7 @@ func TestBUKKITCLEAR(t *testing.T) {
 
 func TestBUKKITREVERSE(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 	bukkitClass, _ := env.GetClass("BUKKIT")
@@ -315,7 +315,7 @@ func TestBUKKITREVERSE(t *testing.T) {
 
 func TestBUKKITSORT(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 	bukkitClass, _ := env.GetClass("BUKKIT")
@@ -349,7 +349,7 @@ func TestBUKKITSORT(t *testing.T) {
 
 func TestBUKKITJOIN(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 	bukkitClass, _ := env.GetClass("BUKKIT")
@@ -385,7 +385,7 @@ func TestBUKKITJOIN(t *testing.T) {
 
 func TestBUKKITFIND(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 	bukkitClass, _ := env.GetClass("BUKKIT")
@@ -420,7 +420,7 @@ func TestBUKKITFIND(t *testing.T) {
 
 func TestBUKKITCONTAINS(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 	bukkitClass, _ := env.GetClass("BUKKIT")
@@ -445,7 +445,7 @@ func TestBUKKITCONTAINS(t *testing.T) {
 
 func TestBUKKITSLICE(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterArrays(env)
+	RegisterArraysInEnv(env)
 
 	instance := createBUKKITInstance(t, env)
 	bukkitClass, _ := env.GetClass("BUKKIT")

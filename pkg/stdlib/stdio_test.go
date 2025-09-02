@@ -14,7 +14,7 @@ import (
 func TestRegisterSTDIO(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
-	err := RegisterSTDIOInEnv(env, []string{}) // Empty slice imports all
+	err := RegisterSTDIOInEnv(env)
 	require.NoError(t, err)
 
 	// Test that stdio functions are registered
@@ -28,7 +28,7 @@ func TestRegisterSTDIO(t *testing.T) {
 
 func TestStdioSAY(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterSTDIOInEnv(env, []string{})
+	RegisterSTDIOInEnv(env)
 
 	sayFunc, err := env.GetFunction("SAY")
 	require.NoError(t, err)
@@ -82,7 +82,7 @@ func TestStdioSAY(t *testing.T) {
 
 func TestStdioSAYZ(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterSTDIOInEnv(env, []string{})
+	RegisterSTDIOInEnv(env)
 
 	sayzFunc, err := env.GetFunction("SAYZ")
 	require.NoError(t, err)
@@ -104,7 +104,7 @@ func TestStdioSAYZ(t *testing.T) {
 
 func TestStdioGIMME(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterSTDIOInEnv(env, []string{})
+	RegisterSTDIOInEnv(env)
 
 	gimmeFunc, err := env.GetFunction("GIMME")
 	require.NoError(t, err)
@@ -158,7 +158,7 @@ func TestStdioSelectiveImport(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
 	// Import only SAY function
-	err := RegisterSTDIOInEnv(env, []string{"SAY"})
+	err := RegisterSTDIOInEnv(env, "SAY")
 	require.NoError(t, err)
 
 	// SAY should be available
@@ -178,7 +178,7 @@ func TestStdioInvalidFunction(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
 	// Try to import non-existent function
-	err := RegisterSTDIOInEnv(env, []string{"INVALID"})
+	err := RegisterSTDIOInEnv(env, "INVALID")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "unknown STDIO function: INVALID")
 }
@@ -187,7 +187,7 @@ func TestStdioCaseInsensitive(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
 	// Import using lowercase
-	err := RegisterSTDIOInEnv(env, []string{"say", "sayz"})
+	err := RegisterSTDIOInEnv(env, "say", "sayz")
 	require.NoError(t, err)
 
 	// Functions should be available (stored in uppercase)

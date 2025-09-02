@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/types"
@@ -34,46 +35,56 @@ func ResetToStandardStreams() {
 }
 
 // Global STDIO function definitions - created once and reused
-var stdioFunctions = map[string]*environment.Function{
-	"SAY": {
-		Name:       "SAY",
-		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
-		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-			fmt.Fprint(StdoutWriter, args[0].String())
-			return types.NOTHIN, nil
-		},
-	},
-	"SAYZ": {
-		Name:       "SAYZ",
-		Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
-		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-			fmt.Fprintln(StdoutWriter, args[0].String())
-			return types.NOTHIN, nil
-		},
-	},
-	"GIMME": {
-		Name:       "GIMME",
-		ReturnType: "STRIN",
-		Parameters: []environment.Parameter{},
-		NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-			reader := bufio.NewReader(StdinReader)
-			line, err := reader.ReadString('\n')
-			if err != nil {
-				return types.StringValue(""), nil
-			}
+var stdioFunctionsOnce = sync.Once{}
+var stdioFunctions map[string]*environment.Function
 
-			// Remove trailing newline
-			line = strings.TrimSuffix(line, "\n")
-			line = strings.TrimSuffix(line, "\r")
+func getStdioFunctions() map[string]*environment.Function {
+	stdioFunctionsOnce.Do(func() {
+		stdioFunctions = map[string]*environment.Function{
+			"SAY": {
+				Name:       "SAY",
+				Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
+				NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					fmt.Fprint(StdoutWriter, args[0].String())
+					return types.NOTHIN, nil
+				},
+			},
+			"SAYZ": {
+				Name:       "SAYZ",
+				Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
+				NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					fmt.Fprintln(StdoutWriter, args[0].String())
+					return types.NOTHIN, nil
+				},
+			},
+			"GIMME": {
+				Name:       "GIMME",
+				ReturnType: "STRIN",
+				Parameters: []environment.Parameter{},
+				NativeImpl: func(_ interface{}, _ *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+					reader := bufio.NewReader(StdinReader)
+					line, err := reader.ReadString('\n')
+					if err != nil {
+						return types.StringValue(""), nil
+					}
 
-			return types.StringValue(line), nil
-		},
-	},
+					// Remove trailing newline
+					line = strings.TrimSuffix(line, "\n")
+					line = strings.TrimSuffix(line, "\r")
+
+					return types.StringValue(line), nil
+				},
+			},
+		}
+	})
+	return stdioFunctions
 }
 
 // RegisterSTDIOInEnv registers STDIO functions in the given environment
 // declarations: empty slice means import all, otherwise import only specified functions
-func RegisterSTDIOInEnv(env *environment.Environment, declarations []string) error {
+func RegisterSTDIOInEnv(env *environment.Environment, declarations ...string) error {
+	stdioFunctions := getStdioFunctions()
+
 	// If declarations is empty, import all functions
 	if len(declarations) == 0 {
 		for _, fn := range stdioFunctions {

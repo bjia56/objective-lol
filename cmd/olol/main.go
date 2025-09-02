@@ -9,6 +9,7 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/interpreter"
 	"github.com/bjia56/objective-lol/pkg/parser"
+	"github.com/bjia56/objective-lol/pkg/stdlib"
 )
 
 func Run(args []string) int {
@@ -19,7 +20,15 @@ func Run(args []string) int {
 	filename := args[0]
 
 	// Create interpreter
-	interp := interpreter.NewInterpreter()
+	interp := interpreter.NewInterpreter(
+		map[string]interpreter.StdlibInitializer{
+			"TIME":  stdlib.RegisterTIMEInEnv,
+			"STDIO": stdlib.RegisterSTDIOInEnv,
+			"MATH":  stdlib.RegisterMATHInEnv,
+			"TEST":  stdlib.RegisterTESTInEnv,
+		},
+		stdlib.RegisterArraysInEnv,
+	)
 
 	// Execute the file
 	if err := executeFile(interp, filename); err != nil {

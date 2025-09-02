@@ -13,7 +13,7 @@ import (
 func TestRegisterTIME(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
-	err := RegisterTIMEInEnv(env, []string{}) // Empty slice imports all
+	err := RegisterTIMEInEnv(env)
 	require.NoError(t, err)
 
 	// Test that TIME class is registered
@@ -27,7 +27,7 @@ func TestRegisterTIME(t *testing.T) {
 
 func TestTimeDATEClass(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterTIMEInEnv(env, []string{})
+	RegisterTIMEInEnv(env)
 
 	dateClass, err := env.GetClass("DATE")
 	require.NoError(t, err)
@@ -57,7 +57,7 @@ func TestTimeDATEClass(t *testing.T) {
 
 func TestTimeDATEMethods(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterTIMEInEnv(env, []string{})
+	RegisterTIMEInEnv(env)
 
 	dateClass, err := env.GetClass("DATE")
 	require.NoError(t, err)
@@ -100,7 +100,7 @@ func TestTimeDATEMethods(t *testing.T) {
 
 func TestTimeDATEFormat(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterTIMEInEnv(env, []string{})
+	RegisterTIMEInEnv(env)
 
 	dateClass, err := env.GetClass("DATE")
 	require.NoError(t, err)
@@ -155,7 +155,7 @@ func TestTimeDATEFormat(t *testing.T) {
 
 func TestTimeDATEErrorHandling(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterTIMEInEnv(env, []string{})
+	RegisterTIMEInEnv(env)
 
 	dateClass, err := env.GetClass("DATE")
 	require.NoError(t, err)
@@ -184,7 +184,7 @@ func TestTimeDATEErrorHandling(t *testing.T) {
 
 func TestTimeSLEEPFunction(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterTIMEInEnv(env, []string{})
+	RegisterTIMEInEnv(env)
 
 	sleepFunc, err := env.GetFunction("SLEEP")
 	require.NoError(t, err)
@@ -206,7 +206,7 @@ func TestTimeSLEEPFunction(t *testing.T) {
 
 func TestTimeSLEEPErrorHandling(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	RegisterTIMEInEnv(env, []string{})
+	RegisterTIMEInEnv(env)
 
 	sleepFunc, err := env.GetFunction("SLEEP")
 	require.NoError(t, err)
@@ -223,7 +223,7 @@ func TestTimeSelectiveImport(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
 	// Import only SLEEP function
-	err := RegisterTIMEInEnv(env, []string{"SLEEP"})
+	err := RegisterTIMEInEnv(env, "SLEEP")
 	require.NoError(t, err)
 
 	// SLEEP should be available
@@ -239,7 +239,7 @@ func TestTimeSelectiveImportClass(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
 	// Import only DATE class
-	err := RegisterTIMEInEnv(env, []string{"DATE"})
+	err := RegisterTIMEInEnv(env, "DATE")
 	require.NoError(t, err)
 
 	// DATE class should be available
@@ -255,7 +255,7 @@ func TestTimeInvalidDeclaration(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
 	// Try to import non-existent declaration
-	err := RegisterTIMEInEnv(env, []string{"INVALID"})
+	err := RegisterTIMEInEnv(env, "INVALID")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "unknown TIME declaration: INVALID")
 }
@@ -264,7 +264,7 @@ func TestTimeCaseInsensitive(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
 	// Import using lowercase
-	err := RegisterTIMEInEnv(env, []string{"date", "sleep"})
+	err := RegisterTIMEInEnv(env, "date", "sleep")
 	require.NoError(t, err)
 
 	// Class and function should be available (stored in uppercase)
