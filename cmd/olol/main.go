@@ -19,15 +19,10 @@ func Run(args []string) int {
 
 	filename := args[0]
 
-	// Create interpreter
+	// Create interpreter with standard library
 	interp := interpreter.NewInterpreter(
-		map[string]interpreter.StdlibInitializer{
-			"TIME":  stdlib.RegisterTIMEInEnv,
-			"STDIO": stdlib.RegisterSTDIOInEnv,
-			"MATH":  stdlib.RegisterMATHInEnv,
-			"TEST":  stdlib.RegisterTESTInEnv,
-		},
-		stdlib.RegisterArraysInEnv,
+		stdlib.DefaultStdlibInitializers(),
+		stdlib.DefaultGlobalInitializers()...,
 	)
 
 	// Execute the file

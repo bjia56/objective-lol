@@ -1,0 +1,89 @@
+BTW IO module BUFFERED_READER test
+I CAN HAS IO?
+I CAN HAS STDIO?
+
+BTW Create a simple reader class for testing that extends READER
+HAI ME TEH CLAS TestReader KITTEH OF READER
+    EVRYONE
+    DIS TEH VARIABLE read_count TEH INTEGR ITZ 0
+    DIS TEH VARIABLE data TEH STRIN ITZ "Hello, World! This is a test string for buffered reading. It contains multiple sentences."
+
+    DIS TEH FUNCSHUN READ TEH STRIN WIT SIZE TEH INTEGR
+        read_count ITZ read_count MOAR 1
+        SAY WIT "TestReader.READ called #"
+        SAY WIT read_count
+        SAY WIT " requesting "
+        SAY WIT SIZE
+        SAYZ WIT " chars"
+        
+        BTW Return the entire data string each time (simulating a simple file reader)
+        GIVEZ data
+    KTHX
+
+    DIS TEH FUNCSHUN CLOSE
+        SAYZ WIT "TestReader closed"
+    KTHX
+    
+    DIS TEH FUNCSHUN get_read_count TEH INTEGR
+        GIVEZ read_count
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== IO BUFFERED_READER Test ==="
+    
+    BTW Test 1: Basic functionality
+    SAYZ WIT "Test 1: Creating BUFFERED_READER"
+    I HAS A VARIABLE reader TEH TestReader ITZ NEW TestReader
+    I HAS A VARIABLE buffered TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT reader
+
+    SAY WIT "Default buffer size: "
+    SAYZ WIT buffered SIZ
+
+    BTW Test 2: Reading small chunks should buffer efficiently  
+    SAYZ WIT "Test 2: Reading small chunks"
+    I HAS A VARIABLE result1 TEH STRIN ITZ buffered DO READ WIT 5
+    SAY WIT "First 5 chars: '"
+    SAY WIT result1
+    SAYZ WIT "'"
+    
+    I HAS A VARIABLE result2 TEH STRIN ITZ buffered DO READ WIT 7
+    SAY WIT "Next 7 chars: '"
+    SAY WIT result2
+    SAYZ WIT "'"
+    
+    SAY WIT "Read count after 2 small reads: "
+    SAYZ WIT reader DO get_read_count
+
+    BTW Test 3: Buffer size modification
+    SAYZ WIT "Test 3: Changing buffer size"
+    buffered DO SET_SIZ WIT 512
+    SAY WIT "New buffer size: "
+    SAYZ WIT buffered SIZ
+    
+    BTW Test 4: Reading after buffer size change (should clear buffer)
+    SAYZ WIT "Test 4: Reading after buffer size change"
+    I HAS A VARIABLE result3 TEH STRIN ITZ buffered DO READ WIT 10
+    SAY WIT "10 chars after buffer resize: '"
+    SAY WIT result3  
+    SAYZ WIT "'"
+    
+    SAY WIT "Read count after buffer resize: "
+    SAYZ WIT reader DO get_read_count
+
+    BTW Test 5: Large read request
+    SAYZ WIT "Test 5: Large read request"
+    I HAS A VARIABLE result4 TEH STRIN ITZ buffered DO READ WIT 50
+    SAY WIT "50 chars: '"
+    SAY WIT result4
+    SAYZ WIT "'"
+    
+    SAY WIT "Final read count: "
+    SAYZ WIT reader DO get_read_count
+
+    BTW Test 6: Close functionality
+    SAYZ WIT "Test 6: Closing buffered reader"
+    buffered DO CLOSE
+
+    SAYZ WIT "=== BUFFERED_READER Test Complete ==="
+KTHXBAI

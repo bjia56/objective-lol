@@ -11,6 +11,14 @@ type FunctionContext struct {
 	environment *environment.Environment
 }
 
+// NewFunctionContext creates a new FunctionContext with the given interpreter and environment
+func NewFunctionContext(interp *Interpreter, env *environment.Environment) *FunctionContext {
+	return &FunctionContext{
+		interpreter: interp,
+		environment: env,
+	}
+}
+
 // CallMethod calls a method on an object instance with the given arguments
 func (ctx *FunctionContext) CallMethod(instance *environment.ObjectInstance, methodName string, fromContext string, args []types.Value) (types.Value, error) {
 	method, err := instance.GetMemberFunction(methodName, fromContext, ctx.environment)

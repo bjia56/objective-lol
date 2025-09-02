@@ -23,13 +23,11 @@ func executeProgram(t *testing.T, program string) error {
 		t.Fatalf("Parser errors: %v", errors)
 	}
 
-	// Create interpreter
-	interp := interpreter.NewInterpreter(map[string]interpreter.StdlibInitializer{
-		"TIME":  stdlib.RegisterTIMEInEnv,
-		"STDIO": stdlib.RegisterSTDIOInEnv,
-		"MATH":  stdlib.RegisterMATHInEnv,
-		"TEST":  stdlib.RegisterTESTInEnv,
-	}, stdlib.RegisterArraysInEnv)
+	// Create interpreter with standard library
+	interp := interpreter.NewInterpreter(
+		stdlib.DefaultStdlibInitializers(),
+		stdlib.DefaultGlobalInitializers()...,
+	)
 
 	// Execute the program
 	return interp.Interpret(ast)
