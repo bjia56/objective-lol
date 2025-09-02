@@ -98,6 +98,7 @@ func getArrayClasses() map[string]*environment.Class {
 					},
 					"PUSH": {
 						Name:       "PUSH",
+						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{{Name: "ELEMENT", Type: ""}},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if len(args) != 1 {
@@ -155,6 +156,7 @@ func getArrayClasses() map[string]*environment.Class {
 					},
 					"UNSHIFT": {
 						Name:       "UNSHIFT",
+						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{{Name: "ELEMENT", Type: ""}},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if len(args) != 1 {
@@ -184,6 +186,7 @@ func getArrayClasses() map[string]*environment.Class {
 					},
 					"REVERSE": {
 						Name:       "REVERSE",
+						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if len(args) != 0 {
@@ -194,13 +197,14 @@ func getArrayClasses() map[string]*environment.Class {
 								for i, j := 0, len(slice)-1; i < j; i, j = i+1, j-1 {
 									slice[i], slice[j] = slice[j], slice[i]
 								}
-								return types.NOTHIN, nil
+								return types.NewObjectValue(currentObject, "BUKKIT"), nil
 							}
 							return types.NOTHIN, fmt.Errorf("REVERSE: invalid context")
 						},
 					},
 					"SORT": {
 						Name:       "SORT",
+						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if len(args) != 0 {
@@ -233,13 +237,14 @@ func getArrayClasses() map[string]*environment.Class {
 									// Default: convert both to strings and compare
 									return left.String() < right.String()
 								})
-								return types.NOTHIN, nil
+								return types.NewObjectValue(currentObject, "BUKKIT"), nil
 							}
 							return types.NOTHIN, fmt.Errorf("SORT: invalid context")
 						},
 					},
 					"JOIN": {
 						Name:       "JOIN",
+						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{{Name: "SEPARATOR", Type: "STRIN"}},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if len(args) != 1 {
@@ -266,6 +271,7 @@ func getArrayClasses() map[string]*environment.Class {
 					},
 					"SLICE": {
 						Name:       "SLICE",
+						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{{Name: "START", Type: "INTEGR"}, {Name: "END", Type: "INTEGR"}},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if len(args) != 2 {
@@ -302,15 +308,18 @@ func getArrayClasses() map[string]*environment.Class {
 
 								// Create a new BUKKIT object with the sliced array
 								newObject := &environment.ObjectInstance{
+									Class:      arrayClasses["BUKKIT"],
+									Hierarchy:  []string{"BUKKIT"},
 									NativeData: newSlice,
-									Variables:  make(map[string]*environment.Variable),
-								}
-								newObject.Variables["SIZ"] = &environment.Variable{
-									Name:     "SIZ",
-									Type:     "INTEGR",
-									Value:    types.IntegerValue(len(newSlice)),
-									IsLocked: true,
-									IsPublic: true,
+									Variables: map[string]*environment.Variable{
+										"SIZ": {
+											Name:     "SIZ",
+											Type:     "INTEGR",
+											Value:    types.IntegerValue(len(newSlice)),
+											IsLocked: true,
+											IsPublic: true,
+										},
+									},
 								}
 								return types.NewObjectValue(newObject, "BUKKIT"), nil
 							}
@@ -319,6 +328,7 @@ func getArrayClasses() map[string]*environment.Class {
 					},
 					"FIND": {
 						Name:       "FIND",
+						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if len(args) != 1 {
@@ -338,6 +348,7 @@ func getArrayClasses() map[string]*environment.Class {
 					},
 					"CONTAINS": {
 						Name:       "CONTAINS",
+						ReturnType: "BOOL",
 						Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if len(args) != 1 {

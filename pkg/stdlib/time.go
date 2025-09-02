@@ -30,6 +30,7 @@ func getTimeClasses() map[string]*environment.Class {
 					},
 					"YEAR": {
 						Name:       "YEAR",
+						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if date, ok := currentObject.NativeData.(time.Time); ok {
@@ -40,6 +41,7 @@ func getTimeClasses() map[string]*environment.Class {
 					},
 					"MONTH": {
 						Name:       "MONTH",
+						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if date, ok := currentObject.NativeData.(time.Time); ok {
@@ -50,6 +52,7 @@ func getTimeClasses() map[string]*environment.Class {
 					},
 					"DAY": {
 						Name:       "DAY",
+						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if date, ok := currentObject.NativeData.(time.Time); ok {
@@ -60,6 +63,7 @@ func getTimeClasses() map[string]*environment.Class {
 					},
 					"HOUR": {
 						Name:       "HOUR",
+						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if date, ok := currentObject.NativeData.(time.Time); ok {
@@ -70,6 +74,7 @@ func getTimeClasses() map[string]*environment.Class {
 					},
 					"MINUTE": {
 						Name:       "MINUTE",
+						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if date, ok := currentObject.NativeData.(time.Time); ok {
@@ -80,6 +85,7 @@ func getTimeClasses() map[string]*environment.Class {
 					},
 					"SECOND": {
 						Name:       "SECOND",
+						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if date, ok := currentObject.NativeData.(time.Time); ok {
@@ -90,6 +96,7 @@ func getTimeClasses() map[string]*environment.Class {
 					},
 					"MILLISECOND": {
 						Name:       "MILLISECOND",
+						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if date, ok := currentObject.NativeData.(time.Time); ok {
@@ -100,6 +107,7 @@ func getTimeClasses() map[string]*environment.Class {
 					},
 					"NANOSECOND": {
 						Name:       "NANOSECOND",
+						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(_ interface{}, currentObject *environment.ObjectInstance, args []types.Value) (types.Value, error) {
 							if date, ok := currentObject.NativeData.(time.Time); ok {
@@ -109,7 +117,8 @@ func getTimeClasses() map[string]*environment.Class {
 						},
 					},
 					"FORMAT": {
-						Name: "FORMAT",
+						Name:       "FORMAT",
+						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{
 							{Name: "layout", Type: "STRIN"},
 						},
