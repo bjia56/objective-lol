@@ -25,16 +25,12 @@ func TestVMWithOptions(t *testing.T) {
 		WithStdout(&output),
 		WithStdin(&input),
 		WithTimeout(5*time.Second),
-		WithSandbox(true),
-		WithDebug(true),
 	)
 
 	config := vm.GetConfig()
 	assert.Equal(t, &output, config.Stdout)
 	assert.Equal(t, &input, config.Stdin)
 	assert.Equal(t, 5*time.Second, config.Timeout)
-	assert.True(t, config.Sandbox)
-	assert.True(t, config.EnableDebug)
 }
 
 func TestExecuteBasicProgram(t *testing.T) {
@@ -53,7 +49,6 @@ func TestExecuteBasicProgram(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Contains(t, output.String(), "Hello, World!")
-	assert.Greater(t, result.Duration, time.Duration(0))
 }
 
 func TestExecuteWithReturn(t *testing.T) {
@@ -127,7 +122,7 @@ func TestCallFunction(t *testing.T) {
 	// Define multiple functions with different signatures
 	code := `
 		I CAN HAS STRING?
-		
+
 		HAI ME TEH FUNCSHUN ADD TEH INTEGR WIT X TEH INTEGR AN WIT Y TEH INTEGR
 			GIVEZ X MOAR Y
 		KTHXBAI
@@ -139,7 +134,7 @@ func TestCallFunction(t *testing.T) {
 		HAI ME TEH FUNCSHUN GREET TEH STRIN WIT NAME TEH STRIN
 			GIVEZ CONCAT WIT "Hello, " AN WIT NAME
 		KTHXBAI
-		
+
 		HAI ME TEH FUNCSHUN IS_POSITIVE TEH BOOL WIT NUM TEH INTEGR
 			IZ NUM BIGGR THAN 0?
 				GIVEZ YEZ
@@ -147,7 +142,7 @@ func TestCallFunction(t *testing.T) {
 				GIVEZ NO
 			KTHX
 		KTHXBAI
-		
+
 		HAI ME TEH FUNCSHUN NO_PARAMS TEH STRIN
 			GIVEZ "No parameters!"
 		KTHXBAI
@@ -204,7 +199,7 @@ func TestCallFunction(t *testing.T) {
 	t.Run("Call non-existent function", func(t *testing.T) {
 		_, err := vm.Call("NON_EXISTENT")
 		require.Error(t, err)
-		
+
 		vmErr, ok := err.(*VMError)
 		require.True(t, ok)
 		assert.True(t, vmErr.IsRuntimeError())
@@ -215,7 +210,7 @@ func TestCallFunction(t *testing.T) {
 		// ADD expects 2 arguments, provide 1
 		_, err := vm.Call("ADD", 5)
 		require.Error(t, err)
-		
+
 		vmErr, ok := err.(*VMError)
 		require.True(t, ok)
 		assert.True(t, vmErr.IsRuntimeError())
@@ -350,23 +345,6 @@ func TestTypeConversions(t *testing.T) {
 			assert.Equal(t, tt.expected, result)
 		})
 	}
-}
-
-func TestDebugMode(t *testing.T) {
-	vm := NewVM(WithDebug(true))
-
-	code := `
-		HAI ME TEH FUNCSHUN MAIN TEH INTEGR
-			I HAS A VARIABLE X TEH INTEGR ITZ 10
-			I HAS A VARIABLE Y TEH INTEGR ITZ 5
-			GIVEZ X MOAR Y
-		KTHXBAI
-	`
-
-	result, err := vm.Execute(code)
-	require.NoError(t, err)
-	assert.NotNil(t, result.DebugInfo)
-	assert.Greater(t, result.DebugInfo.PerformanceMetrics.TotalTime, time.Duration(0))
 }
 
 func TestArrayConversion(t *testing.T) {

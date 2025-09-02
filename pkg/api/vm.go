@@ -84,9 +84,7 @@ func (vm *VM) ExecuteWithContext(ctx context.Context, code string) (*ExecutionRe
 	defer vm.mutex.Unlock()
 
 	startTime := time.Now()
-	result := &ExecutionResult{
-		Warnings: []string{},
-	}
+	result := &ExecutionResult{}
 
 	// Set up timeout if configured
 	if vm.config.Timeout > 0 {
@@ -96,12 +94,10 @@ func (vm *VM) ExecuteWithContext(ctx context.Context, code string) (*ExecutionRe
 	}
 
 	// Parse the code
-	parseStart := time.Now()
 	program, err := vm.parseCode(code)
 	if err != nil {
 		return nil, err
 	}
-	parseTime := time.Since(parseStart)
 
 	// Set up output capture if needed
 	var outputBuf bytes.Buffer
@@ -111,7 +107,6 @@ func (vm *VM) ExecuteWithContext(ctx context.Context, code string) (*ExecutionRe
 	}
 
 	// Execute with timeout handling
-	executionStart := time.Now()
 	var value types.Value
 
 	done := make(chan error, 1)
@@ -135,30 +130,15 @@ func (vm *VM) ExecuteWithContext(ctx context.Context, code string) (*ExecutionRe
 		return nil, NewTimeoutError(time.Since(startTime))
 	}
 
-	executionTime := time.Since(executionStart)
-
 	// Convert result value
 	goValue, err := ToGoValue(value)
 	if err != nil {
-		result.Warnings = append(result.Warnings,
-			fmt.Sprintf("could not convert result to Go value: %v", err))
+		return nil, wrapError(err, RuntimeErrorType, "could not convert result to Go value")
 	}
 
 	result.Value = goValue
 	result.RawValue = value
-	result.Duration = time.Since(startTime)
 	result.Output = outputBuf.String()
-
-	// Add debug info if enabled
-	if vm.config.EnableDebug {
-		result.DebugInfo = &DebugInfo{
-			PerformanceMetrics: PerformanceMetrics{
-				ParseTime:     parseTime,
-				ExecutionTime: executionTime,
-				TotalTime:     result.Duration,
-			},
-		}
-	}
 
 	return result, nil
 }
