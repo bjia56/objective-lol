@@ -131,25 +131,23 @@ func getIoClasses() map[string]*environment.Class {
 					"SET_SIZ": {
 						Name: "SET_SIZ",
 						Parameters: []environment.Parameter{
-							{Name: "new_size", Type: "INTEGR"},
+							{Name: "newSize", Type: "INTEGR"},
 						},
 						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if len(args) != 1 {
-								return types.NOTHIN, fmt.Errorf("SET_SIZ expects 1 argument, got %d", len(args))
-							}
+							newSize := args[0]
 
-							newSizeVal, ok := args[0].(types.IntegerValue)
+							newSizeVal, ok := newSize.(types.IntegerValue)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("SET_SIZ expects INTEGR, got %s", args[0].Type())
+								return types.NOTHIN, fmt.Errorf("SET_SIZ expects INTEGR, got %s", newSize.Type())
 							}
 
-							newSize := int(newSizeVal)
-							if newSize <= 0 {
-								return types.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", newSize)
+							size := int(newSizeVal)
+							if size <= 0 {
+								return types.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", size)
 							}
 
 							if bufferData, ok := this.NativeData.(*BufferedReaderData); ok {
-								bufferData.BufferSize = newSize
+								bufferData.BufferSize = size
 								// Clear the buffer when size changes
 								bufferData.Buffer = ""
 								bufferData.Position = 0
@@ -157,7 +155,7 @@ func getIoClasses() map[string]*environment.Class {
 
 								// Update SIZ variable
 								if sizVar, exists := this.Variables["SIZ"]; exists {
-									sizVar.Value = types.IntegerValue(newSize)
+									sizVar.Value = types.IntegerValue(size)
 								}
 
 								return types.NOTHIN, nil
@@ -173,13 +171,11 @@ func getIoClasses() map[string]*environment.Class {
 							{Name: "size", Type: "INTEGR"},
 						},
 						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if len(args) != 1 {
-								return types.NOTHIN, fmt.Errorf("READ expects 1 argument, got %d", len(args))
-							}
+							size := args[0]
 
-							sizeVal, ok := args[0].(types.IntegerValue)
+							sizeVal, ok := size.(types.IntegerValue)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("read expects INTEGR size, got %s", args[0].Type())
+								return types.NOTHIN, fmt.Errorf("read expects INTEGR size, got %s", size.Type())
 							}
 
 							requestedSize := int(sizeVal)
@@ -214,10 +210,10 @@ func getIoClasses() map[string]*environment.Class {
 									if toTake > availableInBuffer {
 										toTake = availableInBuffer
 									}
-									
+
 									result += bufferData.Buffer[bufferData.Position : bufferData.Position+toTake]
 									bufferData.Position += toTake
-									
+
 									// If we have enough, return it
 									if len(result) >= requestedSize {
 										break
@@ -348,21 +344,19 @@ func getIoClasses() map[string]*environment.Class {
 					"SET_SIZ": {
 						Name: "SET_SIZ",
 						Parameters: []environment.Parameter{
-							{Name: "new_size", Type: "INTEGR"},
+							{Name: "newSize", Type: "INTEGR"},
 						},
 						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if len(args) != 1 {
-								return types.NOTHIN, fmt.Errorf("SET_SIZ expects 1 argument, got %d", len(args))
-							}
+							newSize := args[0]
 
-							newSizeVal, ok := args[0].(types.IntegerValue)
+							newSizeVal, ok := newSize.(types.IntegerValue)
 							if !ok {
 								return types.NOTHIN, fmt.Errorf("SET_SIZ expects INTEGR, got %s", args[0].Type())
 							}
 
-							newSize := int(newSizeVal)
-							if newSize <= 0 {
-								return types.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", newSize)
+							size := int(newSizeVal)
+							if size <= 0 {
+								return types.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", size)
 							}
 
 							if bufferData, ok := this.NativeData.(*BufferedWriterData); ok {
@@ -380,11 +374,11 @@ func getIoClasses() map[string]*environment.Class {
 									bufferData.Buffer = ""
 								}
 
-								bufferData.BufferSize = newSize
+								bufferData.BufferSize = size
 
 								// Update SIZ variable
 								if sizVar, exists := this.Variables["SIZ"]; exists {
-									sizVar.Value = types.IntegerValue(newSize)
+									sizVar.Value = types.IntegerValue(size)
 								}
 
 								return types.NOTHIN, nil
@@ -400,17 +394,15 @@ func getIoClasses() map[string]*environment.Class {
 							{Name: "data", Type: "STRIN"},
 						},
 						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							if len(args) != 1 {
-								return types.NOTHIN, fmt.Errorf("WRITE expects 1 argument, got %d", len(args))
-							}
+							data := args[0]
 
-							dataVal, ok := args[0].(types.StringValue)
+							dataVal, ok := data.(types.StringValue)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("WRITE expects STRIN data, got %s", args[0].Type())
+								return types.NOTHIN, fmt.Errorf("WRITE expects STRIN data, got %s", data.Type())
 							}
 
-							data := string(dataVal)
-							originalLength := len(data)
+							dataBuffer := string(dataVal)
+							originalLength := len(dataBuffer)
 
 							bufferData, ok := this.NativeData.(*BufferedWriterData)
 							if !ok {
@@ -423,8 +415,8 @@ func getIoClasses() map[string]*environment.Class {
 							}
 
 							// If data fits in remaining buffer space, just buffer it
-							if len(bufferData.Buffer)+len(data) <= bufferData.BufferSize {
-								bufferData.Buffer += data
+							if len(bufferData.Buffer)+len(dataBuffer) <= bufferData.BufferSize {
+								bufferData.Buffer += dataBuffer
 								return types.IntegerValue(originalLength), nil
 							}
 
@@ -438,8 +430,8 @@ func getIoClasses() map[string]*environment.Class {
 							}
 
 							// If data is larger than buffer size, write it directly
-							if len(data) >= bufferData.BufferSize {
-								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(data)})
+							if len(dataBuffer) >= bufferData.BufferSize {
+								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(dataBuffer)})
 								if err != nil {
 									return types.NOTHIN, fmt.Errorf("WRITE: error writing large data: %v", err)
 								}
@@ -447,7 +439,7 @@ func getIoClasses() map[string]*environment.Class {
 							}
 
 							// Otherwise, buffer the data
-							bufferData.Buffer = data
+							bufferData.Buffer = dataBuffer
 							return types.IntegerValue(originalLength), nil
 						},
 					},
