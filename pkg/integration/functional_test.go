@@ -30,9 +30,9 @@ func TestFunctionalScripts(t *testing.T) {
 	for _, file := range testFiles {
 		file := file // capture range variable
 		t.Run(path.Base(file), func(t *testing.T) {
-			exitCode := cli.Run([]string{file})
-			if exitCode != 0 {
-				t.Errorf("Test failed for %s: exit code %d", file, exitCode)
+			err := cli.Run([]string{file})
+			if err != nil {
+				t.Errorf("Test failed for %s: %v", file, err)
 			}
 		})
 	}

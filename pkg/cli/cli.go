@@ -12,9 +12,9 @@ import (
 	"github.com/bjia56/objective-lol/pkg/stdlib"
 )
 
-func Run(args []string) int {
+func Run(args []string) error {
 	if len(args) != 1 {
-		return 1
+		return fmt.Errorf("usage: olol <file.olol>")
 	}
 
 	filename := args[0]
@@ -26,11 +26,7 @@ func Run(args []string) int {
 	)
 
 	// Execute the file
-	if err := executeFile(interp, filename); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return 1
-	}
-	return 0
+	return executeFile(interp, filename)
 }
 
 func executeFile(interp *interpreter.Interpreter, filename string) error {
