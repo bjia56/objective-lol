@@ -37,7 +37,10 @@ func getIoClasses() map[string]*environment.Class {
 	ioClassesOnce.Do(func() {
 		ioClasses = map[string]*environment.Class{
 			"READER": {
-				Name: "READER",
+				Name:          "READER",
+				QualifiedName: "stdlib:IO.READER",
+				ModulePath:    "stdlib:IO",
+				ParentClass:   "",
 				PublicFunctions: map[string]*environment.Function{
 					"READ": {
 						Name:       "READ",
@@ -56,9 +59,17 @@ func getIoClasses() map[string]*environment.Class {
 						},
 					},
 				},
+				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateFunctions: make(map[string]*environment.Function),
+				SharedVariables:  make(map[string]*environment.Variable),
+				SharedFunctions:  make(map[string]*environment.Function),
+				PublicVariables:  make(map[string]*environment.Variable),
 			},
 			"WRITER": {
-				Name: "WRITER",
+				Name:          "WRITER",
+				QualifiedName: "stdlib:IO.WRITER",
+				ModulePath:    "stdlib:IO",
+				ParentClass:   "",
 				PublicFunctions: map[string]*environment.Function{
 					"WRITE": {
 						Name:       "WRITE",
@@ -77,6 +88,11 @@ func getIoClasses() map[string]*environment.Class {
 						},
 					},
 				},
+				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateFunctions: make(map[string]*environment.Function),
+				SharedVariables:  make(map[string]*environment.Variable),
+				SharedFunctions:  make(map[string]*environment.Function),
+				PublicVariables:  make(map[string]*environment.Variable),
 			},
 			"BUFFERED_READER": {
 				Name: "BUFFERED_READER",
@@ -292,9 +308,19 @@ func getIoClasses() map[string]*environment.Class {
 						IsPublic: true,
 					},
 				},
+				QualifiedName: "stdlib:IO.BUFFERED_READER",
+				ModulePath:    "stdlib:IO",
+				ParentClass:   "stdlib:IO.READER",
+				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateFunctions: make(map[string]*environment.Function),
+				SharedVariables:  make(map[string]*environment.Variable),
+				SharedFunctions:  make(map[string]*environment.Function),
 			},
 			"BUFFERED_WRITER": {
-				Name: "BUFFERED_WRITER",
+				Name:          "BUFFERED_WRITER",
+				QualifiedName: "stdlib:IO.BUFFERED_WRITER",
+				ModulePath:    "stdlib:IO",
+				ParentClass:   "stdlib:IO.WRITER",
 				PublicFunctions: map[string]*environment.Function{
 					// Constructor
 					"BUFFERED_WRITER": {
@@ -511,6 +537,10 @@ func getIoClasses() map[string]*environment.Class {
 						IsPublic: true,
 					},
 				},
+				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateFunctions: make(map[string]*environment.Function),
+				SharedVariables:  make(map[string]*environment.Variable),
+				SharedFunctions:  make(map[string]*environment.Function),
 			},
 		}
 	})

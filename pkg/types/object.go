@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"slices"
+	"strings"
 )
 
 type ObjectInstance interface {
@@ -25,15 +26,31 @@ func (o ObjectValue) Cast(targetType string) (Value, error) {
 	if targetType == "" {
 		return o, nil
 	}
-	if slices.Contains(o.Instance.GetHierarchy(), targetType) {
+	
+	// Get qualified hierarchy for type safety
+	hierarchy := o.Instance.GetHierarchy()
+	
+	// Try exact qualified match first (for type safety)
+	if slices.Contains(hierarchy, targetType) {
 		return o, nil
 	}
+	
+	// For backward compatibility with unqualified names in user code,
+	// check if targetType matches any class name in hierarchy
+	for _, qualifiedName := range hierarchy {
+		if strings.HasSuffix(qualifiedName, "."+targetType) {
+			return o, nil
+		}
+	}
+	
+	// Standard type casts
 	if targetType == "STRIN" {
 		return StringValue(o.String()), nil
 	}
 	if targetType == "BOOL" {
 		return o.ToBool(), nil
 	}
+	
 	return nil, fmt.Errorf("cannot cast %s to %s", o.ClassName, targetType)
 }
 

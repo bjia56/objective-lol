@@ -133,6 +133,14 @@ func getTimeClasses() map[string]*environment.Class {
 						},
 					},
 				},
+				QualifiedName: "stdlib:TIME.DATE",
+				ModulePath:    "stdlib:TIME",
+				ParentClass:   "",
+				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateFunctions: make(map[string]*environment.Function),
+				SharedVariables:  make(map[string]*environment.Variable),
+				SharedFunctions:  make(map[string]*environment.Function),
+				PublicVariables:  make(map[string]*environment.Variable),
 			},
 		}
 	})

@@ -200,9 +200,19 @@ func getThreadClasses() map[string]*environment.Class {
 						IsPublic: true,
 					},
 				},
+				QualifiedName: "stdlib:THREAD.YARN",
+				ModulePath:    "stdlib:THREAD",
+				ParentClass:   "",
+				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateFunctions: make(map[string]*environment.Function),
+				SharedVariables:  make(map[string]*environment.Variable),
+				SharedFunctions:  make(map[string]*environment.Function),
 			},
 			"KNOT": {
-				Name: "KNOT",
+				Name:          "KNOT",
+				QualifiedName: "stdlib:THREAD.KNOT",
+				ModulePath:    "stdlib:THREAD",
+				ParentClass:   "",
 				PublicFunctions: map[string]*environment.Function{
 					// Constructor
 					"KNOT": {
@@ -257,6 +267,10 @@ func getThreadClasses() map[string]*environment.Class {
 						IsPublic: true,
 					},
 				},
+				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateFunctions: make(map[string]*environment.Function),
+				SharedVariables:  make(map[string]*environment.Variable),
+				SharedFunctions:  make(map[string]*environment.Function),
 			},
 		}
 	})

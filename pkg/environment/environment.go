@@ -42,8 +42,10 @@ type Parameter struct {
 
 // Class represents an Objective-LOL class definition
 type Class struct {
-	Name             string
-	ParentClass      string
+	Name             string                  // Display name: "READER"
+	QualifiedName    string                  // Internal: "stdlib:IO.READER"
+	ModulePath       string                  // Internal: "stdlib:IO"
+	ParentClass      string                  // Internal: qualified parent name
 	PublicVariables  map[string]*Variable
 	PrivateVariables map[string]*Variable
 	PublicFunctions  map[string]*Function
@@ -146,16 +148,25 @@ func (e *Environment) GetFunction(name string) (*Function, error) {
 
 // DefineClass defines a new class in the current scope
 func (e *Environment) DefineClass(class *Class) error {
-	// Check if class already exists in current scope
-	if _, exists := e.classes[class.Name]; exists {
-		return fmt.Errorf("class '%s' already defined in current scope", class.Name)
+	// Store by qualified name (primary key for type safety)
+	if _, exists := e.classes[class.QualifiedName]; exists {
+		return fmt.Errorf("class '%s' already defined in current scope", class.QualifiedName)
 	}
-
+	e.classes[class.QualifiedName] = class
+	
+	// Also store by simple name for user code compatibility
+	// This allows lookup by simple names like "READER" while maintaining qualified internal storage
+	if existing, exists := e.classes[class.Name]; exists && existing.QualifiedName != class.QualifiedName {
+		// Only warn about name collisions, don't fail - qualified names prevent actual conflicts
+		// In a real implementation, we might want to handle import scoping here
+	}
 	e.classes[class.Name] = class
+	
 	return nil
 }
 
 // GetClass retrieves a class from the current scope or parent scopes
+// Supports both qualified names (e.g., "stdlib:IO.READER") and simple names (e.g., "READER")
 func (e *Environment) GetClass(name string) (*Class, error) {
 	if class, exists := e.classes[name]; exists {
 		return class, nil
@@ -169,10 +180,19 @@ func (e *Environment) GetClass(name string) (*Class, error) {
 }
 
 // NewClass creates a new class definition
-func NewClass(name, parentClass string) *Class {
+func NewClass(name, modulePath, parentClass string) *Class {
+	var qualifiedName string
+	if modulePath != "" {
+		qualifiedName = fmt.Sprintf("%s.%s", modulePath, name)
+	} else {
+		qualifiedName = name // Fallback for legacy/local classes
+	}
+	
 	return &Class{
 		Name:             name,
-		ParentClass:      parentClass,
+		QualifiedName:    qualifiedName,
+		ModulePath:       modulePath,
+		ParentClass:      parentClass, // Should be qualified
 		PublicVariables:  make(map[string]*Variable),
 		PrivateVariables: make(map[string]*Variable),
 		PublicFunctions:  make(map[string]*Function),
@@ -201,7 +221,7 @@ func (e *Environment) NewObjectInstance(className string) (types.ObjectInstance,
 	hierarchy := []string{}
 	curr := class
 	for {
-		hierarchy = append(hierarchy, curr.Name)
+		hierarchy = append(hierarchy, curr.QualifiedName)
 		if curr.ParentClass == "" {
 			break
 		}

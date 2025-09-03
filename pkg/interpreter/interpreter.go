@@ -22,10 +22,11 @@ type Interpreter struct {
 	ctx               context.Context              // For cancellation and timeout support
 
 	// Interpreter-local state
-	environment   *environment.Environment    // Current environment/scope
-	currentClass  string                      // For tracking visibility context
-	currentObject *environment.ObjectInstance // For tracking current object instance in method calls
-	currentFile   string                      // For tracking current file being processed (for relative imports)
+	environment       *environment.Environment    // Current environment/scope
+	currentClass      string                      // For tracking visibility context
+	currentObject     *environment.ObjectInstance // For tracking current object instance in method calls
+	currentFile       string                      // For tracking current file being processed (for relative imports)
+	currentModulePath string                      // For tracking current module context for qualified class names
 }
 
 type StdlibInitializer func(*environment.Environment, ...string) error
@@ -55,6 +56,11 @@ func NewInterpreter(stdlib map[string]StdlibInitializer, globals ...StdlibInitia
 // SetCurrentFile sets the current file being processed for relative import resolution
 func (i *Interpreter) SetCurrentFile(filename string) {
 	i.currentFile = filename
+	// Set module path for qualified class names
+	if filename != "" {
+		absPath, _ := filepath.Abs(filename)
+		i.currentModulePath = fmt.Sprintf("file:%s", absPath)
+	}
 }
 
 // ForkGlobal creates a new Interpreter from the current Interpreter with only global state
@@ -79,6 +85,7 @@ func (i *Interpreter) ForkAll() *Interpreter {
 		currentClass:      i.currentClass,
 		currentObject:     i.currentObject,
 		currentFile:       i.currentFile,
+		currentModulePath: i.currentModulePath,
 	}
 }
 
@@ -101,9 +108,44 @@ func (i *Interpreter) checkContext() error {
 	}
 }
 
+// resolveClassName resolves class names to qualified names for type safety
+func (i *Interpreter) resolveClassName(name string) string {
+	// If already qualified (contains module separator), return as-is
+	if strings.Contains(name, ":") || strings.Contains(name, ".") {
+		return name
+	}
+	
+	// Check if it's an imported class in current scope
+	if class, err := i.environment.GetClass(name); err == nil {
+		return class.QualifiedName
+	}
+	
+	// Assume it's in current module
+	if i.currentModulePath != "" {
+		return fmt.Sprintf("%s.%s", i.currentModulePath, name)
+	}
+	
+	return name // Fallback for legacy/local classes
+}
+
 // VisitProgram executes the entire program
 func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
-	// First pass: declare all functions and classes
+	// Pass 0: Process import statements first
+	for _, decl := range node.Declarations {
+		// Check for context cancellation
+		if err := i.checkContext(); err != nil {
+			return types.NOTHIN, err
+		}
+
+		switch n := decl.(type) {
+		case *ast.ImportStatementNode:
+			if _, err := i.VisitImportStatement(n); err != nil {
+				return types.NOTHIN, err
+			}
+		}
+	}
+
+	// Pass 1: declare all functions and classes (now imports are available)
 	for _, decl := range node.Declarations {
 		// Check for context cancellation
 		if err := i.checkContext(); err != nil {
@@ -122,7 +164,7 @@ func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
 		}
 	}
 
-	// Second pass: execute variable declarations, import statements, and other statements
+	// Pass 2: execute variable declarations and other statements
 	for _, decl := range node.Declarations {
 		// Check for context cancellation
 		if err := i.checkContext(); err != nil {
@@ -132,10 +174,6 @@ func (i *Interpreter) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
 		switch n := decl.(type) {
 		case *ast.VariableDeclarationNode:
 			if _, err := i.VisitVariableDeclaration(n); err != nil {
-				return types.NOTHIN, err
-			}
-		case *ast.ImportStatementNode:
-			if _, err := i.VisitImportStatement(n); err != nil {
 				return types.NOTHIN, err
 			}
 		}
@@ -213,7 +251,7 @@ func (i *Interpreter) handleFileImport(filePath string, declarations []string) (
 
 		// Create a forked interpreter for module execution with isolated context
 		moduleInterpreter := i.ForkGlobal()
-		moduleInterpreter.currentFile = resolvedPath
+		moduleInterpreter.SetCurrentFile(resolvedPath)
 
 		moduleEnv = moduleInterpreter.environment
 
@@ -387,9 +425,16 @@ func (i *Interpreter) VisitFunctionDeclaration(node *ast.FunctionDeclarationNode
 
 // VisitClassDeclaration handles class declarations
 func (i *Interpreter) VisitClassDeclaration(node *ast.ClassDeclarationNode) (types.Value, error) {
+	// Determine qualified parent class name
+	var qualifiedParent string
+	if node.ParentClass != "" {
+		qualifiedParent = i.resolveClassName(strings.ToUpper(node.ParentClass))
+	}
+	
 	class := environment.NewClass(
 		strings.ToUpper(node.Name),
-		strings.ToUpper(node.ParentClass),
+		i.currentModulePath,  // Use current module context
+		qualifiedParent,
 	)
 
 	// Save current context

@@ -350,6 +350,13 @@ func getArrayClasses() map[string]*environment.Class {
 						IsPublic: true,
 					},
 				},
+				QualifiedName: "stdlib:ARRAYS.BUKKIT",
+				ModulePath:    "stdlib:ARRAYS",
+				ParentClass:   "",
+				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateFunctions: make(map[string]*environment.Function),
+				SharedVariables:  make(map[string]*environment.Variable),
+				SharedFunctions:  make(map[string]*environment.Function),
 			},
 		}
 	})
