@@ -67,6 +67,7 @@ Located in `pkg/stdlib/`:
 - **maps.go**: BASKIT map type with methods (PUT, GET, CONTAINS, REMOVE, KEYS, VALUES, PAIRS, MERGE, COPY, CLEAR)
 - **string.go**: String utility functions (LEN, CONCAT)
 - **io.go**: Advanced I/O classes (READER, WRITER, BUFFERED_READER, BUFFERED_WRITER)
+- **thread.go**: Threading and synchronization classes (YARN abstract thread class, KNOT mutex class)
 
 ### Language Features
 The interpreter supports:
@@ -75,6 +76,7 @@ The interpreter supports:
 - Classes with inheritance (KITTEH OF), visibility modifiers (EVRYONE/MAHSELF), constructor methods
 - **Module system with file imports**: Cross-platform POSIX path resolution, caching, circular import detection
 - **Exception handling system**: MAYB/OOPS/OOPSIE/ALWAYZ try-catch-finally blocks with string-based exceptions
+- **Threading and concurrency**: YARN abstract thread class with START/JOIN/SPIN methods, KNOT mutex class with TIE/UNTIE methods
 - Control flow (IZ/NOPE conditionals, WHILE loops)
 - Arithmetic, comparison, and logical operators
 - Parentheses for expression grouping and precedence override

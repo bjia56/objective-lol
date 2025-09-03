@@ -10,7 +10,7 @@ A programming language interpreter inspired by LOLCODE, implemented in Go. Objec
 - **Control Flow**: Conditional statements and loops with intuitive syntax
 - **Module System**: Import system supporting both built-in and file modules with selective imports
 - **Exception Handling**: Comprehensive try-catch-finally blocks with built-in and custom exceptions
-- **Standard Library**: I/O operations, mathematical functions, time utilities, string functions, and buffered I/O
+- **Standard Library**: I/O operations, mathematical functions, time utilities, string functions, buffered I/O, and threading/concurrency support
 - **Case-Insensitive**: Keywords automatically converted to uppercase for consistency
 
 ## Quick Start
@@ -150,6 +150,7 @@ The test suite includes comprehensive test files covering:
 - Exception handling with try-catch-finally blocks
 - Array operations with BUKKIT
 - Buffered I/O operations
+- Threading and concurrency with THREAD module
 - Error handling and edge cases
 
 ## Documentation
@@ -197,11 +198,13 @@ I CAN HAS TIME?     BTW Time functions and DATE class
 I CAN HAS STRING?   BTW String utility functions
 I CAN HAS IO?       BTW Advanced I/O classes
 I CAN HAS TEST?     BTW Testing functions
+I CAN HAS THREAD?   BTW Threading and concurrency
 
 BTW Selective imports
 I CAN HAS SAY AN SAYZ FROM STDIO?
 I CAN HAS ABS AN MAX FROM MATH?
 I CAN HAS DATE AN SLEEP FROM TIME?
+I CAN HAS YARN AN KNOT FROM THREAD?
 
 BTW File module imports
 I CAN HAS "my_module"?              BTW Full import
@@ -234,6 +237,10 @@ I CAN HAS FUNC1 AN FUNC2 FROM "utils"?  BTW Selective import
 
 **TEST Module:**
 - `ASSERT WIT <condition>` - Assertion for testing
+
+**THREAD Module:**
+- `YARN` - Abstract thread class (must be subclassed)
+- `KNOT` - Mutex class for synchronization
 
 **Built-in BUKKIT Arrays:**
 - Dynamic arrays with methods like `PUSH`, `POP`, `AT`, `SET`, `SORT`, `REVERSE`, `JOIN`, `FIND`, `CONTAINS`

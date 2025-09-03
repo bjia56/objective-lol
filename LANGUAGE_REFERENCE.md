@@ -1105,6 +1105,7 @@ KTHXBAI
 - **TEST**: Testing and assertion functions (`ASSERT`)
 - **STRING**: String utility functions (`LEN`, `CONCAT`)
 - **IO**: I/O classes for buffered operations (`READER`, `WRITER`, `BUFFERED_READER`, `BUFFERED_WRITER`)
+- **THREAD**: Threading classes (`YARN` abstract thread class, `KNOT` mutex class)
 
 #### Selective Import Examples
 
@@ -1134,6 +1135,11 @@ I CAN HAS LEN AN CONCAT FROM STRING?         BTW LEN and CONCAT functions
 BTW IO selective imports
 I CAN HAS READER FROM IO?                    BTW Only READER class
 I CAN HAS BUFFERED_READER AN BUFFERED_WRITER FROM IO?  BTW Buffered I/O classes
+
+BTW THREAD selective imports
+I CAN HAS YARN FROM THREAD?                  BTW Only YARN class
+I CAN HAS KNOT FROM THREAD?                  BTW Only KNOT class
+I CAN HAS YARN AN KNOT FROM THREAD?          BTW Both threading classes
 ```
 
 ### I/O Functions (STDIO)
@@ -1553,6 +1559,198 @@ ASSERT WIT COUNT
 
 BTW Test complex conditions
 ASSERT WIT ((A BIGGR THAN B) AN (B BIGGR THAN 0))
+```
+
+### Threading Classes (THREAD)
+
+The THREAD module provides concurrent programming capabilities through two main classes: YARN (abstract thread) and KNOT (mutex). This enables parallel execution and synchronization in Objective-LOL programs.
+
+#### YARN Class (Abstract Thread)
+
+The `YARN` class is an abstract base class for implementing threads. It provides the foundation for concurrent execution but requires subclassing to define the actual work to be performed.
+
+```lol
+BTW YARN cannot be used directly - must be subclassed
+I CAN HAS THREAD?
+
+BTW Define a custom thread class
+HAI ME TEH CLAS WORKER KITTEH OF YARN
+    EVRYONE
+    DIS TEH VARIABLE TASK_NAME TEH STRIN ITZ "Default Task"
+    
+    BTW Constructor
+    DIS TEH FUNCSHUN WORKER WIT NAME TEH STRIN
+        TASK_NAME ITZ NAME
+    KTHX
+    
+    BTW Override the abstract SPIN method
+    DIS TEH FUNCSHUN SPIN
+        BTW This is where the thread work is done
+        SAYZ WIT "Thread is working!"
+        TASK_NAME ITZ "Task Completed"
+        GIVEZ UP
+    KTHX
+    
+    DIS TEH FUNCSHUN GET_TASK_NAME TEH STRIN
+        GIVEZ TASK_NAME
+    KTHX
+KTHXBAI
+```
+
+**YARN Methods:**
+- `NEW YARN` - Create new thread instance (requires subclassing)
+- `<yarn> DO START` - Launch the thread execution
+- `<yarn> DO JOIN` - Wait for thread completion
+- `<yarn> DO SPIN` - Abstract method (must be overridden by subclasses)
+
+**YARN Variables:**
+- `<yarn> RUNNING` - Boolean indicating if thread is currently running (read-only)
+- `<yarn> FINISHED` - Boolean indicating if thread has completed (read-only)
+
+#### YARN Usage Example
+
+```lol
+I CAN HAS THREAD?
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN MAIN
+    BTW Create worker instance
+    I HAS A VARIABLE MY_WORKER TEH WORKER ITZ NEW WORKER WIT "Important Task"
+    
+    BTW Check initial status
+    SAY WIT "Before START - Running: "
+    SAY WIT MY_WORKER RUNNING
+    SAY WIT ", Finished: "
+    SAYZ WIT MY_WORKER FINISHED
+    
+    BTW Start the thread
+    MY_WORKER DO START
+    
+    BTW Wait for completion
+    MY_WORKER DO JOIN
+    
+    BTW Check final status
+    SAY WIT "After JOIN - Running: "
+    SAY WIT MY_WORKER RUNNING
+    SAY WIT ", Finished: "
+    SAYZ WIT MY_WORKER FINISHED
+    
+    SAYZ WIT MY_WORKER DO GET_TASK_NAME
+KTHXBAI
+```
+
+#### KNOT Class (Mutex)
+
+The `KNOT` class provides mutual exclusion (mutex) functionality for synchronizing access to shared resources between threads.
+
+```lol
+I CAN HAS THREAD?
+
+HAI ME TEH FUNCSHUN MAIN
+    BTW Create mutex
+    I HAS A VARIABLE MY_MUTEX TEH KNOT ITZ NEW KNOT
+    
+    BTW Lock the mutex
+    MY_MUTEX DO TIE
+    SAY WIT "Mutex locked: "
+    SAYZ WIT MY_MUTEX LOCKED
+    
+    BTW Critical section - only one thread can execute this
+    SAYZ WIT "In critical section"
+    
+    BTW Unlock the mutex
+    MY_MUTEX DO UNTIE
+    SAY WIT "Mutex unlocked: "
+    SAYZ WIT MY_MUTEX LOCKED
+KTHXBAI
+```
+
+**KNOT Methods:**
+- `NEW KNOT` - Create new mutex instance
+- `<knot> DO TIE` - Lock the mutex (blocks if already locked)
+- `<knot> DO UNTIE` - Unlock the mutex (throws exception if not locked)
+
+**KNOT Variables:**
+- `<knot> LOCKED` - Boolean indicating if mutex is currently locked (read-only)
+
+#### Thread Synchronization Example
+
+```lol
+I CAN HAS THREAD?
+I CAN HAS STDIO?
+
+BTW Shared resource protection
+I HAS A VARIABLE SHARED_COUNTER TEH INTEGR ITZ 0
+I HAS A VARIABLE COUNTER_MUTEX TEH KNOT ITZ NEW KNOT
+
+HAI ME TEH CLAS COUNTER_THREAD KITTEH OF YARN
+    EVRYONE
+    DIS TEH VARIABLE THREAD_ID TEH INTEGR ITZ 0
+    
+    DIS TEH FUNCSHUN COUNTER_THREAD WIT ID TEH INTEGR
+        THREAD_ID ITZ ID
+    KTHX
+    
+    BTW Override SPIN to do the work
+    DIS TEH FUNCSHUN SPIN
+        BTW Lock mutex for exclusive access
+        COUNTER_MUTEX DO TIE
+        
+        BTW Critical section - increment shared counter
+        I HAS A VARIABLE OLD_VALUE TEH INTEGR ITZ SHARED_COUNTER
+        SHARED_COUNTER ITZ SHARED_COUNTER MOAR 1
+        SAY WIT "Thread "
+        SAY WIT THREAD_ID
+        SAY WIT " incremented counter from "
+        SAY WIT OLD_VALUE
+        SAY WIT " to "
+        SAYZ WIT SHARED_COUNTER
+        
+        BTW Unlock mutex
+        COUNTER_MUTEX DO UNTIE
+        
+        GIVEZ UP
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    BTW Create multiple threads
+    I HAS A VARIABLE THREAD1 TEH COUNTER_THREAD ITZ NEW COUNTER_THREAD WIT 1
+    I HAS A VARIABLE THREAD2 TEH COUNTER_THREAD ITZ NEW COUNTER_THREAD WIT 2
+    
+    BTW Start both threads
+    THREAD1 DO START
+    THREAD2 DO START
+    
+    BTW Wait for both to complete
+    THREAD1 DO JOIN
+    THREAD2 DO JOIN
+    
+    SAY WIT "Final counter value: "
+    SAYZ WIT SHARED_COUNTER
+KTHXBAI
+```
+
+#### THREAD Features
+
+**Key Capabilities:**
+- **True Concurrency**: Uses native Go goroutines for parallel execution
+- **Abstract Classes**: YARN enforces subclass implementation of SPIN method
+- **Mutual Exclusion**: KNOT provides thread-safe synchronization
+- **Status Monitoring**: Real-time thread and mutex status variables
+- **Exception Safety**: Proper error handling for invalid operations
+
+**Thread Safety:**
+- Each YARN thread runs in its own goroutine with isolated interpreter context
+- KNOT mutex operations are atomic and thread-safe
+- Status variables are automatically updated during operations
+- Exception handling prevents invalid mutex operations
+
+**Selective Import Support:**
+```lol
+I CAN HAS YARN FROM THREAD?          BTW Import only YARN class
+I CAN HAS KNOT FROM THREAD?          BTW Import only KNOT class  
+I CAN HAS YARN AN KNOT FROM THREAD?  BTW Import both classes
 ```
 
 ---
@@ -1978,6 +2176,22 @@ KTHXBAI
 #### String Functions
 - `LEN WIT <string>` - Get string length → INTEGR
 - `CONCAT WIT <str1> AN WIT <str2>` - Concatenate strings → STRIN
+
+#### Threading Classes
+
+**YARN Class (Abstract Thread):**
+- `NEW YARN` - Create new thread instance (requires subclassing) → YARN
+- `<yarn> DO START` - Launch the thread execution → NOTHIN
+- `<yarn> DO JOIN` - Wait for thread completion → varies (returns thread result)
+- `<yarn> DO SPIN` - Abstract method (must be overridden by subclasses) → varies
+- `<yarn> RUNNING` - Boolean indicating if thread is currently running → BOOL (read-only)
+- `<yarn> FINISHED` - Boolean indicating if thread has completed → BOOL (read-only)
+
+**KNOT Class (Mutex):**
+- `NEW KNOT` - Create new mutex instance → KNOT
+- `<knot> DO TIE` - Lock the mutex (blocks if already locked) → NOTHIN
+- `<knot> DO UNTIE` - Unlock the mutex (throws exception if not locked) → NOTHIN
+- `<knot> LOCKED` - Boolean indicating if mutex is currently locked → BOOL (read-only)
 
 #### I/O Classes
 
