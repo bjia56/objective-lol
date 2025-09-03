@@ -1,0 +1,197 @@
+BTW Comprehensive YARN (thread) test - demonstrates all functionality
+BTW Expected output:
+BTW === YARN (Thread) Comprehensive Test ===
+BTW
+BTW --- Basic YARN Operations ---
+BTW YARN created successfully
+BTW Initial state - Running: NO, Finished: NO
+BTW
+BTW --- Abstract SPIN Method Test ---
+BTW Testing abstract SPIN method...
+BTW Caught expected exception: SPIN method must be implemented by subclass
+BTW
+BTW --- YARN Inheritance Test ---
+BTW Creating custom worker thread
+BTW Worker created with task: Build the Future
+BTW Worker status - Running: NO, Finished: NO
+BTW Task name: Build the Future
+BTW Worker can override SPIN method (no exception)
+BTW Task completed: Future Built Successfully
+BTW
+BTW --- Multiple YARN Subclasses ---
+BTW CounterWorker task: Count to 5
+BTW PrinterWorker task: Print Messages
+BTW Both workers created successfully
+BTW
+BTW All YARN tests completed successfully!
+
+I CAN HAS THREAD?
+I CAN HAS STDIO?
+I CAN HAS TIME?
+
+BTW Define a custom thread class that extends YARN
+HAI ME TEH CLAS WORKER KITTEH OF YARN
+    EVRYONE
+    DIS TEH VARIABLE TASK_NAME TEH STRIN ITZ "Default Task"
+    DIS TEH VARIABLE COMPLETED_TASK TEH STRIN ITZ "Not Started"
+
+    BTW Constructor for WORKER
+    DIS TEH FUNCSHUN WORKER WIT NAME TEH STRIN
+        TASK_NAME ITZ NAME
+    KTHX
+
+    BTW Override the abstract SPIN method
+    DIS TEH FUNCSHUN SPIN
+        SLEEP WIT 2
+        BTW Simulate thread work by updating the completed task
+        COMPLETED_TASK ITZ "Future Built Successfully"
+        GIVEZ UP
+    KTHX
+
+    DIS TEH FUNCSHUN GET_TASK_NAME TEH STRIN
+        GIVEZ TASK_NAME
+    KTHX
+
+    DIS TEH FUNCSHUN GET_COMPLETED_TASK TEH STRIN
+        GIVEZ COMPLETED_TASK
+    KTHX
+KTHXBAI
+
+BTW Another custom thread class for demonstration
+HAI ME TEH CLAS COUNTER_WORKER KITTEH OF YARN
+    EVRYONE
+    DIS TEH VARIABLE TASK_NAME TEH STRIN ITZ "Counter Task"
+
+    DIS TEH FUNCSHUN COUNTER_WORKER WIT NAME TEH STRIN
+        TASK_NAME ITZ NAME
+    KTHX
+
+    BTW Override SPIN - this one does counting work
+    DIS TEH FUNCSHUN SPIN
+        TASK_NAME ITZ "Counted Successfully"
+        GIVEZ UP
+    KTHX
+
+    DIS TEH FUNCSHUN GET_TASK_NAME TEH STRIN
+        GIVEZ TASK_NAME
+    KTHX
+KTHXBAI
+
+BTW Third worker class for printing
+HAI ME TEH CLAS PRINTER_WORKER KITTEH OF YARN
+    EVRYONE
+    DIS TEH VARIABLE TASK_NAME TEH STRIN ITZ "Printer Task"
+
+    DIS TEH FUNCSHUN PRINTER_WORKER WIT NAME TEH STRIN
+        TASK_NAME ITZ NAME
+    KTHX
+
+    BTW Override SPIN - this one does printing work
+    DIS TEH FUNCSHUN SPIN
+        TASK_NAME ITZ "Printed Successfully"
+        GIVEZ UP
+    KTHX
+
+    DIS TEH FUNCSHUN GET_TASK_NAME TEH STRIN
+        GIVEZ TASK_NAME
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_BASIC_YARN_OPERATIONS
+    SAYZ WIT "--- Basic YARN Operations ---"
+
+    BTW Test basic YARN abstract class
+    I HAS A VARIABLE MY_YARN TEH YARN ITZ NEW YARN
+    SAYZ WIT "YARN created successfully"
+
+    BTW Check initial status
+    SAY WIT "Initial state - Running: "
+    SAY WIT MY_YARN RUNNING
+    SAY WIT ", Finished: "
+    SAYZ WIT MY_YARN FINISHED
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_ABSTRACT_SPIN_METHOD
+    SAYZ WIT "--- Abstract SPIN Method Test ---"
+
+    I HAS A VARIABLE ABSTRACT_YARN TEH YARN ITZ NEW YARN
+
+    BTW Test abstract SPIN method throws exception
+    SAYZ WIT "Testing abstract SPIN method..."
+    MAYB
+        ABSTRACT_YARN DO SPIN
+        SAYZ WIT "This should not print - exception should be thrown"
+    OOPSIE ERROR_MSG
+        SAY WIT "Caught expected exception: "
+        SAYZ WIT ERROR_MSG
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_YARN_INHERITANCE
+    SAYZ WIT "--- YARN Inheritance Test ---"
+
+    SAYZ WIT "Creating custom worker thread"
+
+    BTW Create worker instance
+    I HAS A VARIABLE WORKER_THREAD TEH WORKER ITZ NEW WORKER WIT "Build the Future"
+    SAY WIT "Worker created with task: "
+    SAYZ WIT WORKER_THREAD DO GET_TASK_NAME
+
+    BTW Check initial status (inherited from YARN)
+    SAY WIT "Worker status - Running: "
+    SAY WIT WORKER_THREAD RUNNING
+    SAY WIT ", Finished: "
+    SAYZ WIT WORKER_THREAD FINISHED
+
+    SAY WIT "Task name: "
+    SAYZ WIT WORKER_THREAD DO GET_TASK_NAME
+
+    BTW Test that the overridden SPIN method works (doesn't throw exception)
+    MAYB
+        WORKER_THREAD DO START
+        SAYZ WIT "Worker can override SPIN method (no exception)"
+    OOPSIE ERROR_MSG
+        SAY WIT "Unexpected error in overridden SPIN: "
+        SAYZ WIT ERROR_MSG
+    KTHX
+
+    SAYZ WIT "Joining..."
+    WORKER_THREAD DO JOIN
+
+    SAY WIT "Task completed: "
+    SAYZ WIT WORKER_THREAD DO GET_COMPLETED_TASK
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_MULTIPLE_YARN_SUBCLASSES
+    SAYZ WIT "--- Multiple YARN Subclasses ---"
+
+    BTW Test multiple different YARN subclasses
+    I HAS A VARIABLE COUNTER TEH COUNTER_WORKER ITZ NEW COUNTER_WORKER WIT "Count to 5"
+    I HAS A VARIABLE PRINTER TEH PRINTER_WORKER ITZ NEW PRINTER_WORKER WIT "Print Messages"
+
+    SAY WIT "CounterWorker task: "
+    SAYZ WIT COUNTER DO GET_TASK_NAME
+    SAY WIT "PrinterWorker task: "
+    SAYZ WIT PRINTER DO GET_TASK_NAME
+
+    SAYZ WIT "Both workers created successfully"
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== YARN (Thread) Comprehensive Test ==="
+    SAYZ WIT ""
+
+    TEST_BASIC_YARN_OPERATIONS
+    SAYZ WIT ""
+
+    TEST_ABSTRACT_SPIN_METHOD
+    SAYZ WIT ""
+
+    TEST_YARN_INHERITANCE
+    SAYZ WIT ""
+
+    TEST_MULTIPLE_YARN_SUBCLASSES
+    SAYZ WIT ""
+
+    SAYZ WIT "All YARN tests completed successfully!"
+KTHXBAI

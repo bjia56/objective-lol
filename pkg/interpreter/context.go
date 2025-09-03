@@ -19,6 +19,11 @@ func NewFunctionContext(interp *Interpreter, env *environment.Environment) *Func
 	}
 }
 
+// Fork creates a new FunctionContext with a forked interpreter and environment
+func (ctx *FunctionContext) Fork() *FunctionContext {
+	return NewFunctionContext(ctx.interpreter.ForkAll(), ctx.environment)
+}
+
 // CallMethod calls a method on an object instance with the given arguments
 func (ctx *FunctionContext) CallMethod(instance *environment.ObjectInstance, methodName string, fromContext string, args []types.Value) (types.Value, error) {
 	method, err := instance.GetMemberFunction(methodName, fromContext, ctx.environment)

@@ -13,6 +13,7 @@ func DefaultStdlibInitializers() map[string]interpreter.StdlibInitializer {
 		"STDIO":  RegisterSTDIOInEnv,
 		"STRING": RegisterSTRINGInEnv,
 		"TEST":   RegisterTESTInEnv,
+		"THREAD": RegisterTHREADInEnv,
 		"TIME":   RegisterTIMEInEnv,
 	}
 }

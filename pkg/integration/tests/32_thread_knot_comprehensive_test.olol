@@ -1,0 +1,122 @@
+BTW Comprehensive KNOT (mutex) test - demonstrates all functionality
+BTW Expected output:
+BTW === KNOT (Mutex) Comprehensive Test ===
+BTW 
+BTW --- Basic KNOT Operations ---
+BTW KNOT created successfully
+BTW Initial state - LOCKED: NO
+BTW After TIE (lock) - LOCKED: YEZ
+BTW After UNTIE (unlock) - LOCKED: NO
+BTW 
+BTW --- Exception Handling ---
+BTW Testing UNTIE on unlocked mutex...
+BTW Caught expected exception: Cannot unlock mutex that is not locked
+BTW 
+BTW --- Selective Import Test ---
+BTW Testing selective import of KNOT only
+BTW KNOT from selective import works: YEZ
+BTW 
+BTW --- Multiple KNOT Instances ---
+BTW Created mutex1 and mutex2
+BTW Mutex1 locked: YEZ, Mutex2 locked: NO
+BTW Both mutexes unlocked: NO NO
+BTW 
+BTW All KNOT tests completed successfully!
+
+I CAN HAS THREAD?
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN TEST_BASIC_KNOT_OPERATIONS
+    SAYZ WIT "--- Basic KNOT Operations ---"
+    
+    BTW Create and test basic KNOT functionality
+    I HAS A VARIABLE MY_KNOT TEH KNOT ITZ NEW KNOT
+    SAYZ WIT "KNOT created successfully"
+    
+    BTW Check initial state
+    SAY WIT "Initial state - LOCKED: "
+    SAYZ WIT MY_KNOT LOCKED
+    
+    BTW Test TIE (lock)
+    MY_KNOT DO TIE
+    SAY WIT "After TIE (lock) - LOCKED: "
+    SAYZ WIT MY_KNOT LOCKED
+    
+    BTW Test UNTIE (unlock)
+    MY_KNOT DO UNTIE
+    SAY WIT "After UNTIE (unlock) - LOCKED: "
+    SAYZ WIT MY_KNOT LOCKED
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_KNOT_EXCEPTION_HANDLING
+    SAYZ WIT "--- Exception Handling ---"
+    
+    I HAS A VARIABLE TEST_KNOT TEH KNOT ITZ NEW KNOT
+    
+    BTW Test exception when trying to unlock already unlocked mutex
+    SAYZ WIT "Testing UNTIE on unlocked mutex..."
+    MAYB
+        TEST_KNOT DO UNTIE
+        SAYZ WIT "This should not print - exception should be thrown"
+    OOPSIE ERROR_MSG
+        SAY WIT "Caught expected exception: "
+        SAYZ WIT ERROR_MSG
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_SELECTIVE_IMPORT
+    SAYZ WIT "--- Selective Import Test ---"
+    
+    BTW This function tests that selective import worked properly
+    SAYZ WIT "Testing selective import of KNOT only"
+    
+    I HAS A VARIABLE SELECTIVE_KNOT TEH KNOT ITZ NEW KNOT
+    SELECTIVE_KNOT DO TIE
+    SAY WIT "KNOT from selective import works: "
+    SAYZ WIT SELECTIVE_KNOT LOCKED
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_MULTIPLE_KNOT_INSTANCES
+    SAYZ WIT "--- Multiple KNOT Instances ---"
+    
+    BTW Test multiple independent mutex instances
+    I HAS A VARIABLE MUTEX1 TEH KNOT ITZ NEW KNOT
+    I HAS A VARIABLE MUTEX2 TEH KNOT ITZ NEW KNOT
+    
+    SAYZ WIT "Created mutex1 and mutex2"
+    
+    BTW Lock only first mutex
+    MUTEX1 DO TIE
+    
+    SAY WIT "Mutex1 locked: "
+    SAY WIT MUTEX1 LOCKED
+    SAY WIT ", Mutex2 locked: "
+    SAYZ WIT MUTEX2 LOCKED
+    
+    BTW Unlock first mutex
+    MUTEX1 DO UNTIE
+    
+    SAY WIT "Both mutexes unlocked: "
+    SAY WIT MUTEX1 LOCKED
+    SAY WIT " "
+    SAYZ WIT MUTEX2 LOCKED
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== KNOT (Mutex) Comprehensive Test ==="
+    SAYZ WIT ""
+    
+    TEST_BASIC_KNOT_OPERATIONS
+    SAYZ WIT ""
+    
+    TEST_KNOT_EXCEPTION_HANDLING
+    SAYZ WIT ""
+    
+    TEST_SELECTIVE_IMPORT
+    SAYZ WIT ""
+    
+    TEST_MULTIPLE_KNOT_INSTANCES
+    SAYZ WIT ""
+    
+    SAYZ WIT "All KNOT tests completed successfully!"
+KTHXBAI
