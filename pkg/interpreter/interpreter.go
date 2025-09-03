@@ -15,14 +15,17 @@ import (
 
 // Interpreter implements the tree-walking interpreter for Objective-LOL
 type Interpreter struct {
+	// Global state
 	runtime           *environment.RuntimeEnvironment
-	environment       *environment.Environment
-	currentClass      string                       // For tracking visibility context
-	currentObject     *environment.ObjectInstance  // For tracking current object instance in method calls
 	moduleResolver    *modules.ModuleResolver      // For resolving and caching module imports
 	stdlibInitializer map[string]StdlibInitializer // For loading standard library modules
-	currentFile       string                       // For tracking current file being processed (for relative imports)
 	ctx               context.Context              // For cancellation and timeout support
+
+	// Interpreter-local state
+	environment   *environment.Environment    // Current environment/scope
+	currentClass  string                      // For tracking visibility context
+	currentObject *environment.ObjectInstance // For tracking current object instance in method calls
+	currentFile   string                      // For tracking current file being processed (for relative imports)
 }
 
 type StdlibInitializer func(*environment.Environment, ...string) error
@@ -33,17 +36,17 @@ func NewInterpreter(stdlib map[string]StdlibInitializer, globals ...StdlibInitia
 	// Use current working directory as base for module resolution
 	workingDir, _ := filepath.Abs(".")
 
+	// Register global types
+	for _, init := range globals {
+		init(runtime.GlobalEnv)
+	}
+
 	interpreter := &Interpreter{
 		runtime:           runtime,
-		environment:       runtime.GlobalEnv,
 		moduleResolver:    modules.NewModuleResolver(workingDir),
 		stdlibInitializer: stdlib,
 		ctx:               context.Background(),
-	}
-
-	// Register global types
-	for _, init := range globals {
-		init(interpreter.environment)
+		environment:       runtime.NewLocalEnv(), // module scope
 	}
 
 	return interpreter
@@ -52,6 +55,31 @@ func NewInterpreter(stdlib map[string]StdlibInitializer, globals ...StdlibInitia
 // SetCurrentFile sets the current file being processed for relative import resolution
 func (i *Interpreter) SetCurrentFile(filename string) {
 	i.currentFile = filename
+}
+
+// ForkGlobal creates a new Interpreter from the current Interpreter with only global state
+func (i *Interpreter) ForkGlobal() *Interpreter {
+	return &Interpreter{
+		runtime:           i.runtime,
+		moduleResolver:    i.moduleResolver,
+		stdlibInitializer: i.stdlibInitializer,
+		ctx:               i.ctx,
+		environment:       i.runtime.NewLocalEnv(),
+	}
+}
+
+// ForkAll creates a new Interpreter from the current Interpreter with all state
+func (i *Interpreter) ForkAll() *Interpreter {
+	return &Interpreter{
+		runtime:           i.runtime,
+		moduleResolver:    i.moduleResolver,
+		stdlibInitializer: i.stdlibInitializer,
+		ctx:               i.ctx,
+		environment:       i.environment,
+		currentClass:      i.currentClass,
+		currentObject:     i.currentObject,
+		currentFile:       i.currentFile,
+	}
 }
 
 // Interpret executes the given AST with context support for cancellation
@@ -183,31 +211,22 @@ func (i *Interpreter) handleFileImport(filePath string, declarations []string) (
 		i.moduleResolver.AddToExecutingStack(resolvedPath)
 		defer i.moduleResolver.RemoveFromExecutingStack()
 
-		// Create a separate environment for the module to execute in
-		moduleEnv = i.runtime.NewLocalEnv()
+		// Create a forked interpreter for module execution with isolated context
+		moduleInterpreter := i.ForkGlobal()
+		moduleInterpreter.currentFile = resolvedPath
 
-		// Save current context and switch to module context
-		originalEnv := i.environment
-		originalFile := i.currentFile
-		i.environment = moduleEnv
+		moduleEnv = moduleInterpreter.environment
 
-		// Set current file to the module's resolved path for nested import resolution
-		i.currentFile = resolvedPath
-
-		// Execute the module in its own environment
+		// Execute the module using the forked interpreter
 		// First pass: declare functions and classes
 		for _, decl := range moduleAST.Declarations {
 			switch n := decl.(type) {
 			case *ast.FunctionDeclarationNode:
-				if _, err := i.VisitFunctionDeclaration(n); err != nil {
-					i.environment = originalEnv // Restore context before returning error
-					i.currentFile = originalFile
+				if _, err := moduleInterpreter.VisitFunctionDeclaration(n); err != nil {
 					return types.NOTHIN, fmt.Errorf("error declaring function in module %s: %v", filePath, err)
 				}
 			case *ast.ClassDeclarationNode:
-				if _, err := i.VisitClassDeclaration(n); err != nil {
-					i.environment = originalEnv // Restore context before returning error
-					i.currentFile = originalFile
+				if _, err := moduleInterpreter.VisitClassDeclaration(n); err != nil {
 					return types.NOTHIN, fmt.Errorf("error declaring class in module %s: %v", filePath, err)
 				}
 			}
@@ -217,15 +236,11 @@ func (i *Interpreter) handleFileImport(filePath string, declarations []string) (
 		for _, decl := range moduleAST.Declarations {
 			switch n := decl.(type) {
 			case *ast.VariableDeclarationNode:
-				if _, err := i.VisitVariableDeclaration(n); err != nil {
-					i.environment = originalEnv // Restore context before returning error
-					i.currentFile = originalFile
+				if _, err := moduleInterpreter.VisitVariableDeclaration(n); err != nil {
 					return types.NOTHIN, fmt.Errorf("error declaring variable in module %s: %v", filePath, err)
 				}
 			case *ast.ImportStatementNode:
-				if _, err := i.VisitImportStatement(n); err != nil {
-					i.environment = originalEnv // Restore context before returning error
-					i.currentFile = originalFile
+				if _, err := moduleInterpreter.VisitImportStatement(n); err != nil {
 					return types.NOTHIN, fmt.Errorf("error processing import in module %s: %v", filePath, err)
 				}
 			}
@@ -233,10 +248,6 @@ func (i *Interpreter) handleFileImport(filePath string, declarations []string) (
 
 		// Cache the executed environment
 		i.moduleResolver.CacheEnvironment(resolvedPath, moduleEnv)
-
-		// Restore original context
-		i.environment = originalEnv
-		i.currentFile = originalFile
 	}
 
 	// Import the requested declarations from module environment to current environment
@@ -858,15 +869,6 @@ func (i *Interpreter) VisitIdentifier(node *ast.IdentifierNode) (types.Value, er
 // VisitObjectInstantiation handles object creation
 func (i *Interpreter) VisitObjectInstantiation(node *ast.ObjectInstantiationNode) (types.Value, error) {
 	var env *environment.Environment = i.environment
-
-	// If source name is specified, get that environment
-	if node.SourceName != "" {
-		if sourceEnv, exists := i.runtime.GetSource(strings.ToUpper(node.SourceName)); exists {
-			env = sourceEnv
-		} else {
-			return types.NOTHIN, fmt.Errorf("source '%s' not found", node.SourceName)
-		}
-	}
 
 	instance, err := env.NewObjectInstance(strings.ToUpper(node.ClassName))
 	if err != nil {

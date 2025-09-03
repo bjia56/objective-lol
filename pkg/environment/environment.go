@@ -339,26 +339,13 @@ func (c *Class) getMemberFunction(name string, fromContext string, env *Environm
 type RuntimeEnvironment struct {
 	GlobalEnv *Environment
 	ExecDir   string
-	Sources   map[string]*Environment // Loaded source files
 }
 
 // NewRuntimeEnvironment creates a new runtime environment
 func NewRuntimeEnvironment() *RuntimeEnvironment {
 	return &RuntimeEnvironment{
 		GlobalEnv: NewEnvironment(nil),
-		Sources:   make(map[string]*Environment),
 	}
-}
-
-// LoadSource loads a source file into the runtime environment
-func (rt *RuntimeEnvironment) LoadSource(name string, env *Environment) {
-	rt.Sources[name] = env
-}
-
-// GetSource retrieves a loaded source environment
-func (rt *RuntimeEnvironment) GetSource(name string) (*Environment, bool) {
-	env, exists := rt.Sources[name]
-	return env, exists
 }
 
 // NewLocalEnv creates a new local environment with the global environment as parent

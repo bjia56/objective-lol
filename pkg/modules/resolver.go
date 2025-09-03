@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
@@ -151,12 +152,7 @@ func (r *ModuleResolver) LoadModuleFromWithPath(posixPath, importingFileDir stri
 
 // IsInExecutingStack checks if a path is currently being executed (circular import detection)
 func (r *ModuleResolver) IsInExecutingStack(path string) bool {
-	for _, stackPath := range r.executingStack {
-		if stackPath == path {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(r.executingStack, path)
 }
 
 // AddToExecutingStack adds a path to the execution stack
