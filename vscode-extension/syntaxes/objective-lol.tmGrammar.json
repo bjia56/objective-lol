@@ -1,0 +1,135 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Objective-LOL",
+  "scopeName": "source.objective-lol",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#identifiers"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.objective-lol",
+          "begin": "\\bBTW\\b",
+          "end": "$",
+          "captures": {
+            "0": {
+              "name": "punctuation.definition.comment.objective-lol"
+            }
+          }
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.objective-lol",
+          "match": "\\b(HAI|KTHXBAI|IZ|NOPE|WHILE|GIVEZ|UP|MAYB|OOPS|OOPSIE|ALWAYZ)\\b"
+        },
+        {
+          "name": "keyword.declaration.objective-lol",
+          "match": "\\b(TEH|VARIABLE|FUNCSHUN|CLAS|KITTEH|ME|NEW)\\b"
+        },
+        {
+          "name": "keyword.modifier.objective-lol",
+          "match": "\\b(EVRYONE|MAHSELF|LOCKD|SHARD)\\b"
+        },
+        {
+          "name": "keyword.other.objective-lol",
+          "match": "\\b(ITZ|WIT|AN|DIS|OF|AS|KTHX|I|CAN|HAS|A|DO|FROM)\\b"
+        },
+        {
+          "name": "keyword.control.import.objective-lol",
+          "match": "\\b(I\\s+CAN\\s+HAS|FROM)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.objective-lol",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.objective-lol",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.objective-lol",
+          "match": "\\b0[Xx][0-9A-Fa-f]+\\b"
+        },
+        {
+          "name": "constant.numeric.decimal.objective-lol",
+          "match": "\\b-?\\d+(\\.\\d+)?\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "storage.type.objective-lol",
+          "match": "\\b(INTEGR|DUBBLE|STRIN|BOOL|NOTHIN|BUKKIT|BASKIT)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arithmetic.objective-lol",
+          "match": "\\b(MOAR|LES|TIEMZ|DIVIDEZ)\\b"
+        },
+        {
+          "name": "keyword.operator.comparison.objective-lol",
+          "match": "\\b(BIGGR|SMALLR|THAN|SAEM)\\b"
+        },
+        {
+          "name": "keyword.operator.logical.objective-lol",
+          "match": "\\b(AN|OR)\\b"
+        }
+      ]
+    },
+    "identifiers": {
+      "patterns": [
+        {
+          "name": "constant.language.objective-lol",
+          "match": "\\b(YEZ|NO|NOTHIN)\\b"
+        },
+        {
+          "name": "support.function.objective-lol",
+          "match": "\\b(SAYZ|SAY|GIMME|ASSERT)\\b"
+        },
+        {
+          "name": "variable.other.objective-lol",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+        }
+      ]
+    }
+  }
+}

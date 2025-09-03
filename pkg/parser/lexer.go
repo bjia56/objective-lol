@@ -222,13 +222,18 @@ func (t TokenType) String() string {
 	}
 }
 
+// PositionInfo represents position information in source code
+type PositionInfo struct {
+	Line   int
+	Column int
+	Offset int
+}
+
 // Token represents a lexical token
 type Token struct {
 	Type     TokenType
 	Literal  string
-	Position int
-	Line     int
-	Column   int
+	Position PositionInfo
 }
 
 // Lexer tokenizes Objective-LOL source code
@@ -427,35 +432,37 @@ func (l *Lexer) NextToken() (Token, error) {
 
 	l.skipWhitespace()
 
-	tok.Line = l.line
-	tok.Column = l.column
-	tok.Position = l.position
+	tok.Position = PositionInfo{
+		Line:   l.line,
+		Column: l.column,
+		Offset: l.position,
+	}
 
 	switch l.ch {
 	case '\n', '\r':
-		tok = Token{Type: NEWLINE, Literal: "\\n", Line: l.line, Column: l.column, Position: l.position}
+		tok = Token{Type: NEWLINE, Literal: "\\n", Position: PositionInfo{Line: l.line, Column: l.column, Offset: l.position}}
 		l.readChar()
 		if l.ch == '\n' && tok.Literal == "\\r" { // Handle CRLF
 			l.readChar()
 		}
 	case '?':
-		tok = Token{Type: QUESTION, Literal: string(l.ch), Line: l.line, Column: l.column, Position: l.position}
+		tok = Token{Type: QUESTION, Literal: string(l.ch), Position: PositionInfo{Line: l.line, Column: l.column, Offset: l.position}}
 		l.readChar()
 	case '(':
-		tok = Token{Type: LPAREN, Literal: string(l.ch), Line: l.line, Column: l.column, Position: l.position}
+		tok = Token{Type: LPAREN, Literal: string(l.ch), Position: PositionInfo{Line: l.line, Column: l.column, Offset: l.position}}
 		l.readChar()
 	case ')':
-		tok = Token{Type: RPAREN, Literal: string(l.ch), Line: l.line, Column: l.column, Position: l.position}
+		tok = Token{Type: RPAREN, Literal: string(l.ch), Position: PositionInfo{Line: l.line, Column: l.column, Offset: l.position}}
 		l.readChar()
 	case '"':
 		str, err := l.readString()
 		if err != nil {
 			return tok, err
 		}
-		tok = Token{Type: STRING, Literal: str, Line: l.line, Column: l.column, Position: l.position}
+		tok = Token{Type: STRING, Literal: str, Position: PositionInfo{Line: l.line, Column: l.column, Offset: l.position}}
 		l.readChar() // consume closing quote
 	case 0:
-		tok = Token{Type: EOF, Literal: "", Line: l.line, Column: l.column, Position: l.position}
+		tok = Token{Type: EOF, Literal: "", Position: PositionInfo{Line: l.line, Column: l.column, Offset: l.position}}
 	default:
 		if isLetter(l.ch) {
 			// Check for BTW comment
@@ -490,7 +497,7 @@ func (l *Lexer) NextToken() (Token, error) {
 			tok.Literal = literal
 			return tok, nil
 		} else {
-			tok = Token{Type: ILLEGAL, Literal: string(l.ch), Line: l.line, Column: l.column, Position: l.position}
+			tok = Token{Type: ILLEGAL, Literal: string(l.ch), Position: PositionInfo{Line: l.line, Column: l.column, Offset: l.position}}
 			l.readChar()
 		}
 	}

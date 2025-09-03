@@ -13,6 +13,11 @@ Objective-LOL is a programming language interpreter written in Go that implement
 go build -o olol cmd/olol/main.go
 ```
 
+### Building the LSP Server
+```bash
+go build -o olol-lsp cmd/olol-lsp/main.go
+```
+
 ### Running Tests
 ```bash
 # Run all Go unit tests
@@ -49,13 +54,20 @@ The codebase is organized into several key packages:
 
 ### Core Components
 - **cmd/olol/main.go**: Main entry point (canonical build: `go build -o olol cmd/olol/main.go`)
+- **cmd/olol-lsp/main.go**: LSP server entry point (build: `go build -o olol-lsp cmd/olol-lsp/main.go`)
 - **pkg/cli/cli.go**: CLI package with Run() and executeFile() functions used by both main and tests
-- **pkg/parser**: Lexer and recursive descent parser that converts source code to AST
-- **pkg/ast**: AST node definitions using visitor pattern for tree traversal
+- **pkg/parser**: Lexer and recursive descent parser that converts source code to AST with position tracking
+- **pkg/ast**: AST node definitions using visitor pattern for tree traversal with position information
 - **pkg/interpreter**: Tree-walking interpreter that executes AST nodes
 - **pkg/environment**: Runtime environment and scoping system
 - **pkg/modules**: Cross-platform module resolution and caching system for file imports
 - **pkg/types**: Value types and object system for the language
+
+### Language Server Protocol (LSP) Support
+- **pkg/lsp/server**: Main LSP server implementation using GLSP library
+- **pkg/lsp/analyzer**: Semantic analysis and symbol collection for LSP features
+- **pkg/lsp/workspace**: Document lifecycle management and caching
+- **Features**: Diagnostics, hover info, code completion, go-to-definition
 
 ### Standard Library
 Located in `pkg/stdlib/`:

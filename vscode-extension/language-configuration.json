@@ -1,0 +1,23 @@
+{
+  "comments": {
+    "lineComment": "BTW"
+  },
+  "brackets": [
+    ["(", ")"]
+  ],
+  "autoClosingPairs": [
+    ["(", ")"],
+    ["\"", "\""]
+  ],
+  "surroundingPairs": [
+    ["(", ")"],
+    ["\"", "\""]
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*(HAI|FUNCSHUN|CLAS|IZ|WHILE|MAYB)\\b",
+      "end": "^\\s*(KTHXBAI|KTHX|KITTEH|NOPE|ALWAYZ)\\b"
+    }
+  },
+  "wordPattern": "\\b[A-Z_][A-Z0-9_]*\\b"
+}

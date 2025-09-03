@@ -1,0 +1,40 @@
+HAI ME TEH FUNCSHUN MAIN
+
+BTW Test basic variable declaration and usage
+TEH VARIABLE message ITZ STRIN WIT "Hello from Objective-LOL!"
+SAYZ message
+
+BTW Test function declaration and calling
+FUNCSHUN calculate_sum WIT INTEGR x AN INTEGR y GIVEZ INTEGR
+    TEH VARIABLE result ITZ INTEGR WIT x MOAR y
+    GIVEZ UP result
+KTHX
+
+TEH VARIABLE sum ITZ INTEGR WIT calculate_sum WIT 10 AN 20
+SAYZ sum
+
+BTW Test class declaration and instantiation
+CLAS Calculator
+    EVRYONE VARIABLE value ITZ INTEGR
+
+    EVRYONE FUNCSHUN multiply WIT INTEGR a AN INTEGR b GIVEZ INTEGR
+        DIS value ITZ a TIEMZ b
+        GIVEZ UP DIS value
+    KTHX
+KITTEH
+
+TEH VARIABLE calc ITZ NEW Calculator
+TEH VARIABLE product ITZ INTEGR WIT calc multiply WIT 5 AN 6
+SAYZ product
+
+BTW Test exception handling
+MAYB
+    TEH VARIABLE divider ITZ INTEGR WIT 0
+    TEH VARIABLE unsafe ITZ INTEGR WIT 10 DIVIDEZ divider
+    SAYZ unsafe
+OOPSIE ex
+    SAYZ "Caught an exception!"
+ALWAYZ
+    SAYZ "Cleanup complete"
+
+KTHXBAI
