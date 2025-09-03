@@ -109,7 +109,7 @@ HAI ME TEH FUNCSHUN MAIN    BTW Keywords converted to uppercase
 
 ## Data Types
 
-Objective-LOL has six built-in data types:
+Objective-LOL has seven built-in data types:
 
 ### INTEGR (Integer)
 
@@ -204,6 +204,54 @@ SAYZ WIT CSV                         BTW Output: "5, 10, 99"
 - **Rich Methods**: Full set of array manipulation methods
 - **SIZ Member**: Read-only property that always reflects current array size
 
+### BASKIT (Map/Dictionary)
+
+Key-value storage data structure that can hold any type of values with string keys. BASKIT is a built-in class that provides comprehensive map functionality:
+
+```lol
+BTW Create empty map
+I HAS A VARIABLE SCORES TEH BASKIT ITZ NEW BASKIT
+SAYZ WIT SCORES SIZ                    BTW Output: 0
+
+BTW Add key-value pairs
+SCORES DO PUT WIT "alice" AN WIT 95
+SCORES DO PUT WIT "bob" AN WIT 87
+SCORES DO PUT WIT "charlie" AN WIT 92
+SAYZ WIT SCORES SIZ                    BTW Output: 3
+
+BTW Access values by key
+SAYZ WIT SCORES DO GET WIT "alice"     BTW Output: 95
+SAYZ WIT SCORES DO GET WIT "bob"       BTW Output: 87
+
+BTW Check if key exists
+I HAS A VARIABLE HAS_KEY TEH BOOL ITZ SCORES DO CONTAINS WIT "alice"
+SAYZ WIT HAS_KEY                       BTW Output: YEZ
+
+BTW Get all keys and values
+I HAS A VARIABLE ALL_KEYS TEH BUKKIT ITZ SCORES DO KEYS
+I HAS A VARIABLE ALL_VALUES TEH BUKKIT ITZ SCORES DO VALUES
+SAYZ WIT ALL_KEYS DO JOIN WIT ", "     BTW Output: "alice, bob, charlie"
+SAYZ WIT ALL_VALUES DO JOIN WIT ", "   BTW Output: "95, 87, 92"
+
+BTW Remove key-value pairs
+I HAS A VARIABLE REMOVED_VALUE TEH INTEGR ITZ SCORES DO REMOVE WIT "bob"
+SAYZ WIT SCORES SIZ                    BTW Output: 2
+
+BTW Copy and merge maps
+I HAS A VARIABLE SCORES_COPY TEH BASKIT ITZ SCORES DO COPY
+I HAS A VARIABLE MORE_SCORES TEH BASKIT ITZ NEW BASKIT
+MORE_SCORES DO PUT WIT "dave" AN WIT 88
+SCORES_COPY DO MERGE WIT MORE_SCORES
+SAYZ WIT SCORES_COPY SIZ               BTW Output: 3
+```
+
+**Key Features:**
+- **String Keys**: All keys are converted to strings automatically
+- **Mixed Values**: Can store any combination of INTEGR, DUBBLE, STRIN, BOOL, NOTHIN, BUKKIT, BASKIT, or objects as values
+- **Rich Methods**: Comprehensive map manipulation methods
+- **SIZ Member**: Read-only property that always reflects current map size
+- **Exception Handling**: GET and REMOVE methods throw exceptions for non-existent keys
+
 ---
 
 ## Variables
@@ -217,6 +265,7 @@ BTW Basic declaration with initialization
 I HAS A VARIABLE X TEH INTEGR ITZ 42
 I HAS A VARIABLE NAME TEH STRIN ITZ "Bob"
 I HAS A VARIABLE READY TEH BOOL ITZ YEZ
+I HAS A VARIABLE SCORES TEH BASKIT ITZ NEW BASKIT
 
 BTW Declaration without initialization (defaults to type's zero value)
 I HAS A VARIABLE EMPTY TEH STRIN        BTW Becomes empty string ""
@@ -228,6 +277,7 @@ For global variables, use `HAI ME TEH VARIABLE`:
 
 ```lol
 HAI ME TEH VARIABLE GLOBAL_VAR TEH INTEGR
+HAI ME TEH VARIABLE GLOBAL_MAP TEH BASKIT
 ```
 
 ### Variable Assignment
@@ -1863,6 +1913,7 @@ KTHXBAI
 - `STRIN` - String type
 - `BOOL` - Boolean type
 - `BUKKIT` - Array type
+- `BASKIT` - Map/dictionary type
 - `NOTHIN` - Null/void type
 
 #### Operators
@@ -1969,6 +2020,22 @@ KTHXBAI
 - `<bukkit> DO SLICE WIT <start> AN WIT <end>` - Create sub-array → BUKKIT
 - `<bukkit> DO FIND WIT <value>` - Find index of value (-1 if not found) → INTEGR
 - `<bukkit> DO CONTAINS WIT <value>` - Check if array contains value → BOOL
+
+#### Map Functions
+
+**BASKIT Class Methods** (called on BASKIT objects with `DO`):
+- `NEW BASKIT` - Create new empty map → BASKIT
+- `<baskit> SIZ` - Get map size (read-only member) → INTEGR
+- `<baskit> DO PUT WIT <key> AN WIT <value>` - Set key-value pair → NOTHIN
+- `<baskit> DO GET WIT <key>` - Get value by key (throws exception if not found) → varies
+- `<baskit> DO CONTAINS WIT <key>` - Check if key exists → BOOL
+- `<baskit> DO REMOVE WIT <key>` - Remove key-value pair (throws exception if not found) → varies
+- `<baskit> DO CLEAR` - Remove all key-value pairs → NOTHIN
+- `<baskit> DO KEYS` - Get array of all keys → BUKKIT
+- `<baskit> DO VALUES` - Get array of all values → BUKKIT
+- `<baskit> DO PAIRS` - Get array of key-value pair arrays → BUKKIT
+- `<baskit> DO MERGE WIT <other>` - Merge another BASKIT into this one → NOTHIN
+- `<baskit> DO COPY` - Create a shallow copy of the map → BASKIT
 
 ### Syntax Patterns
 

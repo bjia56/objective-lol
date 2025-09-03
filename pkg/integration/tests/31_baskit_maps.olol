@@ -1,0 +1,56 @@
+BTW Test BASKIT basic functionality
+
+I CAN HAS SAY AN SAYZ FROM STDIO?
+
+HAI ME TEH FUNCSHUN MAIN
+    BTW Create a new BASKIT
+    I HAS A VARIABLE SCORES TEH BASKIT ITZ NEW BASKIT
+    
+    BTW Test PUT and GET
+    SCORES DO PUT WIT "alice" AN WIT 95
+    SCORES DO PUT WIT "bob" AN WIT 87
+    SCORES DO PUT WIT "charlie" AN WIT 92
+    
+    BTW Test SIZ
+    SAY WIT "Number of scores: "
+    SAYZ WIT SCORES SIZ
+    
+    BTW Test GET
+    SAY WIT "Alice's score: "
+    SAYZ WIT SCORES DO GET WIT "alice"
+    
+    BTW Test CONTAINS
+    I HAS A VARIABLE HAS_BOB TEH BOOL ITZ SCORES DO CONTAINS WIT "bob"
+    IZ HAS_BOB?
+        SAYZ WIT "Bob's score found!"
+    NOPE
+        SAYZ WIT "Bob's score not found!"
+    KTHX
+    
+    BTW Test KEYS and VALUES
+    I HAS A VARIABLE ALL_KEYS TEH BUKKIT ITZ SCORES DO KEYS
+    SAY WIT "Keys: "
+    SAYZ WIT ALL_KEYS DO JOIN WIT ", "
+    
+    I HAS A VARIABLE ALL_VALUES TEH BUKKIT ITZ SCORES DO VALUES
+    SAY WIT "Values: "
+    SAYZ WIT ALL_VALUES DO JOIN WIT ", "
+    
+    BTW Test COPY and MERGE
+    I HAS A VARIABLE SCORES_COPY TEH BASKIT ITZ SCORES DO COPY
+    I HAS A VARIABLE MORE_SCORES TEH BASKIT ITZ NEW BASKIT
+    MORE_SCORES DO PUT WIT "dave" AN WIT 88
+    MORE_SCORES DO PUT WIT "eve" AN WIT 96
+    
+    SCORES_COPY DO MERGE WIT MORE_SCORES
+    SAY WIT "After merge size: "
+    SAYZ WIT SCORES_COPY SIZ
+    
+    BTW Test exception handling
+    MAYB
+        SAYZ WIT SCORES DO GET WIT "nonexistent"
+    OOPSIE ERROR_MSG
+        SAY WIT "Caught error: "
+        SAYZ WIT ERROR_MSG
+    KTHX
+KTHXBAI

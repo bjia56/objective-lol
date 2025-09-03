@@ -64,12 +64,13 @@ Located in `pkg/stdlib/`:
 - **time.go**: Time-related functions using DATE class (DATE class with YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, MILLISECOND, NANOSECOND, FORMAT methods) and global SLEEP function
 - **test.go**: Testing and assertion functions (ASSERT)
 - **arrays.go**: BUKKIT array type with methods (PUSH, POP, AT, SET, SIZ, SORT, REVERSE, JOIN, FIND, CONTAINS)
+- **maps.go**: BASKIT map type with methods (PUT, GET, CONTAINS, REMOVE, KEYS, VALUES, PAIRS, MERGE, COPY, CLEAR)
 - **string.go**: String utility functions (LEN, CONCAT)
 - **io.go**: Advanced I/O classes (READER, WRITER, BUFFERED_READER, BUFFERED_WRITER)
 
 ### Language Features
 The interpreter supports:
-- Variables with type declarations (INTEGR, DUBBLE, STRIN, BOOL, NOTHIN, BUKKIT)
+- Variables with type declarations (INTEGR, DUBBLE, STRIN, BOOL, NOTHIN, BUKKIT, BASKIT)
 - Functions with parameters and return values
 - Classes with inheritance (KITTEH OF), visibility modifiers (EVRYONE/MAHSELF), constructor methods
 - **Module system with file imports**: Cross-platform POSIX path resolution, caching, circular import detection
@@ -123,6 +124,7 @@ Implements visitor pattern:
 - Division by zero in arithmetic operations
 - Type casting failures in value conversion
 - Array bounds violations in BUKKIT operations
+- Key not found errors in BASKIT operations
 - Undefined variable/function access
 
 ### Module System

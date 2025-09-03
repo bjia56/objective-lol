@@ -22,5 +22,6 @@ func DefaultStdlibInitializers() map[string]interpreter.StdlibInitializer {
 func DefaultGlobalInitializers() []interpreter.StdlibInitializer {
 	return []interpreter.StdlibInitializer{
 		RegisterArraysInEnv,
+		RegisterMapsInEnv,
 	}
 }

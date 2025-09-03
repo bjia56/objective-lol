@@ -50,6 +50,7 @@ Run it:
 - **STRIN**: Strings with escape sequences (`"Hello \"World\"!"`)
 - **BOOL**: Boolean values (`YEZ` for true, `NO` for false)
 - **BUKKIT**: Dynamic arrays with rich manipulation methods
+- **BASKIT**: Key-value maps/dictionaries with string keys and rich functionality
 - **NOTHIN**: Null/void type
 
 ### Variables
@@ -57,6 +58,7 @@ Run it:
 ```lol
 I HAS A VARIABLE NAME TEH STRIN ITZ "Alice"
 I HAS A VARIABLE AGE TEH INTEGR ITZ 25
+I HAS A VARIABLE SCORES TEH BASKIT ITZ NEW BASKIT
 I HAS A LOCKD VARIABLE PI TEH DUBBLE ITZ 3.14159  BTW Constant
 ```
 
@@ -236,6 +238,9 @@ I CAN HAS FUNC1 AN FUNC2 FROM "utils"?  BTW Selective import
 **Built-in BUKKIT Arrays:**
 - Dynamic arrays with methods like `PUSH`, `POP`, `AT`, `SET`, `SORT`, `REVERSE`, `JOIN`, `FIND`, `CONTAINS`
 
+**Built-in BASKIT Maps:**
+- Key-value maps with methods like `PUT`, `GET`, `CONTAINS`, `REMOVE`, `KEYS`, `VALUES`, `PAIRS`, `MERGE`, `COPY`, `CLEAR`
+
 ### Exception Handling
 
 Objective-LOL supports comprehensive exception handling with try-catch-finally blocks:
@@ -310,6 +315,31 @@ NUMS DO SORT                        BTW Sort in-place
 NUMS DO REVERSE                     BTW Reverse in-place
 SAYZ WIT NUMS DO FIND WIT 99        BTW Find index
 SAYZ WIT NUMS DO CONTAINS WIT 10    BTW Check existence
+```
+
+### Maps (BASKIT)
+
+Key-value storage with comprehensive functionality:
+
+```lol
+I HAS A VARIABLE SCORES TEH BASKIT ITZ NEW BASKIT
+SCORES DO PUT WIT "alice" AN WIT 95
+SCORES DO PUT WIT "bob" AN WIT 87
+SCORES DO PUT WIT "charlie" AN WIT 92
+
+SAYZ WIT SCORES SIZ                  BTW 3
+SAYZ WIT SCORES DO GET WIT "alice"   BTW 95
+SAYZ WIT SCORES DO CONTAINS WIT "bob" BTW YEZ
+
+BTW Get all keys and values
+I HAS A VARIABLE ALL_KEYS TEH BUKKIT ITZ SCORES DO KEYS
+I HAS A VARIABLE ALL_VALUES TEH BUKKIT ITZ SCORES DO VALUES
+SAYZ WIT ALL_KEYS DO JOIN WIT ", "   BTW "alice, bob, charlie"
+
+BTW Map operations
+I HAS A VARIABLE COPY TEH BASKIT ITZ SCORES DO COPY
+COPY DO REMOVE WIT "bob"             BTW Remove key-value pair
+SCORES DO CLEAR                      BTW Remove all pairs
 ```
 
 ### Type Casting

@@ -347,22 +347,222 @@ func TestTypeConversions(t *testing.T) {
 	}
 }
 
-func TestArrayConversion(t *testing.T) {
-	t.Skip("Array conversion not yet implemented - BUKKIT objects need special handling")
-
+func TestBukkitToGoSliceConversion(t *testing.T) {
 	vm := NewVM()
 
-	// Set an array
+	// Create a BUKKIT array using Objective-LOL code
+	code := `
+		HAI ME TEH FUNCSHUN test_bukkit TEH BUKKIT
+			I HAS A VARIABLE ARR TEH BUKKIT ITZ NEW BUKKIT
+			ARR DO PUSH WIT 42
+			ARR DO PUSH WIT "hello"
+			ARR DO PUSH WIT 3.14
+			ARR DO PUSH WIT YEZ
+			GIVEZ ARR
+		KTHXBAI
+
+		HAI ME TEH FUNCSHUN MAIN
+		KTHXBAI
+	`
+
+	_, err := vm.Execute(code)
+	require.NoError(t, err)
+
+	result, err := vm.Call("test_bukkit")
+	require.NoError(t, err)
+
+	// Should convert BUKKIT to []interface{}
+	arr, ok := result.([]interface{})
+	require.True(t, ok, "Expected []interface{}, got %T", result)
+	assert.Len(t, arr, 4)
+	assert.Equal(t, int64(42), arr[0])
+	assert.Equal(t, "hello", arr[1])
+	assert.Equal(t, 3.14, arr[2])
+	assert.Equal(t, true, arr[3])
+}
+
+func TestObjectToGoMapConversion(t *testing.T) {
+	vm := NewVM()
+
+	// Create a BASKIT map using Objective-LOL code
+	code := `
+		HAI ME TEH FUNCSHUN test_baskit TEH BASKIT
+			I HAS A VARIABLE MAP TEH BASKIT ITZ NEW BASKIT
+			MAP DO PUT WIT "name" AN WIT "Alice"
+			MAP DO PUT WIT "age" AN WIT 30
+			MAP DO PUT WIT "score" AN WIT 85.5
+			MAP DO PUT WIT "active" AN WIT YEZ
+			GIVEZ MAP
+		KTHXBAI
+
+		HAI ME TEH FUNCSHUN MAIN
+		KTHXBAI
+	`
+
+	_, err := vm.Execute(code)
+	require.NoError(t, err)
+
+	result, err := vm.Call("test_baskit")
+	require.NoError(t, err)
+
+	// Should convert BASKIT to map[string]interface{}
+	objMap, ok := result.(map[string]interface{})
+	require.True(t, ok, "Expected map[string]interface{}, got %T", result)
+	assert.Len(t, objMap, 4)
+	assert.Equal(t, "Alice", objMap["name"])
+	assert.Equal(t, int64(30), objMap["age"])
+	assert.Equal(t, 85.5, objMap["score"])
+	assert.Equal(t, true, objMap["active"])
+}
+
+func TestSliceToArrayConversion(t *testing.T) {
+	vm := NewVM()
+
+	// Set a Go slice that should be converted to BUKKIT
+	err := vm.Set("MY_ARRAY", []interface{}{1, "hello", 3.14, true})
+	require.NoError(t, err)
+
+	// Test that the variable was converted to BUKKIT and can be used
+	code := `
+		HAI ME TEH FUNCSHUN test_size TEH INTEGR
+			GIVEZ MY_ARRAY SIZ
+		KTHXBAI
+
+		HAI ME TEH FUNCSHUN test_access
+			GIVEZ MY_ARRAY DO AT WIT 1
+		KTHXBAI
+
+		HAI ME TEH FUNCSHUN MAIN
+		KTHXBAI
+	`
+
+	_, err = vm.Execute(code)
+	require.NoError(t, err)
+
+	// Test size
+	result, err := vm.Call("test_size")
+	require.NoError(t, err)
+	assert.Equal(t, int64(4), result)
+
+	// Test accessing elements
+	result, err = vm.Call("test_access")
+	require.NoError(t, err)
+	assert.Equal(t, "hello", result)
+}
+
+func TestMapToObjectConversion(t *testing.T) {
+	vm := NewVM()
+
+	// Set a Go map that should be converted to BASKIT
+	goMap := map[string]interface{}{
+		"name":   "Bob",
+		"age":    25,
+		"height": 6.2,
+		"active": true,
+	}
+	err := vm.Set("MY_MAP", goMap)
+	require.NoError(t, err)
+
+	// Test that the variable was converted to BASKIT and can be used
+	code := `
+		HAI ME TEH FUNCSHUN test_size TEH INTEGR
+			GIVEZ MY_MAP SIZ
+		KTHXBAI
+
+		HAI ME TEH FUNCSHUN test_access
+			GIVEZ MY_MAP DO GET WIT "name"
+		KTHXBAI
+
+		HAI ME TEH FUNCSHUN MAIN
+		KTHXBAI
+	`
+
+	_, err = vm.Execute(code)
+	require.NoError(t, err)
+
+	// Test size
+	result, err := vm.Call("test_size")
+	require.NoError(t, err)
+	assert.Equal(t, int64(4), result)
+
+	// Test accessing values
+	result, err = vm.Call("test_access")
+	require.NoError(t, err)
+	assert.Equal(t, "Bob", result)
+}
+
+func TestStructToObjectConversion(t *testing.T) {
+	vm := NewVM()
+
+	// Define a test struct
+	type TestStruct struct {
+		Name   string
+		Age    int
+		Height float64
+		Active bool
+	}
+
+	// Set a Go struct that should be converted to BASKIT
+	testStruct := TestStruct{
+		Name:   "Charlie",
+		Age:    35,
+		Height: 5.9,
+		Active: false,
+	}
+	err := vm.Set("MY_STRUCT", testStruct)
+	require.NoError(t, err)
+
+	// Test that the variable was converted to BASKIT and can be used
+	code := `
+		HAI ME TEH FUNCSHUN test_size TEH INTEGR
+			GIVEZ MY_STRUCT SIZ
+		KTHXBAI
+
+		HAI ME TEH FUNCSHUN test_name
+			GIVEZ MY_STRUCT DO GET WIT "Name"
+		KTHXBAI
+
+		HAI ME TEH FUNCSHUN test_age TEH INTEGR
+			GIVEZ MY_STRUCT DO GET WIT "Age"
+		KTHXBAI
+
+		HAI ME TEH FUNCSHUN MAIN
+		KTHXBAI
+	`
+
+	_, err = vm.Execute(code)
+	require.NoError(t, err)
+
+	// Test size
+	result, err := vm.Call("test_size")
+	require.NoError(t, err)
+	assert.Equal(t, int64(4), result)
+
+	// Test accessing struct fields
+	result, err = vm.Call("test_name")
+	require.NoError(t, err)
+	assert.Equal(t, "Charlie", result)
+
+	// Test accessing numeric field
+	result, err = vm.Call("test_age")
+	require.NoError(t, err)
+	assert.Equal(t, int64(35), result)
+}
+
+func TestArrayConversion(t *testing.T) {
+	vm := NewVM()
+
+	// Set an array - this tests Go slice → BUKKIT → Go slice conversion
 	err := vm.Set("MY_ARRAY", []int{1, 2, 3, 4, 5})
 	require.NoError(t, err)
 
-	// Get the array back
+	// Get the array back - should be converted through BUKKIT
 	result, err := vm.Get("MY_ARRAY")
 	require.NoError(t, err)
 
 	// Should be converted to []interface{}
 	arr, ok := result.([]interface{})
-	require.True(t, ok)
+	require.True(t, ok, "Expected []interface{}, got %T", result)
 	assert.Len(t, arr, 5)
 	assert.Equal(t, int64(1), arr[0])
 	assert.Equal(t, int64(5), arr[4])

@@ -40,9 +40,9 @@ type SourceLocation struct {
 
 func (e *VMError) Error() string {
 	var parts []string
-	
+
 	parts = append(parts, fmt.Sprintf("%s error", e.Type))
-	
+
 	if e.Source != nil {
 		if e.Source.Filename != "" {
 			parts = append(parts, fmt.Sprintf("at %s:%d:%d", e.Source.Filename, e.Source.Line, e.Source.Column))
@@ -50,13 +50,13 @@ func (e *VMError) Error() string {
 			parts = append(parts, fmt.Sprintf("at line %d:%d", e.Source.Line, e.Source.Column))
 		}
 	}
-	
-	parts = append(parts, e.Message)
-	
+
+	parts = append(parts, e.Message, e.Wrapped.Error())
+
 	if e.Duration > 0 {
 		parts = append(parts, fmt.Sprintf("(after %v)", e.Duration))
 	}
-	
+
 	return strings.Join(parts, ": ")
 }
 
@@ -139,7 +139,7 @@ func wrapError(err error, errorType ErrorType, message string) *VMError {
 	if vmErr, ok := err.(*VMError); ok {
 		return vmErr
 	}
-	
+
 	return &VMError{
 		Type:    errorType,
 		Message: message,
