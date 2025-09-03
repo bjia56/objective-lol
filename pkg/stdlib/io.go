@@ -5,9 +5,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/interpreter"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
@@ -46,7 +46,7 @@ func getIoClasses() map[string]*environment.Class {
 							{Name: "size", Type: "INTEGR"},
 						},
 						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							return types.NOTHIN, ast.Exception{Message: "Not implemented"}
+							return types.NOTHIN, runtime.Exception{Message: "Not implemented"}
 						},
 					},
 					"CLOSE": {
@@ -67,7 +67,7 @@ func getIoClasses() map[string]*environment.Class {
 							{Name: "data", Type: "STRIN"},
 						},
 						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							return types.NOTHIN, ast.Exception{Message: "Not implemented"}
+							return types.NOTHIN, runtime.Exception{Message: "Not implemented"}
 						},
 					},
 					"CLOSE": {

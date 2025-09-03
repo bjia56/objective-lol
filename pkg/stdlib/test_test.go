@@ -3,8 +3,8 @@ package stdlib
 import (
 	"testing"
 
-	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 	"github.com/bjia56/objective-lol/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -101,10 +101,10 @@ func TestASSERTFunction(t *testing.T) {
 				assert.Error(t, err, "ASSERT should fail for falsy condition")
 
 				// Check if it's an Exception error
-				if exception, ok := err.(ast.Exception); ok {
+				if exception, ok := err.(runtime.Exception); ok {
 					assert.Contains(t, exception.Message, "Assertion failed")
 				} else {
-					t.Errorf("Expected ast.Exception, got %T", err)
+					t.Errorf("Expected runtime.Exception, got %T", err)
 				}
 			} else {
 				assert.NoError(t, err, "ASSERT should pass for truthy condition")

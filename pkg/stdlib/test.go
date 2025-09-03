@@ -5,8 +5,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
@@ -25,7 +25,7 @@ func getTestFunctions() map[string]*environment.Function {
 
 					// Check if condition is truthy
 					if !isTruthy(condition) {
-						return types.NOTHIN, ast.Exception{Message: "Assertion failed"}
+						return types.NOTHIN, runtime.Exception{Message: "Assertion failed"}
 					}
 
 					return types.NOTHIN, nil

@@ -9,6 +9,7 @@ import (
 	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/modules"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
@@ -536,9 +537,6 @@ func (i *Interpreter) VisitWhileStatement(node *ast.WhileStatementNode) (types.V
 
 		_, err = node.Body.Accept(i)
 		if err != nil {
-			if ast.IsReturnValue(err) {
-				return types.NOTHIN, err // Propagate return
-			}
 			return types.NOTHIN, err
 		}
 	}
@@ -558,7 +556,7 @@ func (i *Interpreter) VisitReturnStatement(node *ast.ReturnStatementNode) (types
 		}
 	}
 
-	return types.NOTHIN, ast.ReturnValue{Value: value}
+	return types.NOTHIN, runtime.ReturnValue{Value: value}
 }
 
 // VisitFunctionCall handles function calls
@@ -659,8 +657,8 @@ func (i *Interpreter) callFunction(function *environment.Function, args []types.
 	if body, ok := function.Body.(*ast.StatementBlockNode); ok {
 		_, err := body.Accept(i)
 		if err != nil {
-			if ast.IsReturnValue(err) {
-				result = ast.GetReturnValue(err)
+			if runtime.IsReturnValue(err) {
+				result = runtime.GetReturnValue(err)
 			} else {
 				i.environment = oldEnv
 				return types.NOTHIN, err
@@ -762,12 +760,12 @@ func (i *Interpreter) VisitBinaryOp(node *ast.BinaryOpNode) (types.Value, error)
 			if rightNum, ok := right.(types.NumberValue); ok {
 				// Check for division by zero
 				if (rightNum == types.IntegerValue(0)) || (rightNum == types.DoubleValue(0.0)) {
-					return types.NOTHIN, ast.Exception{Message: "Division by zero"}
+					return types.NOTHIN, runtime.Exception{Message: "Division by zero"}
 				}
 				return leftNum.Divide(rightNum), nil
 			}
 		}
-		return types.NOTHIN, ast.Exception{Message: "Operands must be numbers for division"}
+		return types.NOTHIN, runtime.Exception{Message: "Operands must be numbers for division"}
 
 	case "BIGGR THAN": // Greater than
 		if leftNum, ok := left.(types.NumberValue); ok {
@@ -823,7 +821,7 @@ func (i *Interpreter) VisitCast(node *ast.CastNode) (types.Value, error) {
 
 	result, castErr := value.Cast(strings.ToUpper(node.TargetType))
 	if castErr != nil {
-		return types.NOTHIN, ast.Exception{Message: castErr.Error()}
+		return types.NOTHIN, runtime.Exception{Message: castErr.Error()}
 	}
 	return result, nil
 }
@@ -854,7 +852,7 @@ func (i *Interpreter) VisitIdentifier(node *ast.IdentifierNode) (types.Value, er
 		return i.callFunction(function, []types.Value{})
 	}
 
-	return types.NOTHIN, ast.Exception{Message: fmt.Sprintf("Undefined variable or function '%s'", name)}
+	return types.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Undefined variable or function '%s'", name)}
 }
 
 // VisitObjectInstantiation handles object creation
@@ -941,14 +939,14 @@ func (i *Interpreter) VisitTryStatement(node *ast.TryStatementNode) (types.Value
 	result, tryErr = node.TryBody.Accept(i)
 
 	// If an exception occurred, handle it with the catch block
-	if tryErr != nil && ast.IsException(tryErr) {
+	if tryErr != nil && runtime.IsException(tryErr) {
 		// Create new environment for catch block with exception variable
 		catchEnv := environment.NewEnvironment(i.environment)
 		oldEnv := i.environment
 		i.environment = catchEnv
 
 		// Bind the exception message to the catch variable
-		exceptionMsg := ast.GetExceptionMessage(tryErr)
+		exceptionMsg := runtime.GetExceptionMessage(tryErr)
 		i.environment.DefineVariable(node.CatchVar, "STRIN", types.StringValue(exceptionMsg), false)
 
 		// Execute catch block
@@ -987,7 +985,7 @@ func (i *Interpreter) VisitThrowStatement(node *ast.ThrowStatementNode) (types.V
 
 	// Create and throw the exception
 	exceptionMsg := strValue.String()
-	return types.NOTHIN, ast.Exception{Message: exceptionMsg}
+	return types.NOTHIN, runtime.Exception{Message: exceptionMsg}
 }
 
 // GetRuntime returns the runtime environment

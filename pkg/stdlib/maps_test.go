@@ -3,8 +3,8 @@ package stdlib
 import (
 	"testing"
 
-	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 	"github.com/bjia56/objective-lol/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -89,8 +89,8 @@ func TestBaskitGetNonexistentKey(t *testing.T) {
 	require.Error(t, err)
 
 	// Check it's the right type of exception
-	exception, ok := err.(ast.Exception)
-	require.True(t, ok, "Should be an ast.Exception")
+	exception, ok := err.(runtime.Exception)
+	require.True(t, ok, "Should be an runtime.Exception")
 	assert.Contains(t, exception.Message, "Key 'nonexistent' not found in BASKIT")
 }
 
@@ -163,8 +163,8 @@ func TestBaskitRemove(t *testing.T) {
 	require.Error(t, err)
 
 	// Check it's the right type of exception
-	exception, ok := err.(ast.Exception)
-	require.True(t, ok, "Should be an ast.Exception")
+	exception, ok := err.(runtime.Exception)
+	require.True(t, ok, "Should be an runtime.Exception")
 	assert.Contains(t, exception.Message, "Key 'nonexistent' not found in BASKIT")
 }
 

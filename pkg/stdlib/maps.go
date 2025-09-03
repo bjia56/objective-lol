@@ -5,8 +5,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
@@ -87,7 +87,7 @@ func getMapClasses() map[string]*environment.Class {
 								if value, exists := baskitMap[keyStr]; exists {
 									return value, nil
 								}
-								return nil, ast.Exception{Message: fmt.Sprintf("Key '%s' not found in BASKIT", keyStr)}
+								return nil, runtime.Exception{Message: fmt.Sprintf("Key '%s' not found in BASKIT", keyStr)}
 							}
 							return types.NOTHIN, fmt.Errorf("GET: invalid context")
 						},
@@ -125,7 +125,7 @@ func getMapClasses() map[string]*environment.Class {
 									updateBaskitSIZ(this, baskitMap)
 									return value, nil
 								}
-								return nil, ast.Exception{Message: fmt.Sprintf("Key '%s' not found in BASKIT", keyStr)}
+								return nil, runtime.Exception{Message: fmt.Sprintf("Key '%s' not found in BASKIT", keyStr)}
 							}
 							return types.NOTHIN, fmt.Errorf("REMOVE: invalid context")
 						},

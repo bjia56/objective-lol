@@ -6,6 +6,7 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/parser"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 	"github.com/bjia56/objective-lol/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -328,8 +329,8 @@ func TestInterpreterReturnStatement(t *testing.T) {
 	assert.Error(t, err)
 
 	// Check if it's a return value using the helper function
-	if ast.IsReturnValue(err) {
-		returnVal := ast.GetReturnValue(err)
+	if runtime.IsReturnValue(err) {
+		returnVal := runtime.GetReturnValue(err)
 		assert.Equal(t, types.StringValue("returned"), returnVal)
 	}
 }
