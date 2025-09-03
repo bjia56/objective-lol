@@ -521,9 +521,29 @@ func (i *Interpreter) VisitIfStatement(node *ast.IfStatementNode) (types.Value, 
 	}
 
 	if condition.ToBool() == types.YEZ {
-		return node.ThenBlock.Accept(i)
+		// Create new environment for then block
+		oldEnv := i.environment
+		thenEnv := environment.NewEnvironment(oldEnv)
+		i.environment = thenEnv
+
+		// Execute then block
+		result, err := node.ThenBlock.Accept(i)
+
+		// Restore environment
+		i.environment = oldEnv
+		return result, err
 	} else if node.ElseBlock != nil {
-		return node.ElseBlock.Accept(i)
+		// Create new environment for else block
+		oldEnv := i.environment
+		elseEnv := environment.NewEnvironment(oldEnv)
+		i.environment = elseEnv
+
+		// Execute else block
+		result, err := node.ElseBlock.Accept(i)
+
+		// Restore environment
+		i.environment = oldEnv
+		return result, err
 	}
 
 	return types.NOTHIN, nil
@@ -546,7 +566,17 @@ func (i *Interpreter) VisitWhileStatement(node *ast.WhileStatementNode) (types.V
 			break
 		}
 
+		// Create new environment for loop body
+		oldEnv := i.environment
+		loopEnv := environment.NewEnvironment(oldEnv)
+		i.environment = loopEnv
+
+		// Execute loop body
 		_, err = node.Body.Accept(i)
+
+		// Restore environment
+		i.environment = oldEnv
+
 		if err != nil {
 			return types.NOTHIN, err
 		}
@@ -928,14 +958,21 @@ func (i *Interpreter) VisitTryStatement(node *ast.TryStatementNode) (types.Value
 	var result types.Value = types.NOTHIN
 	var tryErr error
 
-	// Execute try block
+	// Execute try block with its own scope
+	oldEnv := i.environment
+	tryEnv := environment.NewEnvironment(oldEnv)
+	i.environment = tryEnv
+
 	result, tryErr = node.TryBody.Accept(i)
+
+	// Restore environment after try block
+	i.environment = oldEnv
 
 	// If an exception occurred, handle it with the catch block
 	if tryErr != nil && runtime.IsException(tryErr) {
 		// Create new environment for catch block with exception variable
 		catchEnv := environment.NewEnvironment(i.environment)
-		oldEnv := i.environment
+		oldCatchEnv := i.environment
 		i.environment = catchEnv
 
 		// Bind the exception message to the catch variable
@@ -946,13 +983,21 @@ func (i *Interpreter) VisitTryStatement(node *ast.TryStatementNode) (types.Value
 		result, tryErr = node.CatchBody.Accept(i)
 
 		// Restore environment
-		i.environment = oldEnv
+		i.environment = oldCatchEnv
 	}
 
-	// Execute finally block if present (always runs)
+	// Execute finally block if present (always runs) with its own scope
 	if node.FinallyBody != nil {
+		oldFinallyEnv := i.environment
+		finallyEnv := environment.NewEnvironment(oldFinallyEnv)
+		i.environment = finallyEnv
+
 		// Finally block runs regardless of exceptions, but doesn't override result
 		_, finallyErr := node.FinallyBody.Accept(i)
+
+		// Restore environment
+		i.environment = oldFinallyEnv
+
 		// If finally block throws an exception, it takes precedence
 		if finallyErr != nil {
 			return types.NOTHIN, finallyErr

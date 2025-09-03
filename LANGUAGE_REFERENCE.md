@@ -403,6 +403,8 @@ I HAS A VARIABLE CONDITION TEH BOOL ITZ (A BIGGR THAN B) AN (C BIGGR THAN A)  BT
 
 ## Control Flow
 
+All control flow structures in Objective-LOL create their own **block scope**. Variables declared inside if-statements, loops, and try-catch blocks are only accessible within that block and are automatically cleaned up when the block exits.
+
 ### Conditional Statements (IZ/NOPE)
 
 #### Simple IF Statement
@@ -411,8 +413,11 @@ I HAS A VARIABLE CONDITION TEH BOOL ITZ (A BIGGR THAN B) AN (C BIGGR THAN A)  BT
 I HAS A VARIABLE AGE TEH INTEGR ITZ 18
 
 IZ AGE BIGGR THAN 17?
+    I HAS A VARIABLE STATUS TEH STRIN ITZ "adult"
     SAYZ WIT "You are an adult!"
+    BTW STATUS is accessible here
 KTHX
+BTW STATUS is not accessible here - it was block-scoped to the if statement
 ```
 
 #### IF-ELSE Statement
@@ -421,10 +426,13 @@ KTHX
 I HAS A VARIABLE SCORE TEH INTEGR ITZ 85
 
 IZ SCORE BIGGR THAN 89?
+    I HAS A VARIABLE GRADE TEH STRIN ITZ "A"
     SAYZ WIT "Grade A"
 NOPE
+    I HAS A VARIABLE GRADE TEH STRIN ITZ "B"
     SAYZ WIT "Grade B or lower"
 KTHX
+BTW GRADE variables from both blocks are not accessible here
 ```
 
 #### Complex Conditions
@@ -449,27 +457,38 @@ KTHX
 
 ### Loops (WHILE)
 
+While loops create a new block scope for each iteration. Variables declared within the loop body are not accessible outside the loop and don't persist across iterations.
+
 ```lol
-BTW Countdown loop
+BTW Countdown loop with block scoping
 I HAS A VARIABLE COUNTER TEH INTEGR ITZ 5
 WHILE COUNTER BIGGR THAN 0
+    I HAS A VARIABLE ITERATION_MSG TEH STRIN ITZ "Counting down"
+    SAYZ WIT ITERATION_MSG
     SAYZ WIT COUNTER
     COUNTER ITZ COUNTER LES 1
+    BTW ITERATION_MSG is accessible here
 KTHX
+BTW ITERATION_MSG is not accessible here - it was scoped to each loop iteration
 
-BTW Nested loops
+BTW Nested loops with independent scoping
 I HAS A VARIABLE I TEH INTEGR ITZ 1
 I HAS A VARIABLE J TEH INTEGR
 WHILE I SMALLR THAN 4
+    I HAS A VARIABLE OUTER_VAR TEH STRIN ITZ "outer"
     J ITZ 1
     WHILE J SMALLR THAN 3
+        I HAS A VARIABLE INNER_VAR TEH STRIN ITZ "inner"
         SAY WIT I
         SAY WIT ", "
         SAYZ WIT J
         J ITZ J MOAR 1
+        BTW Both OUTER_VAR and INNER_VAR accessible here
     KTHX
+    BTW Only OUTER_VAR accessible here, INNER_VAR is out of scope
     I ITZ I MOAR 1
 KTHX
+BTW Neither OUTER_VAR nor INNER_VAR are accessible here
 ```
 
 ---
@@ -577,6 +596,13 @@ Functions in Objective-LOL follow **lexical scoping** similar to bash functions:
 - Functions can access variables and functions from their **calling context**
 - Lookup walks up the parent environment chain: current scope → caller scope → caller's caller → etc.
 - Each function call creates a new environment with the calling environment as its parent
+
+#### Block Scoping in Control Structures
+
+- **Control flow structures create block scopes**: if-statements, while loops, and try-catch-finally blocks all create their own scoped environments
+- Variables declared within these blocks are only accessible within that block
+- Block variables are automatically cleaned up when the block exits
+- Nested blocks can access variables from outer blocks but not vice versa
 
 #### Module Import Scoping
 
@@ -2348,18 +2374,25 @@ KTHXBAI
 
 #### Finally Blocks
 
-Use `ALWAYZ` for cleanup code that always executes:
+Use `ALWAYZ` for cleanup code that always executes. Each block (try, catch, finally) has its own scope:
 
 ```lol
 MAYB
+    I HAS A VARIABLE FILE_HANDLE TEH STRIN ITZ "file.txt"
     SAYZ WIT "Opening file..."
     OOPS "File not found!"
+    BTW FILE_HANDLE is accessible here
 OOPSIE FILE_ERROR
+    I HAS A VARIABLE ERROR_CODE TEH INTEGR ITZ 404
     SAYZ WIT "File error: "
     SAYZ WIT FILE_ERROR
+    BTW ERROR_CODE is accessible here, but FILE_HANDLE is not
 ALWAYZ
+    I HAS A VARIABLE CLEANUP_MSG TEH STRIN ITZ "All done"
     SAYZ WIT "Cleaning up resources"
+    BTW CLEANUP_MSG is accessible here, but neither FILE_HANDLE nor ERROR_CODE are
 KTHX
+BTW None of the block-scoped variables are accessible here
 ```
 
 #### Nested Exception Handling

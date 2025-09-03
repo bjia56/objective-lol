@@ -77,7 +77,7 @@ The interpreter supports:
 - **Module system with file imports**: Cross-platform POSIX path resolution, caching, circular import detection
 - **Exception handling system**: MAYB/OOPS/OOPSIE/ALWAYZ try-catch-finally blocks with string-based exceptions
 - **Threading and concurrency**: YARN abstract thread class with START/JOIN/SPIN methods, KNOT mutex class with TIE/UNTIE methods
-- Control flow (IZ/NOPE conditionals, WHILE loops)
+- Control flow (IZ/NOPE conditionals, WHILE loops) with block scoping - variables declared within control structures are scoped to that block
 - Arithmetic, comparison, and logical operators
 - Parentheses for expression grouping and precedence override
 - Type casting with AS operator
@@ -111,9 +111,16 @@ Parentheses `()` can be used to override operator precedence and group sub-expre
 Implements visitor pattern:
 - AST nodes implement Accept() method taking Visitor
 - Interpreter implements all Visit*() methods for each node type
-- Environment stack for variable scoping
+- Environment stack for variable scoping with block scoping support
 - Runtime environment manages global functions and classes
 - Object instance tracking for method calls and member access
+
+#### Scoping System
+The interpreter implements comprehensive scoping:
+- **Function scoping**: Each function call creates a new environment
+- **Block scoping**: Control flow structures (if-statements, loops, try-catch-finally blocks) create their own scoped environments
+- **Lexical scoping**: Inner scopes can access outer scope variables, but not vice versa
+- **Automatic cleanup**: Block-scoped variables are cleaned up when their scope exits
 
 ### Exception Handling Architecture
 **Exception System** (`pkg/ast/nodes.go`):

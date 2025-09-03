@@ -97,18 +97,25 @@ KTHXBAI
 
 ### Control Flow
 
+Control flow structures create their own block scopes. Variables declared within these blocks are only accessible within that block:
+
 ```lol
 IZ AGE BIGGR THAN 17?
+    I HAS A VARIABLE STATUS TEH STRIN ITZ "adult"
     SAYZ WIT "You are an adult!"
 NOPE
+    I HAS A VARIABLE STATUS TEH STRIN ITZ "minor"  BTW Different STATUS variable
     SAYZ WIT "You are a minor"
 KTHX
+BTW Neither STATUS variable is accessible here
 
 I HAS A VARIABLE COUNTER TEH INTEGR ITZ 5
 WHILE COUNTER BIGGR THAN 0
-    SAYZ WIT COUNTER
+    I HAS A VARIABLE ITERATION_NUM TEH INTEGR ITZ COUNTER
+    SAYZ WIT ITERATION_NUM  BTW Fresh variable each iteration
     COUNTER ITZ COUNTER LES 1
 KTHX
+BTW ITERATION_NUM is not accessible here
 ```
 
 ## Building and Testing
@@ -250,18 +257,24 @@ I CAN HAS FUNC1 AN FUNC2 FROM "utils"?  BTW Selective import
 
 ### Exception Handling
 
-Objective-LOL supports comprehensive exception handling with try-catch-finally blocks:
+Objective-LOL supports comprehensive exception handling with try-catch-finally blocks. Each block (try, catch, finally) has its own scope:
 
 ```lol
 MAYB
+    I HAS A VARIABLE OPERATION TEH STRIN ITZ "division"
     I HAS A VARIABLE RESULT TEH DUBBLE ITZ 10.0 DIVIDEZ 0.0  BTW Throws exception
     SAYZ WIT "This won't print"
 OOPSIE ERROR_MSG
+    I HAS A VARIABLE ERROR_TYPE TEH STRIN ITZ "Math Error"
     SAYZ WIT "Caught exception: "
     SAYZ WIT ERROR_MSG  BTW "Division by zero"
+    BTW ERROR_TYPE accessible here, OPERATION is not
 ALWAYZ
+    I HAS A VARIABLE CLEANUP_FLAG TEH BOOL ITZ YEZ
     SAYZ WIT "This always executes"
+    BTW CLEANUP_FLAG accessible here, neither OPERATION nor ERROR_TYPE are
 KTHX
+BTW None of the block-scoped variables are accessible here
 
 BTW Throwing custom exceptions
 HAI ME TEH FUNCSHUN VALIDATE_AGE WIT AGE TEH INTEGR
