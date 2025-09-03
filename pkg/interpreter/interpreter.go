@@ -600,7 +600,7 @@ func (i *Interpreter) VisitFunctionCall(node *ast.FunctionCallNode) (types.Value
 		return types.NOTHIN, fmt.Errorf("undefined function '%s'", functionName)
 
 	case *ast.MemberAccessNode:
-		// Member function call (obj IN func WIT args)
+		// Member function call (obj DO func WIT args)
 		objectValue, err := funcNode.Object.Accept(i)
 		if err != nil {
 			return types.NOTHIN, err
@@ -694,19 +694,10 @@ func (i *Interpreter) callFunction(function *environment.Function, args []types.
 
 // callMemberFunction executes a member function
 func (i *Interpreter) callMemberFunction(function *environment.Function, obj *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-	// Save current class and object context
-	oldClass := i.currentClass
-	oldObject := i.currentObject
-	i.currentClass = obj.Class.Name
-	i.currentObject = obj
-
-	result, err := i.callFunction(function, args)
-
-	// Restore context
-	i.currentClass = oldClass
-	i.currentObject = oldObject
-
-	return result, err
+	memberInterpreter := i.ForkAll()
+	memberInterpreter.currentClass = obj.Class.Name
+	memberInterpreter.currentObject = obj
+	return memberInterpreter.callFunction(function, args)
 }
 
 // VisitMemberAccess handles member access
