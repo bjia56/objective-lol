@@ -1,0 +1,41 @@
+BTW Module class casting integration test
+BTW Expected output:
+BTW Testing basic module class usage
+BTW 2022 Honda car with 4 doors
+BTW Beep beep!
+BTW Testing inheritance casting
+BTW 2022 Honda
+BTW Module casting test completed
+
+I CAN HAS STDIO?
+I CAN HAS CAR AN VEHICLE FROM "test_modules/casting/vehicles"?
+
+HAI ME TEH FUNCSHUN TEST_BASIC_CLASS_USAGE
+    SAYZ WIT "Testing basic module class usage"
+
+    I HAS A VARIABLE MY_CAR TEH CAR ITZ NEW CAR
+    MY_CAR DO SET_BRAND WIT "Honda"
+    MY_CAR DO SET_YEAR WIT 2022
+    MY_CAR DO SET_DOORS WIT 4
+
+    SAYZ WIT MY_CAR DO DESCRIBE
+    MY_CAR DO HONK
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_INHERITANCE_CASTING
+    SAYZ WIT "Testing inheritance casting"
+
+    I HAS A VARIABLE MY_CAR TEH CAR ITZ NEW CAR
+    MY_CAR DO SET_BRAND WIT "Honda"
+    MY_CAR DO SET_YEAR WIT 2022
+
+    BTW Cast to parent type
+    I HAS A VARIABLE VEHICLE_REF TEH VEHICLE ITZ MY_CAR AS VEHICLE
+    SAYZ WIT VEHICLE_REF DO DESCRIBE
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    TEST_BASIC_CLASS_USAGE
+    TEST_INHERITANCE_CASTING
+    SAYZ WIT "Module casting test completed"
+KTHXBAI
