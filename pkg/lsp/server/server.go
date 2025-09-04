@@ -91,7 +91,6 @@ func (s *OlolLSPServer) getServerCapabilities() protocol.ServerCapabilities {
 		CompletionProvider: &protocol.CompletionOptions{
 			ResolveProvider: &[]bool{false}[0],
 			TriggerCharacters: []string{
-				".", // For member access
 				" ", // For keyword completion
 			},
 		},
@@ -139,7 +138,7 @@ func (s *OlolLSPServer) textDocumentDidChange(context *glsp.Context, params *pro
 
 	// For full document sync, we take the last change
 	change := params.ContentChanges[len(params.ContentChanges)-1]
-	
+
 	// Cast to TextDocumentContentChangeEvent to access Text field
 	var content string
 	if changeEvent, ok := change.(protocol.TextDocumentContentChangeEvent); ok {

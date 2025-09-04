@@ -9,7 +9,6 @@ import (
 type PositionInfo struct {
 	Line   int
 	Column int
-	Offset int
 }
 
 // Node represents the base interface for all AST nodes

@@ -4,6 +4,7 @@ import (
 	protocol "github.com/tliron/glsp/protocol_3_16"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
+	"github.com/bjia56/objective-lol/pkg/stdlib"
 	"github.com/bjia56/objective-lol/pkg/types"
 )
 
@@ -31,12 +32,28 @@ func (sc *SymbolCollector) GetSymbolTable() *SymbolTable {
 
 // addSymbol adds a symbol to the table
 func (sc *SymbolCollector) addSymbol(name string, kind SymbolKind, symbolType string, pos ast.PositionInfo) {
+	for _, existingSymbol := range sc.symbolTable.Symbols {
+		if existingSymbol.Name == name {
+			// Symbol already exists, let's make a copy of it with updated position
+			// We assume that the first occurrence is the declaration where we know the type
+			newSymbol := existingSymbol
+			newSymbol.Position = pos
+			newSymbol.Range = sc.positionInfoToRange(pos, len(name))
+			sc.symbolTable.Symbols = append(sc.symbolTable.Symbols, newSymbol)
+			return
+		}
+	}
+
+	if symbolType == "" {
+		symbolType = "NOTHIN"
+	}
+
 	symbol := Symbol{
 		Name:     name,
 		Kind:     kind,
 		Type:     symbolType,
 		Position: pos,
-		Range: sc.positionInfoToRange(pos, len(name)),
+		Range:    sc.positionInfoToRange(pos, len(name)),
 	}
 	sc.symbolTable.Symbols = append(sc.symbolTable.Symbols, symbol)
 }
@@ -44,6 +61,18 @@ func (sc *SymbolCollector) addSymbol(name string, kind SymbolKind, symbolType st
 // Visitor interface implementation
 
 func (sc *SymbolCollector) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
+	// Define stdlib symbols
+	for _, globalInitializers := range stdlib.DefaultGlobalInitializers() {
+		for _, decl := range stdlib.GetStdlibDefinitions(globalInitializers) {
+			switch decl.Kind {
+			case stdlib.StdlibDefinitionKindFunction:
+				sc.addSymbol(decl.Name, SymbolKindFunction, decl.Type, ast.PositionInfo{})
+			case stdlib.StdlibDefinitionKindClass:
+				sc.addSymbol(decl.Name, SymbolKindClass, decl.Type, ast.PositionInfo{})
+			}
+		}
+	}
+
 	for _, decl := range node.Declarations {
 		decl.Accept(sc)
 	}
@@ -52,6 +81,20 @@ func (sc *SymbolCollector) VisitProgram(node *ast.ProgramNode) (types.Value, err
 
 func (sc *SymbolCollector) VisitImportStatement(node *ast.ImportStatementNode) (types.Value, error) {
 	sc.addSymbol(node.ModuleName, SymbolKindImport, "module", node.GetPosition())
+
+	if !node.IsFileImport {
+		if moduleInitializer, exists := stdlib.DefaultStdlibInitializers()[node.ModuleName]; exists {
+			for _, decl := range stdlib.GetStdlibDefinitions(moduleInitializer) {
+				switch decl.Kind {
+				case stdlib.StdlibDefinitionKindFunction:
+					sc.addSymbol(decl.Name, SymbolKindFunction, decl.Type, ast.PositionInfo{})
+				case stdlib.StdlibDefinitionKindClass:
+					sc.addSymbol(decl.Name, SymbolKindClass, decl.Type, ast.PositionInfo{})
+				}
+			}
+		}
+	}
+
 	return nil, nil
 }
 
@@ -65,14 +108,14 @@ func (sc *SymbolCollector) VisitVariableDeclaration(node *ast.VariableDeclaratio
 
 func (sc *SymbolCollector) VisitFunctionDeclaration(node *ast.FunctionDeclarationNode) (types.Value, error) {
 	sc.addSymbol(node.Name, SymbolKindFunction, node.ReturnType, node.GetPosition())
-	
+
 	// Add parameters as symbols
 	for _, param := range node.Parameters {
 		// Note: Parameters don't have position info in current implementation
 		// We would need to enhance the parser to track parameter positions
 		sc.addSymbol(param.Name, SymbolKindParameter, param.Type, ast.PositionInfo{})
 	}
-	
+
 	if node.Body != nil {
 		node.Body.Accept(sc)
 	}
@@ -80,8 +123,8 @@ func (sc *SymbolCollector) VisitFunctionDeclaration(node *ast.FunctionDeclaratio
 }
 
 func (sc *SymbolCollector) VisitClassDeclaration(node *ast.ClassDeclarationNode) (types.Value, error) {
-	sc.addSymbol(node.Name, SymbolKindClass, "class", node.GetPosition())
-	
+	sc.addSymbol(node.Name, SymbolKindClass, node.Name, node.GetPosition())
+
 	// Visit class members
 	for _, member := range node.Members {
 		if member.IsVariable && member.Variable != nil {
@@ -132,6 +175,9 @@ func (sc *SymbolCollector) VisitReturnStatement(node *ast.ReturnStatementNode) (
 }
 
 func (sc *SymbolCollector) VisitFunctionCall(node *ast.FunctionCallNode) (types.Value, error) {
+	// Visit the function being called (could be an identifier or member access)
+	node.Function.Accept(sc)
+
 	if node.Arguments != nil {
 		for _, arg := range node.Arguments {
 			if arg != nil {
@@ -179,7 +225,7 @@ func (sc *SymbolCollector) VisitLiteral(node *ast.LiteralNode) (types.Value, err
 }
 
 func (sc *SymbolCollector) VisitIdentifier(node *ast.IdentifierNode) (types.Value, error) {
-	// Identifiers reference symbols but don't create them
+	sc.addSymbol(node.Name, SymbolKindUnknown, "", node.GetPosition())
 	return nil, nil
 }
 
@@ -229,8 +275,8 @@ func (sc *SymbolCollector) VisitThrowStatement(node *ast.ThrowStatementNode) (ty
 func (sc *SymbolCollector) positionInfoToRange(pos ast.PositionInfo, length int) protocol.Range {
 	return protocol.Range{
 		Start: protocol.Position{
-			Line:      uint32(pos.Line - 1),      // LSP is 0-based, parser is 1-based
-			Character: uint32(pos.Column - 1),    // LSP is 0-based, parser is 1-based
+			Line:      uint32(pos.Line - 1),   // LSP is 0-based, parser is 1-based
+			Character: uint32(pos.Column - 1), // LSP is 0-based, parser is 1-based
 		},
 		End: protocol.Position{
 			Line:      uint32(pos.Line - 1),

@@ -1,11 +1,11 @@
 {
   "name": "objective-lol",
-  "displayName": "Objective-LOL Language Support",
-  "description": "Language support for Objective-LOL programming language",
-  "version": "0.1.0",
-  "publisher": "objective-lol-team",
+  "displayName": "objective-lol",
+  "publisher": "bjia56",
+  "description": "Objective-LOL Language Syntax and LSP",
+  "version": "0.0.1",
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.103.0"
   },
   "categories": [
     "Programming Languages",
@@ -46,38 +46,27 @@
       "type": "object",
       "title": "Objective-LOL",
       "properties": {
-        "objective-lol.lspPath": {
-          "type": "string",
-          "default": "olol-lsp",
-          "description": "Path to the Objective-LOL LSP server executable"
-        },
-        "objective-lol.enableLSP": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable Language Server Protocol support"
-        },
-        "objective-lol.trace.server": {
-          "type": "string",
-          "enum": [
-            "off",
-            "messages",
-            "verbose"
-          ],
-          "default": "off",
-          "description": "Traces the communication between VS Code and the language server"
-        }
       }
     }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/node": "16.x",
-    "@types/vscode": "^1.74.0",
-    "typescript": "^4.9.4"
+    "@types/vscode": "^1.103.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "eslint": "^9.32.0",
+    "typescript": "^5.9.2",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2"
   },
   "dependencies": {
     "vscode-languageclient": "^8.1.0"
