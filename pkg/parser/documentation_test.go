@@ -177,3 +177,190 @@ KTHXBAI`
 		t.Errorf("Expected no documentation, got %v", func3.Documentation)
 	}
 }
+
+func TestClassDocumentationParsing(t *testing.T) {
+	tests := []struct {
+		name             string
+		input            string
+		expectedClassName string
+		expectedDocs     []string
+	}{
+		{
+			name: "Single line class documentation",
+			input: `BTW This is a simple class for demonstration
+HAI ME TEH CLAS PERSON
+    EVRYONE
+    DIS TEH VARIABLE NAME TEH STRIN ITZ "Unknown"
+KTHXBAI`,
+			expectedClassName: "PERSON",
+			expectedDocs:     []string{"This is a simple class for demonstration"},
+		},
+		{
+			name: "Multi-line class documentation",
+			input: `BTW This class represents a bank account
+BTW It manages balance and transaction operations
+BTW @author Development Team
+BTW @version 1.0
+HAI ME TEH CLAS BANK_ACCOUNT
+    EVRYONE
+    DIS TEH VARIABLE BALANCE TEH DUBBLE ITZ 0.0
+KTHXBAI`,
+			expectedClassName: "BANK_ACCOUNT",
+			expectedDocs: []string{
+				"This class represents a bank account",
+				"It manages balance and transaction operations",
+				"@author Development Team",
+				"@version 1.0",
+			},
+		},
+		{
+			name: "Class with no documentation",
+			input: `HAI ME TEH CLAS SIMPLE
+    EVRYONE
+    DIS TEH VARIABLE VALUE TEH INTEGR ITZ 0
+KTHXBAI`,
+			expectedClassName: "SIMPLE",
+			expectedDocs:     nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lexer := NewLexer(tt.input)
+			parser := NewParser(lexer)
+			program := parser.ParseProgram()
+
+			if len(parser.Errors()) > 0 {
+				t.Fatalf("Parser errors: %v", parser.Errors())
+			}
+
+			if len(program.Declarations) != 1 {
+				t.Fatalf("Expected 1 declaration, got %d", len(program.Declarations))
+			}
+
+			classDecl, ok := program.Declarations[0].(*ast.ClassDeclarationNode)
+			if !ok {
+				t.Fatalf("Expected ClassDeclarationNode, got %T", program.Declarations[0])
+			}
+
+			if classDecl.Name != tt.expectedClassName {
+				t.Errorf("Expected class name %s, got %s", tt.expectedClassName, classDecl.Name)
+			}
+
+			if len(classDecl.Documentation) != len(tt.expectedDocs) {
+				t.Errorf("Expected %d documentation lines, got %d", len(tt.expectedDocs), len(classDecl.Documentation))
+				t.Errorf("Got documentation: %v", classDecl.Documentation)
+			}
+
+			for i, expectedDoc := range tt.expectedDocs {
+				if i >= len(classDecl.Documentation) {
+					t.Errorf("Missing documentation line %d: expected %q", i, expectedDoc)
+					continue
+				}
+				if classDecl.Documentation[i] != expectedDoc {
+					t.Errorf("Documentation line %d: expected %q, got %q", i, expectedDoc, classDecl.Documentation[i])
+				}
+			}
+		})
+	}
+}
+
+func TestClassMethodDocumentation(t *testing.T) {
+	input := `BTW This class demonstrates method documentation
+HAI ME TEH CLAS CALCULATOR
+    EVRYONE
+    DIS TEH VARIABLE RESULT TEH DUBBLE ITZ 0.0
+
+    BTW This method adds two numbers
+    BTW @param x The first number
+    BTW @param y The second number
+    BTW @return The sum of x and y
+    DIS TEH FUNCSHUN ADD TEH DUBBLE WIT X TEH DUBBLE AN WIT Y TEH DUBBLE
+        GIVEZ X MOAR Y
+    KTHX
+
+    BTW This method has no parameters
+    DIS TEH FUNCSHUN RESET
+        RESULT ITZ 0.0
+    KTHX
+
+    DIS TEH FUNCSHUN UNDOCUMENTED TEH DUBBLE
+        GIVEZ RESULT
+    KTHX
+KTHXBAI`
+
+	lexer := NewLexer(input)
+	parser := NewParser(lexer)
+	program := parser.ParseProgram()
+
+	if len(parser.Errors()) > 0 {
+		t.Fatalf("Parser errors: %v", parser.Errors())
+	}
+
+	if len(program.Declarations) != 1 {
+		t.Fatalf("Expected 1 declaration, got %d", len(program.Declarations))
+	}
+
+	classDecl, ok := program.Declarations[0].(*ast.ClassDeclarationNode)
+	if !ok {
+		t.Fatalf("Expected ClassDeclarationNode, got %T", program.Declarations[0])
+	}
+
+	// Check class documentation
+	expectedClassDocs := []string{"This class demonstrates method documentation"}
+	if len(classDecl.Documentation) != len(expectedClassDocs) {
+		t.Errorf("Expected %d class documentation lines, got %d", len(expectedClassDocs), len(classDecl.Documentation))
+	}
+	for i, expectedDoc := range expectedClassDocs {
+		if i >= len(classDecl.Documentation) || classDecl.Documentation[i] != expectedDoc {
+			t.Errorf("Class documentation line %d: expected %q, got %q", i, expectedDoc, classDecl.Documentation[i])
+		}
+	}
+
+	// Check method documentation
+	if len(classDecl.Members) != 4 { // 1 variable + 3 methods
+		t.Fatalf("Expected 4 class members, got %d", len(classDecl.Members))
+	}
+
+	// Check ADD method (should have documentation)
+	addMethod := classDecl.Members[1] // Skip the variable member
+	if addMethod.IsVariable {
+		t.Fatalf("Expected method, got variable")
+	}
+	expectedAddDocs := []string{
+		"This method adds two numbers",
+		"@param x The first number", 
+		"@param y The second number",
+		"@return The sum of x and y",
+	}
+	if len(addMethod.Function.Documentation) != len(expectedAddDocs) {
+		t.Errorf("Expected %d method documentation lines, got %d", len(expectedAddDocs), len(addMethod.Function.Documentation))
+	}
+	for i, expectedDoc := range expectedAddDocs {
+		if i >= len(addMethod.Function.Documentation) || addMethod.Function.Documentation[i] != expectedDoc {
+			t.Errorf("ADD method documentation line %d: expected %q, got %q", i, expectedDoc, addMethod.Function.Documentation[i])
+		}
+	}
+
+	// Check RESET method (should have simple documentation)
+	resetMethod := classDecl.Members[2]
+	if resetMethod.IsVariable {
+		t.Fatalf("Expected method, got variable")
+	}
+	expectedResetDocs := []string{"This method has no parameters"}
+	if len(resetMethod.Function.Documentation) != len(expectedResetDocs) {
+		t.Errorf("Expected %d RESET documentation lines, got %d", len(expectedResetDocs), len(resetMethod.Function.Documentation))
+	}
+	if len(resetMethod.Function.Documentation) > 0 && resetMethod.Function.Documentation[0] != expectedResetDocs[0] {
+		t.Errorf("RESET method documentation: expected %q, got %q", expectedResetDocs[0], resetMethod.Function.Documentation[0])
+	}
+
+	// Check UNDOCUMENTED method (should have no documentation)
+	undocumentedMethod := classDecl.Members[3]
+	if undocumentedMethod.IsVariable {
+		t.Fatalf("Expected method, got variable")
+	}
+	if len(undocumentedMethod.Function.Documentation) != 0 {
+		t.Errorf("Expected no documentation for UNDOCUMENTED method, got %v", undocumentedMethod.Function.Documentation)
+	}
+}

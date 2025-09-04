@@ -126,10 +126,11 @@ func (n *FunctionDeclarationNode) SetPosition(pos PositionInfo) {
 
 // ClassDeclarationNode represents class declarations
 type ClassDeclarationNode struct {
-	Name        string
-	ParentClass string
-	Members     []*ClassMemberNode
-	Position    PositionInfo
+	Name          string
+	ParentClass   string
+	Members       []*ClassMemberNode
+	Documentation []string // Documentation comments preceding the class
+	Position      PositionInfo
 }
 
 func (n *ClassDeclarationNode) Accept(visitor Visitor) (types.Value, error) {

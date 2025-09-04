@@ -426,6 +426,12 @@ func (p *Parser) parseFunctionDeclaration() *ast.FunctionDeclarationNode {
 func (p *Parser) parseClassDeclaration() *ast.ClassDeclarationNode {
 	node := &ast.ClassDeclarationNode{}
 
+	// Collect documentation comments before parsing the class declaration
+	node.Documentation = p.collectPrecedingComments()
+	
+	// Clear the comments buffer to avoid reusing them for subsequent declarations
+	p.lexer.ClearRecentComments()
+
 	if !p.expectPeek(CLAS) {
 		p.addError(fmt.Sprintf("expected 'CLAS', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
 		return nil
@@ -506,6 +512,10 @@ func (p *Parser) parseClassMembers() []*ast.ClassMemberNode {
 
 // parseClassMember parses a single class member
 func (p *Parser) parseClassMember() *ast.ClassMemberNode {
+	// Collect documentation comments before parsing the class member
+	memberDocs := p.collectPrecedingComments()
+	p.lexer.ClearRecentComments()
+	
 	if !p.currentTokenIs(DIS) {
 		p.addError(fmt.Sprintf("expected 'DIS', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
 		return nil
@@ -581,8 +591,9 @@ func (p *Parser) parseClassMember() *ast.ClassMemberNode {
 		name := p.currentToken.Literal
 
 		funcDecl := &ast.FunctionDeclarationNode{
-			Name:     name,
-			IsShared: &member.IsShared,
+			Name:          name,
+			IsShared:      &member.IsShared,
+			Documentation: memberDocs,
 		}
 
 		// Check for return type

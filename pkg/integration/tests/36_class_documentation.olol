@@ -1,0 +1,104 @@
+BTW Class documentation test - testing comment parsing for classes and methods
+I CAN HAS STDIO?
+
+BTW This is a simple calculator class
+BTW It provides basic arithmetic operations
+BTW @author Development Team
+BTW @version 1.0
+HAI ME TEH CLAS CALCULATOR
+    EVRYONE
+    DIS TEH VARIABLE RESULT TEH DUBBLE ITZ 0.0
+
+    BTW This method adds two numbers together
+    BTW @param x The first number to add
+    BTW @param y The second number to add
+    BTW @return The sum of the two numbers
+    DIS TEH FUNCSHUN ADD TEH DUBBLE WIT X TEH DUBBLE AN WIT Y TEH DUBBLE
+        RESULT ITZ X MOAR Y
+        GIVEZ RESULT
+    KTHX
+
+    BTW This method subtracts the second number from the first
+    BTW @param x The number to subtract from
+    BTW @param y The number to subtract
+    BTW @return The difference between the numbers
+    DIS TEH FUNCSHUN SUBTRACT TEH DUBBLE WIT X TEH DUBBLE AN WIT Y TEH DUBBLE
+        RESULT ITZ X LES Y
+        GIVEZ RESULT
+    KTHX
+
+    BTW Reset the calculator result to zero
+    DIS TEH FUNCSHUN RESET
+        RESULT ITZ 0.0
+    KTHX
+
+    DIS TEH FUNCSHUN GET_RESULT TEH DUBBLE
+        GIVEZ RESULT
+    KTHX
+KTHXBAI
+
+BTW This class represents a simple counter
+HAI ME TEH CLAS COUNTER
+    EVRYONE
+    DIS TEH VARIABLE COUNT TEH INTEGR ITZ 0
+
+    BTW Increment the counter by 1
+    DIS TEH FUNCSHUN INCREMENT
+        COUNT ITZ COUNT MOAR 1
+    KTHX
+
+    BTW Get the current count value
+    BTW @return The current count
+    DIS TEH FUNCSHUN GET_COUNT TEH INTEGR
+        GIVEZ COUNT
+    KTHX
+KTHXBAI
+
+HAI ME TEH CLAS UNDOCUMENTED_CLASS
+    EVRYONE
+    DIS TEH VARIABLE VALUE TEH STRIN ITZ "test"
+
+    DIS TEH FUNCSHUN DO_SOMETHING
+        SAYZ WIT "This class and method have no documentation"
+    KTHX
+KTHXBAI
+
+BTW Main function to test the documented classes
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== Class Documentation Test ==="
+
+    BTW Test documented calculator class
+    I HAS A VARIABLE CALC TEH CALCULATOR ITZ NEW CALCULATOR
+    
+    I HAS A VARIABLE SUM TEH DUBBLE ITZ CALC DO ADD WIT 10.5 AN WIT 5.2
+    SAY WIT "10.5 + 5.2 = "
+    SAYZ WIT SUM
+    
+    I HAS A VARIABLE DIFF TEH DUBBLE ITZ CALC DO SUBTRACT WIT 20.0 AN WIT 7.5
+    SAY WIT "20.0 - 7.5 = "
+    SAYZ WIT DIFF
+    
+    CALC DO RESET
+    I HAS A VARIABLE RESET_RESULT TEH DUBBLE ITZ CALC DO GET_RESULT
+    SAY WIT "After reset: "
+    SAYZ WIT RESET_RESULT
+    
+    BTW Test documented counter class
+    I HAS A VARIABLE COUNTER TEH COUNTER ITZ NEW COUNTER
+    
+    SAY WIT "Initial count: "
+    SAYZ WIT COUNTER DO GET_COUNT
+    
+    COUNTER DO INCREMENT
+    COUNTER DO INCREMENT
+    COUNTER DO INCREMENT
+    
+    SAY WIT "After 3 increments: "
+    SAYZ WIT COUNTER DO GET_COUNT
+    
+    BTW Test undocumented class
+    I HAS A VARIABLE UNDOC TEH UNDOCUMENTED_CLASS ITZ NEW UNDOCUMENTED_CLASS
+    UNDOC DO DO_SOMETHING
+    
+    SAYZ WIT "=== Class Documentation Test Complete ==="
+KTHXBAI
