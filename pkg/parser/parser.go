@@ -183,6 +183,12 @@ func (p *Parser) parseDeclaration() ast.Node {
 func (p *Parser) parseVariableDeclaration() *ast.VariableDeclarationNode {
 	node := &ast.VariableDeclarationNode{}
 
+	// Collect documentation comments before parsing the variable declaration
+	node.Documentation = p.collectPrecedingComments()
+	
+	// Clear the comments buffer to avoid reusing them for subsequent declarations
+	p.lexer.ClearRecentComments()
+
 	// Check for LOCKD
 	if p.peekTokenIs(LOCKD) {
 		node.IsLocked = true
@@ -228,6 +234,12 @@ func (p *Parser) parseVariableDeclaration() *ast.VariableDeclarationNode {
 // parseIHasAVariableDeclaration parses "I HAS A" variable declarations
 func (p *Parser) parseIHasAVariableDeclaration() *ast.VariableDeclarationNode {
 	node := &ast.VariableDeclarationNode{}
+
+	// Collect documentation comments before parsing the variable declaration
+	node.Documentation = p.collectPrecedingComments()
+	
+	// Clear the comments buffer to avoid reusing them for subsequent declarations
+	p.lexer.ClearRecentComments()
 
 	// Expect "I HAS A"
 	if !p.expectPeek(HAS) {
@@ -485,7 +497,7 @@ func (p *Parser) parseClassMembers() []*ast.ClassMemberNode {
 			break
 		}
 
-		// Check for visibility modifiers
+		// Check for visibility modifiers first (they come before comments)
 		if p.currentTokenIs(EVRYONE) {
 			isPublic = true
 			p.nextToken()
@@ -496,8 +508,12 @@ func (p *Parser) parseClassMembers() []*ast.ClassMemberNode {
 			continue
 		}
 
+		// After processing visibility modifiers, collect documentation comments
 		if p.currentTokenIs(DIS) {
-			member := p.parseClassMember()
+			memberDocs := p.collectPrecedingComments()
+			p.lexer.ClearRecentComments()
+			
+			member := p.parseClassMemberWithDocs(memberDocs)
 			if member != nil {
 				member.IsPublic = isPublic
 				members = append(members, member)
@@ -510,12 +526,13 @@ func (p *Parser) parseClassMembers() []*ast.ClassMemberNode {
 	return members
 }
 
-// parseClassMember parses a single class member
+// parseClassMember parses a single class member (legacy method)
 func (p *Parser) parseClassMember() *ast.ClassMemberNode {
-	// Collect documentation comments before parsing the class member
-	memberDocs := p.collectPrecedingComments()
-	p.lexer.ClearRecentComments()
-	
+	return p.parseClassMemberWithDocs(nil)
+}
+
+// parseClassMemberWithDocs parses a single class member with provided documentation
+func (p *Parser) parseClassMemberWithDocs(memberDocs []string) *ast.ClassMemberNode {
 	if !p.currentTokenIs(DIS) {
 		p.addError(fmt.Sprintf("expected 'DIS', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
 		return nil
@@ -565,9 +582,10 @@ func (p *Parser) parseClassMember() *ast.ClassMemberNode {
 		varType := p.currentToken.Literal
 
 		varDecl := &ast.VariableDeclarationNode{
-			Name:     name,
-			Type:     varType,
-			IsLocked: isLocked,
+			Name:          name,
+			Type:          varType,
+			IsLocked:      isLocked,
+			Documentation: memberDocs,
 		}
 
 		// Check for initialization

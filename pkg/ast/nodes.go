@@ -82,11 +82,12 @@ func (n *ImportStatementNode) SetPosition(pos PositionInfo) {
 
 // VariableDeclarationNode represents variable declarations
 type VariableDeclarationNode struct {
-	Name     string
-	Type     string
-	Value    Node
-	IsLocked bool
-	Position PositionInfo
+	Name          string
+	Type          string
+	Value         Node
+	IsLocked      bool
+	Documentation []string // Documentation comments preceding the variable
+	Position      PositionInfo
 }
 
 func (n *VariableDeclarationNode) Accept(visitor Visitor) (types.Value, error) {

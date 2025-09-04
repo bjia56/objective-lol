@@ -1,0 +1,101 @@
+BTW Variable documentation test - testing comment parsing for all variable types
+I CAN HAS STDIO?
+
+BTW Global application configuration
+BTW This variable stores the current version of the application
+BTW @version 1.2.3
+BTW @since 1.0.0
+HAI ME TEH VARIABLE APP_VERSION TEH STRIN ITZ "1.2.3"
+
+BTW Maximum connection timeout in seconds
+BTW Used to prevent hanging connections
+BTW @default 30
+BTW @unit seconds
+HAI ME TEH LOCKD VARIABLE TIMEOUT TEH INTEGR ITZ 30
+
+BTW Debug flag for verbose logging
+HAI ME TEH VARIABLE DEBUG_MODE TEH BOOL ITZ NO
+
+BTW Configuration class demonstrating member variable documentation
+BTW Stores various application settings
+HAI ME TEH CLAS CONFIG
+    EVRYONE
+    
+    BTW Application name identifier
+    BTW @required true
+    DIS TEH VARIABLE APP_NAME TEH STRIN ITZ "ObjectiveLOL-App"
+
+    MAHSELF
+    BTW Database connection string
+    BTW Contains sensitive connection information
+    BTW @access private
+    BTW @security sensitive
+    DIS TEH VARIABLE DB_CONNECTION TEH STRIN ITZ ""
+
+    BTW Maximum number of concurrent users
+    BTW @min 1
+    BTW @max 10000
+    BTW @default 100
+    DIS TEH VARIABLE MAX_USERS TEH INTEGR ITZ 100
+
+    DIS TEH VARIABLE UNTAGGED_SETTING TEH DUBBLE ITZ 1.0
+
+    BTW Initialize the configuration
+    BTW @param appName The name of the application
+    BTW @param maxUsers Maximum concurrent users
+    DIS TEH FUNCSHUN CONFIG WIT APP_NAME_PARAM TEH STRIN AN WIT MAX_USERS_PARAM TEH INTEGR
+        APP_NAME ITZ APP_NAME_PARAM
+        MAX_USERS ITZ MAX_USERS_PARAM
+    KTHX
+
+    BTW Get the database connection string
+    BTW @return The connection string
+    DIS TEH FUNCSHUN GET_DB_CONNECTION TEH STRIN
+        GIVEZ DB_CONNECTION
+    KTHX
+
+    BTW Update the database connection
+    BTW @param connStr New connection string
+    DIS TEH FUNCSHUN SET_DB_CONNECTION WIT CONN_STR TEH STRIN
+        DB_CONNECTION ITZ CONN_STR
+    KTHX
+KTHXBAI
+
+BTW Main function to test all documented variables and functionality
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== Variable Documentation Test ==="
+    
+    SAY WIT "App Version: "
+    SAYZ WIT APP_VERSION
+    SAY WIT "Timeout: "
+    SAYZ WIT TIMEOUT
+    SAY WIT "Debug Mode: "
+    SAYZ WIT DEBUG_MODE
+    
+    I HAS A VARIABLE CONFIG_OBJ TEH CONFIG ITZ NEW CONFIG WIT "TestApp" AN WIT 50
+    
+    BTW Local variable with documentation inside function
+    BTW Tracks the number of operations performed
+    I HAS A VARIABLE OPERATION_COUNT TEH INTEGR ITZ 0
+    
+    CONFIG_OBJ DO SET_DB_CONNECTION WIT "postgresql://localhost:5432/testdb"
+    
+    I HAS A VARIABLE DB_CONN TEH STRIN ITZ CONFIG_OBJ DO GET_DB_CONNECTION
+    SAY WIT "Database Connection: "
+    SAYZ WIT DB_CONN
+    
+    OPERATION_COUNT ITZ OPERATION_COUNT MOAR 1
+    
+    BTW Another documented local variable
+    BTW Result of a complex calculation
+    I HAS A VARIABLE CALCULATED_RESULT TEH DUBBLE ITZ 42.5
+    
+    OPERATION_COUNT ITZ OPERATION_COUNT MOAR 1
+    
+    SAY WIT "Operations performed: "
+    SAYZ WIT OPERATION_COUNT
+    SAY WIT "Calculated result: "
+    SAYZ WIT CALCULATED_RESULT
+    
+    SAYZ WIT "=== Variable Documentation Test Complete ==="
+KTHXBAI

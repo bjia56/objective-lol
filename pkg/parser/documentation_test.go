@@ -364,3 +364,265 @@ KTHXBAI`
 		t.Errorf("Expected no documentation for UNDOCUMENTED method, got %v", undocumentedMethod.Function.Documentation)
 	}
 }
+
+func TestVariableDocumentationParsing(t *testing.T) {
+	tests := []struct {
+		name         string
+		input        string
+		expectedDocs []string
+		expectedName string
+	}{
+		{
+			name: "Global variable with single line documentation",
+			input: `BTW This variable stores the application version
+HAI ME TEH VARIABLE APP_VERSION TEH STRIN ITZ "1.0"`,
+			expectedDocs: []string{"This variable stores the application version"},
+			expectedName: "APP_VERSION",
+		},
+		{
+			name: "Global variable with multi-line documentation",
+			input: `BTW This variable stores the maximum retry count
+BTW It is used to limit connection attempts
+BTW @default 5
+BTW @type INTEGR
+HAI ME TEH VARIABLE MAX_RETRIES TEH INTEGR ITZ 5`,
+			expectedDocs: []string{
+				"This variable stores the maximum retry count",
+				"It is used to limit connection attempts",
+				"@default 5",
+				"@type INTEGR",
+			},
+			expectedName: "MAX_RETRIES",
+		},
+		{
+			name: "Variable with no documentation",
+			input: `HAI ME TEH VARIABLE SIMPLE TEH STRIN ITZ "test"`,
+			expectedDocs: nil,
+			expectedName: "SIMPLE",
+		},
+		{
+			name: "Locked variable with documentation",
+			input: `BTW This constant should not be changed
+HAI ME TEH LOCKD VARIABLE PI TEH DUBBLE ITZ 3.14159`,
+			expectedDocs: []string{"This constant should not be changed"},
+			expectedName: "PI",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lexer := NewLexer(tt.input)
+			parser := NewParser(lexer)
+			program := parser.ParseProgram()
+
+			if len(parser.Errors()) > 0 {
+				t.Fatalf("Parser errors: %v", parser.Errors())
+			}
+
+			if len(program.Declarations) != 1 {
+				t.Fatalf("Expected 1 declaration, got %d", len(program.Declarations))
+			}
+
+			varDecl, ok := program.Declarations[0].(*ast.VariableDeclarationNode)
+			if !ok {
+				t.Fatalf("Expected VariableDeclarationNode, got %T", program.Declarations[0])
+			}
+
+			if varDecl.Name != tt.expectedName {
+				t.Errorf("Expected variable name %s, got %s", tt.expectedName, varDecl.Name)
+			}
+
+			if len(varDecl.Documentation) != len(tt.expectedDocs) {
+				t.Errorf("Expected %d documentation lines, got %d", len(tt.expectedDocs), len(varDecl.Documentation))
+				t.Errorf("Got documentation: %v", varDecl.Documentation)
+			}
+
+			for i, expectedDoc := range tt.expectedDocs {
+				if i >= len(varDecl.Documentation) {
+					t.Errorf("Missing documentation line %d: expected %q", i, expectedDoc)
+					continue
+				}
+				if varDecl.Documentation[i] != expectedDoc {
+					t.Errorf("Documentation line %d: expected %q, got %q", i, expectedDoc, varDecl.Documentation[i])
+				}
+			}
+		})
+	}
+}
+
+func TestClassMemberVariableDocumentation(t *testing.T) {
+	input := `BTW This class demonstrates variable documentation
+HAI ME TEH CLAS DATA_CONTAINER
+    EVRYONE
+    
+    BTW Public identifier for the container
+    BTW @type STRIN
+    DIS TEH VARIABLE ID TEH STRIN ITZ "default"
+
+    MAHSELF
+    BTW Private data storage
+    BTW Contains the main data payload
+    BTW @access private
+    DIS TEH VARIABLE DATA TEH STRIN ITZ ""
+
+    EVRYONE
+    BTW Counter without initialization
+    DIS TEH VARIABLE COUNT TEH INTEGR
+
+    DIS TEH VARIABLE UNDOCUMENTED TEH BOOL ITZ NO
+KTHXBAI`
+
+	lexer := NewLexer(input)
+	parser := NewParser(lexer)
+	program := parser.ParseProgram()
+
+	if len(parser.Errors()) > 0 {
+		t.Fatalf("Parser errors: %v", parser.Errors())
+	}
+
+	if len(program.Declarations) != 1 {
+		t.Fatalf("Expected 1 declaration, got %d", len(program.Declarations))
+	}
+
+	classDecl, ok := program.Declarations[0].(*ast.ClassDeclarationNode)
+	if !ok {
+		t.Fatalf("Expected ClassDeclarationNode, got %T", program.Declarations[0])
+	}
+
+	// Check we have 4 member variables
+	if len(classDecl.Members) != 4 {
+		t.Fatalf("Expected 4 class members, got %d", len(classDecl.Members))
+	}
+
+	// Check ID variable (should have documentation)
+	idVar := classDecl.Members[0]
+	if !idVar.IsVariable {
+		t.Fatalf("Expected variable member, got method")
+	}
+	expectedIdDocs := []string{"Public identifier for the container", "@type STRIN"}
+	if len(idVar.Variable.Documentation) != len(expectedIdDocs) {
+		t.Errorf("Expected %d ID documentation lines, got %d", len(expectedIdDocs), len(idVar.Variable.Documentation))
+	}
+	for i, expectedDoc := range expectedIdDocs {
+		if i >= len(idVar.Variable.Documentation) || idVar.Variable.Documentation[i] != expectedDoc {
+			t.Errorf("ID variable documentation line %d: expected %q, got %q", i, expectedDoc, idVar.Variable.Documentation[i])
+		}
+	}
+
+	// Check DATA variable (should have multi-line documentation)
+	dataVar := classDecl.Members[1]
+	if !dataVar.IsVariable {
+		t.Fatalf("Expected variable member, got method")
+	}
+	expectedDataDocs := []string{"Private data storage", "Contains the main data payload", "@access private"}
+	if len(dataVar.Variable.Documentation) != len(expectedDataDocs) {
+		t.Errorf("Expected %d DATA documentation lines, got %d", len(expectedDataDocs), len(dataVar.Variable.Documentation))
+	}
+	for i, expectedDoc := range expectedDataDocs {
+		if i >= len(dataVar.Variable.Documentation) || dataVar.Variable.Documentation[i] != expectedDoc {
+			t.Errorf("DATA variable documentation line %d: expected %q, got %q", i, expectedDoc, dataVar.Variable.Documentation[i])
+		}
+	}
+
+	// Check COUNT variable (should have simple documentation)
+	countVar := classDecl.Members[2]
+	if !countVar.IsVariable {
+		t.Fatalf("Expected variable member, got method")
+	}
+	expectedCountDocs := []string{"Counter without initialization"}
+	if len(countVar.Variable.Documentation) != len(expectedCountDocs) {
+		t.Errorf("Expected %d COUNT documentation lines, got %d", len(expectedCountDocs), len(countVar.Variable.Documentation))
+	}
+	if len(countVar.Variable.Documentation) > 0 && countVar.Variable.Documentation[0] != expectedCountDocs[0] {
+		t.Errorf("COUNT variable documentation: expected %q, got %q", expectedCountDocs[0], countVar.Variable.Documentation[0])
+	}
+
+	// Check UNDOCUMENTED variable (should have no documentation)
+	undocVar := classDecl.Members[3]
+	if !undocVar.IsVariable {
+		t.Fatalf("Expected variable member, got method")
+	}
+	if len(undocVar.Variable.Documentation) != 0 {
+		t.Errorf("Expected no documentation for UNDOCUMENTED variable, got %v", undocVar.Variable.Documentation)
+	}
+}
+
+func TestLocalVariableDocumentation(t *testing.T) {
+	input := `HAI ME TEH FUNCSHUN TEST
+    BTW Counter for loop iterations
+    BTW Keeps track of how many loops we've done
+    I HAS A VARIABLE LOOP_COUNT TEH INTEGR ITZ 0
+
+    BTW Temporary storage for results
+    I HAS A VARIABLE TEMP_RESULT TEH STRIN ITZ ""
+
+    I HAS A VARIABLE UNDOCUMENTED_LOCAL TEH BOOL ITZ YEZ
+KTHXBAI`
+
+	lexer := NewLexer(input)
+	parser := NewParser(lexer)
+	program := parser.ParseProgram()
+
+	if len(parser.Errors()) > 0 {
+		t.Fatalf("Parser errors: %v", parser.Errors())
+	}
+
+	if len(program.Declarations) != 1 {
+		t.Fatalf("Expected 1 declaration, got %d", len(program.Declarations))
+	}
+
+	funcDecl, ok := program.Declarations[0].(*ast.FunctionDeclarationNode)
+	if !ok {
+		t.Fatalf("Expected FunctionDeclarationNode, got %T", program.Declarations[0])
+	}
+
+	if len(funcDecl.Body.Statements) != 3 {
+		t.Fatalf("Expected 3 statements in function body, got %d", len(funcDecl.Body.Statements))
+	}
+
+	// Check first variable (LOOP_COUNT - should have multi-line documentation)
+	loopCountVar, ok := funcDecl.Body.Statements[0].(*ast.VariableDeclarationNode)
+	if !ok {
+		t.Fatalf("Expected first statement to be VariableDeclarationNode, got %T", funcDecl.Body.Statements[0])
+	}
+	if loopCountVar.Name != "LOOP_COUNT" {
+		t.Errorf("Expected variable name LOOP_COUNT, got %s", loopCountVar.Name)
+	}
+	expectedLoopCountDocs := []string{"Counter for loop iterations", "Keeps track of how many loops we've done"}
+	if len(loopCountVar.Documentation) != len(expectedLoopCountDocs) {
+		t.Errorf("Expected %d documentation lines for LOOP_COUNT, got %d", len(expectedLoopCountDocs), len(loopCountVar.Documentation))
+	}
+	for i, expectedDoc := range expectedLoopCountDocs {
+		if i >= len(loopCountVar.Documentation) || loopCountVar.Documentation[i] != expectedDoc {
+			t.Errorf("LOOP_COUNT documentation line %d: expected %q, got %q", i, expectedDoc, loopCountVar.Documentation[i])
+		}
+	}
+
+	// Check second variable (TEMP_RESULT - should have single line documentation)
+	tempVar, ok := funcDecl.Body.Statements[1].(*ast.VariableDeclarationNode)
+	if !ok {
+		t.Fatalf("Expected second statement to be VariableDeclarationNode, got %T", funcDecl.Body.Statements[1])
+	}
+	if tempVar.Name != "TEMP_RESULT" {
+		t.Errorf("Expected variable name TEMP_RESULT, got %s", tempVar.Name)
+	}
+	expectedTempDocs := []string{"Temporary storage for results"}
+	if len(tempVar.Documentation) != len(expectedTempDocs) {
+		t.Errorf("Expected %d documentation lines for TEMP_RESULT, got %d", len(expectedTempDocs), len(tempVar.Documentation))
+	}
+	if len(tempVar.Documentation) > 0 && tempVar.Documentation[0] != expectedTempDocs[0] {
+		t.Errorf("TEMP_RESULT documentation: expected %q, got %q", expectedTempDocs[0], tempVar.Documentation[0])
+	}
+
+	// Check third variable (UNDOCUMENTED_LOCAL - should have no documentation)
+	undocVar, ok := funcDecl.Body.Statements[2].(*ast.VariableDeclarationNode)
+	if !ok {
+		t.Fatalf("Expected third statement to be VariableDeclarationNode, got %T", funcDecl.Body.Statements[2])
+	}
+	if undocVar.Name != "UNDOCUMENTED_LOCAL" {
+		t.Errorf("Expected variable name UNDOCUMENTED_LOCAL, got %s", undocVar.Name)
+	}
+	if len(undocVar.Documentation) != 0 {
+		t.Errorf("Expected no documentation for UNDOCUMENTED_LOCAL, got %v", undocVar.Documentation)
+	}
+}
