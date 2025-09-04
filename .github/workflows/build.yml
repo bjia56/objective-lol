@@ -1,0 +1,127 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-go-binaries:
+    name: Build Go Binaries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Windows
+          - goos: windows
+            goarch: amd64
+            ext: .exe
+          - goos: windows
+            goarch: arm64
+            ext: .exe
+          # macOS
+          - goos: darwin
+            goarch: amd64
+            ext: ""
+          - goos: darwin
+            goarch: arm64
+            ext: ""
+          # Linux
+          - goos: linux
+            goarch: amd64
+            ext: ""
+          - goos: linux
+            goarch: arm64
+            ext: ""
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+
+    - name: Build olol binary
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        CGO_ENABLED: 0
+      run: |
+        go build -o olol-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} cmd/olol/main.go
+
+    - name: Build olol-lsp binary
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        CGO_ENABLED: 0
+      run: |
+        go build -o olol-lsp-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} cmd/olol-lsp/main.go
+
+    - name: Upload olol binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: olol-${{ matrix.goos }}-${{ matrix.goarch }}
+        path: olol-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+
+    - name: Upload olol-lsp binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: olol-lsp-${{ matrix.goos }}-${{ matrix.goarch }}
+        path: olol-lsp-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+
+  build-vscode-extension:
+    name: Build VSCode Extension
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: vscode-extension/package-lock.json
+
+    - name: Install dependencies
+      working-directory: vscode-extension
+      run: npm ci
+
+    - name: Install vsce
+      run: npm install -g @vscode/vsce
+
+    - name: Compile extension
+      working-directory: vscode-extension
+      run: npm run compile
+
+    - name: Package extension
+      working-directory: vscode-extension
+      run: vsce package
+
+    - name: Upload VSIX
+      uses: actions/upload-artifact@v4
+      with:
+        name: vscode-extension
+        path: vscode-extension/*.vsix
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+
+    - name: Run Go tests
+      run: go test ./...
+
+    - name: Build and test olol binary
+      run: |
+        go build -o olol cmd/olol/main.go
+        go build -o olol-lsp cmd/olol-lsp/main.go
