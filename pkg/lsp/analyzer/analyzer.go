@@ -234,17 +234,3 @@ func (a *Analyzer) symbolKindToCompletionKind(kind SymbolKind) protocol.Completi
 		return protocol.CompletionItemKindText
 	}
 }
-
-// positionInfoToRange converts AST PositionInfo to LSP Range
-func (a *Analyzer) positionInfoToRange(pos ast.PositionInfo, length int) protocol.Range {
-	return protocol.Range{
-		Start: protocol.Position{
-			Line:      uint32(pos.Line - 1),      // LSP is 0-based, parser is 1-based
-			Character: uint32(pos.Column - 1),    // LSP is 0-based, parser is 1-based
-		},
-		End: protocol.Position{
-			Line:      uint32(pos.Line - 1),
-			Character: uint32(pos.Column - 1 + length),
-		},
-	}
-}

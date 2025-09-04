@@ -31,12 +31,15 @@ func (sc *SymbolCollector) GetSymbolTable() *SymbolTable {
 
 // addSymbol adds a symbol to the table
 func (sc *SymbolCollector) addSymbol(name string, kind SymbolKind, symbolType string, pos ast.PositionInfo) {
+	if symbolType == "" {
+		symbolType = "NOTHIN"
+	}
 	symbol := Symbol{
 		Name:     name,
 		Kind:     kind,
 		Type:     symbolType,
 		Position: pos,
-		Range: sc.positionInfoToRange(pos, len(name)),
+		Range:    sc.positionInfoToRange(pos, len(name)),
 	}
 	sc.symbolTable.Symbols = append(sc.symbolTable.Symbols, symbol)
 }
@@ -65,14 +68,14 @@ func (sc *SymbolCollector) VisitVariableDeclaration(node *ast.VariableDeclaratio
 
 func (sc *SymbolCollector) VisitFunctionDeclaration(node *ast.FunctionDeclarationNode) (types.Value, error) {
 	sc.addSymbol(node.Name, SymbolKindFunction, node.ReturnType, node.GetPosition())
-	
+
 	// Add parameters as symbols
 	for _, param := range node.Parameters {
 		// Note: Parameters don't have position info in current implementation
 		// We would need to enhance the parser to track parameter positions
 		sc.addSymbol(param.Name, SymbolKindParameter, param.Type, ast.PositionInfo{})
 	}
-	
+
 	if node.Body != nil {
 		node.Body.Accept(sc)
 	}
@@ -81,7 +84,7 @@ func (sc *SymbolCollector) VisitFunctionDeclaration(node *ast.FunctionDeclaratio
 
 func (sc *SymbolCollector) VisitClassDeclaration(node *ast.ClassDeclarationNode) (types.Value, error) {
 	sc.addSymbol(node.Name, SymbolKindClass, "class", node.GetPosition())
-	
+
 	// Visit class members
 	for _, member := range node.Members {
 		if member.IsVariable && member.Variable != nil {
@@ -229,8 +232,8 @@ func (sc *SymbolCollector) VisitThrowStatement(node *ast.ThrowStatementNode) (ty
 func (sc *SymbolCollector) positionInfoToRange(pos ast.PositionInfo, length int) protocol.Range {
 	return protocol.Range{
 		Start: protocol.Position{
-			Line:      uint32(pos.Line - 1),      // LSP is 0-based, parser is 1-based
-			Character: uint32(pos.Column - 1),    // LSP is 0-based, parser is 1-based
+			Line:      uint32(pos.Line - 1),   // LSP is 0-based, parser is 1-based
+			Character: uint32(pos.Column - 1), // LSP is 0-based, parser is 1-based
 		},
 		End: protocol.Position{
 			Line:      uint32(pos.Line - 1),

@@ -56,7 +56,6 @@ func (p *Parser) convertPosition(pos PositionInfo) ast.PositionInfo {
 	return ast.PositionInfo{
 		Line:   pos.Line,
 		Column: pos.Column,
-		Offset: pos.Offset,
 	}
 }
 
@@ -157,15 +156,15 @@ func (p *Parser) parseVariableDeclaration() *ast.VariableDeclarationNode {
 		p.addError(fmt.Sprintf("expected 'VARIABLE', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
 		return nil
 	}
-	
-	// Set position from the VARIABLE token
-	node.Position = p.convertPosition(p.currentToken.Position)
 
 	if !p.expectPeek(IDENTIFIER) {
 		p.addError(fmt.Sprintf("expected identifier, got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
 		return nil
 	}
 	node.Name = p.currentToken.Literal
+
+	// Set position from the identifier token
+	node.Position = p.convertPosition(p.currentToken.Position)
 
 	if !p.expectPeek(TEH) {
 		p.addError(fmt.Sprintf("expected 'TEH' after '%s', got %v at line %d", p.currentToken.Literal, p.peekToken.Type, p.peekToken.Position.Line))
@@ -192,9 +191,6 @@ func (p *Parser) parseVariableDeclaration() *ast.VariableDeclarationNode {
 // parseIHasAVariableDeclaration parses "I HAS A" variable declarations
 func (p *Parser) parseIHasAVariableDeclaration() *ast.VariableDeclarationNode {
 	node := &ast.VariableDeclarationNode{}
-	
-	// Set position from the I token
-	node.Position = p.convertPosition(p.currentToken.Position)
 
 	// Expect "I HAS A"
 	if !p.expectPeek(HAS) {
@@ -223,6 +219,9 @@ func (p *Parser) parseIHasAVariableDeclaration() *ast.VariableDeclarationNode {
 	}
 	node.Name = p.currentToken.Literal
 
+	// Set position from the identifier token
+	node.Position = p.convertPosition(p.currentToken.Position)
+
 	if !p.expectPeek(TEH) {
 		p.addError(fmt.Sprintf("expected 'TEH' after '%s', got %v at line %d", p.currentToken.Literal, p.peekToken.Type, p.peekToken.Position.Line))
 		return nil
@@ -248,9 +247,6 @@ func (p *Parser) parseIHasAVariableDeclaration() *ast.VariableDeclarationNode {
 // parseImportStatement parses both "I CAN HAS module?" and "I CAN HAS decl1 AN decl2 FROM module?" import statements
 func (p *Parser) parseImportStatement() *ast.ImportStatementNode {
 	node := &ast.ImportStatementNode{}
-	
-	// Set position from the I token
-	node.Position = p.convertPosition(p.currentToken.Position)
 
 	// Expect "I CAN HAS"
 	if !p.expectPeek(CAN) {
@@ -268,6 +264,9 @@ func (p *Parser) parseImportStatement() *ast.ImportStatementNode {
 		p.nextToken() // consume STRING
 		node.IsFileImport = true
 		node.ModuleName = p.currentToken.Literal
+
+		// Set position from the string token
+		node.Position = p.convertPosition(p.currentToken.Position)
 	} else if p.peekTokenIs(IDENTIFIER) {
 		// Either built-in module import or selective import
 		p.nextToken() // consume IDENTIFIER
@@ -309,6 +308,9 @@ func (p *Parser) parseImportStatement() *ast.ImportStatementNode {
 				p.addError(fmt.Sprintf("expected module name (identifier or string) after 'FROM', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
 				return nil
 			}
+
+			// Set position from the string or identifier token
+			node.Position = p.convertPosition(p.currentToken.Position)
 		} else {
 			// Traditional built-in import: I CAN HAS STDIO?
 			node.IsFileImport = false
@@ -336,15 +338,15 @@ func (p *Parser) parseFunctionDeclaration() *ast.FunctionDeclarationNode {
 		p.addError(fmt.Sprintf("expected 'FUNCSHUN', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
 		return nil
 	}
-	
-	// Set position from the FUNCSHUN token
-	node.Position = p.convertPosition(p.currentToken.Position)
 
 	if !p.expectPeek(IDENTIFIER) {
 		p.addError(fmt.Sprintf("expected identifier, got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
 		return nil
 	}
 	node.Name = p.currentToken.Literal
+
+	// Set position from the identifier token
+	node.Position = p.convertPosition(p.currentToken.Position)
 
 	// Check for return type (TEH type)
 	if p.peekTokenIs(TEH) {
@@ -382,15 +384,15 @@ func (p *Parser) parseClassDeclaration() *ast.ClassDeclarationNode {
 		p.addError(fmt.Sprintf("expected 'CLAS', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
 		return nil
 	}
-	
-	// Set position from the CLAS token
-	node.Position = p.convertPosition(p.currentToken.Position)
 
 	if !p.expectPeek(IDENTIFIER) {
 		p.addError(fmt.Sprintf("expected identifier after 'CLAS', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
 		return nil
 	}
 	node.Name = p.currentToken.Literal
+
+	// Set position from the identifier token
+	node.Position = p.convertPosition(p.currentToken.Position)
 
 	// Check for inheritance (KITTEH OF parent)
 	if p.peekTokenIs(KITTEH) {
@@ -754,7 +756,7 @@ func (p *Parser) parseStatement() ast.Node {
 // parseIfStatement parses if statements
 func (p *Parser) parseIfStatement() *ast.IfStatementNode {
 	node := &ast.IfStatementNode{}
-	
+
 	// Set position from the IZ token
 	node.Position = p.convertPosition(p.currentToken.Position)
 
@@ -784,7 +786,7 @@ func (p *Parser) parseIfStatement() *ast.IfStatementNode {
 // parseWhileStatement parses while loops
 func (p *Parser) parseWhileStatement() *ast.WhileStatementNode {
 	node := &ast.WhileStatementNode{}
-	
+
 	// Set position from the WHILE token
 	node.Position = p.convertPosition(p.currentToken.Position)
 
@@ -804,7 +806,7 @@ func (p *Parser) parseWhileStatement() *ast.WhileStatementNode {
 // parseReturnStatement parses return statements
 func (p *Parser) parseReturnStatement() *ast.ReturnStatementNode {
 	node := &ast.ReturnStatementNode{}
-	
+
 	// Set position from the GIVEZ token
 	node.Position = p.convertPosition(p.currentToken.Position)
 
@@ -823,7 +825,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatementNode {
 // parseAssignment parses assignment statements
 func (p *Parser) parseAssignment() *ast.AssignmentNode {
 	node := &ast.AssignmentNode{}
-	
+
 	// Set position from the identifier token
 	node.Position = p.convertPosition(p.currentToken.Position)
 
@@ -1141,7 +1143,7 @@ func (p *Parser) parseLiteral() *ast.LiteralNode {
 // parseObjectInstantiation parses object instantiation
 func (p *Parser) parseObjectInstantiation() *ast.ObjectInstantiationNode {
 	node := &ast.ObjectInstantiationNode{}
-	
+
 	// Set position from NEW token
 	node.Position = p.convertPosition(p.currentToken.Position)
 
@@ -1165,7 +1167,7 @@ func (p *Parser) parseObjectInstantiation() *ast.ObjectInstantiationNode {
 // parseTryStatement parses try-catch-finally blocks
 func (p *Parser) parseTryStatement() *ast.TryStatementNode {
 	node := &ast.TryStatementNode{}
-	
+
 	// Set position from MAYB token
 	node.Position = p.convertPosition(p.currentToken.Position)
 
@@ -1226,7 +1228,7 @@ func (p *Parser) parseTryStatement() *ast.TryStatementNode {
 // parseThrowStatement parses throw statements
 func (p *Parser) parseThrowStatement() *ast.ThrowStatementNode {
 	node := &ast.ThrowStatementNode{}
-	
+
 	// Set position from OOPS token
 	node.Position = p.convertPosition(p.currentToken.Position)
 
