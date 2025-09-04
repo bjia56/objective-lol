@@ -168,7 +168,8 @@ func TestEnvironmentClassOperations(t *testing.T) {
 	// Define a class
 	class := &Class{
 		Name:             "Person",
-		ParentClass:      "",
+		ParentClasses:    []string{},
+		MRO:              []string{},
 		PublicVariables:  make(map[string]*Variable),
 		PrivateVariables: make(map[string]*Variable),
 		PublicFunctions:  make(map[string]*Function),
@@ -215,7 +216,8 @@ func TestObjectInstance(t *testing.T) {
 	// Create a simple class for testing
 	class := &Class{
 		Name:             "TestClass",
-		ParentClass:      "",
+		ParentClasses:    []string{},
+		MRO:              []string{},
 		PublicVariables:  make(map[string]*Variable),
 		PrivateVariables: make(map[string]*Variable),
 		PublicFunctions:  make(map[string]*Function),
@@ -255,7 +257,8 @@ func TestObjectInstanceMemberAccess(t *testing.T) {
 
 	class := &Class{
 		Name:             "TestClass",
-		ParentClass:      "",
+		ParentClasses:    []string{},
+		MRO:              []string{},
 		PublicVariables:  make(map[string]*Variable),
 		PrivateVariables: make(map[string]*Variable),
 		PublicFunctions:  make(map[string]*Function),

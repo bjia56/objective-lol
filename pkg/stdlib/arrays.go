@@ -18,7 +18,7 @@ func NewBukkitInstance() *environment.ObjectInstance {
 	return &environment.ObjectInstance{
 		Class:      class,
 		NativeData: make(BukkitSlice, 0),
-		Hierarchy:  []string{"BUKKIT"},
+		MRO:        []string{"BUKKIT"},
 		Variables: map[string]*environment.Variable{
 			"SIZ": {
 				Name:     "SIZ",
@@ -352,7 +352,8 @@ func getArrayClasses() map[string]*environment.Class {
 				},
 				QualifiedName: "stdlib:ARRAYS.BUKKIT",
 				ModulePath:    "stdlib:ARRAYS",
-				ParentClass:   "",
+				ParentClasses: []string{},
+				MRO:           []string{"BUKKIT"},
 				PrivateVariables: make(map[string]*environment.Variable),
 				PrivateFunctions: make(map[string]*environment.Function),
 				SharedVariables:  make(map[string]*environment.Variable),

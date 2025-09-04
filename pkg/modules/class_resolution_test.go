@@ -61,8 +61,8 @@ KTHXBAI
 	expectedModulePath := "file:" + resolvedPath
 	
 	// Create classes manually to test qualified name generation
-	animalClass := environment.NewClass("ANIMAL", expectedModulePath, "")
-	dogClass := environment.NewClass("DOG", expectedModulePath, expectedModulePath+".ANIMAL")
+	animalClass := environment.NewClassLegacy("ANIMAL", expectedModulePath, "")
+	dogClass := environment.NewClassLegacy("DOG", expectedModulePath, expectedModulePath+".ANIMAL")
 	
 	// Define classes in environment
 	require.NoError(t, env.DefineClass(animalClass))
@@ -114,7 +114,7 @@ KTHXBAI
 	
 	// Test that we can create classes with proper qualified names
 	expectedModulePath := "file:" + resolvedPath
-	helperClass := environment.NewClass("HELPER", expectedModulePath, "")
+	helperClass := environment.NewClassLegacy("HELPER", expectedModulePath, "")
 	
 	// Define class in environment (simulating import)
 	require.NoError(t, env.DefineClass(helperClass))
@@ -173,8 +173,8 @@ KTHXBAI
 	modulePath1 := "file:" + resolvedPath1
 	modulePath2 := "file:" + resolvedPath2
 	
-	item1Class := environment.NewClass("ITEM", modulePath1, "")
-	item2Class := environment.NewClass("ITEM", modulePath2, "")
+	item1Class := environment.NewClassLegacy("ITEM", modulePath1, "")
+	item2Class := environment.NewClassLegacy("ITEM", modulePath2, "")
 	
 	// Both should be definable with different qualified names
 	require.NoError(t, env.DefineClass(item1Class))
@@ -236,11 +236,11 @@ KTHXBAI
 	derivedModulePathStr := "file:" + derivedPath
 	
 	// Create base class
-	vehicleClass := environment.NewClass("VEHICLE", baseModulePathStr, "")
+	vehicleClass := environment.NewClassLegacy("VEHICLE", baseModulePathStr, "")
 	require.NoError(t, env.DefineClass(vehicleClass))
 	
 	// Create derived class with qualified parent
-	carClass := environment.NewClass("CAR", derivedModulePathStr, vehicleClass.QualifiedName)
+	carClass := environment.NewClassLegacy("CAR", derivedModulePathStr, vehicleClass.QualifiedName)
 	require.NoError(t, env.DefineClass(carClass))
 	
 	// Verify CAR class has qualified parent
@@ -287,8 +287,8 @@ KTHXBAI
 	env := environment.NewEnvironment(nil)
 	modulePath := "file:" + resolvedPath
 	
-	classA := environment.NewClass("CLASS_A", modulePath, "")
-	classC := environment.NewClass("CLASS_C", modulePath, "")
+	classA := environment.NewClassLegacy("CLASS_A", modulePath, "")
+	classC := environment.NewClassLegacy("CLASS_C", modulePath, "")
 	
 	// Define only selected classes (simulating selective import)
 	require.NoError(t, env.DefineClass(classA))

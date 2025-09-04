@@ -411,7 +411,6 @@ func (i *Interpreter) VisitFunctionDeclaration(node *ast.FunctionDeclarationNode
 		Parameters:  node.Parameters,
 		Body:        node.Body,
 		IsShared:    node.IsShared,
-		ParentClass: i.currentClass,
 	}
 
 	// Normalize parameter names and types
@@ -425,16 +424,17 @@ func (i *Interpreter) VisitFunctionDeclaration(node *ast.FunctionDeclarationNode
 
 // VisitClassDeclaration handles class declarations
 func (i *Interpreter) VisitClassDeclaration(node *ast.ClassDeclarationNode) (types.Value, error) {
-	// Determine qualified parent class name
-	var qualifiedParent string
-	if node.ParentClass != "" {
-		qualifiedParent = i.resolveClassName(strings.ToUpper(node.ParentClass))
+	// Determine qualified parent class names for multiple inheritance
+	var qualifiedParents []string
+	for _, parentName := range node.ParentClasses {
+		qualifiedParent := i.resolveClassName(strings.ToUpper(parentName))
+		qualifiedParents = append(qualifiedParents, qualifiedParent)
 	}
 	
 	class := environment.NewClass(
 		strings.ToUpper(node.Name),
 		i.currentModulePath,  // Use current module context
-		qualifiedParent,
+		qualifiedParents,
 	)
 
 	// Save current context
@@ -490,7 +490,6 @@ func (i *Interpreter) VisitClassDeclaration(node *ast.ClassDeclarationNode) (typ
 				Parameters:  member.Function.Parameters,
 				Body:        member.Function.Body,
 				IsShared:    &member.IsShared,
-				ParentClass: class.Name,
 			}
 
 			// Normalize parameter names and types

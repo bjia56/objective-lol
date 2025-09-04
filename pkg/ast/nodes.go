@@ -128,7 +128,7 @@ func (n *FunctionDeclarationNode) SetPosition(pos PositionInfo) {
 // ClassDeclarationNode represents class declarations
 type ClassDeclarationNode struct {
 	Name          string
-	ParentClass   string
+	ParentClasses []string // CHANGE: Support multiple inheritance with slice
 	Members       []*ClassMemberNode
 	Documentation []string // Documentation comments preceding the class
 	Position      PositionInfo

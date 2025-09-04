@@ -40,7 +40,8 @@ func getIoClasses() map[string]*environment.Class {
 				Name:          "READER",
 				QualifiedName: "stdlib:IO.READER",
 				ModulePath:    "stdlib:IO",
-				ParentClass:   "",
+				ParentClasses: []string{},
+				MRO:           []string{},
 				PublicFunctions: map[string]*environment.Function{
 					"READ": {
 						Name:       "READ",
@@ -69,7 +70,8 @@ func getIoClasses() map[string]*environment.Class {
 				Name:          "WRITER",
 				QualifiedName: "stdlib:IO.WRITER",
 				ModulePath:    "stdlib:IO",
-				ParentClass:   "",
+				ParentClasses: []string{},
+				MRO:           []string{},
 				PublicFunctions: map[string]*environment.Function{
 					"WRITE": {
 						Name:       "WRITE",
@@ -310,7 +312,8 @@ func getIoClasses() map[string]*environment.Class {
 				},
 				QualifiedName: "stdlib:IO.BUFFERED_READER",
 				ModulePath:    "stdlib:IO",
-				ParentClass:   "stdlib:IO.READER",
+				ParentClasses: []string{"stdlib:IO.READER"},
+				MRO:           []string{},
 				PrivateVariables: make(map[string]*environment.Variable),
 				PrivateFunctions: make(map[string]*environment.Function),
 				SharedVariables:  make(map[string]*environment.Variable),
@@ -320,7 +323,8 @@ func getIoClasses() map[string]*environment.Class {
 				Name:          "BUFFERED_WRITER",
 				QualifiedName: "stdlib:IO.BUFFERED_WRITER",
 				ModulePath:    "stdlib:IO",
-				ParentClass:   "stdlib:IO.WRITER",
+				ParentClasses: []string{"stdlib:IO.WRITER"},
+				MRO:           []string{},
 				PublicFunctions: map[string]*environment.Function{
 					// Constructor
 					"BUFFERED_WRITER": {

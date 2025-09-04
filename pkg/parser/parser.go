@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
@@ -458,7 +459,7 @@ func (p *Parser) parseClassDeclaration() *ast.ClassDeclarationNode {
 	// Set position from the identifier token
 	node.Position = p.convertPosition(p.currentToken.Position)
 
-	// Check for inheritance (KITTEH OF parent)
+	// Check for inheritance (KITTEH OF parent1 AN OF parent2 AN OF parent3...)
 	if p.peekTokenIs(KITTEH) {
 		p.nextToken() // consume KITTEH
 		if !p.expectPeek(OF) {
@@ -469,7 +470,22 @@ func (p *Parser) parseClassDeclaration() *ast.ClassDeclarationNode {
 			p.addError(fmt.Sprintf("expected identifier after 'OF', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
 			return nil
 		}
-		node.ParentClass = p.currentToken.Literal
+		node.ParentClasses = append(node.ParentClasses, strings.ToUpper(p.currentToken.Literal))
+		
+		// Parse additional parents with "AN OF" separator
+		for p.peekTokenIs(AN) {
+			p.nextToken() // consume AN
+			if !p.expectPeek(OF) {
+				p.addError(fmt.Sprintf("expected 'OF' after 'AN' in inheritance declaration, got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
+				p.addError("Hint: Multiple inheritance syntax is 'KITTEH OF PARENT1 AN OF PARENT2'")
+				return nil
+			}
+			if !p.expectPeek(IDENTIFIER) {
+				p.addError(fmt.Sprintf("expected parent class name after 'AN OF', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
+				return nil
+			}
+			node.ParentClasses = append(node.ParentClasses, strings.ToUpper(p.currentToken.Literal))
+		}
 	}
 
 	// Parse class body

@@ -17,7 +17,7 @@ func NewBaskitInstance() *environment.ObjectInstance {
 	return &environment.ObjectInstance{
 		Class:      class,
 		NativeData: make(BaskitMap),
-		Hierarchy:  []string{"BASKIT"},
+		MRO:        []string{"BASKIT"},
 		Variables: map[string]*environment.Variable{
 			"SIZ": {
 				Name:     "SIZ",
@@ -287,7 +287,8 @@ func getMapClasses() map[string]*environment.Class {
 				},
 				QualifiedName: "stdlib:MAPS.BASKIT",
 				ModulePath:    "stdlib:MAPS",
-				ParentClass:   "",
+				ParentClasses: []string{},
+				MRO:           []string{"BASKIT"},
 				PrivateVariables: make(map[string]*environment.Variable),
 				PrivateFunctions: make(map[string]*environment.Function),
 				SharedVariables:  make(map[string]*environment.Variable),

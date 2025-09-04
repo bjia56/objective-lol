@@ -30,7 +30,6 @@ type Function struct {
 	Parameters  []Parameter
 	Body        interface{} // Will hold AST nodes
 	IsShared    *bool       // nil for global functions, true/false for class methods
-	ParentClass string
 	NativeImpl  func(ctx interface{}, this *ObjectInstance, args []types.Value) (types.Value, error)
 }
 
@@ -45,7 +44,8 @@ type Class struct {
 	Name             string                  // Display name: "READER"
 	QualifiedName    string                  // Internal: "stdlib:IO.READER"
 	ModulePath       string                  // Internal: "stdlib:IO"
-	ParentClass      string                  // Internal: qualified parent name
+	ParentClasses    []string                // Internal: qualified parent names (multiple inheritance)
+	MRO              []string                // Method Resolution Order (C3 linearization)
 	PublicVariables  map[string]*Variable
 	PrivateVariables map[string]*Variable
 	PublicFunctions  map[string]*Function
@@ -179,8 +179,8 @@ func (e *Environment) GetClass(name string) (*Class, error) {
 	return nil, fmt.Errorf("undefined class '%s'", name)
 }
 
-// NewClass creates a new class definition
-func NewClass(name, modulePath, parentClass string) *Class {
+// NewClass creates a new class definition with support for multiple inheritance
+func NewClass(name, modulePath string, parentClasses []string) *Class {
 	var qualifiedName string
 	if modulePath != "" {
 		qualifiedName = fmt.Sprintf("%s.%s", modulePath, name)
@@ -192,7 +192,8 @@ func NewClass(name, modulePath, parentClass string) *Class {
 		Name:             name,
 		QualifiedName:    qualifiedName,
 		ModulePath:       modulePath,
-		ParentClass:      parentClass, // Should be qualified
+		ParentClasses:    parentClasses, // Support multiple parents
+		MRO:              []string{},     // Method Resolution Order (computed later)
 		PublicVariables:  make(map[string]*Variable),
 		PrivateVariables: make(map[string]*Variable),
 		PublicFunctions:  make(map[string]*Function),
@@ -202,10 +203,19 @@ func NewClass(name, modulePath, parentClass string) *Class {
 	}
 }
 
+// NewClassLegacy creates a new class definition with single parent (backwards compatibility)
+func NewClassLegacy(name, modulePath, parentClass string) *Class {
+	var parentClasses []string
+	if parentClass != "" {
+		parentClasses = []string{parentClass}
+	}
+	return NewClass(name, modulePath, parentClasses)
+}
+
 // ObjectInstance represents an instance of a class
 type ObjectInstance struct {
 	Class           *Class
-	Hierarchy       []string
+	MRO             []string             // Method Resolution Order (stored for efficiency)
 	Variables       map[string]*Variable
 	SharedVariables map[string]*Variable // Reference to class shared variables
 	NativeData      any                  // For native classes, stores internal data
@@ -218,37 +228,203 @@ func (e *Environment) NewObjectInstance(className string) (types.ObjectInstance,
 		return nil, err
 	}
 
-	hierarchy := []string{}
-	curr := class
-	for {
-		hierarchy = append(hierarchy, curr.QualifiedName)
-		if curr.ParentClass == "" {
-			break
-		}
-		curr, err = e.GetClass(curr.ParentClass)
-		if err != nil {
-			return nil, err
-		}
+	// Compute or retrieve cached MRO for this class
+	mro, err := e.computeOrGetMRO(className)
+	if err != nil {
+		return nil, fmt.Errorf("failed to compute method resolution order for class %s: %v", className, err)
 	}
 
 	instance := &ObjectInstance{
 		Class:           class,
-		Hierarchy:       hierarchy,
+		MRO:             mro,
 		Variables:       make(map[string]*Variable),
 		SharedVariables: class.SharedVariables,
 	}
 
-	// Initialize instance variables with copies from entire class hierarchy
-	e.initializeInstanceVariables(instance, class)
+	// Initialize instance variables using MRO
+	e.initializeInstanceVariablesWithMRO(instance)
 
 	return instance, nil
 }
 
-// initializeInstanceVariables recursively initializes variables from class hierarchy
+// computeOrGetMRO computes or retrieves cached Method Resolution Order for a class
+func (e *Environment) computeOrGetMRO(className string) ([]string, error) {
+	class, err := e.GetClass(className)
+	if err != nil {
+		return nil, err
+	}
+
+	// If MRO already computed, return it
+	if len(class.MRO) > 0 {
+		return class.MRO, nil
+	}
+
+	// Compute MRO using C3 linearization
+	mro, err := e.computeC3Linearization(className)
+	if err != nil {
+		return nil, err
+	}
+
+	// Cache the result
+	class.MRO = mro
+	return mro, nil
+}
+
+// computeC3Linearization implements the C3 linearization algorithm
+func (e *Environment) computeC3Linearization(className string) ([]string, error) {
+	class, err := e.GetClass(className)
+	if err != nil {
+		return nil, err
+	}
+
+	// Base case: no parents
+	if len(class.ParentClasses) == 0 {
+		return []string{className}, nil
+	}
+
+	// Compute linearizations for all parent classes
+	parentLinearizations := make([][]string, 0, len(class.ParentClasses))
+	for _, parent := range class.ParentClasses {
+		parentMRO, err := e.computeC3Linearization(parent)
+		if err != nil {
+			return nil, err
+		}
+		parentLinearizations = append(parentLinearizations, parentMRO)
+	}
+
+	// Add the list of direct parents
+	parentLinearizations = append(parentLinearizations, class.ParentClasses)
+
+	// Merge all linearizations using C3 algorithm
+	merged, err := e.mergeLinearizations(parentLinearizations)
+	if err != nil {
+		return nil, fmt.Errorf("multiple inheritance conflict in class %s: %v", className, err)
+	}
+
+	// Result is current class + merged linearizations
+	result := []string{className}
+	result = append(result, merged...)
+	return result, nil
+}
+
+// mergeLinearizations implements the C3 merge algorithm
+func (e *Environment) mergeLinearizations(linearizations [][]string) ([]string, error) {
+	result := []string{}
+
+	// Create working copies of all linearizations
+	working := make([][]string, len(linearizations))
+	for i, lin := range linearizations {
+		working[i] = make([]string, len(lin))
+		copy(working[i], lin)
+	}
+
+	for {
+		// Remove empty linearizations
+		nonEmpty := [][]string{}
+		for _, lin := range working {
+			if len(lin) > 0 {
+				nonEmpty = append(nonEmpty, lin)
+			}
+		}
+		working = nonEmpty
+
+		// If all linearizations are empty, we're done
+		if len(working) == 0 {
+			break
+		}
+
+		// Find a good head (appears first in some linearization and not in the tail of any)
+		var goodHead string
+		found := false
+
+		for _, lin := range working {
+			if len(lin) == 0 {
+				continue
+			}
+			candidate := lin[0]
+			isGood := true
+
+			// Check if candidate appears in the tail of any linearization
+			for _, otherLin := range working {
+				for i := 1; i < len(otherLin); i++ {
+					if otherLin[i] == candidate {
+						isGood = false
+						break
+					}
+				}
+				if !isGood {
+					break
+				}
+			}
+
+			if isGood {
+				goodHead = candidate
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return nil, fmt.Errorf("cannot create a consistent method resolution order")
+		}
+
+		// Add the good head to result
+		result = append(result, goodHead)
+
+		// Remove the good head from all linearizations where it appears first
+		for i := range working {
+			if len(working[i]) > 0 && working[i][0] == goodHead {
+				working[i] = working[i][1:]
+			}
+		}
+	}
+
+	return result, nil
+}
+
+// initializeInstanceVariablesWithMRO initializes variables using Method Resolution Order
+func (e *Environment) initializeInstanceVariablesWithMRO(instance *ObjectInstance) {
+	// Initialize variables following MRO order (reverse for proper inheritance)
+	for i := len(instance.MRO) - 1; i >= 0; i-- {
+		className := instance.MRO[i]
+		class, err := e.GetClass(className)
+		if err != nil {
+			continue // Skip invalid classes
+		}
+
+		// Initialize public variables
+		for name, variable := range class.PublicVariables {
+			if _, exists := instance.Variables[name]; !exists { // Don't override existing
+				instance.Variables[name] = &Variable{
+					Name:     variable.Name,
+					Type:     variable.Type,
+					Value:    variable.Value.Copy(),
+					IsLocked: variable.IsLocked,
+					IsPublic: true,
+				}
+			}
+		}
+
+		// Initialize private variables (only from same class)
+		if className == instance.Class.QualifiedName {
+			for name, variable := range class.PrivateVariables {
+				instance.Variables[name] = &Variable{
+					Name:     variable.Name,
+					Type:     variable.Type,
+					Value:    variable.Value.Copy(),
+					IsLocked: variable.IsLocked,
+					IsPublic: false,
+				}
+			}
+		}
+	}
+}
+
+// initializeInstanceVariables recursively initializes variables from class hierarchy (legacy method)
 func (e *Environment) initializeInstanceVariables(instance *ObjectInstance, class *Class) {
 	// First initialize parent class variables
-	if class.ParentClass != "" {
-		if parentClass, err := e.GetClass(class.ParentClass); err == nil {
+	for _, parentClassName := range class.ParentClasses {
+		if parentClass, err := e.GetClass(parentClassName); err == nil {
 			e.initializeInstanceVariables(instance, parentClass)
 		}
 	}
@@ -320,9 +496,9 @@ func (obj *ObjectInstance) GetMemberFunction(name string, fromContext string, en
 	return obj.Class.getMemberFunction(name, fromContext, env)
 }
 
-// GetHierarchy returns the class hierarchy as a slice of class names
+// GetHierarchy returns the class hierarchy as a slice of class names (MRO-based)
 func (obj *ObjectInstance) GetHierarchy() []string {
-	return obj.Hierarchy
+	return obj.MRO
 }
 
 // getMemberFunction is a helper that recursively searches for a function in the class hierarchy
@@ -345,10 +521,23 @@ func (c *Class) getMemberFunction(name string, fromContext string, env *Environm
 		return function, nil
 	}
 
-	// Check parent class
-	if c.ParentClass != "" {
-		if parentClass, err := env.GetClass(c.ParentClass); err == nil {
-			return parentClass.getMemberFunction(name, fromContext, env)
+	// Check parent classes using MRO if available
+	if len(c.MRO) > 1 { // Skip self (first element)
+		for _, parentClassName := range c.MRO[1:] {
+			if parentClass, err := env.GetClass(parentClassName); err == nil {
+				if function, err := parentClass.getMemberFunction(name, fromContext, env); err == nil {
+					return function, nil
+				}
+			}
+		}
+	} else {
+		// Fallback for classes without computed MRO
+		for _, parentClassName := range c.ParentClasses {
+			if parentClass, err := env.GetClass(parentClassName); err == nil {
+				if function, err := parentClass.getMemberFunction(name, fromContext, env); err == nil {
+					return function, nil
+				}
+			}
 		}
 	}
 

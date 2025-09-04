@@ -62,7 +62,8 @@ func (m *MockReader) setupAsReader(t *testing.T, env *environment.Environment) *
 	// Create a mock reader class that extends READER
 	readerClass := &environment.Class{
 		Name:        "MockReader",
-		ParentClass: "READER",
+		ParentClasses: []string{"READER"},
+		MRO:           []string{},
 		PublicFunctions: map[string]*environment.Function{
 			"READ": {
 				Name:       "READ",
@@ -129,7 +130,8 @@ func (m *MockWriter) setupAsWriter(t *testing.T, env *environment.Environment) *
 	// Create a mock writer class that extends WRITER
 	writerClass := &environment.Class{
 		Name:        "MockWriter",
-		ParentClass: "WRITER",
+		ParentClasses: []string{"WRITER"},
+		MRO:           []string{},
 		PublicFunctions: map[string]*environment.Function{
 			"WRITE": {
 				Name:       "WRITE",

@@ -33,7 +33,7 @@ func NewYarnInstance() *environment.ObjectInstance {
 	return &environment.ObjectInstance{
 		Class:      class,
 		NativeData: &ThreadData{},
-		Hierarchy:  []string{"YARN"},
+		MRO:        []string{"YARN"},
 		Variables: map[string]*environment.Variable{
 			"RUNNING": {
 				Name:     "RUNNING",
@@ -59,7 +59,7 @@ func NewKnotInstance() *environment.ObjectInstance {
 	return &environment.ObjectInstance{
 		Class:      class,
 		NativeData: &MutexData{},
-		Hierarchy:  []string{"KNOT"},
+		MRO:        []string{"KNOT"},
 		Variables: map[string]*environment.Variable{
 			"LOCKED": {
 				Name:     "LOCKED",
@@ -202,7 +202,8 @@ func getThreadClasses() map[string]*environment.Class {
 				},
 				QualifiedName: "stdlib:THREAD.YARN",
 				ModulePath:    "stdlib:THREAD",
-				ParentClass:   "",
+				ParentClasses: []string{},
+				MRO:           []string{},
 				PrivateVariables: make(map[string]*environment.Variable),
 				PrivateFunctions: make(map[string]*environment.Function),
 				SharedVariables:  make(map[string]*environment.Variable),
@@ -212,7 +213,8 @@ func getThreadClasses() map[string]*environment.Class {
 				Name:          "KNOT",
 				QualifiedName: "stdlib:THREAD.KNOT",
 				ModulePath:    "stdlib:THREAD",
-				ParentClass:   "",
+				ParentClasses: []string{},
+				MRO:           []string{},
 				PublicFunctions: map[string]*environment.Function{
 					// Constructor
 					"KNOT": {
