@@ -1,6 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
 
 let client: LanguageClient;
@@ -10,25 +12,63 @@ let client: LanguageClient;
 export function activate(context: vscode.ExtensionContext) {
     console.log('Objective-LOL extension is now active!');
 
-    startLanguageServer(context);
-
-    // Register commands
-    context.subscriptions.push(
-        vscode.commands.registerCommand('objective-lol.restartLanguageServer', () => {
-            if (client) {
-                client.stop().then(() => {
+    ensureLanguageServerInstalled(context).then(() => {
+        startLanguageServer(context);
+    }).catch((error) => {
+        console.error('Error ensuring language server is installed:', error);
+    }).then(() => {
+        // Register commands
+        context.subscriptions.push(
+            vscode.commands.registerCommand('objective-lol.restartLanguageServer', () => {
+                if (client) {
+                    client.stop().then(() => {
+                        startLanguageServer(context);
+                    });
+                } else {
                     startLanguageServer(context);
+                }
+            })
+        );
+    });
+}
+
+function ensureLanguageServerInstalled(context: vscode.ExtensionContext) {
+    const url = '';
+
+    const binaryPath = path.join(context.globalStorageUri.fsPath, 'olol-lsp');
+    console.log(`Checking for Objective-LOL Language Server at ${binaryPath}`);
+
+    return new Promise<void>((resolve, reject) => {
+        if (!fs.existsSync(binaryPath)) {
+            vscode.window.showInformationMessage('Downloading Objective-LOL Language Server...');
+            fs.mkdirSync(context.globalStorageUri.fsPath, { recursive: true });
+
+            fetch(url).then(res => {
+                if (res.status !== 200) {
+                    reject(new Error(`Failed to download language server: ${res.statusText}`));
+                    return;
+                }
+
+                res.arrayBuffer().then(buffer => {
+                    fs.writeFileSync(binaryPath, Buffer.from(buffer), { mode: 0o755 });
+                    vscode.window.showInformationMessage('Objective-LOL Language Server downloaded successfully.');
+                    console.log('Objective-LOL Language Server downloaded and installed.');
+                    resolve();
+                }).catch(err => {
+                    reject(new Error(`Error reading response buffer: ${err.message}`));
                 });
-            } else {
-                startLanguageServer(context);
-            }
-        })
-    );
+            }).catch(err => {
+                reject(new Error(`Error fetching language server: ${err.message}`));
+            });
+        } else {
+            console.log('Objective-LOL Language Server already installed.');
+            resolve();
+        }
+    });
 }
 
 function startLanguageServer(context: vscode.ExtensionContext) {
-    const config = vscode.workspace.getConfiguration('objective-lol');
-    const lspPath = config.get<string>('lsp-path', 'olol-lsp');
+    const lspPath = path.join(context.globalStorageUri.fsPath, 'olol-lsp');
 
     // Server options - runs the LSP server
     const serverOptions: ServerOptions = {
@@ -70,8 +110,7 @@ function startLanguageServer(context: vscode.ExtensionContext) {
     }).catch((error: { message: any; }) => {
         console.error('Failed to start Objective-LOL Language Server:', error);
         vscode.window.showErrorMessage(
-            `Failed to start Objective-LOL Language Server: ${error.message}. ` +
-            'Please check that the olol-lsp executable is in your PATH or configure the path in settings.'
+            `Failed to start Objective-LOL Language Server: ${error.message}. `
         );
     });
 

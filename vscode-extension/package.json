@@ -46,20 +46,6 @@
       "type": "object",
       "title": "Objective-LOL",
       "properties": {
-        "objective-lol.lsp-path": {
-          "type": "string",
-          "default": "olol-lsp",
-          "description": "Path to the Objective-LOL LSP server executable"
-        },
-        "objective-lol.trace.server": {
-          "type": "string",
-          "enum": [
-            "off",
-            "verbose"
-          ],
-          "default": "verbose",
-          "description": "Traces the communication between VS Code and the language server"
-        }
       }
     }
   },
