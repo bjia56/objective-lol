@@ -315,6 +315,9 @@ func (p *Parser) parseImportStatement() *ast.ImportStatementNode {
 			// Traditional built-in import: I CAN HAS STDIO?
 			node.IsFileImport = false
 			node.ModuleName = firstIdentifier
+
+			// Set position from the identifier token
+			node.Position = p.convertPosition(p.currentToken.Position)
 		}
 	} else {
 		p.addError(fmt.Sprintf("expected module name (identifier) or file path (string) after 'HAS', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))

@@ -34,7 +34,8 @@ type Symbol struct {
 type SymbolKind int
 
 const (
-	SymbolKindVariable SymbolKind = iota
+	SymbolKindUnknown SymbolKind = iota
+	SymbolKindVariable
 	SymbolKindFunction
 	SymbolKindClass
 	SymbolKindParameter
