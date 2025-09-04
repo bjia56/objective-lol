@@ -1,19 +1,16 @@
+// The module 'vscode' contains the VS Code extensibility API
+// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import * as path from 'path';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
+import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
 
 let client: LanguageClient;
 
+// This method is called when your extension is activated
+// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     console.log('Objective-LOL extension is now active!');
 
-    // Get configuration
-    const config = vscode.workspace.getConfiguration('objective-lol');
-    const enableLSP = config.get<boolean>('enableLSP', true);
-
-    if (enableLSP) {
-        startLanguageServer(context);
-    }
+    startLanguageServer(context);
 
     // Register commands
     context.subscriptions.push(
@@ -31,8 +28,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 function startLanguageServer(context: vscode.ExtensionContext) {
     const config = vscode.workspace.getConfiguration('objective-lol');
-    const lspPath = config.get<string>('lspPath', 'olol-lsp');
-    
+    const lspPath = config.get<string>('lsp-path', 'olol-lsp');
+
     // Server options - runs the LSP server
     const serverOptions: ServerOptions = {
         command: lspPath,
@@ -56,8 +53,6 @@ function startLanguageServer(context: vscode.ExtensionContext) {
             // Notify the server about file changes to '.olol' files contained in the workspace
             fileEvents: vscode.workspace.createFileSystemWatcher('**/*.olol')
         },
-        // Enable tracing if configured
-        traceOutputChannel: vscode.window.createOutputChannel('Objective-LOL LSP Trace'),
         outputChannelName: 'Objective-LOL Language Server'
     };
 
@@ -72,7 +67,7 @@ function startLanguageServer(context: vscode.ExtensionContext) {
     // Start the client and server
     client.start().then(() => {
         console.log('Objective-LOL Language Server started successfully');
-    }).catch((error) => {
+    }).catch((error: { message: any; }) => {
         console.error('Failed to start Objective-LOL Language Server:', error);
         vscode.window.showErrorMessage(
             `Failed to start Objective-LOL Language Server: ${error.message}. ` +
@@ -83,9 +78,10 @@ function startLanguageServer(context: vscode.ExtensionContext) {
     context.subscriptions.push(client);
 }
 
-export function deactivate(): Thenable<void> | undefined {
-    if (!client) {
-        return undefined;
-    }
-    return client.stop();
+// This method is called when your extension is deactivated
+export function deactivate() {
+	if (!client) {
+		return;
+	}
+	return client.stop();
 }
