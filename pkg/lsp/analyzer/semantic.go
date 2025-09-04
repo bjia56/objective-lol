@@ -101,13 +101,13 @@ const (
 
 // FunctionCall represents a function call site with resolution info
 type FunctionCall struct {
-	CallSite     ast.PositionInfo         // Position of the function call
-	FunctionName string                   // Name of the called function
-	CallType     FunctionCallType         // Type of call (global, method, etc.)
-	Arguments    []ast.PositionInfo       // Positions of arguments
-	ResolvedTo   *EnhancedSymbol          // Resolved function symbol (if found)
-	ObjectType   string                   // For method calls, type of the object
-	Range        protocol.Range           // LSP range for the call
+	CallSite     ast.PositionInfo   // Position of the function call
+	FunctionName string             // Name of the called function
+	CallType     FunctionCallType   // Type of call (global, method, etc.)
+	Arguments    []ast.PositionInfo // Positions of arguments
+	ResolvedTo   *EnhancedSymbol    // Resolved function symbol (if found)
+	ObjectType   string             // For method calls, type of the object
+	Range        protocol.Range     // LSP range for the call
 }
 
 // FunctionCallType represents different types of function calls
@@ -1337,7 +1337,7 @@ func (sa *SemanticAnalyzer) analyzeFunctionCall(node *ast.FunctionCallNode) {
 		// Method call (obj DO method)
 		functionName = strings.ToUpper(funcNode.Member)
 		callType = FunctionCallMethod
-		
+
 		// Try to determine object type if possible
 		// For now, we'll leave this as a placeholder
 		objectType = "unknown"
@@ -1405,7 +1405,7 @@ func (sa *SemanticAnalyzer) analyzeNodeForFunctionCalls(node ast.Node) {
 		// Check return value
 		sa.analyzeNodeForFunctionCalls(n.Value)
 
-	// Add more node types as needed for comprehensive coverage
+		// Add more node types as needed for comprehensive coverage
 	}
 }
 
@@ -1414,17 +1414,17 @@ func (sa *SemanticAnalyzer) resolveFunctionSymbol(functionName string, callType 
 	// Search through all symbols for a matching function
 	for i := range sa.symbolTable.Symbols {
 		symbol := &sa.symbolTable.Symbols[i]
-		
-		if symbol.Kind == SymbolKindFunction && 
-		   strings.ToUpper(symbol.Name) == functionName {
-			
+
+		if symbol.Kind == SymbolKindFunction &&
+			strings.ToUpper(symbol.Name) == functionName {
+
 			// For global calls, prefer functions in current module or global scope
 			if callType == FunctionCallGlobal {
 				if symbol.Scope == ScopeTypeGlobal || symbol.SourceModule == sa.uri {
 					return symbol
 				}
 			}
-			
+
 			// For method calls, we'd need more sophisticated resolution
 			// based on the object type, but for now return any match
 			if callType == FunctionCallMethod {
@@ -1453,46 +1453,46 @@ func (sa *SemanticAnalyzer) resolveFunctionSymbol(functionName string, callType 
 func (sa *SemanticAnalyzer) isBuiltinFunction(functionName string) bool {
 	// Check standard library functions
 	builtins := map[string]bool{
-		"SAYZ":    true, // STDIO
-		"SAY":     true,
-		"GIMME":   true,
-		"ABS":     true, // MATH
-		"MAX":     true,
-		"MIN":     true,
-		"SQRT":    true,
-		"POW":     true,
-		"SIN":     true,
-		"COS":     true,
-		"RANDOM":  true,
-		"SLEEP":   true, // TIME
-		"ASSERT":  true, // TEST
-		"LEN":     true, // STRING
-		"CONCAT":  true,
+		"SAYZ":   true, // STDIO
+		"SAY":    true,
+		"GIMME":  true,
+		"ABS":    true, // MATH
+		"MAX":    true,
+		"MIN":    true,
+		"SQRT":   true,
+		"POW":    true,
+		"SIN":    true,
+		"COS":    true,
+		"RANDOM": true,
+		"SLEEP":  true, // TIME
+		"ASSERT": true, // TEST
+		"LEN":    true, // STRING
+		"CONCAT": true,
 	}
-	
+
 	return builtins[functionName]
 }
 
 // getBuiltinDocumentation returns documentation for builtin functions
 func (sa *SemanticAnalyzer) getBuiltinDocumentation(functionName string) string {
 	docs := map[string]string{
-		"SAYZ":    "Prints a value followed by a newline",
-		"SAY":     "Prints a value without a newline", 
-		"GIMME":   "Reads input from the user",
-		"ABS":     "Returns the absolute value of a number",
-		"MAX":     "Returns the maximum of two numbers",
-		"MIN":     "Returns the minimum of two numbers",
-		"SQRT":    "Returns the square root of a number",
-		"POW":     "Returns base raised to the power of exponent",
-		"SIN":     "Returns the sine of an angle in radians",
-		"COS":     "Returns the cosine of an angle in radians",
-		"RANDOM":  "Returns a random number between 0 and 1",
-		"SLEEP":   "Pauses execution for the specified number of milliseconds",
-		"ASSERT":  "Asserts that a condition is true, throws exception if false",
-		"LEN":     "Returns the length of a string",
-		"CONCAT":  "Concatenates two strings",
+		"SAYZ":   "Prints a value followed by a newline",
+		"SAY":    "Prints a value without a newline",
+		"GIMME":  "Reads input from the user",
+		"ABS":    "Returns the absolute value of a number",
+		"MAX":    "Returns the maximum of two numbers",
+		"MIN":    "Returns the minimum of two numbers",
+		"SQRT":   "Returns the square root of a number",
+		"POW":    "Returns base raised to the power of exponent",
+		"SIN":    "Returns the sine of an angle in radians",
+		"COS":    "Returns the cosine of an angle in radians",
+		"RANDOM": "Returns a random number between 0 and 1",
+		"SLEEP":  "Pauses execution for the specified number of milliseconds",
+		"ASSERT": "Asserts that a condition is true, throws exception if false",
+		"LEN":    "Returns the length of a string",
+		"CONCAT": "Concatenates two strings",
 	}
-	
+
 	if doc, exists := docs[functionName]; exists {
 		return doc
 	}
@@ -1519,11 +1519,17 @@ func (sa *SemanticAnalyzer) buildFunctionCallHover(call *FunctionCall) *protocol
 	contents = append(contents, fmt.Sprintf("**%s Call**", callTypeStr))
 
 	// Function signature
-	if call.ResolvedTo != nil {
-		signature := sa.buildSymbolSignature(*call.ResolvedTo)
+	resolvedSymbol := call.ResolvedTo
+	if resolvedSymbol == nil {
+		// Try a more comprehensive lookup in outer scopes
+		resolvedSymbol = sa.lookupFunctionInOuterScopes(call.FunctionName, call.CallType)
+	}
+
+	if resolvedSymbol != nil {
+		signature := sa.buildSymbolSignature(*resolvedSymbol)
 		contents = append(contents, fmt.Sprintf("```olol\n%s\n```", signature))
 	} else {
-		// Unresolved function call
+		// Still unresolved function call
 		contents = append(contents, fmt.Sprintf("```olol\n%s(?)\n```", call.FunctionName))
 		contents = append(contents, "*⚠️ Function not found*")
 	}
@@ -1538,9 +1544,9 @@ func (sa *SemanticAnalyzer) buildFunctionCallHover(call *FunctionCall) *protocol
 	}
 
 	// Function documentation (if resolved)
-	if call.ResolvedTo != nil && call.ResolvedTo.Documentation != "" {
+	if resolvedSymbol != nil && resolvedSymbol.Documentation != "" {
 		contents = append(contents, "---")
-		contents = append(contents, call.ResolvedTo.Documentation)
+		contents = append(contents, resolvedSymbol.Documentation)
 	}
 
 	return &protocol.Hover{
@@ -1564,4 +1570,84 @@ func (sa *SemanticAnalyzer) functionCallTypeToString(callType FunctionCallType) 
 	default:
 		return "Function"
 	}
+}
+
+// lookupFunctionInOuterScopes performs a comprehensive function lookup in outer scopes
+func (sa *SemanticAnalyzer) lookupFunctionInOuterScopes(functionName string, callType FunctionCallType) *EnhancedSymbol {
+	// First, try case-insensitive matching for all function symbols
+	for i := range sa.symbolTable.Symbols {
+		symbol := &sa.symbolTable.Symbols[i]
+
+		if symbol.Kind == SymbolKindFunction &&
+			strings.EqualFold(symbol.Name, functionName) {
+			return symbol
+		}
+	}
+
+	// Try looking in imported modules
+	for _, moduleImport := range sa.symbolTable.ImportedModules {
+		if moduleSymbol := sa.lookupInImportedModule(functionName, moduleImport); moduleSymbol != nil {
+			return moduleSymbol
+		}
+	}
+
+	// Try looking in the runtime environment if available
+	if sa.environment != nil {
+		if environmentSymbol := sa.lookupInEnvironment(functionName, callType); environmentSymbol != nil {
+			return environmentSymbol
+		}
+	}
+
+	// Check if it's a builtin that wasn't caught earlier (with case variations)
+	upperFunctionName := strings.ToUpper(functionName)
+	if sa.isBuiltinFunction(upperFunctionName) {
+		return &EnhancedSymbol{
+			Name:          upperFunctionName,
+			Kind:          SymbolKindFunction,
+			Type:          "builtin",
+			Scope:         ScopeTypeGlobal,
+			Visibility:    VisibilityPublic,
+			Documentation: sa.getBuiltinDocumentation(upperFunctionName),
+		}
+	}
+
+	return nil // Still not found
+}
+
+// lookupInImportedModule looks up a function in imported modules
+func (sa *SemanticAnalyzer) lookupInImportedModule(functionName string, moduleImport ModuleImport) *EnhancedSymbol {
+	// Look for functions from this specific module
+	for i := range sa.symbolTable.Symbols {
+		symbol := &sa.symbolTable.Symbols[i]
+
+		if symbol.Kind == SymbolKindFunction &&
+			strings.EqualFold(symbol.Name, functionName) &&
+			symbol.SourceModule == moduleImport.FilePath {
+			return symbol
+		}
+	}
+	return nil
+}
+
+// lookupInEnvironment looks up a function in the runtime environment
+func (sa *SemanticAnalyzer) lookupInEnvironment(functionName string, _ FunctionCallType) *EnhancedSymbol {
+	if sa.environment == nil {
+		return nil
+	}
+
+	// Try to get the function from the environment
+	upperFunctionName := strings.ToUpper(functionName)
+	if function, err := sa.environment.GetFunction(upperFunctionName); err == nil {
+		// Create a symbol from the environment function
+		return &EnhancedSymbol{
+			Name:          upperFunctionName,
+			Kind:          SymbolKindFunction,
+			Type:          "function", // Could inspect function.Type for more details
+			Scope:         ScopeTypeGlobal,
+			Visibility:    VisibilityPublic,
+			Documentation: fmt.Sprintf("Function from environment: %s", function.Name),
+		}
+	}
+
+	return nil
 }

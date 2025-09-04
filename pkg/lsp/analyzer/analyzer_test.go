@@ -300,3 +300,57 @@ KTHXBAI`
 		t.Error("Expected to find MAX function call")
 	}
 }
+
+func TestAnalyzer_FunctionCallHover_OuterScopeLookup(t *testing.T) {
+	analyzer := NewAnalyzer()
+
+	// Test program with user-defined function and builtin call
+	content := `I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN myCustomFunc
+	GIVEZ 42
+KTHX
+
+HAI ME TEH FUNCSHUN MAIN
+	I HAS A VARIABLE result TEH INTEGR ITZ myCustomFunc
+	abs WIT -5  // Test case-insensitive builtin lookup
+KTHXBAI`
+
+	// First analyze the document
+	_, err := analyzer.AnalyzeDocument("test://test.olol", content)
+	if err != nil {
+		t.Fatalf("Failed to analyze document: %v", err)
+	}
+
+	// Test hover on user-defined function call
+	position := protocol.Position{Line: 7, Character: 40} // Position of myCustomFunc
+	hover, err := analyzer.GetHoverInfo("test://test.olol", content, position)
+	if err != nil {
+		t.Fatalf("Failed to get hover info: %v", err)
+	}
+
+	if hover != nil {
+		if markup, ok := hover.Contents.(protocol.MarkupContent); ok {
+			t.Logf("myCustomFunc hover content: %s", markup.Value)
+			if strings.Contains(markup.Value, "myCustomFunc") || strings.Contains(markup.Value, "Function") {
+				t.Log("✓ Successfully found user-defined function")
+			}
+		}
+	}
+
+	// Test hover on case-insensitive builtin function call
+	position = protocol.Position{Line: 8, Character: 1} // Position of 'abs' call
+	hover, err = analyzer.GetHoverInfo("test://test.olol", content, position)
+	if err != nil {
+		t.Fatalf("Failed to get hover info: %v", err)
+	}
+
+	if hover != nil {
+		if markup, ok := hover.Contents.(protocol.MarkupContent); ok {
+			t.Logf("abs hover content: %s", markup.Value)
+			if strings.Contains(markup.Value, "ABS") || strings.Contains(markup.Value, "absolute") {
+				t.Log("✓ Successfully found case-insensitive builtin function")
+			}
+		}
+	}
+}
