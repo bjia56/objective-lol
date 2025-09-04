@@ -967,7 +967,11 @@ func (i *Interpreter) VisitObjectInstantiation(node *ast.ObjectInstantiationNode
 				return types.NOTHIN, fmt.Errorf("constructor call failed: %v", err)
 			}
 		} else if len(node.ConstructorArgs) > 0 {
-			return types.NOTHIN, fmt.Errorf("default constructor '%s' expects %d arguments, got %d", constructorName, len(function.Parameters), len(node.ConstructorArgs))
+			// Check if the error indicates a private constructor
+			if err.Error() == fmt.Sprintf("function '%s' is private", constructorName) {
+				return types.NOTHIN, fmt.Errorf("constructor '%s' is private and cannot be accessed from outside the class", constructorName)
+			}
+			return types.NOTHIN, fmt.Errorf("constructor '%s' not found, but %d arguments were provided (error: %v)", constructorName, len(node.ConstructorArgs), err)
 		}
 	}
 

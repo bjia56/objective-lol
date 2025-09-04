@@ -25,21 +25,6 @@ HAI ME TEH CLAS CONFIG
     BTW @required true
     DIS TEH VARIABLE APP_NAME TEH STRIN ITZ "ObjectiveLOL-App"
 
-    MAHSELF
-    BTW Database connection string
-    BTW Contains sensitive connection information
-    BTW @access private
-    BTW @security sensitive
-    DIS TEH VARIABLE DB_CONNECTION TEH STRIN ITZ ""
-
-    BTW Maximum number of concurrent users
-    BTW @min 1
-    BTW @max 10000
-    BTW @default 100
-    DIS TEH VARIABLE MAX_USERS TEH INTEGR ITZ 100
-
-    DIS TEH VARIABLE UNTAGGED_SETTING TEH DUBBLE ITZ 1.0
-
     BTW Initialize the configuration
     BTW @param appName The name of the application
     BTW @param maxUsers Maximum concurrent users
@@ -59,6 +44,21 @@ HAI ME TEH CLAS CONFIG
     DIS TEH FUNCSHUN SET_DB_CONNECTION WIT CONN_STR TEH STRIN
         DB_CONNECTION ITZ CONN_STR
     KTHX
+
+    MAHSELF
+    BTW Database connection string
+    BTW Contains sensitive connection information
+    BTW @access private
+    BTW @security sensitive
+    DIS TEH VARIABLE DB_CONNECTION TEH STRIN ITZ ""
+
+    BTW Maximum number of concurrent users
+    BTW @min 1
+    BTW @max 10000
+    BTW @default 100
+    DIS TEH VARIABLE MAX_USERS TEH INTEGR ITZ 100
+
+    DIS TEH VARIABLE UNTAGGED_SETTING TEH DUBBLE ITZ 1.0
 KTHXBAI
 
 BTW Main function to test all documented variables and functionality
