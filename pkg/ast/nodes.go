@@ -104,12 +104,13 @@ func (n *VariableDeclarationNode) SetPosition(pos PositionInfo) {
 
 // FunctionDeclarationNode represents function declarations
 type FunctionDeclarationNode struct {
-	Name       string
-	ReturnType string
-	Parameters []environment.Parameter
-	Body       *StatementBlockNode
-	IsShared   *bool // nil for global, true/false for class methods
-	Position   PositionInfo
+	Name          string
+	ReturnType    string
+	Parameters    []environment.Parameter
+	Body          *StatementBlockNode
+	IsShared      *bool    // nil for global, true/false for class methods
+	Documentation []string // Documentation comments preceding the function
+	Position      PositionInfo
 }
 
 func (n *FunctionDeclarationNode) Accept(visitor Visitor) (types.Value, error) {

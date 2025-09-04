@@ -60,6 +60,43 @@ func (p *Parser) convertPosition(pos PositionInfo) ast.PositionInfo {
 	}
 }
 
+// collectPrecedingComments collects documentation comments immediately preceding a declaration
+func (p *Parser) collectPrecedingComments() []string {
+	comments := p.lexer.GetRecentComments()
+	if len(comments) == 0 {
+		return nil
+	}
+
+	var documentation []string
+	
+	// Find the most recent contiguous block of comments
+	// Comments must be immediately before the current token (allowing only whitespace/newlines between)
+	currentLine := p.currentToken.Position.Line
+	
+	// Work backwards through comments to find the contiguous block
+	var relevantComments []Token
+	for i := len(comments) - 1; i >= 0; i-- {
+		comment := comments[i]
+		
+		// Check if this comment is part of a contiguous block preceding the declaration
+		expectedLine := currentLine - (len(relevantComments) + 1)
+		if comment.Position.Line == expectedLine || 
+		   (len(relevantComments) == 0 && comment.Position.Line < currentLine && comment.Position.Line >= currentLine-5) {
+			relevantComments = append([]Token{comment}, relevantComments...)
+		} else {
+			break
+		}
+	}
+
+	// Convert comment tokens to documentation strings
+	for _, comment := range relevantComments {
+		// Include empty comments as empty strings for proper formatting
+		documentation = append(documentation, comment.Literal)
+	}
+
+	return documentation
+}
+
 // currentTokenIs checks if the current token matches the expected type
 func (p *Parser) currentTokenIs(t ...TokenType) bool {
 	return slices.Contains(t, p.currentToken.Type)
@@ -331,6 +368,12 @@ func (p *Parser) parseImportStatement() *ast.ImportStatementNode {
 // parseFunctionDeclaration parses function declarations
 func (p *Parser) parseFunctionDeclaration() *ast.FunctionDeclarationNode {
 	node := &ast.FunctionDeclarationNode{}
+
+	// Collect documentation comments before parsing the function declaration
+	node.Documentation = p.collectPrecedingComments()
+	
+	// Clear the comments buffer to avoid reusing them for subsequent declarations
+	p.lexer.ClearRecentComments()
 
 	if !p.expectPeek(FUNCSHUN) {
 		p.addError(fmt.Sprintf("expected 'FUNCSHUN', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))

@@ -14,6 +14,7 @@ const (
 	ILLEGAL TokenType = iota
 	EOF
 	NEWLINE
+	COMMENT
 
 	// Literals
 	IDENTIFIER
@@ -97,6 +98,8 @@ func (t TokenType) String() string {
 		return "EOF"
 	case NEWLINE:
 		return "NEWLINE"
+	case COMMENT:
+		return "COMMENT"
 	case IDENTIFIER:
 		return "IDENTIFIER"
 	case STRING:
@@ -238,12 +241,13 @@ type Token struct {
 
 // Lexer tokenizes Objective-LOL source code
 type Lexer struct {
-	input        string
-	position     int  // current position in input (points to current char)
-	readPosition int  // current reading position in input (after current char)
-	ch           byte // current char under examination
-	line         int  // current line number
-	column       int  // current column number
+	input          string
+	position       int     // current position in input (points to current char)
+	readPosition   int     // current reading position in input (after current char)
+	ch             byte    // current char under examination
+	line           int     // current line number
+	column         int     // current column number
+	recentComments []Token // buffer of recent comment tokens
 }
 
 // NewLexer creates a new lexer instance
@@ -411,19 +415,59 @@ func (l *Lexer) readNumber() (string, TokenType) {
 	return l.input[position:l.position], tokenType
 }
 
-// readComment reads a single-line comment (BTW until end of line)
-func (l *Lexer) readComment() error {
+// readComment reads a single-line comment (BTW until end of line) and returns the content
+func (l *Lexer) readComment() (string, error) {
+	startPos := l.position
+	commentLine := l.line
+	commentCol := l.column
+
 	// Skip "BTW"
 	for i := 0; i < 3; i++ {
 		l.readChar()
 	}
 
-	// Read until end of line or EOF
+	// Skip optional space after BTW
+	if l.ch == ' ' {
+		l.readChar()
+	}
+
+	// Read the comment content until end of line or EOF
+	contentStart := l.position
 	for l.ch != '\n' && l.ch != '\r' && l.ch != 0 {
 		l.readChar()
 	}
 
-	return nil
+	// Extract comment content (without BTW prefix and leading space)
+	commentContent := ""
+	if l.position > contentStart {
+		commentContent = l.input[contentStart:l.position]
+	}
+
+	// Create and store the comment token
+	commentToken := Token{
+		Type:    COMMENT,
+		Literal: commentContent,
+		Position: PositionInfo{
+			Line:   commentLine,
+			Column: commentCol,
+			Offset: startPos,
+		},
+	}
+
+	// Add to recent comments buffer
+	l.recentComments = append(l.recentComments, commentToken)
+
+	return commentContent, nil
+}
+
+// GetRecentComments returns the recent comment tokens
+func (l *Lexer) GetRecentComments() []Token {
+	return l.recentComments
+}
+
+// ClearRecentComments clears the recent comments buffer
+func (l *Lexer) ClearRecentComments() {
+	l.recentComments = nil
 }
 
 // NextToken returns the next token from the input
@@ -468,7 +512,7 @@ func (l *Lexer) NextToken() (Token, error) {
 			// Check for BTW comment
 			if l.ch == 'B' && l.position+2 < len(l.input) &&
 				l.input[l.position:l.position+3] == "BTW" {
-				err := l.readComment()
+				_, err := l.readComment()
 				if err != nil {
 					return tok, err
 				}

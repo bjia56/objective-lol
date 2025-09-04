@@ -1,0 +1,64 @@
+BTW Function documentation test - testing comment parsing and collection
+I CAN HAS STDIO?
+
+BTW This is a simple function without parameters
+BTW It just prints a greeting message
+HAI ME TEH FUNCSHUN SAY_HELLO
+    SAYZ WIT "Hello from documented function!"
+KTHXBAI
+
+BTW This function adds two numbers
+BTW @param x The first number to add
+BTW @param y The second number to add  
+BTW @return The sum of x and y
+HAI ME TEH FUNCSHUN ADD TEH INTEGR WIT X TEH INTEGR AN WIT Y TEH INTEGR
+    GIVEZ X MOAR Y
+KTHXBAI
+
+BTW This function demonstrates complex documentation
+BTW 
+BTW It calculates the factorial of a number recursively
+BTW Uses recursion with base case of n < 2
+BTW 
+BTW @param n The number to calculate factorial for (must be >= 0)
+BTW @return The factorial of n
+HAI ME TEH FUNCSHUN FACTORIAL TEH INTEGR WIT N TEH INTEGR
+    IZ N SMALLR THAN 2?
+        GIVEZ 1
+    NOPE
+        GIVEZ N TIEMZ FACTORIAL WIT N LES 1
+    KTHX
+KTHXBAI
+
+BTW Function with single line documentation
+HAI ME TEH FUNCSHUN GET_PI TEH DUBBLE
+    GIVEZ 3.14159
+KTHXBAI
+
+HAI ME TEH FUNCSHUN UNDOCUMENTED
+    SAYZ WIT "This function has no documentation"
+KTHXBAI
+
+BTW Main function to test the documented functions
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== Function Documentation Test ==="
+
+    BTW Test documented functions work correctly
+    SAY_HELLO
+    
+    I HAS A VARIABLE SUM TEH INTEGR ITZ ADD WIT 5 AN WIT 3
+    SAY WIT "5 + 3 = "
+    SAYZ WIT SUM
+    
+    I HAS A VARIABLE FACT5 TEH INTEGR ITZ FACTORIAL WIT 5
+    SAY WIT "5! = "
+    SAYZ WIT FACT5
+    
+    I HAS A VARIABLE PI_VAL TEH DUBBLE ITZ GET_PI
+    SAY WIT "PI = "
+    SAYZ WIT PI_VAL
+    
+    UNDOCUMENTED
+    
+    SAYZ WIT "=== Function Documentation Test Complete ==="
+KTHXBAI
