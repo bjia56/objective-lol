@@ -37,6 +37,7 @@ type EnhancedSymbolTable struct {
 	Symbols          []EnhancedSymbol
 	Scopes           []ScopeInfo
 	ImportedModules  []ModuleImport
+	FunctionCalls    []FunctionCall
 	DiagnosticsCache []protocol.Diagnostic
 }
 
@@ -96,6 +97,26 @@ const (
 	VisibilityPublic VisibilityType = iota
 	VisibilityPrivate
 	VisibilityShared
+)
+
+// FunctionCall represents a function call site with resolution info
+type FunctionCall struct {
+	CallSite     ast.PositionInfo         // Position of the function call
+	FunctionName string                   // Name of the called function
+	CallType     FunctionCallType         // Type of call (global, method, etc.)
+	Arguments    []ast.PositionInfo       // Positions of arguments
+	ResolvedTo   *EnhancedSymbol          // Resolved function symbol (if found)
+	ObjectType   string                   // For method calls, type of the object
+	Range        protocol.Range           // LSP range for the call
+}
+
+// FunctionCallType represents different types of function calls
+type FunctionCallType int
+
+const (
+	FunctionCallGlobal FunctionCallType = iota
+	FunctionCallMethod
+	FunctionCallBuiltin
 )
 
 // AnalysisError represents semantic analysis errors
@@ -753,9 +774,14 @@ func (sa *SemanticAnalyzer) analyzeStatement(stmt ast.Node, scopeID string) {
 		// Nested statement block
 		sa.analyzeStatementBlock(node, scopeID)
 
+	case *ast.FunctionCallNode:
+		// Track function call
+		sa.analyzeFunctionCall(node)
+
 	// Add more statement types as needed
 	default:
-		// For now, ignore other statement types
+		// For expressions and other nodes, recursively check for function calls
+		sa.analyzeNodeForFunctionCalls(stmt)
 	}
 }
 
@@ -1068,6 +1094,12 @@ func (sa *SemanticAnalyzer) GetCompletionItems(position protocol.Position) []pro
 
 // GetHoverInfo provides enhanced hover information with context
 func (sa *SemanticAnalyzer) GetHoverInfo(position protocol.Position) *protocol.Hover {
+	// First, check if this is a function call
+	if functionCall := sa.findFunctionCallAtPosition(position); functionCall != nil {
+		return sa.buildFunctionCallHover(functionCall)
+	}
+
+	// Otherwise, look for symbol definitions
 	symbol := sa.ResolveSymbolAtPosition(position)
 	if symbol == nil {
 		return nil
@@ -1279,5 +1311,257 @@ func (sa *SemanticAnalyzer) symbolKindToString(kind SymbolKind) string {
 		return "Import"
 	default:
 		return "Unknown"
+	}
+}
+
+// Function call analysis methods
+
+// analyzeFunctionCall analyzes a function call and tracks it
+func (sa *SemanticAnalyzer) analyzeFunctionCall(node *ast.FunctionCallNode) {
+	if node == nil {
+		return
+	}
+
+	var functionName string
+	var callType FunctionCallType
+	var objectType string
+
+	// Determine the type of function call and extract function name
+	switch funcNode := node.Function.(type) {
+	case *ast.IdentifierNode:
+		// Global function call
+		functionName = strings.ToUpper(funcNode.Name)
+		callType = FunctionCallGlobal
+
+	case *ast.MemberAccessNode:
+		// Method call (obj DO method)
+		functionName = strings.ToUpper(funcNode.Member)
+		callType = FunctionCallMethod
+		
+		// Try to determine object type if possible
+		// For now, we'll leave this as a placeholder
+		objectType = "unknown"
+
+	default:
+		return // Unsupported function call type
+	}
+
+	// Create function call record
+	functionCall := FunctionCall{
+		CallSite:     node.GetPosition(),
+		FunctionName: functionName,
+		CallType:     callType,
+		ObjectType:   objectType,
+		Range:        sa.positionToRange(node.GetPosition(), len(functionName)),
+	}
+
+	// Collect argument positions
+	for _, arg := range node.Arguments {
+		if arg != nil {
+			functionCall.Arguments = append(functionCall.Arguments, arg.GetPosition())
+		}
+	}
+
+	// Try to resolve the function
+	functionCall.ResolvedTo = sa.resolveFunctionSymbol(functionName, callType)
+
+	// Add to function calls list
+	sa.symbolTable.FunctionCalls = append(sa.symbolTable.FunctionCalls, functionCall)
+}
+
+// analyzeNodeForFunctionCalls recursively searches for function calls in expressions
+func (sa *SemanticAnalyzer) analyzeNodeForFunctionCalls(node ast.Node) {
+	if node == nil {
+		return
+	}
+
+	switch n := node.(type) {
+	case *ast.FunctionCallNode:
+		// Direct function call
+		sa.analyzeFunctionCall(n)
+
+	case *ast.BinaryOpNode:
+		// Check left and right operands
+		sa.analyzeNodeForFunctionCalls(n.Left)
+		sa.analyzeNodeForFunctionCalls(n.Right)
+
+	case *ast.UnaryOpNode:
+		// Check operand
+		sa.analyzeNodeForFunctionCalls(n.Operand)
+
+	case *ast.AssignmentNode:
+		// Check value expression
+		sa.analyzeNodeForFunctionCalls(n.Value)
+
+	case *ast.IfStatementNode:
+		// Check condition
+		sa.analyzeNodeForFunctionCalls(n.Condition)
+
+	case *ast.WhileStatementNode:
+		// Check condition
+		sa.analyzeNodeForFunctionCalls(n.Condition)
+
+	case *ast.ReturnStatementNode:
+		// Check return value
+		sa.analyzeNodeForFunctionCalls(n.Value)
+
+	// Add more node types as needed for comprehensive coverage
+	}
+}
+
+// resolveFunctionSymbol attempts to resolve a function call to its symbol definition
+func (sa *SemanticAnalyzer) resolveFunctionSymbol(functionName string, callType FunctionCallType) *EnhancedSymbol {
+	// Search through all symbols for a matching function
+	for i := range sa.symbolTable.Symbols {
+		symbol := &sa.symbolTable.Symbols[i]
+		
+		if symbol.Kind == SymbolKindFunction && 
+		   strings.ToUpper(symbol.Name) == functionName {
+			
+			// For global calls, prefer functions in current module or global scope
+			if callType == FunctionCallGlobal {
+				if symbol.Scope == ScopeTypeGlobal || symbol.SourceModule == sa.uri {
+					return symbol
+				}
+			}
+			
+			// For method calls, we'd need more sophisticated resolution
+			// based on the object type, but for now return any match
+			if callType == FunctionCallMethod {
+				return symbol
+			}
+		}
+	}
+
+	// Check if it's a builtin function
+	if sa.isBuiltinFunction(functionName) {
+		// Create a temporary symbol for builtin functions
+		return &EnhancedSymbol{
+			Name:          functionName,
+			Kind:          SymbolKindFunction,
+			Type:          "builtin",
+			Scope:         ScopeTypeGlobal,
+			Visibility:    VisibilityPublic,
+			Documentation: sa.getBuiltinDocumentation(functionName),
+		}
+	}
+
+	return nil // Function not found
+}
+
+// isBuiltinFunction checks if a function name is a builtin
+func (sa *SemanticAnalyzer) isBuiltinFunction(functionName string) bool {
+	// Check standard library functions
+	builtins := map[string]bool{
+		"SAYZ":    true, // STDIO
+		"SAY":     true,
+		"GIMME":   true,
+		"ABS":     true, // MATH
+		"MAX":     true,
+		"MIN":     true,
+		"SQRT":    true,
+		"POW":     true,
+		"SIN":     true,
+		"COS":     true,
+		"RANDOM":  true,
+		"SLEEP":   true, // TIME
+		"ASSERT":  true, // TEST
+		"LEN":     true, // STRING
+		"CONCAT":  true,
+	}
+	
+	return builtins[functionName]
+}
+
+// getBuiltinDocumentation returns documentation for builtin functions
+func (sa *SemanticAnalyzer) getBuiltinDocumentation(functionName string) string {
+	docs := map[string]string{
+		"SAYZ":    "Prints a value followed by a newline",
+		"SAY":     "Prints a value without a newline", 
+		"GIMME":   "Reads input from the user",
+		"ABS":     "Returns the absolute value of a number",
+		"MAX":     "Returns the maximum of two numbers",
+		"MIN":     "Returns the minimum of two numbers",
+		"SQRT":    "Returns the square root of a number",
+		"POW":     "Returns base raised to the power of exponent",
+		"SIN":     "Returns the sine of an angle in radians",
+		"COS":     "Returns the cosine of an angle in radians",
+		"RANDOM":  "Returns a random number between 0 and 1",
+		"SLEEP":   "Pauses execution for the specified number of milliseconds",
+		"ASSERT":  "Asserts that a condition is true, throws exception if false",
+		"LEN":     "Returns the length of a string",
+		"CONCAT":  "Concatenates two strings",
+	}
+	
+	if doc, exists := docs[functionName]; exists {
+		return doc
+	}
+	return "Built-in function"
+}
+
+// findFunctionCallAtPosition finds a function call at the given position
+func (sa *SemanticAnalyzer) findFunctionCallAtPosition(position protocol.Position) *FunctionCall {
+	for i := range sa.symbolTable.FunctionCalls {
+		call := &sa.symbolTable.FunctionCalls[i]
+		if sa.positionInRange(position, call.Range) {
+			return call
+		}
+	}
+	return nil
+}
+
+// buildFunctionCallHover builds hover information for a function call
+func (sa *SemanticAnalyzer) buildFunctionCallHover(call *FunctionCall) *protocol.Hover {
+	var contents []string
+
+	// Function call header
+	callTypeStr := sa.functionCallTypeToString(call.CallType)
+	contents = append(contents, fmt.Sprintf("**%s Call**", callTypeStr))
+
+	// Function signature
+	if call.ResolvedTo != nil {
+		signature := sa.buildSymbolSignature(*call.ResolvedTo)
+		contents = append(contents, fmt.Sprintf("```olol\n%s\n```", signature))
+	} else {
+		// Unresolved function call
+		contents = append(contents, fmt.Sprintf("```olol\n%s(?)\n```", call.FunctionName))
+		contents = append(contents, "*⚠️ Function not found*")
+	}
+
+	// Call details
+	if call.CallType == FunctionCallMethod && call.ObjectType != "unknown" {
+		contents = append(contents, fmt.Sprintf("**Object Type:** `%s`", call.ObjectType))
+	}
+
+	if len(call.Arguments) > 0 {
+		contents = append(contents, fmt.Sprintf("**Arguments:** %d", len(call.Arguments)))
+	}
+
+	// Function documentation (if resolved)
+	if call.ResolvedTo != nil && call.ResolvedTo.Documentation != "" {
+		contents = append(contents, "---")
+		contents = append(contents, call.ResolvedTo.Documentation)
+	}
+
+	return &protocol.Hover{
+		Contents: protocol.MarkupContent{
+			Kind:  protocol.MarkupKindMarkdown,
+			Value: strings.Join(contents, "\n\n"),
+		},
+		Range: &call.Range,
+	}
+}
+
+// functionCallTypeToString converts function call type to string
+func (sa *SemanticAnalyzer) functionCallTypeToString(callType FunctionCallType) string {
+	switch callType {
+	case FunctionCallGlobal:
+		return "Global Function"
+	case FunctionCallMethod:
+		return "Method"
+	case FunctionCallBuiltin:
+		return "Built-in Function"
+	default:
+		return "Function"
 	}
 }
