@@ -751,9 +751,13 @@ func (sa *SemanticAnalyzer) analyzeStatement(stmt ast.Node, scopeID string) {
 		sa.analyzeVariableDeclarationWithScope(node, ScopeTypeBlock, scopeID)
 
 	case *ast.AssignmentNode:
-		// Could analyze assignment targets here
+		// Analyze assignment target and value expressions
+		sa.analyzeExpression(node.Target, scopeID)
+		sa.analyzeExpression(node.Value, scopeID)
 
 	case *ast.IfStatementNode:
+		// Analyze condition expression
+		sa.analyzeExpression(node.Condition, scopeID)
 		// Analyze nested blocks
 		if node.ThenBlock != nil {
 			sa.analyzeStatementBlock(node.ThenBlock, scopeID)
@@ -763,6 +767,8 @@ func (sa *SemanticAnalyzer) analyzeStatement(stmt ast.Node, scopeID string) {
 		}
 
 	case *ast.WhileStatementNode:
+		// Analyze condition expression
+		sa.analyzeExpression(node.Condition, scopeID)
 		// Analyze loop body
 		if node.Body != nil {
 			sa.analyzeStatementBlock(node.Body, scopeID)
@@ -786,13 +792,138 @@ func (sa *SemanticAnalyzer) analyzeStatement(stmt ast.Node, scopeID string) {
 
 	case *ast.FunctionCallNode:
 		// Track function call
-		sa.analyzeFunctionCall(node)
+		sa.analyzeFunctionCall(node, scopeID)
+
+	case *ast.ReturnStatementNode:
+		// Analyze return value expression
+		if node.Value != nil {
+			sa.analyzeExpression(node.Value, scopeID)
+		}
+
+	case *ast.ThrowStatementNode:
+		// Analyze throw expression
+		if node.Expression != nil {
+			sa.analyzeExpression(node.Expression, scopeID)
+		}
 
 	// Add more statement types as needed
 	default:
-		// For expressions and other nodes, recursively check for function calls
-		sa.analyzeNodeForFunctionCalls(stmt)
+		// For expressions and other nodes, recursively analyze expressions
+		sa.analyzeExpression(stmt, scopeID)
 	}
+}
+
+// analyzeExpression recursively analyzes expressions to track identifier references
+func (sa *SemanticAnalyzer) analyzeExpression(expr ast.Node, scopeID string) {
+	if expr == nil {
+		return
+	}
+
+	switch node := expr.(type) {
+	case *ast.IdentifierNode:
+		// This is a variable reference - track it
+		sa.trackIdentifierReference(node, scopeID)
+
+	case *ast.AssignmentNode:
+		// Analyze assignment target and value
+		sa.analyzeExpression(node.Target, scopeID)
+		sa.analyzeExpression(node.Value, scopeID)
+
+	case *ast.BinaryOpNode:
+		// Analyze left and right operands
+		sa.analyzeExpression(node.Left, scopeID)
+		sa.analyzeExpression(node.Right, scopeID)
+
+	case *ast.UnaryOpNode:
+		// Analyze operand
+		sa.analyzeExpression(node.Operand, scopeID)
+
+	case *ast.CastNode:
+		// Analyze cast expression
+		sa.analyzeExpression(node.Expression, scopeID)
+
+	case *ast.FunctionCallNode:
+		// Track function call and analyze arguments
+		sa.analyzeFunctionCall(node, scopeID)
+		for _, arg := range node.Arguments {
+			sa.analyzeExpression(arg, scopeID)
+		}
+
+	case *ast.MemberAccessNode:
+		// Analyze object expression
+		sa.analyzeExpression(node.Object, scopeID)
+
+	case *ast.ObjectInstantiationNode:
+		// Analyze constructor arguments
+		for _, arg := range node.ConstructorArgs {
+			sa.analyzeExpression(arg, scopeID)
+		}
+
+	case *ast.LiteralNode:
+		// Literals don't need analysis
+		return
+
+	case *ast.StatementBlockNode:
+		// Handle statement blocks that appear in expressions
+		sa.analyzeStatementBlock(node, scopeID)
+
+	// Add more expression types as needed
+	default:
+		// For other node types, try to analyze any child expressions
+		sa.analyzeNodeForFunctionCalls(expr, scopeID)
+	}
+}
+
+// trackIdentifierReference tracks an identifier reference and adds it to symbol references
+func (sa *SemanticAnalyzer) trackIdentifierReference(node *ast.IdentifierNode, scopeID string) {
+	if node == nil {
+		return
+	}
+
+	identifierName := strings.ToUpper(node.Name)
+	position := node.GetPosition()
+
+	// Find the symbol this identifier refers to
+	scope := sa.findScopeByID(scopeID)
+	symbol := sa.findSymbolByNameInScope(identifierName, scope)
+
+	if symbol != nil {
+		// Add this position as a reference to the existing symbol
+		symbol.References = append(symbol.References, position)
+	} else {
+		// Create a "reference-only" symbol for unresolved identifiers
+		// This allows hover to work even if we can't find the declaration
+		refSymbol := EnhancedSymbol{
+			Name:          identifierName,
+			Kind:          SymbolKindVariable, // Assume variable for now
+			Type:          "unknown",
+			Position:      position,
+			Range:         sa.positionToRange(position, len(node.Name)),
+			Scope:         ScopeTypeGlobal, // Default to global for unresolved
+			ScopeID:       scopeID,
+			Visibility:    VisibilityPublic,
+			QualifiedName: identifierName,
+			References:    []ast.PositionInfo{position},
+		}
+		sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, refSymbol)
+	}
+}
+
+// findSymbolByNameInScope finds a symbol by name considering scope hierarchy
+func (sa *SemanticAnalyzer) findSymbolByNameInScope(name string, currentScope *ScopeInfo) *EnhancedSymbol {
+	if currentScope == nil {
+		currentScope = &ScopeInfo{ID: "global", Type: ScopeTypeGlobal}
+	}
+
+	// Search through all accessible symbols from current scope
+	for i := range sa.symbolTable.Symbols {
+		symbol := &sa.symbolTable.Symbols[i]
+		if strings.EqualFold(symbol.Name, name) && sa.isSymbolAccessible(*symbol, currentScope) {
+			return symbol
+		}
+	}
+
+	return nil
 }
 
 // Helper methods
@@ -1327,7 +1458,7 @@ func (sa *SemanticAnalyzer) symbolKindToString(kind SymbolKind) string {
 // Function call analysis methods
 
 // analyzeFunctionCall analyzes a function call and tracks it
-func (sa *SemanticAnalyzer) analyzeFunctionCall(node *ast.FunctionCallNode) {
+func (sa *SemanticAnalyzer) analyzeFunctionCall(node *ast.FunctionCallNode, scopeID string) {
 	if node == nil {
 		return
 	}
@@ -1349,8 +1480,16 @@ func (sa *SemanticAnalyzer) analyzeFunctionCall(node *ast.FunctionCallNode) {
 		callType = FunctionCallMethod
 
 		// Try to determine object type if possible
-		// For now, we'll leave this as a placeholder
-		objectType = "unknown"
+		switch obj := funcNode.Object.(type) {
+		case *ast.IdentifierNode:
+			// If the object is a variable, try to find its type
+			varSymbol := sa.findSymbolByNameInScope(strings.ToUpper(obj.Name), sa.findScopeByID(scopeID))
+			if varSymbol != nil {
+				objectType = varSymbol.Type
+			} else {
+				objectType = "unknown"
+			}
+		}
 
 	default:
 		return // Unsupported function call type
@@ -1380,7 +1519,7 @@ func (sa *SemanticAnalyzer) analyzeFunctionCall(node *ast.FunctionCallNode) {
 }
 
 // analyzeNodeForFunctionCalls recursively searches for function calls in expressions
-func (sa *SemanticAnalyzer) analyzeNodeForFunctionCalls(node ast.Node) {
+func (sa *SemanticAnalyzer) analyzeNodeForFunctionCalls(node ast.Node, scopeID string) {
 	if node == nil {
 		return
 	}
@@ -1388,32 +1527,32 @@ func (sa *SemanticAnalyzer) analyzeNodeForFunctionCalls(node ast.Node) {
 	switch n := node.(type) {
 	case *ast.FunctionCallNode:
 		// Direct function call
-		sa.analyzeFunctionCall(n)
+		sa.analyzeFunctionCall(n, scopeID)
 
 	case *ast.BinaryOpNode:
 		// Check left and right operands
-		sa.analyzeNodeForFunctionCalls(n.Left)
-		sa.analyzeNodeForFunctionCalls(n.Right)
+		sa.analyzeNodeForFunctionCalls(n.Left, scopeID)
+		sa.analyzeNodeForFunctionCalls(n.Right, scopeID)
 
 	case *ast.UnaryOpNode:
 		// Check operand
-		sa.analyzeNodeForFunctionCalls(n.Operand)
+		sa.analyzeNodeForFunctionCalls(n.Operand, scopeID)
 
 	case *ast.AssignmentNode:
 		// Check value expression
-		sa.analyzeNodeForFunctionCalls(n.Value)
+		sa.analyzeNodeForFunctionCalls(n.Value, scopeID)
 
 	case *ast.IfStatementNode:
 		// Check condition
-		sa.analyzeNodeForFunctionCalls(n.Condition)
+		sa.analyzeNodeForFunctionCalls(n.Condition, scopeID)
 
 	case *ast.WhileStatementNode:
 		// Check condition
-		sa.analyzeNodeForFunctionCalls(n.Condition)
+		sa.analyzeNodeForFunctionCalls(n.Condition, scopeID)
 
 	case *ast.ReturnStatementNode:
 		// Check return value
-		sa.analyzeNodeForFunctionCalls(n.Value)
+		sa.analyzeNodeForFunctionCalls(n.Value, scopeID)
 
 		// Add more node types as needed for comprehensive coverage
 	}

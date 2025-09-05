@@ -775,6 +775,7 @@ func (p *Parser) parseStatement() ast.Node {
 			objPos := p.currentToken.Position
 			p.nextToken() // move to member name
 			memberName := p.currentToken.Literal
+			memberPos := p.currentToken.Position
 
 			if p.peekTokenIs(ITZ) {
 				// Member variable assignment: OBJECT MEMBER ITZ value
@@ -784,17 +785,17 @@ func (p *Parser) parseStatement() ast.Node {
 					Target: &ast.MemberAccessNode{
 						Object:   &ast.IdentifierNode{Name: objName, Position: p.convertPosition(objPos)},
 						Member:   memberName,
-						Position: p.convertPosition(objPos),
+						Position: p.convertPosition(memberPos),
 					},
 					Value:    p.parseExpression(),
 					Position: p.convertPosition(objPos),
 				}
 			} else {
-				// Member variable access in statement context (should not happen often)
+				// Member variable access in statement context
 				return &ast.MemberAccessNode{
 					Object:   &ast.IdentifierNode{Name: objName, Position: p.convertPosition(objPos)},
 					Member:   memberName,
-					Position: p.convertPosition(objPos),
+					Position: p.convertPosition(memberPos),
 				}
 			}
 		} else if p.peekTokenIs(DO) {
@@ -807,6 +808,7 @@ func (p *Parser) parseStatement() ast.Node {
 				return nil
 			}
 			methodName := p.currentToken.Literal
+			fnPos := p.currentToken.Position
 
 			if p.peekTokenIs(WIT) {
 				// Member function call with arguments: OBJECT DO METHOD WIT args
@@ -819,7 +821,7 @@ func (p *Parser) parseStatement() ast.Node {
 						Position: p.convertPosition(objPos),
 					},
 					Arguments: args,
-					Position:  p.convertPosition(objPos),
+					Position:  p.convertPosition(fnPos),
 				}
 			} else {
 				// Member function call without arguments: OBJECT DO METHOD
@@ -830,7 +832,7 @@ func (p *Parser) parseStatement() ast.Node {
 						Position: p.convertPosition(objPos),
 					},
 					Arguments: []ast.Node{},
-					Position:  p.convertPosition(objPos),
+					Position:  p.convertPosition(fnPos),
 				}
 			}
 		} else if p.peekTokenIs(ITZ) {
