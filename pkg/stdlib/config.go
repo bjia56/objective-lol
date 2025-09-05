@@ -9,6 +9,7 @@ import (
 // used by the Objective-LOL interpreter
 func DefaultStdlibInitializers() map[string]interpreter.StdlibInitializer {
 	return map[string]interpreter.StdlibInitializer{
+		"FILE":   RegisterFILEInEnv,
 		"IO":     RegisterIOInEnv,
 		"MATH":   RegisterMATHInEnv,
 		"STDIO":  RegisterSTDIOInEnv,

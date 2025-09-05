@@ -100,7 +100,7 @@ func getIoClasses() map[string]*environment.Class {
 				QualifiedName:    "stdlib:IO.READWRITER",
 				ModulePath:       "stdlib:IO",
 				ParentClasses:    []string{},
-				MRO:              []string{"stdlib:IO.READWRITER", "stdlib.IO.READER", "stdlib.IO.WRITER"},
+				MRO:              []string{"stdlib:IO.READWRITER", "stdlib:IO.READER", "stdlib:IO.WRITER"},
 				PublicFunctions:  make(map[string]*environment.Function),
 				PrivateVariables: make(map[string]*environment.Variable),
 				PrivateFunctions: make(map[string]*environment.Function),

@@ -1,0 +1,215 @@
+BTW Comprehensive DOCUMENT (file) test - demonstrates all functionality
+BTW Expected output:
+BTW === DOCUMENT (File) Comprehensive Test ===
+BTW
+BTW --- Basic DOCUMENT Operations ---
+BTW DOCUMENT created successfully
+BTW File path: test_output.txt
+BTW File mode: W
+BTW Initial state - Open: NO
+BTW
+BTW --- File Writing Test ---
+BTW Opening file for writing...
+BTW File opened successfully - Open: WIN
+BTW Writing data to file...
+BTW Bytes written: 26
+BTW Flushing file...
+BTW File size: 26
+BTW Closing file...
+BTW File closed - Open: NO
+BTW
+BTW --- File Reading Test ---
+BTW Creating reader for same file...
+BTW Opening file for reading...
+BTW File exists: WIN
+BTW Reading first 5 characters...
+BTW Read content: Hello
+BTW Current position: 5
+BTW Seeking to beginning...
+BTW Reading entire content...
+BTW Full content: Hello, LOLCODE File World!
+BTW Closing reader...
+BTW
+BTW --- Append Mode Test ---
+BTW Opening file in append mode...
+BTW Appending more data...
+BTW Bytes appended: 14
+BTW Final file size: 40
+BTW Closing append file...
+BTW
+BTW --- Error Handling Test ---
+BTW Testing operations on closed file...
+BTW Caught expected exception: File is not open
+BTW
+BTW --- Read/Write Mode Test ---
+BTW Creating file in RW mode...
+BTW Writing initial data...
+BTW Seeking to beginning...
+BTW Reading back the data...
+BTW Read back: RW Mode Test
+BTW
+BTW --- Cleanup Test ---
+BTW Deleting test files...
+BTW test_output.txt deleted
+BTW rw_test.txt deleted
+BTW
+BTW All DOCUMENT tests completed successfully!
+
+I CAN HAS FILE?
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN TEST_BASIC_DOCUMENT_OPERATIONS
+    SAYZ WIT "--- Basic DOCUMENT Operations ---"
+
+    BTW Test basic DOCUMENT creation
+    I HAS A VARIABLE MY_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt" AN WIT "W"
+    SAYZ WIT "DOCUMENT created successfully"
+
+    BTW Check initial properties
+    SAY WIT "File path: "
+    SAYZ WIT MY_DOC PATH
+    SAY WIT "File mode: "
+    SAYZ WIT MY_DOC MODE
+    SAY WIT "Initial state - Open: "
+    SAYZ WIT MY_DOC IS_OPEN
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_FILE_WRITING
+    SAYZ WIT "--- File Writing Test ---"
+
+    I HAS A VARIABLE WRITER_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt" AN WIT "W"
+
+    SAYZ WIT "Opening file for writing..."
+    WRITER_DOC DO OPEN
+    SAY WIT "File opened successfully - Open: "
+    SAYZ WIT WRITER_DOC IS_OPEN
+
+    SAYZ WIT "Writing data to file..."
+    I HAS A VARIABLE BYTES_WRITTEN TEH INTEGR ITZ WRITER_DOC DO WRITE WIT "Hello, LOLCODE File World!"
+    SAY WIT "Bytes written: "
+    SAYZ WIT BYTES_WRITTEN
+
+    SAYZ WIT "Flushing file..."
+    WRITER_DOC DO FLUSH
+
+    SAY WIT "File size: "
+    SAYZ WIT WRITER_DOC DO SIZE
+
+    SAYZ WIT "Closing file..."
+    WRITER_DOC DO CLOSE
+    SAY WIT "File closed - Open: "
+    SAYZ WIT WRITER_DOC IS_OPEN
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_FILE_READING
+    SAYZ WIT "--- File Reading Test ---"
+
+    SAYZ WIT "Creating reader for same file..."
+    I HAS A VARIABLE READER_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt" AN WIT "R"
+
+    SAYZ WIT "Opening file for reading..."
+    READER_DOC DO OPEN
+
+    SAY WIT "File exists: "
+    SAYZ WIT READER_DOC DO EXISTS
+
+    SAYZ WIT "Reading first 5 characters..."
+    I HAS A VARIABLE PARTIAL_CONTENT TEH STRIN ITZ READER_DOC DO READ WIT 5
+    SAY WIT "Read content: "
+    SAYZ WIT PARTIAL_CONTENT
+
+    SAY WIT "Current position: "
+    SAYZ WIT READER_DOC DO TELL
+
+    SAYZ WIT "Seeking to beginning..."
+    READER_DOC DO SEEK WIT 0
+
+    SAYZ WIT "Reading entire content..."
+    I HAS A VARIABLE FULL_CONTENT TEH STRIN ITZ READER_DOC DO READ WIT 100
+    SAY WIT "Full content: "
+    SAYZ WIT FULL_CONTENT
+
+    SAYZ WIT "Closing reader..."
+    READER_DOC DO CLOSE
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_APPEND_MODE
+    SAYZ WIT "--- Append Mode Test ---"
+
+    SAYZ WIT "Opening file in append mode..."
+    I HAS A VARIABLE APPEND_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt" AN WIT "A"
+    APPEND_DOC DO OPEN
+
+    SAYZ WIT "Appending more data..."
+    I HAS A VARIABLE APPENDED_BYTES TEH INTEGR ITZ APPEND_DOC DO WRITE WIT " More content!"
+    SAY WIT "Bytes appended: "
+    SAYZ WIT APPENDED_BYTES
+
+    SAY WIT "Final file size: "
+    SAYZ WIT APPEND_DOC DO SIZE
+
+    SAYZ WIT "Closing append file..."
+    APPEND_DOC DO CLOSE
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_READWRITE_MODE
+    SAYZ WIT "--- Read/Write Mode Test ---"
+
+    SAYZ WIT "Creating file in RW mode..."
+    I HAS A VARIABLE RW_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "rw_test.txt" AN WIT "RW"
+    RW_DOC DO OPEN
+
+    SAYZ WIT "Writing initial data..."
+    RW_DOC DO WRITE WIT "RW Mode Test"
+
+    SAYZ WIT "Seeking to beginning..."
+    RW_DOC DO SEEK WIT 0
+
+    SAYZ WIT "Reading back the data..."
+    I HAS A VARIABLE READ_BACK TEH STRIN ITZ RW_DOC DO READ WIT 20
+    SAY WIT "Read back: "
+    SAYZ WIT READ_BACK
+
+    RW_DOC DO CLOSE
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_CLEANUP
+    SAYZ WIT "--- Cleanup Test ---"
+
+    SAYZ WIT "Deleting test files..."
+
+    BTW Delete the main test file
+    I HAS A VARIABLE CLEANUP_DOC1 TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt" AN WIT "R"
+    CLEANUP_DOC1 DO DELETE
+    SAYZ WIT "test_output.txt deleted"
+
+    BTW Delete the RW test file
+    I HAS A VARIABLE CLEANUP_DOC2 TEH DOCUMENT ITZ NEW DOCUMENT WIT "rw_test.txt" AN WIT "R"
+    CLEANUP_DOC2 DO DELETE
+    SAYZ WIT "rw_test.txt deleted"
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== DOCUMENT (File) Comprehensive Test ==="
+    SAYZ WIT ""
+
+    TEST_BASIC_DOCUMENT_OPERATIONS
+    SAYZ WIT ""
+
+    TEST_FILE_WRITING
+    SAYZ WIT ""
+
+    TEST_FILE_READING
+    SAYZ WIT ""
+
+    TEST_APPEND_MODE
+    SAYZ WIT ""
+
+    TEST_READWRITE_MODE
+    SAYZ WIT ""
+
+    TEST_CLEANUP
+    SAYZ WIT ""
+
+    SAYZ WIT "All DOCUMENT tests completed successfully!"
+KTHXBAI
