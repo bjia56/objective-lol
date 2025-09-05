@@ -2,7 +2,6 @@ package interpreter
 
 import (
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // FunctionContext provides native functions with access to interpreter capabilities
@@ -25,10 +24,10 @@ func (ctx *FunctionContext) Fork() *FunctionContext {
 }
 
 // CallMethod calls a method on an object instance with the given arguments
-func (ctx *FunctionContext) CallMethod(instance *environment.ObjectInstance, methodName string, fromContext string, args []types.Value) (types.Value, error) {
+func (ctx *FunctionContext) CallMethod(instance *environment.ObjectInstance, methodName string, fromContext string, args []environment.Value) (environment.Value, error) {
 	method, err := instance.GetMemberFunction(methodName, fromContext, ctx.environment)
 	if err != nil {
-		return types.NOTHIN, err
+		return environment.NOTHIN, err
 	}
 
 	return ctx.interpreter.callMemberFunction(method, instance, args)

@@ -29,6 +29,7 @@ func executeProgram(t *testing.T, program string) error {
 		stdlib.DefaultStdlibInitializers(),
 		stdlib.DefaultGlobalInitializers()...,
 	)
+	interp.SetCurrentFile("main.olol")
 
 	// Execute the program
 	_, err := interp.Interpret(context.Background(), ast)

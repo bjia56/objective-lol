@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
+	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/parser"
 	"github.com/bjia56/objective-lol/pkg/runtime"
-	"github.com/bjia56/objective-lol/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -27,27 +27,27 @@ func TestInterpreterLiterals(t *testing.T) {
 	tests := []struct {
 		name     string
 		literal  *ast.LiteralNode
-		expected types.Value
+		expected environment.Value
 	}{
 		{
 			"Integer literal",
-			&ast.LiteralNode{Value: types.IntegerValue(42)},
-			types.IntegerValue(42),
+			&ast.LiteralNode{Value: environment.IntegerValue(42)},
+			environment.IntegerValue(42),
 		},
 		{
 			"String literal",
-			&ast.LiteralNode{Value: types.StringValue("hello")},
-			types.StringValue("hello"),
+			&ast.LiteralNode{Value: environment.StringValue("hello")},
+			environment.StringValue("hello"),
 		},
 		{
 			"Boolean literal",
-			&ast.LiteralNode{Value: types.YEZ},
-			types.YEZ,
+			&ast.LiteralNode{Value: environment.YEZ},
+			environment.YEZ,
 		},
 		{
 			"Double literal",
-			&ast.LiteralNode{Value: types.DoubleValue(3.14)},
-			types.DoubleValue(3.14),
+			&ast.LiteralNode{Value: environment.DoubleValue(3.14)},
+			environment.DoubleValue(3.14),
 		},
 	}
 
@@ -65,52 +65,52 @@ func TestInterpreterBinaryOperations(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		left     types.Value
+		left     environment.Value
 		operator string
-		right    types.Value
-		expected types.Value
+		right    environment.Value
+		expected environment.Value
 	}{
 		{
 			"Addition",
-			types.IntegerValue(2),
+			environment.IntegerValue(2),
 			"MOAR",
-			types.IntegerValue(3),
-			types.IntegerValue(5),
+			environment.IntegerValue(3),
+			environment.IntegerValue(5),
 		},
 		{
 			"Subtraction",
-			types.IntegerValue(5),
+			environment.IntegerValue(5),
 			"LES",
-			types.IntegerValue(2),
-			types.IntegerValue(3),
+			environment.IntegerValue(2),
+			environment.IntegerValue(3),
 		},
 		{
 			"Multiplication",
-			types.IntegerValue(4),
+			environment.IntegerValue(4),
 			"TIEMZ",
-			types.IntegerValue(3),
-			types.IntegerValue(12),
+			environment.IntegerValue(3),
+			environment.IntegerValue(12),
 		},
 		{
 			"Division",
-			types.IntegerValue(10),
+			environment.IntegerValue(10),
 			"DIVIDEZ",
-			types.IntegerValue(2),
-			types.DoubleValue(5.0),
+			environment.IntegerValue(2),
+			environment.DoubleValue(5.0),
 		},
 		{
 			"Equality true",
-			types.IntegerValue(42),
+			environment.IntegerValue(42),
 			"SAEM AS",
-			types.IntegerValue(42),
-			types.YEZ,
+			environment.IntegerValue(42),
+			environment.YEZ,
 		},
 		{
 			"Equality false",
-			types.IntegerValue(42),
+			environment.IntegerValue(42),
 			"SAEM AS",
-			types.IntegerValue(24),
-			types.NO,
+			environment.IntegerValue(24),
+			environment.NO,
 		},
 	}
 
@@ -136,7 +136,7 @@ func TestInterpreterVariableOperations(t *testing.T) {
 	varDecl := &ast.VariableDeclarationNode{
 		Name:  "x",
 		Type:  "INTEGR",
-		Value: &ast.LiteralNode{Value: types.IntegerValue(42)},
+		Value: &ast.LiteralNode{Value: environment.IntegerValue(42)},
 	}
 
 	_, err := varDecl.Accept(interp)
@@ -146,12 +146,12 @@ func TestInterpreterVariableOperations(t *testing.T) {
 	identifier := &ast.IdentifierNode{Name: "x"}
 	result, err := identifier.Accept(interp)
 	require.NoError(t, err)
-	assert.Equal(t, types.IntegerValue(42), result)
+	assert.Equal(t, environment.IntegerValue(42), result)
 
 	// Assign to the variable
 	assignment := &ast.AssignmentNode{
 		Target: &ast.IdentifierNode{Name: "x"},
-		Value:  &ast.LiteralNode{Value: types.IntegerValue(100)},
+		Value:  &ast.LiteralNode{Value: environment.IntegerValue(100)},
 	}
 
 	_, err = assignment.Accept(interp)
@@ -160,7 +160,7 @@ func TestInterpreterVariableOperations(t *testing.T) {
 	// Check the new value
 	result, err = identifier.Accept(interp)
 	require.NoError(t, err)
-	assert.Equal(t, types.IntegerValue(100), result)
+	assert.Equal(t, environment.IntegerValue(100), result)
 }
 
 func TestInterpreterTypeCasting(t *testing.T) {
@@ -168,33 +168,33 @@ func TestInterpreterTypeCasting(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		value      types.Value
+		value      environment.Value
 		targetType string
-		expected   types.Value
+		expected   environment.Value
 	}{
 		{
 			"Integer to string",
-			types.IntegerValue(42),
+			environment.IntegerValue(42),
 			"STRIN",
-			types.StringValue("42"),
+			environment.StringValue("42"),
 		},
 		{
 			"String to integer",
-			types.StringValue("24"),
+			environment.StringValue("24"),
 			"INTEGR",
-			types.IntegerValue(24),
+			environment.IntegerValue(24),
 		},
 		{
 			"Integer to boolean",
-			types.IntegerValue(1),
+			environment.IntegerValue(1),
 			"BOOL",
-			types.YEZ,
+			environment.YEZ,
 		},
 		{
 			"Integer zero to boolean",
-			types.IntegerValue(0),
+			environment.IntegerValue(0),
 			"BOOL",
-			types.NO,
+			environment.NO,
 		},
 	}
 
@@ -242,9 +242,9 @@ func TestInterpreterErrorHandling(t *testing.T) {
 
 	// Test division by zero
 	divByZero := &ast.BinaryOpNode{
-		Left:     &ast.LiteralNode{Value: types.IntegerValue(10)},
+		Left:     &ast.LiteralNode{Value: environment.IntegerValue(10)},
 		Operator: "DIVIDEZ",
-		Right:    &ast.LiteralNode{Value: types.IntegerValue(0)},
+		Right:    &ast.LiteralNode{Value: environment.IntegerValue(0)},
 	}
 
 	result, err := divByZero.Accept(interp)
@@ -270,8 +270,8 @@ func TestInterpreterFunctionCall(t *testing.T) {
 	functionCall := &ast.FunctionCallNode{
 		Function: &ast.IdentifierNode{Name: "someFunction"},
 		Arguments: []ast.Node{
-			&ast.LiteralNode{Value: types.IntegerValue(1)},
-			&ast.LiteralNode{Value: types.StringValue("arg")},
+			&ast.LiteralNode{Value: environment.IntegerValue(1)},
+			&ast.LiteralNode{Value: environment.StringValue("arg")},
 		},
 	}
 
@@ -290,12 +290,12 @@ func TestInterpreterStatementBlock(t *testing.T) {
 			&ast.VariableDeclarationNode{
 				Name:  "a",
 				Type:  "INTEGR",
-				Value: &ast.LiteralNode{Value: types.IntegerValue(1)},
+				Value: &ast.LiteralNode{Value: environment.IntegerValue(1)},
 			},
 			&ast.VariableDeclarationNode{
 				Name:  "b",
 				Type:  "INTEGR",
-				Value: &ast.LiteralNode{Value: types.IntegerValue(2)},
+				Value: &ast.LiteralNode{Value: environment.IntegerValue(2)},
 			},
 		},
 	}
@@ -307,12 +307,12 @@ func TestInterpreterStatementBlock(t *testing.T) {
 	varA := &ast.IdentifierNode{Name: "a"}
 	result, err := varA.Accept(interp)
 	require.NoError(t, err)
-	assert.Equal(t, types.IntegerValue(1), result)
+	assert.Equal(t, environment.IntegerValue(1), result)
 
 	varB := &ast.IdentifierNode{Name: "b"}
 	result, err = varB.Accept(interp)
 	require.NoError(t, err)
-	assert.Equal(t, types.IntegerValue(2), result)
+	assert.Equal(t, environment.IntegerValue(2), result)
 }
 
 func TestInterpreterReturnStatement(t *testing.T) {
@@ -320,7 +320,7 @@ func TestInterpreterReturnStatement(t *testing.T) {
 
 	// Test return statement
 	returnStmt := &ast.ReturnStatementNode{
-		Value: &ast.LiteralNode{Value: types.StringValue("returned")},
+		Value: &ast.LiteralNode{Value: environment.StringValue("returned")},
 	}
 
 	_, err := returnStmt.Accept(interp)
@@ -331,6 +331,6 @@ func TestInterpreterReturnStatement(t *testing.T) {
 	// Check if it's a return value using the helper function
 	if runtime.IsReturnValue(err) {
 		returnVal := runtime.GetReturnValue(err)
-		assert.Equal(t, types.StringValue("returned"), returnVal)
+		assert.Equal(t, environment.StringValue("returned"), returnVal)
 	}
 }

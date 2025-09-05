@@ -2,7 +2,6 @@ package ast
 
 import (
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // PositionInfo represents position information in source code
@@ -13,33 +12,33 @@ type PositionInfo struct {
 
 // Node represents the base interface for all AST nodes
 type Node interface {
-	Accept(visitor Visitor) (types.Value, error)
+	Accept(visitor Visitor) (environment.Value, error)
 	GetPosition() PositionInfo
 	SetPosition(pos PositionInfo)
 }
 
 // Visitor defines the visitor pattern for AST traversal
 type Visitor interface {
-	VisitProgram(node *ProgramNode) (types.Value, error)
-	VisitImportStatement(node *ImportStatementNode) (types.Value, error)
-	VisitVariableDeclaration(node *VariableDeclarationNode) (types.Value, error)
-	VisitFunctionDeclaration(node *FunctionDeclarationNode) (types.Value, error)
-	VisitClassDeclaration(node *ClassDeclarationNode) (types.Value, error)
-	VisitAssignment(node *AssignmentNode) (types.Value, error)
-	VisitIfStatement(node *IfStatementNode) (types.Value, error)
-	VisitWhileStatement(node *WhileStatementNode) (types.Value, error)
-	VisitReturnStatement(node *ReturnStatementNode) (types.Value, error)
-	VisitFunctionCall(node *FunctionCallNode) (types.Value, error)
-	VisitMemberAccess(node *MemberAccessNode) (types.Value, error)
-	VisitBinaryOp(node *BinaryOpNode) (types.Value, error)
-	VisitUnaryOp(node *UnaryOpNode) (types.Value, error)
-	VisitCast(node *CastNode) (types.Value, error)
-	VisitLiteral(node *LiteralNode) (types.Value, error)
-	VisitIdentifier(node *IdentifierNode) (types.Value, error)
-	VisitObjectInstantiation(node *ObjectInstantiationNode) (types.Value, error)
-	VisitStatementBlock(node *StatementBlockNode) (types.Value, error)
-	VisitTryStatement(node *TryStatementNode) (types.Value, error)
-	VisitThrowStatement(node *ThrowStatementNode) (types.Value, error)
+	VisitProgram(node *ProgramNode) (environment.Value, error)
+	VisitImportStatement(node *ImportStatementNode) (environment.Value, error)
+	VisitVariableDeclaration(node *VariableDeclarationNode) (environment.Value, error)
+	VisitFunctionDeclaration(node *FunctionDeclarationNode) (environment.Value, error)
+	VisitClassDeclaration(node *ClassDeclarationNode) (environment.Value, error)
+	VisitAssignment(node *AssignmentNode) (environment.Value, error)
+	VisitIfStatement(node *IfStatementNode) (environment.Value, error)
+	VisitWhileStatement(node *WhileStatementNode) (environment.Value, error)
+	VisitReturnStatement(node *ReturnStatementNode) (environment.Value, error)
+	VisitFunctionCall(node *FunctionCallNode) (environment.Value, error)
+	VisitMemberAccess(node *MemberAccessNode) (environment.Value, error)
+	VisitBinaryOp(node *BinaryOpNode) (environment.Value, error)
+	VisitUnaryOp(node *UnaryOpNode) (environment.Value, error)
+	VisitCast(node *CastNode) (environment.Value, error)
+	VisitLiteral(node *LiteralNode) (environment.Value, error)
+	VisitIdentifier(node *IdentifierNode) (environment.Value, error)
+	VisitObjectInstantiation(node *ObjectInstantiationNode) (environment.Value, error)
+	VisitStatementBlock(node *StatementBlockNode) (environment.Value, error)
+	VisitTryStatement(node *TryStatementNode) (environment.Value, error)
+	VisitThrowStatement(node *ThrowStatementNode) (environment.Value, error)
 }
 
 // ProgramNode represents the root of the AST
@@ -48,7 +47,7 @@ type ProgramNode struct {
 	Position     PositionInfo
 }
 
-func (n *ProgramNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *ProgramNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitProgram(n)
 }
 
@@ -68,7 +67,7 @@ type ImportStatementNode struct {
 	Position     PositionInfo
 }
 
-func (n *ImportStatementNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *ImportStatementNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitImportStatement(n)
 }
 
@@ -90,7 +89,7 @@ type VariableDeclarationNode struct {
 	Position      PositionInfo
 }
 
-func (n *VariableDeclarationNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *VariableDeclarationNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitVariableDeclaration(n)
 }
 
@@ -113,7 +112,7 @@ type FunctionDeclarationNode struct {
 	Position      PositionInfo
 }
 
-func (n *FunctionDeclarationNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *FunctionDeclarationNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitFunctionDeclaration(n)
 }
 
@@ -128,13 +127,13 @@ func (n *FunctionDeclarationNode) SetPosition(pos PositionInfo) {
 // ClassDeclarationNode represents class declarations
 type ClassDeclarationNode struct {
 	Name          string
-	ParentClasses []string // CHANGE: Support multiple inheritance with slice
+	ParentClasses []string
 	Members       []*ClassMemberNode
-	Documentation []string // Documentation comments preceding the class
+	Documentation []string
 	Position      PositionInfo
 }
 
-func (n *ClassDeclarationNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *ClassDeclarationNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitClassDeclaration(n)
 }
 
@@ -171,7 +170,7 @@ type AssignmentNode struct {
 	Position PositionInfo
 }
 
-func (n *AssignmentNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *AssignmentNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitAssignment(n)
 }
 
@@ -191,7 +190,7 @@ type IfStatementNode struct {
 	Position  PositionInfo
 }
 
-func (n *IfStatementNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *IfStatementNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitIfStatement(n)
 }
 
@@ -210,7 +209,7 @@ type WhileStatementNode struct {
 	Position  PositionInfo
 }
 
-func (n *WhileStatementNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *WhileStatementNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitWhileStatement(n)
 }
 
@@ -228,7 +227,7 @@ type ReturnStatementNode struct {
 	Position PositionInfo
 }
 
-func (n *ReturnStatementNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *ReturnStatementNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitReturnStatement(n)
 }
 
@@ -247,7 +246,7 @@ type FunctionCallNode struct {
 	Position  PositionInfo
 }
 
-func (n *FunctionCallNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *FunctionCallNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitFunctionCall(n)
 }
 
@@ -266,7 +265,7 @@ type MemberAccessNode struct {
 	Position PositionInfo
 }
 
-func (n *MemberAccessNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *MemberAccessNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitMemberAccess(n)
 }
 
@@ -286,7 +285,7 @@ type BinaryOpNode struct {
 	Position PositionInfo
 }
 
-func (n *BinaryOpNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *BinaryOpNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitBinaryOp(n)
 }
 
@@ -305,7 +304,7 @@ type UnaryOpNode struct {
 	Position PositionInfo
 }
 
-func (n *UnaryOpNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *UnaryOpNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitUnaryOp(n)
 }
 
@@ -324,7 +323,7 @@ type CastNode struct {
 	Position   PositionInfo
 }
 
-func (n *CastNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *CastNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitCast(n)
 }
 
@@ -338,11 +337,11 @@ func (n *CastNode) SetPosition(pos PositionInfo) {
 
 // LiteralNode represents literal values
 type LiteralNode struct {
-	Value    types.Value
+	Value    environment.Value
 	Position PositionInfo
 }
 
-func (n *LiteralNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *LiteralNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitLiteral(n)
 }
 
@@ -360,7 +359,7 @@ type IdentifierNode struct {
 	Position PositionInfo
 }
 
-func (n *IdentifierNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *IdentifierNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitIdentifier(n)
 }
 
@@ -379,7 +378,7 @@ type ObjectInstantiationNode struct {
 	Position        PositionInfo
 }
 
-func (n *ObjectInstantiationNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *ObjectInstantiationNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitObjectInstantiation(n)
 }
 
@@ -397,7 +396,7 @@ type StatementBlockNode struct {
 	Position   PositionInfo
 }
 
-func (n *StatementBlockNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *StatementBlockNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitStatementBlock(n)
 }
 
@@ -418,7 +417,7 @@ type TryStatementNode struct {
 	Position    PositionInfo
 }
 
-func (n *TryStatementNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *TryStatementNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitTryStatement(n)
 }
 
@@ -436,7 +435,7 @@ type ThrowStatementNode struct {
 	Position   PositionInfo
 }
 
-func (n *ThrowStatementNode) Accept(visitor Visitor) (types.Value, error) {
+func (n *ThrowStatementNode) Accept(visitor Visitor) (environment.Value, error) {
 	return visitor.VisitThrowStatement(n)
 }
 

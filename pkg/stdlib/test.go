@@ -7,7 +7,6 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/runtime"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // Global TEST function definitions - created once and reused
@@ -20,15 +19,15 @@ func getTestFunctions() map[string]*environment.Function {
 			"ASSERT": {
 				Name:       "ASSERT",
 				Parameters: []environment.Parameter{{Name: "CONDITION", Type: ""}}, // Accept any type
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					condition := args[0]
 
 					// Check if condition is truthy
 					if !isTruthy(condition) {
-						return types.NOTHIN, runtime.Exception{Message: "Assertion failed"}
+						return environment.NOTHIN, runtime.Exception{Message: "Assertion failed"}
 					}
 
-					return types.NOTHIN, nil
+					return environment.NOTHIN, nil
 				},
 			},
 		}
@@ -37,20 +36,20 @@ func getTestFunctions() map[string]*environment.Function {
 }
 
 // isTruthy determines if a value is considered truthy in Objective-LOL
-func isTruthy(value types.Value) bool {
+func isTruthy(value environment.Value) bool {
 	switch v := value.(type) {
-	case types.BoolValue:
+	case environment.BoolValue:
 		return bool(v)
-	case types.IntegerValue:
+	case environment.IntegerValue:
 		return int64(v) != 0
-	case types.DoubleValue:
+	case environment.DoubleValue:
 		return float64(v) != 0.0
-	case types.StringValue:
+	case environment.StringValue:
 		return string(v) != ""
-	case types.NothingValue:
+	case environment.NothingValue:
 		return false
 	default:
-		return true // Objects and other types are considered truthy
+		return true // Objects and other environment are considered truthy
 	}
 }
 

@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -64,10 +63,10 @@ func TestStringLEN(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := lenFunc.NativeImpl(nil, nil, []types.Value{types.StringValue(tt.input)})
+			result, err := lenFunc.NativeImpl(nil, nil, []environment.Value{environment.StringValue(tt.input)})
 			require.NoError(t, err)
 
-			intResult, ok := result.(types.IntegerValue)
+			intResult, ok := result.(environment.IntegerValue)
 			require.True(t, ok, "LEN should return an integer")
 			assert.Equal(t, tt.expected, int(intResult))
 		})
@@ -83,27 +82,27 @@ func TestStringLENErrorHandling(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		args  []types.Value
+		args  []environment.Value
 		error string
 	}{
 		{
 			"Wrong argument type - integer",
-			[]types.Value{types.IntegerValue(42)},
+			[]environment.Value{environment.IntegerValue(42)},
 			"LEN: argument is not a string",
 		},
 		{
 			"Wrong argument type - boolean",
-			[]types.Value{types.YEZ},
+			[]environment.Value{environment.YEZ},
 			"LEN: argument is not a string",
 		},
 		{
 			"Wrong argument type - double",
-			[]types.Value{types.DoubleValue(3.14)},
+			[]environment.Value{environment.DoubleValue(3.14)},
 			"LEN: argument is not a string",
 		},
 		{
 			"Wrong argument type - nothing",
-			[]types.Value{types.NOTHIN},
+			[]environment.Value{environment.NOTHIN},
 			"LEN: argument is not a string",
 		},
 	}
@@ -114,7 +113,7 @@ func TestStringLENErrorHandling(t *testing.T) {
 			if tt.error != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.error)
-				assert.Equal(t, types.NOTHIN, result)
+				assert.Equal(t, environment.NOTHIN, result)
 			}
 		})
 	}
@@ -146,13 +145,13 @@ func TestStringCONCAT(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := concatFunc.NativeImpl(nil, nil, []types.Value{
-				types.StringValue(tt.str1),
-				types.StringValue(tt.str2),
+			result, err := concatFunc.NativeImpl(nil, nil, []environment.Value{
+				environment.StringValue(tt.str1),
+				environment.StringValue(tt.str2),
 			})
 			require.NoError(t, err)
 
-			strResult, ok := result.(types.StringValue)
+			strResult, ok := result.(environment.StringValue)
 			require.True(t, ok, "CONCAT should return a string")
 			assert.Equal(t, tt.expected, string(strResult))
 		})
@@ -168,42 +167,42 @@ func TestStringCONCATErrorHandling(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		args  []types.Value
+		args  []environment.Value
 		error string
 	}{
 		{
 			"First argument not string",
-			[]types.Value{types.IntegerValue(42), types.StringValue("world")},
+			[]environment.Value{environment.IntegerValue(42), environment.StringValue("world")},
 			"CONCAT: first argument is not a string",
 		},
 		{
 			"Second argument not string",
-			[]types.Value{types.StringValue("hello"), types.IntegerValue(42)},
+			[]environment.Value{environment.StringValue("hello"), environment.IntegerValue(42)},
 			"CONCAT: second argument is not a string",
 		},
 		{
 			"Both arguments not string",
-			[]types.Value{types.IntegerValue(1), types.IntegerValue(2)},
+			[]environment.Value{environment.IntegerValue(1), environment.IntegerValue(2)},
 			"CONCAT: first argument is not a string",
 		},
 		{
 			"First argument boolean",
-			[]types.Value{types.YEZ, types.StringValue("test")},
+			[]environment.Value{environment.YEZ, environment.StringValue("test")},
 			"CONCAT: first argument is not a string",
 		},
 		{
 			"Second argument boolean",
-			[]types.Value{types.StringValue("test"), types.NO},
+			[]environment.Value{environment.StringValue("test"), environment.NO},
 			"CONCAT: second argument is not a string",
 		},
 		{
 			"First argument nothing",
-			[]types.Value{types.NOTHIN, types.StringValue("test")},
+			[]environment.Value{environment.NOTHIN, environment.StringValue("test")},
 			"CONCAT: first argument is not a string",
 		},
 		{
 			"Second argument nothing",
-			[]types.Value{types.StringValue("test"), types.NOTHIN},
+			[]environment.Value{environment.StringValue("test"), environment.NOTHIN},
 			"CONCAT: second argument is not a string",
 		},
 	}
@@ -213,7 +212,7 @@ func TestStringCONCATErrorHandling(t *testing.T) {
 			result, err := concatFunc.NativeImpl(nil, nil, tt.args)
 			require.Error(t, err)
 			assert.Contains(t, err.Error(), tt.error)
-			assert.Equal(t, types.NOTHIN, result)
+			assert.Equal(t, environment.NOTHIN, result)
 		})
 	}
 }

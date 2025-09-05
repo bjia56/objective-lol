@@ -7,31 +7,30 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/stdlib"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // ToGoValue converts an Objective-LOL value to a Go value
-func ToGoValue(val types.Value) (interface{}, error) {
+func ToGoValue(val environment.Value) (interface{}, error) {
 	if val == nil || val.IsNothing() {
 		return nil, nil
 	}
 
 	switch v := val.(type) {
-	case types.IntegerValue:
+	case environment.IntegerValue:
 		return int64(v), nil
-	case types.DoubleValue:
+	case environment.DoubleValue:
 		return float64(v), nil
-	case types.StringValue:
+	case environment.StringValue:
 		return string(v), nil
-	case types.BoolValue:
+	case environment.BoolValue:
 		return bool(v), nil
-	case types.ObjectValue:
+	case *environment.ObjectInstance:
 		// Check if it's a BUKKIT (array) object
-		if v.ClassName == "BUKKIT" {
+		if v.Class.Name == "BUKKIT" {
 			return bukkitToGoSlice(v)
 		}
 		// Check if it's a BASKIT (map) object
-		if v.ClassName == "BASKIT" {
+		if v.Class.Name == "BASKIT" {
 			return baskitToGoMap(v)
 		}
 		return objectToGoMap(v)
@@ -44,9 +43,9 @@ func ToGoValue(val types.Value) (interface{}, error) {
 }
 
 // FromGoValue converts a Go value to an Objective-LOL value
-func FromGoValue(val interface{}) (types.Value, error) {
+func FromGoValue(val interface{}) (environment.Value, error) {
 	if val == nil {
-		return types.NOTHIN, nil
+		return environment.NOTHIN, nil
 	}
 
 	rv := reflect.ValueOf(val)
@@ -54,7 +53,7 @@ func FromGoValue(val interface{}) (types.Value, error) {
 	// Handle pointers
 	for rv.Kind() == reflect.Ptr {
 		if rv.IsNil() {
-			return types.NOTHIN, nil
+			return environment.NOTHIN, nil
 		}
 		rv = rv.Elem()
 	}
@@ -62,21 +61,21 @@ func FromGoValue(val interface{}) (types.Value, error) {
 	switch rv.Kind() {
 	case reflect.Bool:
 		if rv.Bool() {
-			return types.YEZ, nil
+			return environment.YEZ, nil
 		}
-		return types.NO, nil
+		return environment.NO, nil
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return types.IntegerValue(rv.Int()), nil
+		return environment.IntegerValue(rv.Int()), nil
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return types.IntegerValue(rv.Uint()), nil
+		return environment.IntegerValue(rv.Uint()), nil
 
 	case reflect.Float32, reflect.Float64:
-		return types.DoubleValue(rv.Float()), nil
+		return environment.DoubleValue(rv.Float()), nil
 
 	case reflect.String:
-		return types.StringValue(rv.String()), nil
+		return environment.StringValue(rv.String()), nil
 
 	case reflect.Slice, reflect.Array:
 		return sliceToArray(rv)
@@ -96,8 +95,8 @@ func FromGoValue(val interface{}) (types.Value, error) {
 }
 
 // bukkitToGoSlice converts an Objective-LOL BUKKIT object to a Go slice
-func bukkitToGoSlice(bukkit types.ObjectValue) ([]interface{}, error) {
-	underlying := bukkit.Instance.(*environment.ObjectInstance).NativeData.(stdlib.BukkitSlice)
+func bukkitToGoSlice(bukkit *environment.ObjectInstance) ([]interface{}, error) {
+	underlying := bukkit.NativeData.(stdlib.BukkitSlice)
 	result := make([]interface{}, len(underlying))
 	for i, val := range underlying {
 		goVal, err := ToGoValue(val)
@@ -110,8 +109,8 @@ func bukkitToGoSlice(bukkit types.ObjectValue) ([]interface{}, error) {
 }
 
 // baskitToGoMap converts an Objective-LOL BASKIT object to a Go map
-func baskitToGoMap(baskit types.ObjectValue) (map[string]interface{}, error) {
-	underlying := baskit.Instance.(*environment.ObjectInstance).NativeData.(stdlib.BaskitMap)
+func baskitToGoMap(baskit *environment.ObjectInstance) (map[string]interface{}, error) {
+	underlying := baskit.NativeData.(stdlib.BaskitMap)
 	result := make(map[string]interface{})
 	for key, val := range underlying {
 		goVal, err := ToGoValue(val)
@@ -124,17 +123,16 @@ func baskitToGoMap(baskit types.ObjectValue) (map[string]interface{}, error) {
 }
 
 // objectToGoMap converts an Objective-LOL object to a Go map
-func objectToGoMap(obj types.ObjectValue) (map[string]interface{}, error) {
-	instance := obj.Instance.(*environment.ObjectInstance)
+func objectToGoMap(obj *environment.ObjectInstance) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
-	for key, val := range instance.Variables {
+	for key, val := range obj.Variables {
 		goVal, err := ToGoValue(val.Value)
 		if err != nil {
 			return nil, err
 		}
 		result[key] = goVal
 	}
-	for key, val := range instance.SharedVariables {
+	for key, val := range obj.SharedVariables {
 		goVal, err := ToGoValue(val.Value)
 		if err != nil {
 			return nil, err
@@ -145,7 +143,7 @@ func objectToGoMap(obj types.ObjectValue) (map[string]interface{}, error) {
 }
 
 // sliceToArray converts a Go slice/array to an Objective-LOL BUKKIT object
-func sliceToArray(rv reflect.Value) (types.Value, error) {
+func sliceToArray(rv reflect.Value) (environment.Value, error) {
 	if rv.Kind() != reflect.Slice && rv.Kind() != reflect.Array {
 		return nil, NewConversionError(
 			fmt.Sprintf("cannot convert Go type %s to BUKKIT", rv.Type()),
@@ -165,13 +163,13 @@ func sliceToArray(rv reflect.Value) (types.Value, error) {
 		}
 		instance.NativeData = append(instance.NativeData.(stdlib.BukkitSlice), objElem)
 	}
-	instance.Variables["SIZ"].Value = types.IntegerValue(rv.Len())
+	instance.Variables["SIZ"].Value = environment.IntegerValue(rv.Len())
 
-	return types.NewObjectValue(instance, "BUKKIT"), nil
+	return instance, nil
 }
 
 // mapToObject converts a Go map to an Objective-LOL BASKIT object
-func mapToObject(rv reflect.Value) (types.Value, error) {
+func mapToObject(rv reflect.Value) (environment.Value, error) {
 	if rv.Kind() != reflect.Map {
 		return nil, NewConversionError(
 			fmt.Sprintf("cannot convert Go type %s to BUKKIT", rv.Type()),
@@ -196,13 +194,13 @@ func mapToObject(rv reflect.Value) (types.Value, error) {
 		underlying := instance.NativeData.(stdlib.BaskitMap)
 		underlying[objKey.String()] = objVal
 	}
-	instance.Variables["SIZ"].Value = types.IntegerValue(rv.Len())
+	instance.Variables["SIZ"].Value = environment.IntegerValue(rv.Len())
 
-	return types.NewObjectValue(instance, "BASKIT"), nil
+	return instance, nil
 }
 
 // structToObject converts a Go struct to an Objective-LOL BASKIT object
-func structToObject(rv reflect.Value) (types.Value, error) {
+func structToObject(rv reflect.Value) (environment.Value, error) {
 	if rv.Kind() != reflect.Struct {
 		return nil, NewConversionError(
 			fmt.Sprintf("cannot convert Go type %s to BASKIT", rv.Type()),
@@ -218,7 +216,7 @@ func structToObject(rv reflect.Value) (types.Value, error) {
 		field := rv.Type().Field(i)
 		value := rv.Field(i)
 
-		// Convert field name and value to Objective-LOL types
+		// Convert field name and value to Objective-LOL environment
 		objKey, err := FromGoValue(field.Name)
 		if err != nil {
 			return nil, err
@@ -232,14 +230,14 @@ func structToObject(rv reflect.Value) (types.Value, error) {
 		underlying := instance.NativeData.(stdlib.BaskitMap)
 		underlying[objKey.String()] = objVal
 	}
-	instance.Variables["SIZ"].Value = types.IntegerValue(rv.NumField())
+	instance.Variables["SIZ"].Value = environment.IntegerValue(rv.NumField())
 
-	return types.NewObjectValue(instance, "BASKIT"), nil
+	return instance, nil
 }
 
 // ConvertArguments converts a slice of Go values to Objective-LOL values
-func ConvertArguments(args []interface{}) ([]types.Value, error) {
-	result := make([]types.Value, len(args))
+func ConvertArguments(args []interface{}) ([]environment.Value, error) {
+	result := make([]environment.Value, len(args))
 	for i, arg := range args {
 		val, err := FromGoValue(arg)
 		if err != nil {

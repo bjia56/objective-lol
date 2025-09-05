@@ -1,10 +1,10 @@
 package runtime
 
-import "github.com/bjia56/objective-lol/pkg/types"
+import "github.com/bjia56/objective-lol/pkg/environment"
 
 // ReturnValue is used to control return flow in function execution
 type ReturnValue struct {
-	Value types.Value
+	Value environment.Value
 }
 
 func (r ReturnValue) Error() string {
@@ -18,11 +18,11 @@ func IsReturnValue(err error) bool {
 }
 
 // Helper function to extract return value from error
-func GetReturnValue(err error) types.Value {
+func GetReturnValue(err error) environment.Value {
 	if retVal, ok := err.(ReturnValue); ok {
 		return retVal.Value
 	}
-	return types.NOTHIN
+	return environment.NOTHIN
 }
 
 // Exception represents a thrown exception with string message

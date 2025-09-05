@@ -4,8 +4,8 @@ import (
 	protocol "github.com/tliron/glsp/protocol_3_16"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
+	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/stdlib"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // SymbolCollector implements the visitor pattern to collect symbols from AST
@@ -60,7 +60,7 @@ func (sc *SymbolCollector) addSymbol(name string, kind SymbolKind, symbolType st
 
 // Visitor interface implementation
 
-func (sc *SymbolCollector) VisitProgram(node *ast.ProgramNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitProgram(node *ast.ProgramNode) (environment.Value, error) {
 	// Define stdlib symbols
 	for _, globalInitializers := range stdlib.DefaultGlobalInitializers() {
 		for _, decl := range stdlib.GetStdlibDefinitions(globalInitializers) {
@@ -79,7 +79,7 @@ func (sc *SymbolCollector) VisitProgram(node *ast.ProgramNode) (types.Value, err
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitImportStatement(node *ast.ImportStatementNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitImportStatement(node *ast.ImportStatementNode) (environment.Value, error) {
 	sc.addSymbol(node.ModuleName, SymbolKindImport, "module", node.GetPosition())
 
 	if !node.IsFileImport {
@@ -98,7 +98,7 @@ func (sc *SymbolCollector) VisitImportStatement(node *ast.ImportStatementNode) (
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitVariableDeclaration(node *ast.VariableDeclarationNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitVariableDeclaration(node *ast.VariableDeclarationNode) (environment.Value, error) {
 	sc.addSymbol(node.Name, SymbolKindVariable, node.Type, node.GetPosition())
 	if node.Value != nil {
 		node.Value.Accept(sc)
@@ -106,7 +106,7 @@ func (sc *SymbolCollector) VisitVariableDeclaration(node *ast.VariableDeclaratio
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitFunctionDeclaration(node *ast.FunctionDeclarationNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitFunctionDeclaration(node *ast.FunctionDeclarationNode) (environment.Value, error) {
 	sc.addSymbol(node.Name, SymbolKindFunction, node.ReturnType, node.GetPosition())
 
 	// Add parameters as symbols
@@ -122,7 +122,7 @@ func (sc *SymbolCollector) VisitFunctionDeclaration(node *ast.FunctionDeclaratio
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitClassDeclaration(node *ast.ClassDeclarationNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitClassDeclaration(node *ast.ClassDeclarationNode) (environment.Value, error) {
 	sc.addSymbol(node.Name, SymbolKindClass, node.Name, node.GetPosition())
 
 	// Visit class members
@@ -137,14 +137,14 @@ func (sc *SymbolCollector) VisitClassDeclaration(node *ast.ClassDeclarationNode)
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitAssignment(node *ast.AssignmentNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitAssignment(node *ast.AssignmentNode) (environment.Value, error) {
 	if node.Value != nil {
 		node.Value.Accept(sc)
 	}
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitIfStatement(node *ast.IfStatementNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitIfStatement(node *ast.IfStatementNode) (environment.Value, error) {
 	if node.Condition != nil {
 		node.Condition.Accept(sc)
 	}
@@ -157,7 +157,7 @@ func (sc *SymbolCollector) VisitIfStatement(node *ast.IfStatementNode) (types.Va
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitWhileStatement(node *ast.WhileStatementNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitWhileStatement(node *ast.WhileStatementNode) (environment.Value, error) {
 	if node.Condition != nil {
 		node.Condition.Accept(sc)
 	}
@@ -167,14 +167,14 @@ func (sc *SymbolCollector) VisitWhileStatement(node *ast.WhileStatementNode) (ty
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitReturnStatement(node *ast.ReturnStatementNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitReturnStatement(node *ast.ReturnStatementNode) (environment.Value, error) {
 	if node.Value != nil {
 		node.Value.Accept(sc)
 	}
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitFunctionCall(node *ast.FunctionCallNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitFunctionCall(node *ast.FunctionCallNode) (environment.Value, error) {
 	// Visit the function being called (could be an identifier or member access)
 	node.Function.Accept(sc)
 
@@ -188,14 +188,14 @@ func (sc *SymbolCollector) VisitFunctionCall(node *ast.FunctionCallNode) (types.
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitMemberAccess(node *ast.MemberAccessNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitMemberAccess(node *ast.MemberAccessNode) (environment.Value, error) {
 	if node.Object != nil {
 		node.Object.Accept(sc)
 	}
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitBinaryOp(node *ast.BinaryOpNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitBinaryOp(node *ast.BinaryOpNode) (environment.Value, error) {
 	if node.Left != nil {
 		node.Left.Accept(sc)
 	}
@@ -205,31 +205,31 @@ func (sc *SymbolCollector) VisitBinaryOp(node *ast.BinaryOpNode) (types.Value, e
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitUnaryOp(node *ast.UnaryOpNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitUnaryOp(node *ast.UnaryOpNode) (environment.Value, error) {
 	if node.Operand != nil {
 		node.Operand.Accept(sc)
 	}
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitCast(node *ast.CastNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitCast(node *ast.CastNode) (environment.Value, error) {
 	if node.Expression != nil {
 		node.Expression.Accept(sc)
 	}
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitLiteral(node *ast.LiteralNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitLiteral(node *ast.LiteralNode) (environment.Value, error) {
 	// Literals don't create symbols
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitIdentifier(node *ast.IdentifierNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitIdentifier(node *ast.IdentifierNode) (environment.Value, error) {
 	sc.addSymbol(node.Name, SymbolKindUnknown, "", node.GetPosition())
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitObjectInstantiation(node *ast.ObjectInstantiationNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitObjectInstantiation(node *ast.ObjectInstantiationNode) (environment.Value, error) {
 	if node.ConstructorArgs != nil {
 		for _, arg := range node.ConstructorArgs {
 			if arg != nil {
@@ -240,7 +240,7 @@ func (sc *SymbolCollector) VisitObjectInstantiation(node *ast.ObjectInstantiatio
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitStatementBlock(node *ast.StatementBlockNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitStatementBlock(node *ast.StatementBlockNode) (environment.Value, error) {
 	if node.Statements != nil {
 		for _, stmt := range node.Statements {
 			if stmt != nil {
@@ -251,7 +251,7 @@ func (sc *SymbolCollector) VisitStatementBlock(node *ast.StatementBlockNode) (ty
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitTryStatement(node *ast.TryStatementNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitTryStatement(node *ast.TryStatementNode) (environment.Value, error) {
 	if node.TryBody != nil {
 		node.TryBody.Accept(sc)
 	}
@@ -264,7 +264,7 @@ func (sc *SymbolCollector) VisitTryStatement(node *ast.TryStatementNode) (types.
 	return nil, nil
 }
 
-func (sc *SymbolCollector) VisitThrowStatement(node *ast.ThrowStatementNode) (types.Value, error) {
+func (sc *SymbolCollector) VisitThrowStatement(node *ast.ThrowStatementNode) (environment.Value, error) {
 	if node.Expression != nil {
 		node.Expression.Accept(sc)
 	}

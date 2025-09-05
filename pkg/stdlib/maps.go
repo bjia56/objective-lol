@@ -7,22 +7,24 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/runtime"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
-type BaskitMap map[string]types.Value
+type BaskitMap map[string]environment.Value
 
 func NewBaskitInstance() *environment.ObjectInstance {
 	class := getMapClasses()["BASKIT"]
+	env := environment.NewEnvironment(nil)
+	env.DefineClass(class)
 	return &environment.ObjectInstance{
-		Class:      class,
-		NativeData: make(BaskitMap),
-		MRO:        []string{"BASKIT"},
+		Environment: env,
+		Class:       class,
+		NativeData:  make(BaskitMap),
+		MRO:         class.MRO,
 		Variables: map[string]*environment.Variable{
 			"SIZ": {
 				Name:     "SIZ",
 				Type:     "INTEGR",
-				Value:    types.IntegerValue(0),
+				Value:    environment.IntegerValue(0),
 				IsLocked: true,
 				IsPublic: true,
 			},
@@ -33,7 +35,7 @@ func NewBaskitInstance() *environment.ObjectInstance {
 // updateSIZ updates the SIZ variable in the object instance based on map length
 func updateBaskitSIZ(obj *environment.ObjectInstance, baskitMap BaskitMap) {
 	if sizVar, exists := obj.Variables["SIZ"]; exists {
-		sizVar.Value = types.IntegerValue(len(baskitMap))
+		sizVar.Value = environment.IntegerValue(len(baskitMap))
 	}
 }
 
@@ -51,18 +53,18 @@ func getMapClasses() map[string]*environment.Class {
 					"BASKIT": {
 						Name:       "BASKIT",
 						Parameters: []environment.Parameter{}, // Empty constructor - no arguments
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Create empty map and store in NativeData
 							baskitMap := make(BaskitMap)
 							this.NativeData = baskitMap
-							return types.NOTHIN, nil
+							return environment.NOTHIN, nil
 						},
 					},
 					// Map methods
 					"PUT": {
 						Name:       "PUT",
 						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}, {Name: "VALUE", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key, value := args[0], args[1]
 
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
@@ -70,15 +72,15 @@ func getMapClasses() map[string]*environment.Class {
 								keyStr := key.String()
 								baskitMap[keyStr] = value
 								updateBaskitSIZ(this, baskitMap)
-								return types.NOTHIN, nil
+								return environment.NOTHIN, nil
 							}
-							return types.NOTHIN, fmt.Errorf("PUT: invalid context")
+							return environment.NOTHIN, fmt.Errorf("PUT: invalid context")
 						},
 					},
 					"GET": {
 						Name:       "GET",
 						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key := args[0]
 
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
@@ -89,14 +91,14 @@ func getMapClasses() map[string]*environment.Class {
 								}
 								return nil, runtime.Exception{Message: fmt.Sprintf("Key '%s' not found in BASKIT", keyStr)}
 							}
-							return types.NOTHIN, fmt.Errorf("GET: invalid context")
+							return environment.NOTHIN, fmt.Errorf("GET: invalid context")
 						},
 					},
 					"CONTAINS": {
 						Name:       "CONTAINS",
 						ReturnType: "BOOL",
 						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key := args[0]
 
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
@@ -104,17 +106,17 @@ func getMapClasses() map[string]*environment.Class {
 								keyStr := key.String()
 								_, exists := baskitMap[keyStr]
 								if exists {
-									return types.YEZ, nil
+									return environment.YEZ, nil
 								}
-								return types.NO, nil
+								return environment.NO, nil
 							}
-							return types.NOTHIN, fmt.Errorf("CONTAINS: invalid context")
+							return environment.NOTHIN, fmt.Errorf("CONTAINS: invalid context")
 						},
 					},
 					"REMOVE": {
 						Name:       "REMOVE",
 						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key := args[0]
 
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
@@ -127,24 +129,24 @@ func getMapClasses() map[string]*environment.Class {
 								}
 								return nil, runtime.Exception{Message: fmt.Sprintf("Key '%s' not found in BASKIT", keyStr)}
 							}
-							return types.NOTHIN, fmt.Errorf("REMOVE: invalid context")
+							return environment.NOTHIN, fmt.Errorf("REMOVE: invalid context")
 						},
 					},
 					"CLEAR": {
 						Name:       "CLEAR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							newMap := make(BaskitMap)
 							this.NativeData = newMap
 							updateBaskitSIZ(this, newMap)
-							return types.NOTHIN, nil
+							return environment.NOTHIN, nil
 						},
 					},
 					"KEYS": {
 						Name:       "KEYS",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Create a new BUKKIT with all keys
 								keys := make([]string, 0, len(baskitMap))
@@ -158,20 +160,20 @@ func getMapClasses() map[string]*environment.Class {
 								bukkitObj := NewBukkitInstance()
 								bukkitSlice := make(BukkitSlice, 0, len(keys))
 								for _, k := range keys {
-									bukkitSlice = append(bukkitSlice, types.StringValue(k))
+									bukkitSlice = append(bukkitSlice, environment.StringValue(k))
 								}
 								bukkitObj.NativeData = bukkitSlice
 								updateSIZ(bukkitObj, bukkitSlice)
-								return types.NewObjectValue(bukkitObj, "BUKKIT"), nil
+								return bukkitObj, nil
 							}
-							return types.NOTHIN, fmt.Errorf("KEYS: invalid context")
+							return environment.NOTHIN, fmt.Errorf("KEYS: invalid context")
 						},
 					},
 					"VALUES": {
 						Name:       "VALUES",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Create a new BUKKIT with all values
 								// Sort keys first for consistent ordering
@@ -189,16 +191,16 @@ func getMapClasses() map[string]*environment.Class {
 								}
 								bukkitObj.NativeData = bukkitSlice
 								updateSIZ(bukkitObj, bukkitSlice)
-								return types.NewObjectValue(bukkitObj, "BUKKIT"), nil
+								return bukkitObj, nil
 							}
-							return types.NOTHIN, fmt.Errorf("VALUES: invalid context")
+							return environment.NOTHIN, fmt.Errorf("VALUES: invalid context")
 						},
 					},
 					"PAIRS": {
 						Name:       "PAIRS",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Create a new BUKKIT with key-value pairs as BUKKIT objects
 								keys := make([]string, 0, len(baskitMap))
@@ -213,31 +215,27 @@ func getMapClasses() map[string]*environment.Class {
 								for _, k := range keys {
 									// Create a pair as a BUKKIT with [key, value]
 									pairObj := NewBukkitInstance()
-									pairSlice := BukkitSlice{types.StringValue(k), baskitMap[k]}
+									pairSlice := BukkitSlice{environment.StringValue(k), baskitMap[k]}
 									pairObj.NativeData = pairSlice
 									updateSIZ(pairObj, pairSlice)
-									bukkitSlice = append(bukkitSlice, types.NewObjectValue(pairObj, "BUKKIT"))
+									bukkitSlice = append(bukkitSlice, pairObj)
 								}
 								bukkitObj.NativeData = bukkitSlice
 								updateSIZ(bukkitObj, bukkitSlice)
-								return types.NewObjectValue(bukkitObj, "BUKKIT"), nil
+								return bukkitObj, nil
 							}
-							return types.NOTHIN, fmt.Errorf("PAIRS: invalid context")
+							return environment.NOTHIN, fmt.Errorf("PAIRS: invalid context")
 						},
 					},
 					"MERGE": {
 						Name:       "MERGE",
 						Parameters: []environment.Parameter{{Name: "OTHER", Type: "BASKIT"}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							other := args[0]
 
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Extract other BASKIT
-								otherObj, ok := other.(types.ObjectValue)
-								if !ok {
-									return nil, fmt.Errorf("MERGE expects BASKIT argument, got %s", other.Type())
-								}
-								otherInstance, ok := otherObj.Instance.(*environment.ObjectInstance)
+								otherInstance, ok := other.(*environment.ObjectInstance)
 								if !ok {
 									return nil, fmt.Errorf("MERGE expects BASKIT argument")
 								}
@@ -251,16 +249,16 @@ func getMapClasses() map[string]*environment.Class {
 									baskitMap[k] = v
 								}
 								updateBaskitSIZ(this, baskitMap)
-								return types.NOTHIN, nil
+								return environment.NOTHIN, nil
 							}
-							return types.NOTHIN, fmt.Errorf("MERGE: invalid context")
+							return environment.NOTHIN, fmt.Errorf("MERGE: invalid context")
 						},
 					},
 					"COPY": {
 						Name:       "COPY",
 						ReturnType: "BASKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Create new BASKIT with copied data
 								newBaskitObj := NewBaskitInstance()
@@ -270,9 +268,9 @@ func getMapClasses() map[string]*environment.Class {
 								}
 								newBaskitObj.NativeData = newBaskitMap
 								updateBaskitSIZ(newBaskitObj, newBaskitMap)
-								return types.NewObjectValue(newBaskitObj, "BASKIT"), nil
+								return newBaskitObj, nil
 							}
-							return types.NOTHIN, fmt.Errorf("COPY: invalid context")
+							return environment.NOTHIN, fmt.Errorf("COPY: invalid context")
 						},
 					},
 				},
@@ -280,15 +278,15 @@ func getMapClasses() map[string]*environment.Class {
 					"SIZ": {
 						Name:     "SIZ",
 						Type:     "INTEGR",
-						Value:    types.IntegerValue(0),
+						Value:    environment.IntegerValue(0),
 						IsLocked: true,
 						IsPublic: true,
 					},
 				},
-				QualifiedName: "stdlib:MAPS.BASKIT",
-				ModulePath:    "stdlib:MAPS",
-				ParentClasses: []string{},
-				MRO:           []string{"BASKIT"},
+				QualifiedName:    "stdlib:MAPS.BASKIT",
+				ModulePath:       "stdlib:MAPS",
+				ParentClasses:    []string{},
+				MRO:              []string{"stdlib:MAPS.BASKIT"},
 				PrivateVariables: make(map[string]*environment.Variable),
 				PrivateFunctions: make(map[string]*environment.Function),
 				SharedVariables:  make(map[string]*environment.Variable),

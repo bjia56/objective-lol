@@ -5,7 +5,6 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/interpreter"
-	"github.com/bjia56/objective-lol/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -61,23 +60,23 @@ type MockReader struct {
 func (m *MockReader) setupAsReader(t *testing.T, env *environment.Environment) *environment.ObjectInstance {
 	// Create a mock reader class that extends READER
 	readerClass := &environment.Class{
-		Name:        "MockReader",
+		Name:          "MockReader",
 		ParentClasses: []string{"READER"},
-		MRO:           []string{},
+		MRO:           []string{"MockReader", "READER"},
 		PublicFunctions: map[string]*environment.Function{
 			"READ": {
 				Name:       "READ",
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{{Name: "size", Type: "INTEGR"}},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					m.readCount++
 					if len(args) != 1 {
-						return types.NOTHIN, assert.AnError
+						return environment.NOTHIN, assert.AnError
 					}
 
-					size := int(args[0].(types.IntegerValue))
+					size := int(args[0].(environment.IntegerValue))
 					if size <= 0 {
-						return types.StringValue(""), nil
+						return environment.StringValue(""), nil
 					}
 
 					if m.maxReadSize > 0 && size > m.maxReadSize {
@@ -86,7 +85,7 @@ func (m *MockReader) setupAsReader(t *testing.T, env *environment.Environment) *
 
 					remaining := len(m.data) - m.position
 					if remaining <= 0 {
-						return types.StringValue(""), nil // EOF
+						return environment.StringValue(""), nil // EOF
 					}
 
 					if size > remaining {
@@ -95,25 +94,22 @@ func (m *MockReader) setupAsReader(t *testing.T, env *environment.Environment) *
 
 					result := m.data[m.position : m.position+size]
 					m.position += size
-					return types.StringValue(result), nil
+					return environment.StringValue(result), nil
 				},
 			},
 			"CLOSE": {
 				Name: "CLOSE",
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					m.closeCount++
-					return types.NOTHIN, nil
+					return environment.NOTHIN, nil
 				},
 			},
 		},
 	}
 
 	env.DefineClass(readerClass)
-	instanceInterface, err := env.NewObjectInstance("MockReader")
+	instance, err := env.NewObjectInstance("MockReader")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok)
 
 	return instance
 }
@@ -129,21 +125,21 @@ type MockWriter struct {
 func (m *MockWriter) setupAsWriter(t *testing.T, env *environment.Environment) *environment.ObjectInstance {
 	// Create a mock writer class that extends WRITER
 	writerClass := &environment.Class{
-		Name:        "MockWriter",
+		Name:          "MockWriter",
 		ParentClasses: []string{"WRITER"},
-		MRO:           []string{},
+		MRO:           []string{"MockWriter", "WRITER"},
 		PublicFunctions: map[string]*environment.Function{
 			"WRITE": {
 				Name:       "WRITE",
 				ReturnType: "INTEGR",
 				Parameters: []environment.Parameter{{Name: "data", Type: "STRIN"}},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					m.writeCount++
 					if len(args) != 1 {
-						return types.NOTHIN, assert.AnError
+						return environment.NOTHIN, assert.AnError
 					}
 
-					data := string(args[0].(types.StringValue))
+					data := string(args[0].(environment.StringValue))
 					actualWritten := len(data)
 
 					if m.maxWriteSize > 0 && actualWritten > m.maxWriteSize {
@@ -152,25 +148,22 @@ func (m *MockWriter) setupAsWriter(t *testing.T, env *environment.Environment) *
 					}
 
 					m.data += data
-					return types.IntegerValue(actualWritten), nil
+					return environment.IntegerValue(actualWritten), nil
 				},
 			},
 			"CLOSE": {
 				Name: "CLOSE",
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					m.closeCount++
-					return types.NOTHIN, nil
+					return environment.NOTHIN, nil
 				},
 			},
 		},
 	}
 
 	env.DefineClass(writerClass)
-	instanceInterface, err := env.NewObjectInstance("MockWriter")
+	instance, err := env.NewObjectInstance("MockWriter")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok)
 
 	return instance
 }
@@ -208,11 +201,8 @@ func TestBufferedReaderConstructor(t *testing.T) {
 	readerInstance := mockReader.setupAsReader(t, env)
 
 	// Create BUFFERED_READER instance
-	instanceInterface, err := env.NewObjectInstance("BUFFERED_READER")
+	instance, err := env.NewObjectInstance("BUFFERED_READER")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok)
 
 	// Call constructor
 	bufferedClass, err := env.GetClass("BUFFERED_READER")
@@ -221,8 +211,7 @@ func TestBufferedReaderConstructor(t *testing.T) {
 	constructor, exists := bufferedClass.PublicFunctions["BUFFERED_READER"]
 	require.True(t, exists)
 
-	readerValue := types.NewObjectValue(readerInstance, "MockReader")
-	_, err = constructor.NativeImpl(nil, instance, []types.Value{readerValue})
+	_, err = constructor.NativeImpl(nil, instance, []environment.Value{readerInstance})
 	require.NoError(t, err)
 
 	// Verify that BufferedReaderData was initialized
@@ -237,7 +226,7 @@ func TestBufferedReaderConstructor(t *testing.T) {
 	// Verify SIZ variable was set
 	sizVar, exists := instance.Variables["SIZ"]
 	require.True(t, exists, "SIZ variable should exist")
-	assert.Equal(t, types.IntegerValue(defaultBufferSize), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(defaultBufferSize), sizVar.Value)
 }
 
 func TestBufferedReaderRead(t *testing.T) {
@@ -251,18 +240,14 @@ func TestBufferedReaderRead(t *testing.T) {
 	readerInstance := mockReader.setupAsReader(t, env)
 
 	// Create and initialize BUFFERED_READER
-	instanceInterface, err := env.NewObjectInstance("BUFFERED_READER")
+	instance, err := env.NewObjectInstance("BUFFERED_READER")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok)
 
 	bufferedClass, err := env.GetClass("BUFFERED_READER")
 	require.NoError(t, err)
 
 	constructor := bufferedClass.PublicFunctions["BUFFERED_READER"]
-	readerValue := types.NewObjectValue(readerInstance, "MockReader")
-	_, err = constructor.NativeImpl(nil, instance, []types.Value{readerValue})
+	_, err = constructor.NativeImpl(nil, instance, []environment.Value{readerInstance})
 	require.NoError(t, err)
 
 	// Create function context for method calls
@@ -277,21 +262,21 @@ func TestBufferedReaderRead(t *testing.T) {
 	readMethod := bufferedClass.PublicFunctions["READ"]
 
 	// Test 1: Read 5 characters
-	result, err := readMethod.NativeImpl(ctx, instance, []types.Value{types.IntegerValue(5)})
+	result, err := readMethod.NativeImpl(ctx, instance, []environment.Value{environment.IntegerValue(5)})
 	require.NoError(t, err)
-	assert.Equal(t, types.StringValue("Hello"), result)
+	assert.Equal(t, environment.StringValue("Hello"), result)
 	assert.Equal(t, 1, mockReader.readCount, "Should have called underlying reader once")
 
 	// Test 2: Read 7 more characters (should use buffer)
-	result, err = readMethod.NativeImpl(ctx, instance, []types.Value{types.IntegerValue(7)})
+	result, err = readMethod.NativeImpl(ctx, instance, []environment.Value{environment.IntegerValue(7)})
 	require.NoError(t, err)
-	assert.Equal(t, types.StringValue(", World"), result)
+	assert.Equal(t, environment.StringValue(", World"), result)
 	assert.Equal(t, 1, mockReader.readCount, "Should still have called underlying reader only once")
 
 	// Test 3: Read more to exhaust buffer
-	result, err = readMethod.NativeImpl(ctx, instance, []types.Value{types.IntegerValue(10)})
+	result, err = readMethod.NativeImpl(ctx, instance, []environment.Value{environment.IntegerValue(10)})
 	require.NoError(t, err)
-	assert.Equal(t, types.StringValue("! This is "), result)
+	assert.Equal(t, environment.StringValue("! This is "), result)
 	assert.Equal(t, 2, mockReader.readCount, "Should have called underlying reader twice now")
 }
 
@@ -303,23 +288,19 @@ func TestBufferedReaderSetSiz(t *testing.T) {
 	readerInstance := mockReader.setupAsReader(t, env)
 
 	// Create and initialize BUFFERED_READER
-	instanceInterface, err := env.NewObjectInstance("BUFFERED_READER")
+	instance, err := env.NewObjectInstance("BUFFERED_READER")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok)
 
 	bufferedClass, err := env.GetClass("BUFFERED_READER")
 	require.NoError(t, err)
 
 	constructor := bufferedClass.PublicFunctions["BUFFERED_READER"]
-	readerValue := types.NewObjectValue(readerInstance, "MockReader")
-	_, err = constructor.NativeImpl(nil, instance, []types.Value{readerValue})
+	_, err = constructor.NativeImpl(nil, instance, []environment.Value{readerInstance})
 	require.NoError(t, err)
 
 	// Change buffer size
 	setSizMethod := bufferedClass.PublicFunctions["SET_SIZ"]
-	_, err = setSizMethod.NativeImpl(nil, instance, []types.Value{types.IntegerValue(512)})
+	_, err = setSizMethod.NativeImpl(nil, instance, []environment.Value{environment.IntegerValue(512)})
 	require.NoError(t, err)
 
 	// Verify buffer size changed
@@ -330,7 +311,7 @@ func TestBufferedReaderSetSiz(t *testing.T) {
 	// Verify SIZ variable updated
 	sizVar, exists := instance.Variables["SIZ"]
 	require.True(t, exists)
-	assert.Equal(t, types.IntegerValue(512), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(512), sizVar.Value)
 }
 
 func TestBufferedReaderClose(t *testing.T) {
@@ -341,18 +322,14 @@ func TestBufferedReaderClose(t *testing.T) {
 	readerInstance := mockReader.setupAsReader(t, env)
 
 	// Create and initialize BUFFERED_READER
-	instanceInterface, err := env.NewObjectInstance("BUFFERED_READER")
+	instance, err := env.NewObjectInstance("BUFFERED_READER")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok)
 
 	bufferedClass, err := env.GetClass("BUFFERED_READER")
 	require.NoError(t, err)
 
 	constructor := bufferedClass.PublicFunctions["BUFFERED_READER"]
-	readerValue := types.NewObjectValue(readerInstance, "MockReader")
-	_, err = constructor.NativeImpl(nil, instance, []types.Value{readerValue})
+	_, err = constructor.NativeImpl(nil, instance, []environment.Value{readerInstance})
 	require.NoError(t, err)
 
 	// Create function context for close method
@@ -366,7 +343,7 @@ func TestBufferedReaderClose(t *testing.T) {
 
 	// Close the buffered reader
 	closeMethod := bufferedClass.PublicFunctions["CLOSE"]
-	_, err = closeMethod.NativeImpl(ctx, instance, []types.Value{})
+	_, err = closeMethod.NativeImpl(ctx, instance, []environment.Value{})
 	require.NoError(t, err)
 
 	// Verify underlying reader was closed
@@ -416,11 +393,8 @@ func TestBufferedWriterConstructor(t *testing.T) {
 	writerInstance := mockWriter.setupAsWriter(t, env)
 
 	// Create BUFFERED_WRITER instance
-	instanceInterface, err := env.NewObjectInstance("BUFFERED_WRITER")
+	instance, err := env.NewObjectInstance("BUFFERED_WRITER")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok)
 
 	// Call constructor
 	bufferedClass, err := env.GetClass("BUFFERED_WRITER")
@@ -429,8 +403,7 @@ func TestBufferedWriterConstructor(t *testing.T) {
 	constructor, exists := bufferedClass.PublicFunctions["BUFFERED_WRITER"]
 	require.True(t, exists)
 
-	writerValue := types.NewObjectValue(writerInstance, "MockWriter")
-	_, err = constructor.NativeImpl(nil, instance, []types.Value{writerValue})
+	_, err = constructor.NativeImpl(nil, instance, []environment.Value{writerInstance})
 	require.NoError(t, err)
 
 	// Verify that BufferedWriterData was initialized
@@ -443,7 +416,7 @@ func TestBufferedWriterConstructor(t *testing.T) {
 	// Verify SIZ variable was set
 	sizVar, exists := instance.Variables["SIZ"]
 	require.True(t, exists, "SIZ variable should exist")
-	assert.Equal(t, types.IntegerValue(defaultBufferSize), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(defaultBufferSize), sizVar.Value)
 }
 
 func TestBufferedWriterWrite(t *testing.T) {
@@ -454,18 +427,14 @@ func TestBufferedWriterWrite(t *testing.T) {
 	writerInstance := mockWriter.setupAsWriter(t, env)
 
 	// Create and initialize BUFFERED_WRITER
-	instanceInterface, err := env.NewObjectInstance("BUFFERED_WRITER")
+	instance, err := env.NewObjectInstance("BUFFERED_WRITER")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok)
 
 	bufferedClass, err := env.GetClass("BUFFERED_WRITER")
 	require.NoError(t, err)
 
 	constructor := bufferedClass.PublicFunctions["BUFFERED_WRITER"]
-	writerValue := types.NewObjectValue(writerInstance, "MockWriter")
-	_, err = constructor.NativeImpl(nil, instance, []types.Value{writerValue})
+	_, err = constructor.NativeImpl(nil, instance, []environment.Value{writerInstance})
 	require.NoError(t, err)
 
 	// Create function context for method calls
@@ -480,16 +449,16 @@ func TestBufferedWriterWrite(t *testing.T) {
 	writeMethod := bufferedClass.PublicFunctions["WRITE"]
 
 	// Test 1: Write small data that should be buffered
-	result, err := writeMethod.NativeImpl(ctx, instance, []types.Value{types.StringValue("Hello")})
+	result, err := writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue("Hello")})
 	require.NoError(t, err)
-	assert.Equal(t, types.IntegerValue(5), result)
+	assert.Equal(t, environment.IntegerValue(5), result)
 	assert.Equal(t, 0, mockWriter.writeCount, "Should not have called underlying writer yet")
 	assert.Equal(t, "", mockWriter.data, "Mock writer should not have received data yet")
 
 	// Test 2: Write more small data (should still be buffered)
-	result, err = writeMethod.NativeImpl(ctx, instance, []types.Value{types.StringValue(", World!")})
+	result, err = writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue(", World!")})
 	require.NoError(t, err)
-	assert.Equal(t, types.IntegerValue(8), result)
+	assert.Equal(t, environment.IntegerValue(8), result)
 	assert.Equal(t, 0, mockWriter.writeCount, "Should still not have called underlying writer")
 
 	// Check buffer contents
@@ -502,9 +471,9 @@ func TestBufferedWriterWrite(t *testing.T) {
 	for i := range largeData {
 		largeData[i] = 'A'
 	}
-	result, err = writeMethod.NativeImpl(ctx, instance, []types.Value{types.StringValue(string(largeData))})
+	result, err = writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue(string(largeData))})
 	require.NoError(t, err)
-	assert.Equal(t, types.IntegerValue(2000), result)
+	assert.Equal(t, environment.IntegerValue(2000), result)
 	assert.Equal(t, 2, mockWriter.writeCount, "Should have flushed buffer and written large data")
 	expectedData := "Hello, World!" + string(largeData)
 	assert.Equal(t, expectedData, mockWriter.data)
@@ -519,18 +488,14 @@ func TestBufferedWriterFlush(t *testing.T) {
 	writerInstance := mockWriter.setupAsWriter(t, env)
 
 	// Create and initialize BUFFERED_WRITER
-	instanceInterface, err := env.NewObjectInstance("BUFFERED_WRITER")
+	instance, err := env.NewObjectInstance("BUFFERED_WRITER")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok)
 
 	bufferedClass, err := env.GetClass("BUFFERED_WRITER")
 	require.NoError(t, err)
 
 	constructor := bufferedClass.PublicFunctions["BUFFERED_WRITER"]
-	writerValue := types.NewObjectValue(writerInstance, "MockWriter")
-	_, err = constructor.NativeImpl(nil, instance, []types.Value{writerValue})
+	_, err = constructor.NativeImpl(nil, instance, []environment.Value{writerInstance})
 	require.NoError(t, err)
 
 	// Create function context
@@ -546,12 +511,12 @@ func TestBufferedWriterFlush(t *testing.T) {
 	flushMethod := bufferedClass.PublicFunctions["FLUSH"]
 
 	// Write some data
-	_, err = writeMethod.NativeImpl(ctx, instance, []types.Value{types.StringValue("Buffered data")})
+	_, err = writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue("Buffered data")})
 	require.NoError(t, err)
 	assert.Equal(t, 0, mockWriter.writeCount, "Should not have written yet")
 
 	// Flush the buffer
-	_, err = flushMethod.NativeImpl(ctx, instance, []types.Value{})
+	_, err = flushMethod.NativeImpl(ctx, instance, []environment.Value{})
 	require.NoError(t, err)
 	assert.Equal(t, 1, mockWriter.writeCount, "Should have written after flush")
 	assert.Equal(t, "Buffered data", mockWriter.data)
@@ -570,18 +535,14 @@ func TestBufferedWriterSetSiz(t *testing.T) {
 	writerInstance := mockWriter.setupAsWriter(t, env)
 
 	// Create and initialize BUFFERED_WRITER
-	instanceInterface, err := env.NewObjectInstance("BUFFERED_WRITER")
+	instance, err := env.NewObjectInstance("BUFFERED_WRITER")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok)
 
 	bufferedClass, err := env.GetClass("BUFFERED_WRITER")
 	require.NoError(t, err)
 
 	constructor := bufferedClass.PublicFunctions["BUFFERED_WRITER"]
-	writerValue := types.NewObjectValue(writerInstance, "MockWriter")
-	_, err = constructor.NativeImpl(nil, instance, []types.Value{writerValue})
+	_, err = constructor.NativeImpl(nil, instance, []environment.Value{writerInstance})
 	require.NoError(t, err)
 
 	// Create function context
@@ -597,11 +558,11 @@ func TestBufferedWriterSetSiz(t *testing.T) {
 	setSizMethod := bufferedClass.PublicFunctions["SET_SIZ"]
 
 	// Write some data to buffer
-	_, err = writeMethod.NativeImpl(ctx, instance, []types.Value{types.StringValue("Test data")})
+	_, err = writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue("Test data")})
 	require.NoError(t, err)
 
 	// Change buffer size (should flush existing buffer)
-	_, err = setSizMethod.NativeImpl(ctx, instance, []types.Value{types.IntegerValue(512)})
+	_, err = setSizMethod.NativeImpl(ctx, instance, []environment.Value{environment.IntegerValue(512)})
 	require.NoError(t, err)
 
 	// Verify buffer size changed
@@ -615,7 +576,7 @@ func TestBufferedWriterSetSiz(t *testing.T) {
 	// Verify SIZ variable updated
 	sizVar, exists := instance.Variables["SIZ"]
 	require.True(t, exists)
-	assert.Equal(t, types.IntegerValue(512), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(512), sizVar.Value)
 }
 
 func TestBufferedWriterClose(t *testing.T) {
@@ -626,18 +587,14 @@ func TestBufferedWriterClose(t *testing.T) {
 	writerInstance := mockWriter.setupAsWriter(t, env)
 
 	// Create and initialize BUFFERED_WRITER
-	instanceInterface, err := env.NewObjectInstance("BUFFERED_WRITER")
+	instance, err := env.NewObjectInstance("BUFFERED_WRITER")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok)
 
 	bufferedClass, err := env.GetClass("BUFFERED_WRITER")
 	require.NoError(t, err)
 
 	constructor := bufferedClass.PublicFunctions["BUFFERED_WRITER"]
-	writerValue := types.NewObjectValue(writerInstance, "MockWriter")
-	_, err = constructor.NativeImpl(nil, instance, []types.Value{writerValue})
+	_, err = constructor.NativeImpl(nil, instance, []environment.Value{writerInstance})
 	require.NoError(t, err)
 
 	// Create function context
@@ -653,11 +610,11 @@ func TestBufferedWriterClose(t *testing.T) {
 	closeMethod := bufferedClass.PublicFunctions["CLOSE"]
 
 	// Write some data to buffer
-	_, err = writeMethod.NativeImpl(ctx, instance, []types.Value{types.StringValue("Final data")})
+	_, err = writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue("Final data")})
 	require.NoError(t, err)
 
 	// Close the buffered writer
-	_, err = closeMethod.NativeImpl(ctx, instance, []types.Value{})
+	_, err = closeMethod.NativeImpl(ctx, instance, []environment.Value{})
 	require.NoError(t, err)
 
 	// Verify buffer was flushed and underlying writer was closed

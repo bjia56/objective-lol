@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // Global STRING function definitions - created once and reused
@@ -20,14 +19,14 @@ func getStringFunctions() map[string]*environment.Function {
 				Name:       "LEN",
 				ReturnType: "INTEGR",
 				Parameters: []environment.Parameter{{Name: "STR", Type: "STRIN"}},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str := args[0]
 
-					if strVal, ok := str.(types.StringValue); ok {
-						return types.IntegerValue(len(string(strVal))), nil
+					if strVal, ok := str.(environment.StringValue); ok {
+						return environment.IntegerValue(len(string(strVal))), nil
 					}
 
-					return types.NOTHIN, fmt.Errorf("LEN: argument is not a string")
+					return environment.NOTHIN, fmt.Errorf("LEN: argument is not a string")
 				},
 			},
 			"CONCAT": {
@@ -37,18 +36,18 @@ func getStringFunctions() map[string]*environment.Function {
 					{Name: "STR1", Type: "STRIN"},
 					{Name: "STR2", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-					str1, ok1 := args[0].(types.StringValue)
-					str2, ok2 := args[1].(types.StringValue)
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+					str1, ok1 := args[0].(environment.StringValue)
+					str2, ok2 := args[1].(environment.StringValue)
 
 					if !ok1 {
-						return types.NOTHIN, fmt.Errorf("CONCAT: first argument is not a string")
+						return environment.NOTHIN, fmt.Errorf("CONCAT: first argument is not a string")
 					}
 					if !ok2 {
-						return types.NOTHIN, fmt.Errorf("CONCAT: second argument is not a string")
+						return environment.NOTHIN, fmt.Errorf("CONCAT: second argument is not a string")
 					}
 
-					return types.StringValue(string(str1) + string(str2)), nil
+					return environment.StringValue(string(str1) + string(str2)), nil
 				},
 			},
 		}

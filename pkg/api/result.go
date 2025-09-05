@@ -1,8 +1,6 @@
 package api
 
-import (
-	"github.com/bjia56/objective-lol/pkg/types"
-)
+import "github.com/bjia56/objective-lol/pkg/environment"
 
 // ExecutionResult represents the result of executing Objective-LOL code
 type ExecutionResult struct {
@@ -10,7 +8,7 @@ type ExecutionResult struct {
 	Value interface{}
 
 	// Raw Objective-LOL value (for advanced use)
-	RawValue types.Value
+	RawValue environment.Value
 
 	// Output captured during execution (if configured)
 	Output string

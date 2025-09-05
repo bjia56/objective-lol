@@ -5,7 +5,6 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/runtime"
-	"github.com/bjia56/objective-lol/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -34,67 +33,67 @@ func TestASSERTFunction(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		condition types.Value
+		condition environment.Value
 		shouldErr bool
 	}{
 		// Truthy values - should not error
 		{
 			"True boolean",
-			types.YEZ,
+			environment.YEZ,
 			false,
 		},
 		{
 			"Non-zero integer",
-			types.IntegerValue(42),
+			environment.IntegerValue(42),
 			false,
 		},
 		{
 			"Negative integer",
-			types.IntegerValue(-1),
+			environment.IntegerValue(-1),
 			false,
 		},
 		{
 			"Non-zero double",
-			types.DoubleValue(3.14),
+			environment.DoubleValue(3.14),
 			false,
 		},
 		{
 			"Non-empty string",
-			types.StringValue("hello"),
+			environment.StringValue("hello"),
 			false,
 		},
 
 		// Falsy values - should error
 		{
 			"False boolean",
-			types.NO,
+			environment.NO,
 			true,
 		},
 		{
 			"Zero integer",
-			types.IntegerValue(0),
+			environment.IntegerValue(0),
 			true,
 		},
 		{
 			"Zero double",
-			types.DoubleValue(0.0),
+			environment.DoubleValue(0.0),
 			true,
 		},
 		{
 			"Empty string",
-			types.StringValue(""),
+			environment.StringValue(""),
 			true,
 		},
 		{
 			"Nothing value",
-			types.NOTHIN,
+			environment.NOTHIN,
 			true,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			args := []types.Value{test.condition}
+			args := []environment.Value{test.condition}
 			result, err := assertFunc.NativeImpl(nil, nil, args)
 
 			if test.shouldErr {
@@ -108,7 +107,7 @@ func TestASSERTFunction(t *testing.T) {
 				}
 			} else {
 				assert.NoError(t, err, "ASSERT should pass for truthy condition")
-				assert.Equal(t, types.NOTHIN, result)
+				assert.Equal(t, environment.NOTHIN, result)
 			}
 		})
 	}
@@ -117,22 +116,22 @@ func TestASSERTFunction(t *testing.T) {
 func TestIsTruthyHelper(t *testing.T) {
 	tests := []struct {
 		name     string
-		value    types.Value
+		value    environment.Value
 		expected bool
 	}{
 		// Truthy cases
-		{"True boolean", types.YEZ, true},
-		{"Non-zero integer", types.IntegerValue(1), true},
-		{"Negative integer", types.IntegerValue(-1), true},
-		{"Non-zero double", types.DoubleValue(0.1), true},
-		{"Non-empty string", types.StringValue("test"), true},
+		{"True boolean", environment.YEZ, true},
+		{"Non-zero integer", environment.IntegerValue(1), true},
+		{"Negative integer", environment.IntegerValue(-1), true},
+		{"Non-zero double", environment.DoubleValue(0.1), true},
+		{"Non-empty string", environment.StringValue("test"), true},
 
 		// Falsy cases
-		{"False boolean", types.NO, false},
-		{"Zero integer", types.IntegerValue(0), false},
-		{"Zero double", types.DoubleValue(0.0), false},
-		{"Empty string", types.StringValue(""), false},
-		{"Nothing value", types.NOTHIN, false},
+		{"False boolean", environment.NO, false},
+		{"Zero integer", environment.IntegerValue(0), false},
+		{"Zero double", environment.DoubleValue(0.0), false},
+		{"Empty string", environment.StringValue(""), false},
+		{"Nothing value", environment.NOTHIN, false},
 	}
 
 	for _, test := range tests {

@@ -8,7 +8,6 @@ import (
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/interpreter"
 	"github.com/bjia56/objective-lol/pkg/runtime"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 const defaultBufferSize = 1024
@@ -41,7 +40,7 @@ func getIoClasses() map[string]*environment.Class {
 				QualifiedName: "stdlib:IO.READER",
 				ModulePath:    "stdlib:IO",
 				ParentClasses: []string{},
-				MRO:           []string{},
+				MRO:           []string{"stdlib:IO.READER"},
 				PublicFunctions: map[string]*environment.Function{
 					"READ": {
 						Name:       "READ",
@@ -49,14 +48,14 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "size", Type: "INTEGR"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							return types.NOTHIN, runtime.Exception{Message: "Not implemented"}
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							return environment.NOTHIN, runtime.Exception{Message: "Not implemented"}
 						},
 					},
 					"CLOSE": {
 						Name: "CLOSE",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							return types.NOTHIN, nil
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							return environment.NOTHIN, nil
 						},
 					},
 				},
@@ -71,7 +70,7 @@ func getIoClasses() map[string]*environment.Class {
 				QualifiedName: "stdlib:IO.WRITER",
 				ModulePath:    "stdlib:IO",
 				ParentClasses: []string{},
-				MRO:           []string{},
+				MRO:           []string{"stdlib:IO.WRITER"},
 				PublicFunctions: map[string]*environment.Function{
 					"WRITE": {
 						Name:       "WRITE",
@@ -79,14 +78,14 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							return types.NOTHIN, runtime.Exception{Message: "Not implemented"}
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							return environment.NOTHIN, runtime.Exception{Message: "Not implemented"}
 						},
 					},
 					"CLOSE": {
 						Name: "CLOSE",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-							return types.NOTHIN, nil
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							return environment.NOTHIN, nil
 						},
 					},
 				},
@@ -105,31 +104,26 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "reader", Type: "READER"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							reader := args[0]
 
 							// Validate that the argument is an object with READ and CLOSE methods
-							readerObj, ok := reader.(types.ObjectValue)
-							if !ok {
-								return types.NOTHIN, fmt.Errorf("BUFFERED_READER constructor expects READER object, got %s", args[0].Type())
-							}
-
 							// Type assert to get the concrete ObjectInstance
-							readerInstance, ok := readerObj.Instance.(*environment.ObjectInstance)
+							readerInstance, ok := reader.(*environment.ObjectInstance)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("BUFFERED_READER constructor: invalid object instance type")
+								return environment.NOTHIN, fmt.Errorf("BUFFERED_READER constructor: invalid object instance type")
 							}
 
 							// Check if reader has READ method
 							_, err := readerInstance.GetMemberFunction("READ", "BUFFERED_READER", nil)
 							if err != nil {
-								return types.NOTHIN, fmt.Errorf("BUFFERED_READER constructor: provided object does not have READ method: %v", err)
+								return environment.NOTHIN, fmt.Errorf("BUFFERED_READER constructor: provided object does not have READ method: %v", err)
 							}
 
 							// Check if reader has CLOSE method
 							_, err = readerInstance.GetMemberFunction("CLOSE", "BUFFERED_READER", nil)
 							if err != nil {
-								return types.NOTHIN, fmt.Errorf("BUFFERED_READER constructor: provided object does not have CLOSE method: %v", err)
+								return environment.NOTHIN, fmt.Errorf("BUFFERED_READER constructor: provided object does not have CLOSE method: %v", err)
 							}
 
 							// Initialize the buffered reader data
@@ -142,7 +136,7 @@ func getIoClasses() map[string]*environment.Class {
 							}
 							this.NativeData = bufferData
 
-							return types.NOTHIN, nil
+							return environment.NOTHIN, nil
 						},
 					},
 					// SET_SIZ method
@@ -151,17 +145,17 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "newSize", Type: "INTEGR"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							newSize := args[0]
 
-							newSizeVal, ok := newSize.(types.IntegerValue)
+							newSizeVal, ok := newSize.(environment.IntegerValue)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("SET_SIZ expects INTEGR, got %s", newSize.Type())
+								return environment.NOTHIN, fmt.Errorf("SET_SIZ expects INTEGR, got %s", newSize.Type())
 							}
 
 							size := int(newSizeVal)
 							if size <= 0 {
-								return types.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", size)
+								return environment.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", size)
 							}
 
 							if bufferData, ok := this.NativeData.(*BufferedReaderData); ok {
@@ -173,12 +167,12 @@ func getIoClasses() map[string]*environment.Class {
 
 								// Update SIZ variable
 								if sizVar, exists := this.Variables["SIZ"]; exists {
-									sizVar.Value = types.IntegerValue(size)
+									sizVar.Value = environment.IntegerValue(size)
 								}
 
-								return types.NOTHIN, nil
+								return environment.NOTHIN, nil
 							}
-							return types.NOTHIN, fmt.Errorf("SET_SIZ: invalid context")
+							return environment.NOTHIN, fmt.Errorf("SET_SIZ: invalid context")
 						},
 					},
 					// READ method
@@ -188,31 +182,31 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "size", Type: "INTEGR"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							size := args[0]
 
-							sizeVal, ok := size.(types.IntegerValue)
+							sizeVal, ok := size.(environment.IntegerValue)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("read expects INTEGR size, got %s", size.Type())
+								return environment.NOTHIN, fmt.Errorf("read expects INTEGR size, got %s", size.Type())
 							}
 
 							requestedSize := int(sizeVal)
 							if requestedSize <= 0 {
-								return types.StringValue(""), nil
+								return environment.StringValue(""), nil
 							}
 							bufferData, ok := this.NativeData.(*BufferedReaderData)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("READ: invalid context")
+								return environment.NOTHIN, fmt.Errorf("READ: invalid context")
 							}
 
 							// If we've reached EOF, return empty string
 							if bufferData.EOF {
-								return types.StringValue(""), nil
+								return environment.StringValue(""), nil
 							}
 
 							functionCtx, ok := ctx.(*interpreter.FunctionContext)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("READ: invalid function context")
+								return environment.NOTHIN, fmt.Errorf("READ: invalid function context")
 							}
 
 							result := ""
@@ -247,15 +241,15 @@ func getIoClasses() map[string]*environment.Class {
 									toRequest = remaining
 								}
 
-								readResult, err := functionCtx.CallMethod(bufferData.Reader, "READ", "BUFFERED_READER", []types.Value{types.IntegerValue(toRequest)})
+								readResult, err := functionCtx.CallMethod(bufferData.Reader, "READ", "BUFFERED_READER", []environment.Value{environment.IntegerValue(toRequest)})
 								if err != nil {
-									return types.NOTHIN, fmt.Errorf("read: error reading from underlying reader: %v", err)
+									return environment.NOTHIN, fmt.Errorf("read: error reading from underlying reader: %v", err)
 								}
 
 								// Convert result to string
-								readStr, ok := readResult.(types.StringValue)
+								readStr, ok := readResult.(environment.StringValue)
 								if !ok {
-									return types.NOTHIN, fmt.Errorf("read: underlying reader returned non-string value: %s", readResult.Type())
+									return environment.NOTHIN, fmt.Errorf("read: underlying reader returned non-string value: %s", readResult.Type())
 								}
 
 								// If we got empty string, we've reached EOF
@@ -269,27 +263,27 @@ func getIoClasses() map[string]*environment.Class {
 								bufferData.Position = 0
 							}
 
-							return types.StringValue(result), nil
+							return environment.StringValue(result), nil
 						},
 					},
 					// CLOSE method
 					"CLOSE": {
 						Name: "CLOSE",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							bufferData, ok := this.NativeData.(*BufferedReaderData)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("CLOSE: invalid context")
+								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid context")
 							}
 
 							functionCtx, ok := ctx.(*interpreter.FunctionContext)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("CLOSE: invalid function context")
+								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid function context")
 							}
 
 							// Call the CLOSE method on the underlying reader
-							_, err := functionCtx.CallMethod(bufferData.Reader, "CLOSE", "BUFFERED_READER", []types.Value{})
+							_, err := functionCtx.CallMethod(bufferData.Reader, "CLOSE", "BUFFERED_READER", []environment.Value{})
 							if err != nil {
-								return types.NOTHIN, fmt.Errorf("CLOSE: error closing underlying reader: %v", err)
+								return environment.NOTHIN, fmt.Errorf("CLOSE: error closing underlying reader: %v", err)
 							}
 
 							// Clear buffer data
@@ -297,7 +291,7 @@ func getIoClasses() map[string]*environment.Class {
 							bufferData.Position = 0
 							bufferData.EOF = true
 
-							return types.NOTHIN, nil
+							return environment.NOTHIN, nil
 						},
 					},
 				},
@@ -305,15 +299,15 @@ func getIoClasses() map[string]*environment.Class {
 					"SIZ": {
 						Name:     "SIZ",
 						Type:     "INTEGR",
-						Value:    types.IntegerValue(defaultBufferSize),
+						Value:    environment.IntegerValue(defaultBufferSize),
 						IsLocked: false,
 						IsPublic: true,
 					},
 				},
-				QualifiedName: "stdlib:IO.BUFFERED_READER",
-				ModulePath:    "stdlib:IO",
-				ParentClasses: []string{"stdlib:IO.READER"},
-				MRO:           []string{},
+				QualifiedName:    "stdlib:IO.BUFFERED_READER",
+				ModulePath:       "stdlib:IO",
+				ParentClasses:    []string{"stdlib:IO.READER"},
+				MRO:              []string{"stdlib:IO.BUFFERED_READER", "stdlib:IO.READER"},
 				PrivateVariables: make(map[string]*environment.Variable),
 				PrivateFunctions: make(map[string]*environment.Function),
 				SharedVariables:  make(map[string]*environment.Variable),
@@ -324,7 +318,7 @@ func getIoClasses() map[string]*environment.Class {
 				QualifiedName: "stdlib:IO.BUFFERED_WRITER",
 				ModulePath:    "stdlib:IO",
 				ParentClasses: []string{"stdlib:IO.WRITER"},
-				MRO:           []string{},
+				MRO:           []string{"stdlib:IO.BUFFERED_WRITER", "stdlib:IO.WRITER"},
 				PublicFunctions: map[string]*environment.Function{
 					// Constructor
 					"BUFFERED_WRITER": {
@@ -332,31 +326,25 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "writer", Type: "WRITER"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							writer := args[0]
 
 							// Validate that the argument is an object with WRITE and CLOSE methods
-							writerObj, ok := writer.(types.ObjectValue)
+							writerInstance, ok := writer.(*environment.ObjectInstance)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor expects WRITER object, got %s", args[0].Type())
-							}
-
-							// Type assert to get the concrete ObjectInstance
-							writerInstance, ok := writerObj.Instance.(*environment.ObjectInstance)
-							if !ok {
-								return types.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor: invalid object instance type")
+								return environment.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor expects WRITER object, got %s", args[0].Type())
 							}
 
 							// Check if writer has WRITE method
 							_, err := writerInstance.GetMemberFunction("WRITE", "BUFFERED_WRITER", nil)
 							if err != nil {
-								return types.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor: provided object does not have WRITE method: %v", err)
+								return environment.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor: provided object does not have WRITE method: %v", err)
 							}
 
 							// Check if writer has CLOSE method
 							_, err = writerInstance.GetMemberFunction("CLOSE", "BUFFERED_WRITER", nil)
 							if err != nil {
-								return types.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor: provided object does not have CLOSE method: %v", err)
+								return environment.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor: provided object does not have CLOSE method: %v", err)
 							}
 
 							// Initialize the buffered writer data
@@ -367,7 +355,7 @@ func getIoClasses() map[string]*environment.Class {
 							}
 							this.NativeData = bufferData
 
-							return types.NOTHIN, nil
+							return environment.NOTHIN, nil
 						},
 					},
 					// SET_SIZ method
@@ -376,30 +364,30 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "newSize", Type: "INTEGR"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							newSize := args[0]
 
-							newSizeVal, ok := newSize.(types.IntegerValue)
+							newSizeVal, ok := newSize.(environment.IntegerValue)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("SET_SIZ expects INTEGR, got %s", args[0].Type())
+								return environment.NOTHIN, fmt.Errorf("SET_SIZ expects INTEGR, got %s", args[0].Type())
 							}
 
 							size := int(newSizeVal)
 							if size <= 0 {
-								return types.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", size)
+								return environment.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", size)
 							}
 
 							if bufferData, ok := this.NativeData.(*BufferedWriterData); ok {
 								functionCtx, ok := ctx.(*interpreter.FunctionContext)
 								if !ok {
-									return types.NOTHIN, fmt.Errorf("SET_SIZ: invalid function context")
+									return environment.NOTHIN, fmt.Errorf("SET_SIZ: invalid function context")
 								}
 
 								// Flush existing buffer before changing size
 								if len(bufferData.Buffer) > 0 {
-									_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(bufferData.Buffer)})
+									_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []environment.Value{environment.StringValue(bufferData.Buffer)})
 									if err != nil {
-										return types.NOTHIN, fmt.Errorf("SET_SIZ: error flushing buffer: %v", err)
+										return environment.NOTHIN, fmt.Errorf("SET_SIZ: error flushing buffer: %v", err)
 									}
 									bufferData.Buffer = ""
 								}
@@ -408,12 +396,12 @@ func getIoClasses() map[string]*environment.Class {
 
 								// Update SIZ variable
 								if sizVar, exists := this.Variables["SIZ"]; exists {
-									sizVar.Value = types.IntegerValue(size)
+									sizVar.Value = environment.IntegerValue(size)
 								}
 
-								return types.NOTHIN, nil
+								return environment.NOTHIN, nil
 							}
-							return types.NOTHIN, fmt.Errorf("SET_SIZ: invalid context")
+							return environment.NOTHIN, fmt.Errorf("SET_SIZ: invalid context")
 						},
 					},
 					// WRITE method
@@ -423,12 +411,12 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							data := args[0]
 
-							dataVal, ok := data.(types.StringValue)
+							dataVal, ok := data.(environment.StringValue)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("WRITE expects STRIN data, got %s", data.Type())
+								return environment.NOTHIN, fmt.Errorf("WRITE expects STRIN data, got %s", data.Type())
 							}
 
 							dataBuffer := string(dataVal)
@@ -436,99 +424,99 @@ func getIoClasses() map[string]*environment.Class {
 
 							bufferData, ok := this.NativeData.(*BufferedWriterData)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("WRITE: invalid context")
+								return environment.NOTHIN, fmt.Errorf("WRITE: invalid context")
 							}
 
 							functionCtx, ok := ctx.(*interpreter.FunctionContext)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("WRITE: invalid function context")
+								return environment.NOTHIN, fmt.Errorf("WRITE: invalid function context")
 							}
 
 							// If data fits in remaining buffer space, just buffer it
 							if len(bufferData.Buffer)+len(dataBuffer) <= bufferData.BufferSize {
 								bufferData.Buffer += dataBuffer
-								return types.IntegerValue(originalLength), nil
+								return environment.IntegerValue(originalLength), nil
 							}
 
 							// Buffer is full or will be full, need to flush
 							if len(bufferData.Buffer) > 0 {
-								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(bufferData.Buffer)})
+								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []environment.Value{environment.StringValue(bufferData.Buffer)})
 								if err != nil {
-									return types.NOTHIN, fmt.Errorf("WRITE: error flushing buffer: %v", err)
+									return environment.NOTHIN, fmt.Errorf("WRITE: error flushing buffer: %v", err)
 								}
 								bufferData.Buffer = ""
 							}
 
 							// If data is larger than buffer size, write it directly
 							if len(dataBuffer) >= bufferData.BufferSize {
-								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(dataBuffer)})
+								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []environment.Value{environment.StringValue(dataBuffer)})
 								if err != nil {
-									return types.NOTHIN, fmt.Errorf("WRITE: error writing large data: %v", err)
+									return environment.NOTHIN, fmt.Errorf("WRITE: error writing large data: %v", err)
 								}
-								return types.IntegerValue(originalLength), nil
+								return environment.IntegerValue(originalLength), nil
 							}
 
 							// Otherwise, buffer the data
 							bufferData.Buffer = dataBuffer
-							return types.IntegerValue(originalLength), nil
+							return environment.IntegerValue(originalLength), nil
 						},
 					},
 					// FLUSH method
 					"FLUSH": {
 						Name: "FLUSH",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							bufferData, ok := this.NativeData.(*BufferedWriterData)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("FLUSH: invalid context")
+								return environment.NOTHIN, fmt.Errorf("FLUSH: invalid context")
 							}
 
 							functionCtx, ok := ctx.(*interpreter.FunctionContext)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("FLUSH: invalid function context")
+								return environment.NOTHIN, fmt.Errorf("FLUSH: invalid function context")
 							}
 
 							// Flush buffer if it has data
 							if len(bufferData.Buffer) > 0 {
-								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(bufferData.Buffer)})
+								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []environment.Value{environment.StringValue(bufferData.Buffer)})
 								if err != nil {
-									return types.NOTHIN, fmt.Errorf("FLUSH: error flushing buffer: %v", err)
+									return environment.NOTHIN, fmt.Errorf("FLUSH: error flushing buffer: %v", err)
 								}
 								bufferData.Buffer = ""
 							}
 
-							return types.NOTHIN, nil
+							return environment.NOTHIN, nil
 						},
 					},
 					// CLOSE method
 					"CLOSE": {
 						Name: "CLOSE",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							bufferData, ok := this.NativeData.(*BufferedWriterData)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("CLOSE: invalid context")
+								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid context")
 							}
 
 							functionCtx, ok := ctx.(*interpreter.FunctionContext)
 							if !ok {
-								return types.NOTHIN, fmt.Errorf("CLOSE: invalid function context")
+								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid function context")
 							}
 
 							// Flush buffer before closing
 							if len(bufferData.Buffer) > 0 {
-								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []types.Value{types.StringValue(bufferData.Buffer)})
+								_, err := functionCtx.CallMethod(bufferData.Writer, "WRITE", "BUFFERED_WRITER", []environment.Value{environment.StringValue(bufferData.Buffer)})
 								if err != nil {
-									return types.NOTHIN, fmt.Errorf("CLOSE: error flushing buffer: %v", err)
+									return environment.NOTHIN, fmt.Errorf("CLOSE: error flushing buffer: %v", err)
 								}
 								bufferData.Buffer = ""
 							}
 
 							// Call the CLOSE method on the underlying writer
-							_, err := functionCtx.CallMethod(bufferData.Writer, "CLOSE", "BUFFERED_WRITER", []types.Value{})
+							_, err := functionCtx.CallMethod(bufferData.Writer, "CLOSE", "BUFFERED_WRITER", []environment.Value{})
 							if err != nil {
-								return types.NOTHIN, fmt.Errorf("CLOSE: error closing underlying writer: %v", err)
+								return environment.NOTHIN, fmt.Errorf("CLOSE: error closing underlying writer: %v", err)
 							}
 
-							return types.NOTHIN, nil
+							return environment.NOTHIN, nil
 						},
 					},
 				},
@@ -536,7 +524,7 @@ func getIoClasses() map[string]*environment.Class {
 					"SIZ": {
 						Name:     "SIZ",
 						Type:     "INTEGR",
-						Value:    types.IntegerValue(defaultBufferSize),
+						Value:    environment.IntegerValue(defaultBufferSize),
 						IsLocked: false,
 						IsPublic: true,
 					},

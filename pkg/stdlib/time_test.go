@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -33,18 +32,15 @@ func TestTimeDATEClass(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create a DATE instance
-	instanceInterface, err := env.NewObjectInstance("DATE")
+	instance, err := env.NewObjectInstance("DATE")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok, "Should return ObjectInstance")
 
 	// Initialize the date (call constructor)
 	constructor, exists := dateClass.PublicFunctions["DATE"]
 	require.True(t, exists, "DATE constructor should exist")
 
 	before := time.Now()
-	_, err = constructor.NativeImpl(nil, instance, []types.Value{})
+	_, err = constructor.NativeImpl(nil, instance, []environment.Value{})
 	require.NoError(t, err)
 	after := time.Now()
 
@@ -62,11 +58,8 @@ func TestTimeDATEMethods(t *testing.T) {
 	dateClass, err := env.GetClass("DATE")
 	require.NoError(t, err)
 
-	instanceInterface, err := env.NewObjectInstance("DATE")
+	instance, err := env.NewObjectInstance("DATE")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok, "Should return ObjectInstance")
 
 	// Set a known date for testing
 	knownDate := time.Date(2023, 12, 25, 15, 30, 45, 123456789, time.UTC)
@@ -74,16 +67,16 @@ func TestTimeDATEMethods(t *testing.T) {
 
 	tests := []struct {
 		method   string
-		expected types.Value
+		expected environment.Value
 	}{
-		{"YEAR", types.IntegerValue(2023)},
-		{"MONTH", types.IntegerValue(12)},
-		{"DAY", types.IntegerValue(25)},
-		{"HOUR", types.IntegerValue(15)},
-		{"MINUTE", types.IntegerValue(30)},
-		{"SECOND", types.IntegerValue(45)},
-		{"MILLISECOND", types.IntegerValue(123)}, // 123456789 nanoseconds / 1e6
-		{"NANOSECOND", types.IntegerValue(123456789)},
+		{"YEAR", environment.IntegerValue(2023)},
+		{"MONTH", environment.IntegerValue(12)},
+		{"DAY", environment.IntegerValue(25)},
+		{"HOUR", environment.IntegerValue(15)},
+		{"MINUTE", environment.IntegerValue(30)},
+		{"SECOND", environment.IntegerValue(45)},
+		{"MILLISECOND", environment.IntegerValue(123)}, // 123456789 nanoseconds / 1e6
+		{"NANOSECOND", environment.IntegerValue(123456789)},
 	}
 
 	for _, test := range tests {
@@ -91,7 +84,7 @@ func TestTimeDATEMethods(t *testing.T) {
 			method, exists := dateClass.PublicFunctions[test.method]
 			require.True(t, exists, "Method %s should exist", test.method)
 
-			result, err := method.NativeImpl(nil, instance, []types.Value{})
+			result, err := method.NativeImpl(nil, instance, []environment.Value{})
 			require.NoError(t, err)
 			assert.Equal(t, test.expected, result)
 		})
@@ -105,11 +98,8 @@ func TestTimeDATEFormat(t *testing.T) {
 	dateClass, err := env.GetClass("DATE")
 	require.NoError(t, err)
 
-	instanceInterface, err := env.NewObjectInstance("DATE")
+	instance, err := env.NewObjectInstance("DATE")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok, "Should return ObjectInstance")
 
 	// Set a known date for testing
 	knownDate := time.Date(2023, 12, 25, 15, 30, 45, 0, time.UTC)
@@ -142,11 +132,11 @@ func TestTimeDATEFormat(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			args := []types.Value{types.StringValue(test.layout)}
+			args := []environment.Value{environment.StringValue(test.layout)}
 			result, err := formatMethod.NativeImpl(nil, instance, args)
 			require.NoError(t, err)
 
-			stringResult, ok := result.(types.StringValue)
+			stringResult, ok := result.(environment.StringValue)
 			require.True(t, ok, "FORMAT should return StringValue")
 			assert.Equal(t, test.expected, string(stringResult))
 		})
@@ -160,11 +150,8 @@ func TestTimeDATEErrorHandling(t *testing.T) {
 	dateClass, err := env.GetClass("DATE")
 	require.NoError(t, err)
 
-	instanceInterface, err := env.NewObjectInstance("DATE")
+	instance, err := env.NewObjectInstance("DATE")
 	require.NoError(t, err)
-
-	instance, ok := instanceInterface.(*environment.ObjectInstance)
-	require.True(t, ok, "Should return ObjectInstance")
 
 	// Don't initialize the NativeData, should cause errors
 
@@ -175,7 +162,7 @@ func TestTimeDATEErrorHandling(t *testing.T) {
 			method, exists := dateClass.PublicFunctions[methodName]
 			require.True(t, exists)
 
-			_, err := method.NativeImpl(nil, instance, []types.Value{})
+			_, err := method.NativeImpl(nil, instance, []environment.Value{})
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "invalid context")
 		})
@@ -192,12 +179,12 @@ func TestTimeSLEEPFunction(t *testing.T) {
 	// Test short sleep (1 second would be too long for tests)
 	// We'll use 0 seconds to just test the function works
 	before := time.Now()
-	args := []types.Value{types.IntegerValue(0)}
+	args := []environment.Value{environment.IntegerValue(0)}
 	result, err := sleepFunc.NativeImpl(nil, nil, args)
 	after := time.Now()
 
 	require.NoError(t, err)
-	assert.Equal(t, types.NOTHIN, result)
+	assert.Equal(t, environment.NOTHIN, result)
 
 	// Should complete almost instantly for 0 seconds
 	duration := after.Sub(before)
@@ -212,7 +199,7 @@ func TestTimeSLEEPErrorHandling(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test with invalid argument type
-	args := []types.Value{types.StringValue("not a number")}
+	args := []environment.Value{environment.StringValue("not a number")}
 	_, err = sleepFunc.NativeImpl(nil, nil, args)
 
 	assert.Error(t, err)

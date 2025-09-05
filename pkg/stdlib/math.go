@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // Global MATH function definitions - created once and reused
@@ -24,14 +23,14 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
-					if doubleVal, ok := value.(types.DoubleValue); ok {
-						return types.DoubleValue(math.Abs(float64(doubleVal))), nil
+					if doubleVal, ok := value.(environment.DoubleValue); ok {
+						return environment.DoubleValue(math.Abs(float64(doubleVal))), nil
 					}
 
-					return types.NOTHIN, fmt.Errorf("ABS: invalid numeric type")
+					return environment.NOTHIN, fmt.Errorf("ABS: invalid numeric type")
 				},
 			},
 			"MAX": {
@@ -41,16 +40,16 @@ func getMathFunctions() map[string]*environment.Function {
 					{Name: "a", Type: "DUBBLE"},
 					{Name: "b", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					a, b := args[0], args[1]
 
-					if val1, ok := a.(types.DoubleValue); ok {
-						if val2, ok := b.(types.DoubleValue); ok {
-							return types.DoubleValue(math.Max(float64(val1), float64(val2))), nil
+					if val1, ok := a.(environment.DoubleValue); ok {
+						if val2, ok := b.(environment.DoubleValue); ok {
+							return environment.DoubleValue(math.Max(float64(val1), float64(val2))), nil
 						}
 					}
 
-					return types.NOTHIN, fmt.Errorf("MAX: invalid numeric types")
+					return environment.NOTHIN, fmt.Errorf("MAX: invalid numeric environment")
 				},
 			},
 			"MIN": {
@@ -60,16 +59,16 @@ func getMathFunctions() map[string]*environment.Function {
 					{Name: "a", Type: "DUBBLE"},
 					{Name: "b", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					a, b := args[0], args[1]
 
-					if val1, ok := a.(types.DoubleValue); ok {
-						if val2, ok := b.(types.DoubleValue); ok {
-							return types.DoubleValue(math.Min(float64(val1), float64(val2))), nil
+					if val1, ok := a.(environment.DoubleValue); ok {
+						if val2, ok := b.(environment.DoubleValue); ok {
+							return environment.DoubleValue(math.Min(float64(val1), float64(val2))), nil
 						}
 					}
 
-					return types.NOTHIN, fmt.Errorf("MIN: invalid numeric types")
+					return environment.NOTHIN, fmt.Errorf("MIN: invalid numeric environment")
 				},
 			},
 			"SQRT": {
@@ -78,17 +77,17 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
-					if doubleVal, ok := value.(types.DoubleValue); ok {
+					if doubleVal, ok := value.(environment.DoubleValue); ok {
 						if float64(doubleVal) < 0 {
-							return types.NOTHIN, fmt.Errorf("SQRT: negative argument")
+							return environment.NOTHIN, fmt.Errorf("SQRT: negative argument")
 						}
-						return types.DoubleValue(math.Sqrt(float64(doubleVal))), nil
+						return environment.DoubleValue(math.Sqrt(float64(doubleVal))), nil
 					}
 
-					return types.NOTHIN, fmt.Errorf("SQRT: invalid numeric type")
+					return environment.NOTHIN, fmt.Errorf("SQRT: invalid numeric type")
 				},
 			},
 			"POW": {
@@ -98,25 +97,25 @@ func getMathFunctions() map[string]*environment.Function {
 					{Name: "base", Type: "DUBBLE"},
 					{Name: "exponent", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					base, exp := args[0], args[1]
 
-					if baseVal, ok := base.(types.DoubleValue); ok {
-						if expVal, ok := exp.(types.DoubleValue); ok {
+					if baseVal, ok := base.(environment.DoubleValue); ok {
+						if expVal, ok := exp.(environment.DoubleValue); ok {
 							result := math.Pow(float64(baseVal), float64(expVal))
-							return types.DoubleValue(result), nil
+							return environment.DoubleValue(result), nil
 						}
 					}
 
-					return types.NOTHIN, fmt.Errorf("POW: invalid numeric types")
+					return environment.NOTHIN, fmt.Errorf("POW: invalid numeric environment")
 				},
 			},
 			"RANDOM": {
 				Name:       "RANDOM",
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
-					return types.DoubleValue(rand.Float64()), nil
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+					return environment.DoubleValue(rand.Float64()), nil
 				},
 			},
 			"RANDINT": {
@@ -126,20 +125,20 @@ func getMathFunctions() map[string]*environment.Function {
 					{Name: "min", Type: "INTEGR"},
 					{Name: "max", Type: "INTEGR"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					min, max := args[0], args[1]
 
-					if minVal, ok := min.(types.IntegerValue); ok {
-						if maxVal, ok := max.(types.IntegerValue); ok {
+					if minVal, ok := min.(environment.IntegerValue); ok {
+						if maxVal, ok := max.(environment.IntegerValue); ok {
 							if minVal >= maxVal {
-								return types.NOTHIN, fmt.Errorf("RANDINT: min must be less than max")
+								return environment.NOTHIN, fmt.Errorf("RANDINT: min must be less than max")
 							}
 							result := rand.Int63n(int64(maxVal-minVal)) + int64(minVal)
-							return types.IntegerValue(result), nil
+							return environment.IntegerValue(result), nil
 						}
 					}
 
-					return types.NOTHIN, fmt.Errorf("RANDINT: invalid integer types")
+					return environment.NOTHIN, fmt.Errorf("RANDINT: invalid integer environment")
 				},
 			},
 			"SIN": {
@@ -148,14 +147,14 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
-					if doubleVal, ok := value.(types.DoubleValue); ok {
-						return types.DoubleValue(math.Sin(float64(doubleVal))), nil
+					if doubleVal, ok := value.(environment.DoubleValue); ok {
+						return environment.DoubleValue(math.Sin(float64(doubleVal))), nil
 					}
 
-					return types.NOTHIN, fmt.Errorf("SIN: invalid numeric type")
+					return environment.NOTHIN, fmt.Errorf("SIN: invalid numeric type")
 				},
 			},
 			"COS": {
@@ -164,14 +163,14 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
-					if doubleVal, ok := value.(types.DoubleValue); ok {
-						return types.DoubleValue(math.Cos(float64(doubleVal))), nil
+					if doubleVal, ok := value.(environment.DoubleValue); ok {
+						return environment.DoubleValue(math.Cos(float64(doubleVal))), nil
 					}
 
-					return types.NOTHIN, fmt.Errorf("COS: invalid numeric type")
+					return environment.NOTHIN, fmt.Errorf("COS: invalid numeric type")
 				},
 			},
 		}

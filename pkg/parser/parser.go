@@ -7,7 +7,6 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // Parser implements a recursive descent parser for Objective-LOL
@@ -68,20 +67,20 @@ func (p *Parser) collectPrecedingComments() []string {
 	}
 
 	var documentation []string
-	
+
 	// Find the most recent contiguous block of comments
 	// Comments must be immediately before the current token (allowing only whitespace/newlines between)
 	currentLine := p.currentToken.Position.Line
-	
+
 	// Work backwards through comments to find the contiguous block
 	var relevantComments []Token
 	for i := len(comments) - 1; i >= 0; i-- {
 		comment := comments[i]
-		
+
 		// Check if this comment is part of a contiguous block preceding the declaration
 		expectedLine := currentLine - (len(relevantComments) + 1)
-		if comment.Position.Line == expectedLine || 
-		   (len(relevantComments) == 0 && comment.Position.Line < currentLine && comment.Position.Line >= currentLine-5) {
+		if comment.Position.Line == expectedLine ||
+			(len(relevantComments) == 0 && comment.Position.Line < currentLine && comment.Position.Line >= currentLine-5) {
 			relevantComments = append([]Token{comment}, relevantComments...)
 		} else {
 			break
@@ -186,7 +185,7 @@ func (p *Parser) parseVariableDeclaration() *ast.VariableDeclarationNode {
 
 	// Collect documentation comments before parsing the variable declaration
 	node.Documentation = p.collectPrecedingComments()
-	
+
 	// Clear the comments buffer to avoid reusing them for subsequent declarations
 	p.lexer.ClearRecentComments()
 
@@ -238,7 +237,7 @@ func (p *Parser) parseIHasAVariableDeclaration() *ast.VariableDeclarationNode {
 
 	// Collect documentation comments before parsing the variable declaration
 	node.Documentation = p.collectPrecedingComments()
-	
+
 	// Clear the comments buffer to avoid reusing them for subsequent declarations
 	p.lexer.ClearRecentComments()
 
@@ -389,7 +388,7 @@ func (p *Parser) parseFunctionDeclaration() *ast.FunctionDeclarationNode {
 
 	// Collect documentation comments before parsing the function declaration
 	node.Documentation = p.collectPrecedingComments()
-	
+
 	// Clear the comments buffer to avoid reusing them for subsequent declarations
 	p.lexer.ClearRecentComments()
 
@@ -441,7 +440,7 @@ func (p *Parser) parseClassDeclaration() *ast.ClassDeclarationNode {
 
 	// Collect documentation comments before parsing the class declaration
 	node.Documentation = p.collectPrecedingComments()
-	
+
 	// Clear the comments buffer to avoid reusing them for subsequent declarations
 	p.lexer.ClearRecentComments()
 
@@ -471,13 +470,12 @@ func (p *Parser) parseClassDeclaration() *ast.ClassDeclarationNode {
 			return nil
 		}
 		node.ParentClasses = append(node.ParentClasses, strings.ToUpper(p.currentToken.Literal))
-		
+
 		// Parse additional parents with "AN OF" separator
 		for p.peekTokenIs(AN) {
 			p.nextToken() // consume AN
 			if !p.expectPeek(OF) {
 				p.addError(fmt.Sprintf("expected 'OF' after 'AN' in inheritance declaration, got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
-				p.addError("Hint: Multiple inheritance syntax is 'KITTEH OF PARENT1 AN OF PARENT2'")
 				return nil
 			}
 			if !p.expectPeek(IDENTIFIER) {
@@ -528,7 +526,7 @@ func (p *Parser) parseClassMembers() []*ast.ClassMemberNode {
 		if p.currentTokenIs(DIS) {
 			memberDocs := p.collectPrecedingComments()
 			p.lexer.ClearRecentComments()
-			
+
 			member := p.parseClassMemberWithDocs(memberDocs)
 			if member != nil {
 				member.IsPublic = isPublic
@@ -1226,7 +1224,7 @@ func (p *Parser) parseLiteral() *ast.LiteralNode {
 	}
 
 	return &ast.LiteralNode{
-		Value:    types.ValueOf(value),
+		Value:    environment.ValueOf(value),
 		Position: p.convertPosition(p.currentToken.Position),
 	}
 }

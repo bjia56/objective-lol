@@ -1,12 +1,14 @@
 package integration
 
 import (
+	"io"
 	"os"
 	"path"
 	"strings"
 	"testing"
 
 	"github.com/bjia56/objective-lol/pkg/cli"
+	"github.com/bjia56/objective-lol/pkg/stdlib"
 )
 
 func TestFunctionalScripts(t *testing.T) {
@@ -26,6 +28,10 @@ func TestFunctionalScripts(t *testing.T) {
 			testFiles = append(testFiles, path.Join(dir, entry.Name()))
 		}
 	}
+
+	oldstdout := os.Stdout
+	stdlib.SetOutput(io.Discard)
+	defer stdlib.SetOutput(oldstdout)
 
 	for _, file := range testFiles {
 		file := file // capture range variable

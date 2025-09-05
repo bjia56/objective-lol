@@ -5,7 +5,6 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/runtime"
-	"github.com/bjia56/objective-lol/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,7 +17,7 @@ func TestBaskitConstructor(t *testing.T) {
 	instance := NewBaskitInstance()
 
 	// Call constructor
-	_, err := constructor.NativeImpl(nil, instance, []types.Value{})
+	_, err := constructor.NativeImpl(nil, instance, []environment.Value{})
 	require.NoError(t, err)
 
 	// Verify empty map
@@ -29,7 +28,7 @@ func TestBaskitConstructor(t *testing.T) {
 	// Verify SIZ is 0
 	sizVar, exists := instance.Variables["SIZ"]
 	require.True(t, exists)
-	assert.Equal(t, types.IntegerValue(0), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(0), sizVar.Value)
 }
 
 func TestBaskitPutAndGet(t *testing.T) {
@@ -40,40 +39,40 @@ func TestBaskitPutAndGet(t *testing.T) {
 	instance := NewBaskitInstance()
 
 	// PUT a value
-	_, err := putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
-		types.IntegerValue(42),
+	_, err := putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
+		environment.IntegerValue(42),
 	})
 	require.NoError(t, err)
 
 	// Verify SIZ updated
 	sizVar := instance.Variables["SIZ"]
-	assert.Equal(t, types.IntegerValue(1), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(1), sizVar.Value)
 
 	// GET the value
-	result, err := getMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
+	result, err := getMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
 	})
 	require.NoError(t, err)
-	assert.Equal(t, types.IntegerValue(42), result)
+	assert.Equal(t, environment.IntegerValue(42), result)
 
 	// PUT another value with different key type (should convert to string)
-	_, err = putMethod.NativeImpl(nil, instance, []types.Value{
-		types.IntegerValue(123),
-		types.StringValue("numeric key"),
+	_, err = putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.IntegerValue(123),
+		environment.StringValue("numeric key"),
 	})
 	require.NoError(t, err)
 
 	// GET with numeric key (converted to string)
-	result, err = getMethod.NativeImpl(nil, instance, []types.Value{
-		types.IntegerValue(123),
+	result, err = getMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.IntegerValue(123),
 	})
 	require.NoError(t, err)
-	assert.Equal(t, types.StringValue("numeric key"), result)
+	assert.Equal(t, environment.StringValue("numeric key"), result)
 
 	// Verify SIZ updated
 	sizVar = instance.Variables["SIZ"]
-	assert.Equal(t, types.IntegerValue(2), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(2), sizVar.Value)
 }
 
 func TestBaskitGetNonexistentKey(t *testing.T) {
@@ -83,8 +82,8 @@ func TestBaskitGetNonexistentKey(t *testing.T) {
 	instance := NewBaskitInstance()
 
 	// Try to GET non-existent key - should throw exception
-	_, err := getMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("nonexistent"),
+	_, err := getMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("nonexistent"),
 	})
 	require.Error(t, err)
 
@@ -102,25 +101,25 @@ func TestBaskitContains(t *testing.T) {
 	instance := NewBaskitInstance()
 
 	// Check non-existent key
-	result, err := containsMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
+	result, err := containsMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
 	})
 	require.NoError(t, err)
-	assert.Equal(t, types.NO, result)
+	assert.Equal(t, environment.NO, result)
 
 	// PUT a value
-	_, err = putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
-		types.IntegerValue(42),
+	_, err = putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
+		environment.IntegerValue(42),
 	})
 	require.NoError(t, err)
 
 	// Check existing key
-	result, err = containsMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
+	result, err = containsMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
 	})
 	require.NoError(t, err)
-	assert.Equal(t, types.YEZ, result)
+	assert.Equal(t, environment.YEZ, result)
 }
 
 func TestBaskitRemove(t *testing.T) {
@@ -132,33 +131,33 @@ func TestBaskitRemove(t *testing.T) {
 	instance := NewBaskitInstance()
 
 	// PUT a value
-	_, err := putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
-		types.StringValue("value1"),
+	_, err := putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
+		environment.StringValue("value1"),
 	})
 	require.NoError(t, err)
 
 	// REMOVE the value
-	result, err := removeMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
+	result, err := removeMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
 	})
 	require.NoError(t, err)
-	assert.Equal(t, types.StringValue("value1"), result)
+	assert.Equal(t, environment.StringValue("value1"), result)
 
 	// Verify SIZ updated
 	sizVar := instance.Variables["SIZ"]
-	assert.Equal(t, types.IntegerValue(0), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(0), sizVar.Value)
 
 	// Verify key no longer exists
-	containsResult, err := containsMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
+	containsResult, err := containsMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
 	})
 	require.NoError(t, err)
-	assert.Equal(t, types.NO, containsResult)
+	assert.Equal(t, environment.NO, containsResult)
 
 	// Try to remove non-existent key - should throw exception
-	_, err = removeMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("nonexistent"),
+	_, err = removeMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("nonexistent"),
 	})
 	require.Error(t, err)
 
@@ -176,30 +175,30 @@ func TestBaskitClear(t *testing.T) {
 	instance := NewBaskitInstance()
 
 	// PUT multiple values
-	putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
-		types.IntegerValue(1),
+	putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
+		environment.IntegerValue(1),
 	})
-	putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key2"),
-		types.IntegerValue(2),
+	putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key2"),
+		environment.IntegerValue(2),
 	})
-	putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key3"),
-		types.IntegerValue(3),
+	putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key3"),
+		environment.IntegerValue(3),
 	})
 
 	// Verify SIZ before clear
 	sizVar := instance.Variables["SIZ"]
-	assert.Equal(t, types.IntegerValue(3), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(3), sizVar.Value)
 
 	// CLEAR all values
-	_, err := clearMethod.NativeImpl(nil, instance, []types.Value{})
+	_, err := clearMethod.NativeImpl(nil, instance, []environment.Value{})
 	require.NoError(t, err)
 
 	// Verify SIZ is 0
 	sizVar = instance.Variables["SIZ"]
-	assert.Equal(t, types.IntegerValue(0), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(0), sizVar.Value)
 
 	// Verify map is empty
 	baskitMap := instance.NativeData.(BaskitMap)
@@ -214,39 +213,37 @@ func TestBaskitKeys(t *testing.T) {
 	instance := NewBaskitInstance()
 
 	// PUT multiple values
-	putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key2"),
-		types.IntegerValue(2),
+	putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key2"),
+		environment.IntegerValue(2),
 	})
-	putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
-		types.IntegerValue(1),
+	putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
+		environment.IntegerValue(1),
 	})
-	putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key3"),
-		types.IntegerValue(3),
+	putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key3"),
+		environment.IntegerValue(3),
 	})
 
 	// Get KEYS
-	result, err := keysMethod.NativeImpl(nil, instance, []types.Value{})
+	result, err := keysMethod.NativeImpl(nil, instance, []environment.Value{})
 	require.NoError(t, err)
 
 	// Should return a BUKKIT
-	bukkitValue, ok := result.(types.ObjectValue)
-	require.True(t, ok, "KEYS should return ObjectValue")
-	assert.Equal(t, "BUKKIT", bukkitValue.ClassName)
+	bukkitInstance, ok := result.(*environment.ObjectInstance)
+	require.True(t, ok, "KEYS should return ObjectInstance")
+	assert.Equal(t, "BUKKIT", bukkitInstance.Class.Name)
 
 	// Get the underlying slice
-	bukkitInstance, ok := bukkitValue.Instance.(*environment.ObjectInstance)
-	require.True(t, ok)
 	slice, ok := bukkitInstance.NativeData.(BukkitSlice)
 	require.True(t, ok)
 
 	// Should have 3 keys, sorted alphabetically
 	assert.Equal(t, 3, len(slice))
-	assert.Equal(t, types.StringValue("key1"), slice[0])
-	assert.Equal(t, types.StringValue("key2"), slice[1])
-	assert.Equal(t, types.StringValue("key3"), slice[2])
+	assert.Equal(t, environment.StringValue("key1"), slice[0])
+	assert.Equal(t, environment.StringValue("key2"), slice[1])
+	assert.Equal(t, environment.StringValue("key3"), slice[2])
 }
 
 func TestBaskitValues(t *testing.T) {
@@ -257,39 +254,37 @@ func TestBaskitValues(t *testing.T) {
 	instance := NewBaskitInstance()
 
 	// PUT multiple values
-	putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key2"),
-		types.StringValue("value2"),
+	putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key2"),
+		environment.StringValue("value2"),
 	})
-	putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
-		types.StringValue("value1"),
+	putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
+		environment.StringValue("value1"),
 	})
-	putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key3"),
-		types.StringValue("value3"),
+	putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key3"),
+		environment.StringValue("value3"),
 	})
 
 	// Get VALUES
-	result, err := valuesMethod.NativeImpl(nil, instance, []types.Value{})
+	result, err := valuesMethod.NativeImpl(nil, instance, []environment.Value{})
 	require.NoError(t, err)
 
 	// Should return a BUKKIT
-	bukkitValue, ok := result.(types.ObjectValue)
-	require.True(t, ok, "VALUES should return ObjectValue")
-	assert.Equal(t, "BUKKIT", bukkitValue.ClassName)
+	bukkitInstance, ok := result.(*environment.ObjectInstance)
+	require.True(t, ok, "VALUES should return ObjectInstance")
+	assert.Equal(t, "BUKKIT", bukkitInstance.Class.Name)
 
 	// Get the underlying slice
-	bukkitInstance, ok := bukkitValue.Instance.(*environment.ObjectInstance)
-	require.True(t, ok)
 	slice, ok := bukkitInstance.NativeData.(BukkitSlice)
 	require.True(t, ok)
 
 	// Should have 3 values, in key-sorted order
 	assert.Equal(t, 3, len(slice))
-	assert.Equal(t, types.StringValue("value1"), slice[0])
-	assert.Equal(t, types.StringValue("value2"), slice[1])
-	assert.Equal(t, types.StringValue("value3"), slice[2])
+	assert.Equal(t, environment.StringValue("value1"), slice[0])
+	assert.Equal(t, environment.StringValue("value2"), slice[1])
+	assert.Equal(t, environment.StringValue("value3"), slice[2])
 }
 
 func TestBaskitPairs(t *testing.T) {
@@ -300,27 +295,25 @@ func TestBaskitPairs(t *testing.T) {
 	instance := NewBaskitInstance()
 
 	// PUT multiple values
-	putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key2"),
-		types.IntegerValue(200),
+	putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key2"),
+		environment.IntegerValue(200),
 	})
-	putMethod.NativeImpl(nil, instance, []types.Value{
-		types.StringValue("key1"),
-		types.IntegerValue(100),
+	putMethod.NativeImpl(nil, instance, []environment.Value{
+		environment.StringValue("key1"),
+		environment.IntegerValue(100),
 	})
 
 	// Get PAIRS
-	result, err := pairsMethod.NativeImpl(nil, instance, []types.Value{})
+	result, err := pairsMethod.NativeImpl(nil, instance, []environment.Value{})
 	require.NoError(t, err)
 
 	// Should return a BUKKIT
-	bukkitValue, ok := result.(types.ObjectValue)
-	require.True(t, ok, "PAIRS should return ObjectValue")
-	assert.Equal(t, "BUKKIT", bukkitValue.ClassName)
+	bukkitInstance, ok := result.(*environment.ObjectInstance)
+	require.True(t, ok, "PAIRS should return ObjectInstance")
+	assert.Equal(t, "BUKKIT", bukkitInstance.Class.Name)
 
 	// Get the underlying slice
-	bukkitInstance, ok := bukkitValue.Instance.(*environment.ObjectInstance)
-	require.True(t, ok)
 	slice, ok := bukkitInstance.NativeData.(BukkitSlice)
 	require.True(t, ok)
 
@@ -328,26 +321,22 @@ func TestBaskitPairs(t *testing.T) {
 	assert.Equal(t, 2, len(slice))
 
 	// Each pair should be a BUKKIT with [key, value]
-	pair1, ok := slice[0].(types.ObjectValue)
+	pair1Instance, ok := slice[0].(*environment.ObjectInstance)
 	require.True(t, ok)
-	assert.Equal(t, "BUKKIT", pair1.ClassName)
+	assert.Equal(t, "BUKKIT", pair1Instance.Class.Name)
 
-	pair1Instance, ok := pair1.Instance.(*environment.ObjectInstance)
-	require.True(t, ok)
 	pair1Slice, ok := pair1Instance.NativeData.(BukkitSlice)
 	require.True(t, ok)
 	assert.Equal(t, 2, len(pair1Slice))
-	assert.Equal(t, types.StringValue("key1"), pair1Slice[0])
-	assert.Equal(t, types.IntegerValue(100), pair1Slice[1])
+	assert.Equal(t, environment.StringValue("key1"), pair1Slice[0])
+	assert.Equal(t, environment.IntegerValue(100), pair1Slice[1])
 
-	pair2, ok := slice[1].(types.ObjectValue)
-	require.True(t, ok)
-	pair2Instance, ok := pair2.Instance.(*environment.ObjectInstance)
+	pair2Instance, ok := slice[1].(*environment.ObjectInstance)
 	require.True(t, ok)
 	pair2Slice, ok := pair2Instance.NativeData.(BukkitSlice)
 	require.True(t, ok)
-	assert.Equal(t, types.StringValue("key2"), pair2Slice[0])
-	assert.Equal(t, types.IntegerValue(200), pair2Slice[1])
+	assert.Equal(t, environment.StringValue("key2"), pair2Slice[0])
+	assert.Equal(t, environment.IntegerValue(200), pair2Slice[1])
 }
 
 func TestBaskitMerge(t *testing.T) {
@@ -357,42 +346,39 @@ func TestBaskitMerge(t *testing.T) {
 
 	// Create first BASKIT
 	instance1 := NewBaskitInstance()
-	putMethod.NativeImpl(nil, instance1, []types.Value{
-		types.StringValue("key1"),
-		types.StringValue("value1"),
+	putMethod.NativeImpl(nil, instance1, []environment.Value{
+		environment.StringValue("key1"),
+		environment.StringValue("value1"),
 	})
-	putMethod.NativeImpl(nil, instance1, []types.Value{
-		types.StringValue("key2"),
-		types.StringValue("value2"),
+	putMethod.NativeImpl(nil, instance1, []environment.Value{
+		environment.StringValue("key2"),
+		environment.StringValue("value2"),
 	})
 
 	// Create second BASKIT
 	instance2 := NewBaskitInstance()
-	putMethod.NativeImpl(nil, instance2, []types.Value{
-		types.StringValue("key2"),
-		types.StringValue("new_value2"), // Override existing key
+	putMethod.NativeImpl(nil, instance2, []environment.Value{
+		environment.StringValue("key2"),
+		environment.StringValue("new_value2"), // Override existing key
 	})
-	putMethod.NativeImpl(nil, instance2, []types.Value{
-		types.StringValue("key3"),
-		types.StringValue("value3"), // New key
+	putMethod.NativeImpl(nil, instance2, []environment.Value{
+		environment.StringValue("key3"),
+		environment.StringValue("value3"), // New key
 	})
-
-	// Create ObjectValue for second BASKIT
-	baskit2Value := types.NewObjectValue(instance2, "BASKIT")
 
 	// MERGE second into first
-	_, err := mergeMethod.NativeImpl(nil, instance1, []types.Value{baskit2Value})
+	_, err := mergeMethod.NativeImpl(nil, instance1, []environment.Value{instance2})
 	require.NoError(t, err)
 
 	// Verify SIZ updated (should be 3: key1, key2, key3)
 	sizVar := instance1.Variables["SIZ"]
-	assert.Equal(t, types.IntegerValue(3), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(3), sizVar.Value)
 
 	// Verify values
 	baskitMap := instance1.NativeData.(BaskitMap)
-	assert.Equal(t, types.StringValue("value1"), baskitMap["key1"])
-	assert.Equal(t, types.StringValue("new_value2"), baskitMap["key2"]) // Overridden
-	assert.Equal(t, types.StringValue("value3"), baskitMap["key3"])     // New key
+	assert.Equal(t, environment.StringValue("value1"), baskitMap["key1"])
+	assert.Equal(t, environment.StringValue("new_value2"), baskitMap["key2"]) // Overridden
+	assert.Equal(t, environment.StringValue("value3"), baskitMap["key3"])     // New key
 }
 
 func TestBaskitCopy(t *testing.T) {
@@ -402,27 +388,25 @@ func TestBaskitCopy(t *testing.T) {
 
 	// Create original BASKIT
 	original := NewBaskitInstance()
-	putMethod.NativeImpl(nil, original, []types.Value{
-		types.StringValue("key1"),
-		types.IntegerValue(42),
+	putMethod.NativeImpl(nil, original, []environment.Value{
+		environment.StringValue("key1"),
+		environment.IntegerValue(42),
 	})
-	putMethod.NativeImpl(nil, original, []types.Value{
-		types.StringValue("key2"),
-		types.StringValue("hello"),
+	putMethod.NativeImpl(nil, original, []environment.Value{
+		environment.StringValue("key2"),
+		environment.StringValue("hello"),
 	})
 
 	// COPY the BASKIT
-	result, err := copyMethod.NativeImpl(nil, original, []types.Value{})
+	result, err := copyMethod.NativeImpl(nil, original, []environment.Value{})
 	require.NoError(t, err)
 
 	// Should return a BASKIT
-	copyValue, ok := result.(types.ObjectValue)
-	require.True(t, ok, "COPY should return ObjectValue")
-	assert.Equal(t, "BASKIT", copyValue.ClassName)
+	copyInstance, ok := result.(*environment.ObjectInstance)
+	require.True(t, ok, "COPY should return ObjectInstance")
+	assert.Equal(t, "BASKIT", copyInstance.Class.Name)
 
 	// Get the copy instance
-	copyInstance, ok := copyValue.Instance.(*environment.ObjectInstance)
-	require.True(t, ok)
 	copyMap, ok := copyInstance.NativeData.(BaskitMap)
 	require.True(t, ok)
 
@@ -442,34 +426,34 @@ func TestBaskitCopy(t *testing.T) {
 	assert.Equal(t, originalSizVar.Value, copySizVar.Value)
 }
 
-func TestBaskitMixedTypes(t *testing.T) {
+func TestBaskitMixedenvironment(t *testing.T) {
 	baskitClass := getMapClasses()["BASKIT"]
 	putMethod := baskitClass.PublicFunctions["PUT"]
 	getMethod := baskitClass.PublicFunctions["GET"]
 
 	instance := NewBaskitInstance()
 
-	// Test different value types
-	testValues := []types.Value{
-		types.IntegerValue(42),
-		types.DoubleValue(3.14),
-		types.StringValue("hello"),
-		types.YEZ,
-		types.NO,
-		types.NOTHIN,
+	// Test different value environment
+	testValues := []environment.Value{
+		environment.IntegerValue(42),
+		environment.DoubleValue(3.14),
+		environment.StringValue("hello"),
+		environment.YEZ,
+		environment.NO,
+		environment.NOTHIN,
 	}
 
-	// PUT different types
+	// PUT different environment
 	for i, value := range testValues {
-		key := types.StringValue("key" + string(rune('1'+i)))
-		_, err := putMethod.NativeImpl(nil, instance, []types.Value{key, value})
+		key := environment.StringValue("key" + string(rune('1'+i)))
+		_, err := putMethod.NativeImpl(nil, instance, []environment.Value{key, value})
 		require.NoError(t, err)
 	}
 
 	// GET and verify each type
 	for i, expectedValue := range testValues {
-		key := types.StringValue("key" + string(rune('1'+i)))
-		result, err := getMethod.NativeImpl(nil, instance, []types.Value{key})
+		key := environment.StringValue("key" + string(rune('1'+i)))
+		result, err := getMethod.NativeImpl(nil, instance, []environment.Value{key})
 		require.NoError(t, err)
 		assert.Equal(t, expectedValue, result)
 	}
@@ -483,34 +467,34 @@ func TestBaskitKeyTypeConversion(t *testing.T) {
 
 	instance := NewBaskitInstance()
 
-	// Test different key types that should all convert to strings
-	testKeys := []types.Value{
-		types.StringValue("string_key"),
-		types.IntegerValue(123),
-		types.DoubleValue(45.67),
-		types.YEZ,
-		types.NO,
+	// Test different key environment that should all convert to strings
+	testKeys := []environment.Value{
+		environment.StringValue("string_key"),
+		environment.IntegerValue(123),
+		environment.DoubleValue(45.67),
+		environment.YEZ,
+		environment.NO,
 	}
 
-	// PUT values with different key types
+	// PUT values with different key environment
 	for i, key := range testKeys {
-		value := types.IntegerValue(100 + i)
-		_, err := putMethod.NativeImpl(nil, instance, []types.Value{key, value})
+		value := environment.IntegerValue(100 + i)
+		_, err := putMethod.NativeImpl(nil, instance, []environment.Value{key, value})
 		require.NoError(t, err)
 	}
 
-	// GET values using same key types
+	// GET values using same key environment
 	for i, key := range testKeys {
-		expectedValue := types.IntegerValue(100 + i)
+		expectedValue := environment.IntegerValue(100 + i)
 
-		result, err := getMethod.NativeImpl(nil, instance, []types.Value{key})
+		result, err := getMethod.NativeImpl(nil, instance, []environment.Value{key})
 		require.NoError(t, err)
 		assert.Equal(t, expectedValue, result)
 
 		// Also test CONTAINS
-		containsResult, err := containsMethod.NativeImpl(nil, instance, []types.Value{key})
+		containsResult, err := containsMethod.NativeImpl(nil, instance, []environment.Value{key})
 		require.NoError(t, err)
-		assert.Equal(t, types.YEZ, containsResult)
+		assert.Equal(t, environment.YEZ, containsResult)
 	}
 }
 
@@ -519,7 +503,7 @@ func TestNewBaskitInstance(t *testing.T) {
 
 	// Verify basic structure
 	assert.NotNil(t, instance)
-	assert.Equal(t, []string{"BASKIT"}, instance.Hierarchy)
+	assert.Equal(t, []string{"stdlib:MAPS.BASKIT"}, instance.MRO)
 
 	// Verify NativeData is initialized
 	baskitMap, ok := instance.NativeData.(BaskitMap)
@@ -531,7 +515,7 @@ func TestNewBaskitInstance(t *testing.T) {
 	require.True(t, exists)
 	assert.Equal(t, "SIZ", sizVar.Name)
 	assert.Equal(t, "INTEGR", sizVar.Type)
-	assert.Equal(t, types.IntegerValue(0), sizVar.Value)
+	assert.Equal(t, environment.IntegerValue(0), sizVar.Value)
 	assert.True(t, sizVar.IsLocked)
 }
 

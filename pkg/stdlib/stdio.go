@@ -9,7 +9,6 @@ import (
 	"sync"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // Global I/O configuration - defaults to standard streams
@@ -44,35 +43,35 @@ func getStdioFunctions() map[string]*environment.Function {
 			"SAY": {
 				Name:       "SAY",
 				Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					fmt.Fprint(StdoutWriter, args[0].String())
-					return types.NOTHIN, nil
+					return environment.NOTHIN, nil
 				},
 			},
 			"SAYZ": {
 				Name:       "SAYZ",
 				Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					fmt.Fprintln(StdoutWriter, args[0].String())
-					return types.NOTHIN, nil
+					return environment.NOTHIN, nil
 				},
 			},
 			"GIMME": {
 				Name:       "GIMME",
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []types.Value) (types.Value, error) {
+				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					reader := bufio.NewReader(StdinReader)
 					line, err := reader.ReadString('\n')
 					if err != nil {
-						return types.StringValue(""), nil
+						return environment.StringValue(""), nil
 					}
 
 					// Remove trailing newline
 					line = strings.TrimSuffix(line, "\n")
 					line = strings.TrimSuffix(line, "\r")
 
-					return types.StringValue(line), nil
+					return environment.StringValue(line), nil
 				},
 			},
 		}

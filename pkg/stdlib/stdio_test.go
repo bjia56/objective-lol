@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -40,37 +39,37 @@ func TestStdioSAY(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		input    types.Value
+		input    environment.Value
 		expected string
 	}{
 		{
 			"Print string",
-			types.StringValue("Hello"),
+			environment.StringValue("Hello"),
 			"Hello",
 		},
 		{
 			"Print integer",
-			types.IntegerValue(42),
+			environment.IntegerValue(42),
 			"42",
 		},
 		{
 			"Print double",
-			types.DoubleValue(3.14),
+			environment.DoubleValue(3.14),
 			"3.14",
 		},
 		{
 			"Print boolean",
-			types.YEZ,
+			environment.YEZ,
 			"YEZ",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			args := []types.Value{test.input}
+			args := []environment.Value{test.input}
 			result, err := sayFunc.NativeImpl(nil, nil, args)
 			require.NoError(t, err)
-			assert.Equal(t, types.NOTHIN, result)
+			assert.Equal(t, environment.NOTHIN, result)
 		})
 	}
 
@@ -92,10 +91,10 @@ func TestStdioSAYZ(t *testing.T) {
 	SetOutput(&buf)
 	defer ResetToStandardStreams() // Clean up
 
-	args := []types.Value{types.StringValue("Hello World")}
+	args := []environment.Value{environment.StringValue("Hello World")}
 	result, err := sayzFunc.NativeImpl(nil, nil, args)
 	require.NoError(t, err)
-	assert.Equal(t, types.NOTHIN, result)
+	assert.Equal(t, environment.NOTHIN, result)
 
 	// SAYZ should add a newline
 	output := buf.String()
@@ -143,11 +142,11 @@ func TestStdioGIMME(t *testing.T) {
 			SetInput(inputReader)
 			defer ResetToStandardStreams() // Clean up
 
-			args := []types.Value{}
+			args := []environment.Value{}
 			result, err := gimmeFunc.NativeImpl(nil, nil, args)
 			require.NoError(t, err)
 
-			stringResult, ok := result.(types.StringValue)
+			stringResult, ok := result.(environment.StringValue)
 			require.True(t, ok, "GIMME should return StringValue")
 			assert.Equal(t, test.expected, string(stringResult))
 		})

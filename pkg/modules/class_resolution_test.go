@@ -24,11 +24,11 @@ BTW Animals module
 HAI ME TEH CLAS ANIMAL
     EVRYONE
     DIS TEH VARIABLE NAME TEH STRIN ITZ "Unknown"
-    
+
     DIS TEH FUNCSHUN SET_NAME WIT NEW_NAME TEH STRIN
         NAME ITZ NEW_NAME
     KTHX
-    
+
     DIS TEH FUNCSHUN GET_NAME TEH STRIN
         GIVEZ NAME
     KTHX
@@ -37,7 +37,7 @@ KTHXBAI
 HAI ME TEH CLAS DOG KITTEH OF ANIMAL
     EVRYONE
     DIS TEH VARIABLE BREED TEH STRIN ITZ "Mixed"
-    
+
     DIS TEH FUNCSHUN GET_BREED TEH STRIN
         GIVEZ BREED
     KTHX
@@ -53,32 +53,32 @@ KTHXBAI
 
 	// Create environment to test class creation
 	env := environment.NewEnvironment(nil)
-	
+
 	// Test that module path is correctly resolved
 	assert.Contains(t, resolvedPath, "animals.olol")
-	
+
 	// Test that we can create qualified class names based on the resolved path
 	expectedModulePath := "file:" + resolvedPath
-	
+
 	// Create classes manually to test qualified name generation
-	animalClass := environment.NewClassLegacy("ANIMAL", expectedModulePath, "")
-	dogClass := environment.NewClassLegacy("DOG", expectedModulePath, expectedModulePath+".ANIMAL")
-	
+	animalClass := environment.NewClass("ANIMAL", expectedModulePath, nil)
+	dogClass := environment.NewClass("DOG", expectedModulePath, []string{expectedModulePath + ".ANIMAL"})
+
 	// Define classes in environment
 	require.NoError(t, env.DefineClass(animalClass))
 	require.NoError(t, env.DefineClass(dogClass))
-	
+
 	// Check ANIMAL class
 	retrievedAnimalClass, err := env.GetClass("ANIMAL")
 	require.NoError(t, err)
 	assert.Contains(t, retrievedAnimalClass.QualifiedName, "animals.olol.ANIMAL")
 	assert.Equal(t, "ANIMAL", retrievedAnimalClass.Name)
-	
+
 	// Check DOG class with qualified parent
 	retrievedDogClass, err := env.GetClass("DOG")
 	require.NoError(t, err)
 	assert.Contains(t, retrievedDogClass.QualifiedName, "animals.olol.DOG")
-	assert.Contains(t, retrievedDogClass.ParentClass, "animals.olol.ANIMAL")
+	assert.Contains(t, retrievedDogClass.ParentClasses[0], "animals.olol.ANIMAL")
 }
 
 // TestModuleClassImportAndLookup tests importing classes and looking them up by qualified/simple names
@@ -111,11 +111,11 @@ KTHXBAI
 
 	// Simulate environment after import processing
 	env := environment.NewEnvironment(nil)
-	
+
 	// Test that we can create classes with proper qualified names
 	expectedModulePath := "file:" + resolvedPath
-	helperClass := environment.NewClassLegacy("HELPER", expectedModulePath, "")
-	
+	helperClass := environment.NewClass("HELPER", expectedModulePath, nil)
+
 	// Define class in environment (simulating import)
 	require.NoError(t, env.DefineClass(helperClass))
 
@@ -146,7 +146,7 @@ KTHXBAI
 `
 	require.NoError(t, os.WriteFile(module1Path, []byte(module1Content), 0644))
 
-	// Create second module with ITEM class  
+	// Create second module with ITEM class
 	module2Path := filepath.Join(testDir, "module2.olol")
 	module2Content := `
 HAI ME TEH CLAS ITEM
@@ -158,33 +158,33 @@ KTHXBAI
 
 	// Load both modules
 	resolver := NewModuleResolver(testDir)
-	
+
 	// Load first module
 	_, resolvedPath1, err := resolver.LoadModuleFromWithPath("module1", "")
 	require.NoError(t, err)
-	
+
 	// Load second module
 	_, resolvedPath2, err := resolver.LoadModuleFromWithPath("module2", "")
 	require.NoError(t, err)
 
 	// Test that both modules can define ITEM classes with different qualified names
 	env := environment.NewEnvironment(nil)
-	
+
 	modulePath1 := "file:" + resolvedPath1
 	modulePath2 := "file:" + resolvedPath2
-	
-	item1Class := environment.NewClassLegacy("ITEM", modulePath1, "")
-	item2Class := environment.NewClassLegacy("ITEM", modulePath2, "")
-	
-	// Both should be definable with different qualified names
+
+	item1Class := environment.NewClass("ITEM", modulePath1, nil)
+	item2Class := environment.NewClass("ITEM", modulePath2, nil)
+
+	// Second class should not be definable
 	require.NoError(t, env.DefineClass(item1Class))
-	require.NoError(t, env.DefineClass(item2Class))
-	
-	// The simple name lookup should return one of them (implementation dependent)
+	require.Error(t, env.DefineClass(item2Class))
+
+	// The simple name lookup should return the first one
 	itemClass, err := env.GetClass("ITEM")
 	require.NoError(t, err)
 	assert.Equal(t, "ITEM", itemClass.Name)
-	
+
 	// But the qualified lookups should be distinct
 	assert.NotEqual(t, item1Class.QualifiedName, item2Class.QualifiedName)
 	assert.Contains(t, item1Class.QualifiedName, "module1.olol")
@@ -220,35 +220,35 @@ KTHXBAI
 
 	// Test loading modules
 	resolver := NewModuleResolver(testDir)
-	
+
 	// Load base module
 	_, basePath, err := resolver.LoadModuleFromWithPath("base", "")
 	require.NoError(t, err)
-	
+
 	// Load derived module
 	_, derivedPath, err := resolver.LoadModuleFromWithPath("vehicles", "")
 	require.NoError(t, err)
 
 	// Test creating classes with proper qualified inheritance
 	env := environment.NewEnvironment(nil)
-	
+
 	baseModulePathStr := "file:" + basePath
 	derivedModulePathStr := "file:" + derivedPath
-	
+
 	// Create base class
-	vehicleClass := environment.NewClassLegacy("VEHICLE", baseModulePathStr, "")
+	vehicleClass := environment.NewClass("VEHICLE", baseModulePathStr, nil)
 	require.NoError(t, env.DefineClass(vehicleClass))
-	
+
 	// Create derived class with qualified parent
-	carClass := environment.NewClassLegacy("CAR", derivedModulePathStr, vehicleClass.QualifiedName)
+	carClass := environment.NewClass("CAR", derivedModulePathStr, []string{vehicleClass.QualifiedName})
 	require.NoError(t, env.DefineClass(carClass))
-	
+
 	// Verify CAR class has qualified parent
 	retrievedCarClass, err := env.GetClass("CAR")
 	require.NoError(t, err)
-	
+
 	// Parent should be qualified name from base module
-	assert.Contains(t, retrievedCarClass.ParentClass, "base.olol.VEHICLE")
+	assert.Contains(t, retrievedCarClass.ParentClasses[0], "base.olol.VEHICLE")
 	assert.Equal(t, "CAR", retrievedCarClass.Name)
 	assert.Contains(t, retrievedCarClass.QualifiedName, "vehicles.olol.CAR")
 }
@@ -272,7 +272,7 @@ HAI ME TEH CLAS CLASS_B
 KTHXBAI
 
 HAI ME TEH CLAS CLASS_C
-    EVRYONE  
+    EVRYONE
     DIS TEH VARIABLE VALUE TEH STRIN ITZ "C"
 KTHXBAI
 `
@@ -286,10 +286,10 @@ KTHXBAI
 	// Simulate selective import - only import CLASS_A and CLASS_C
 	env := environment.NewEnvironment(nil)
 	modulePath := "file:" + resolvedPath
-	
-	classA := environment.NewClassLegacy("CLASS_A", modulePath, "")
-	classC := environment.NewClassLegacy("CLASS_C", modulePath, "")
-	
+
+	classA := environment.NewClass("CLASS_A", modulePath, nil)
+	classC := environment.NewClass("CLASS_C", modulePath, nil)
+
 	// Define only selected classes (simulating selective import)
 	require.NoError(t, env.DefineClass(classA))
 	require.NoError(t, env.DefineClass(classC))
@@ -297,8 +297,8 @@ KTHXBAI
 	// Verify only selected classes are available
 	_, err = env.GetClass("CLASS_A")
 	assert.NoError(t, err)
-	
-	_, err = env.GetClass("CLASS_C") 
+
+	_, err = env.GetClass("CLASS_C")
 	assert.NoError(t, err)
 
 	// CLASS_B should not be available since it wasn't imported

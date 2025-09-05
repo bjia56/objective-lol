@@ -16,7 +16,6 @@ import (
 	"github.com/bjia56/objective-lol/pkg/interpreter"
 	"github.com/bjia56/objective-lol/pkg/parser"
 	"github.com/bjia56/objective-lol/pkg/stdlib"
-	"github.com/bjia56/objective-lol/pkg/types"
 )
 
 // VM represents an Objective-LOL virtual machine instance
@@ -107,7 +106,7 @@ func (vm *VM) ExecuteWithContext(ctx context.Context, code string) (*ExecutionRe
 	}
 
 	// Execute with timeout handling
-	var value types.Value
+	var value environment.Value
 
 	done := make(chan error, 1)
 	go func() {
