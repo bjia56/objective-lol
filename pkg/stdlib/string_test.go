@@ -15,11 +15,12 @@ func TestRegisterSTRING(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test that STRING functions are registered
-	_, err = env.GetFunction("LEN")
-	assert.NoError(t, err, "LEN function should be registered")
+	stringFunctions := []string{"LEN", "CONCAT", "SUBSTR", "TRIM", "LTRIM", "RTRIM", "REPEAT", "UPPER", "LOWER", "TITLE", "CAPITALIZE", "SPLIT", "REPLACE", "REPLACE_ALL", "CONTAINS", "INDEX_OF"}
 
-	_, err = env.GetFunction("CONCAT")
-	assert.NoError(t, err, "CONCAT function should be registered")
+	for _, funcName := range stringFunctions {
+		_, err = env.GetFunction(funcName)
+		assert.NoError(t, err, "Function %s should be registered", funcName)
+	}
 }
 
 func TestRegisterSTRINGSelective(t *testing.T) {
@@ -242,6 +243,188 @@ func TestSTRINGInvalidFunction(t *testing.T) {
 	assert.Contains(t, err.Error(), "unknown STRING function: NONEXISTENT")
 }
 
+func TestStringUPPER(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterSTRINGInEnv(env)
+
+	upperFunc, err := env.GetFunction("UPPER")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{"Lowercase string", "hello", "HELLO"},
+		{"Mixed case string", "Hello World", "HELLO WORLD"},
+		{"Already uppercase", "HELLO", "HELLO"},
+		{"Empty string", "", ""},
+		{"Numbers and symbols", "hello123!", "HELLO123!"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := upperFunc.NativeImpl(nil, nil, []environment.Value{environment.StringValue(tt.input)})
+			require.NoError(t, err)
+
+			strResult, ok := result.(environment.StringValue)
+			require.True(t, ok, "UPPER should return a string")
+			assert.Equal(t, tt.expected, string(strResult))
+		})
+	}
+}
+
+func TestStringLOWER(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterSTRINGInEnv(env)
+
+	lowerFunc, err := env.GetFunction("LOWER")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{"Uppercase string", "HELLO", "hello"},
+		{"Mixed case string", "Hello World", "hello world"},
+		{"Already lowercase", "hello", "hello"},
+		{"Empty string", "", ""},
+		{"Numbers and symbols", "HELLO123!", "hello123!"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := lowerFunc.NativeImpl(nil, nil, []environment.Value{environment.StringValue(tt.input)})
+			require.NoError(t, err)
+
+			strResult, ok := result.(environment.StringValue)
+			require.True(t, ok, "LOWER should return a string")
+			assert.Equal(t, tt.expected, string(strResult))
+		})
+	}
+}
+
+func TestStringTRIM(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterSTRINGInEnv(env)
+
+	trimFunc, err := env.GetFunction("TRIM")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{"Leading spaces", "  hello", "hello"},
+		{"Trailing spaces", "hello  ", "hello"},
+		{"Both sides", "  hello  ", "hello"},
+		{"No spaces", "hello", "hello"},
+		{"Only spaces", "   ", ""},
+		{"Tabs and newlines", "\t\nhello\n\t", "hello"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := trimFunc.NativeImpl(nil, nil, []environment.Value{environment.StringValue(tt.input)})
+			require.NoError(t, err)
+
+			strResult, ok := result.(environment.StringValue)
+			require.True(t, ok, "TRIM should return a string")
+			assert.Equal(t, tt.expected, string(strResult))
+		})
+	}
+}
+
+func TestStringSPLIT(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterSTRINGInEnv(env)
+	RegisterArraysInEnv(env)
+
+	splitFunc, err := env.GetFunction("SPLIT")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name      string
+		input     string
+		separator string
+		expected  []string
+	}{
+		{"Comma separated", "a,b,c", ",", []string{"a", "b", "c"}},
+		{"Space separated", "hello world test", " ", []string{"hello", "world", "test"}},
+		{"Single character", "abc", "", []string{"a", "b", "c"}},
+		{"No separator found", "hello", ",", []string{"hello"}},
+		{"Empty string", "", ",", []string{""}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := splitFunc.NativeImpl(nil, nil, []environment.Value{
+				environment.StringValue(tt.input),
+				environment.StringValue(tt.separator),
+			})
+			require.NoError(t, err)
+
+			// Result should be a BUKKIT object
+			bukkitObj, ok := result.(*environment.ObjectInstance)
+			require.True(t, ok, "SPLIT should return a BUKKIT object")
+
+			// Check the native data
+			slice, ok := bukkitObj.NativeData.(BukkitSlice)
+			require.True(t, ok, "BUKKIT should contain BukkitSlice")
+
+			// Check length
+			assert.Equal(t, len(tt.expected), len(slice), "Split result should have correct length")
+
+			// Check each element
+			for i, expected := range tt.expected {
+				if i < len(slice) {
+					strVal, ok := slice[i].(environment.StringValue)
+					require.True(t, ok, "Split element should be string")
+					assert.Equal(t, expected, string(strVal))
+				}
+			}
+		})
+	}
+}
+
+func TestStringREPLACE(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterSTRINGInEnv(env)
+
+	replaceFunc, err := env.GetFunction("REPLACE")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		input    string
+		old      string
+		new      string
+		expected string
+	}{
+		{"Simple replace", "hello world", "world", "universe", "hello universe"},
+		{"Replace first occurrence", "hello hello", "hello", "hi", "hi hello"},
+		{"No match", "hello world", "foo", "bar", "hello world"},
+		{"Empty replacement", "hello world", "world", "", "hello "},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := replaceFunc.NativeImpl(nil, nil, []environment.Value{
+				environment.StringValue(tt.input),
+				environment.StringValue(tt.old),
+				environment.StringValue(tt.new),
+			})
+			require.NoError(t, err)
+
+			strResult, ok := result.(environment.StringValue)
+			require.True(t, ok, "REPLACE should return a string")
+			assert.Equal(t, tt.expected, string(strResult))
+		})
+	}
+}
+
 func TestSTRINGCaseInsensitive(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
@@ -255,4 +438,74 @@ func TestSTRINGCaseInsensitive(t *testing.T) {
 
 	_, err = env.GetFunction("CONCAT")
 	assert.NoError(t, err, "CONCAT function should be registered with lowercase import")
+}
+
+func TestStringCONTAINS(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterSTRINGInEnv(env)
+
+	containsFunc, err := env.GetFunction("CONTAINS")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		str      string
+		substr   string
+		expected bool
+	}{
+		{"Contains substring", "hello world", "world", true},
+		{"Does not contain", "hello world", "foo", false},
+		{"Empty substring", "hello", "", true},
+		{"Empty string", "", "hello", false},
+		{"Case sensitive", "Hello", "hello", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := containsFunc.NativeImpl(nil, nil, []environment.Value{
+				environment.StringValue(tt.str),
+				environment.StringValue(tt.substr),
+			})
+			require.NoError(t, err)
+
+			boolResult, ok := result.(environment.BoolValue)
+			require.True(t, ok, "CONTAINS should return a bool")
+			assert.Equal(t, tt.expected, bool(boolResult))
+		})
+	}
+}
+
+func TestStringINDEX_OF(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterSTRINGInEnv(env)
+
+	indexFunc, err := env.GetFunction("INDEX_OF")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		str      string
+		substr   string
+		expected int
+	}{
+		{"Found at beginning", "hello world", "hello", 0},
+		{"Found in middle", "hello world", "lo wo", 3},
+		{"Not found", "hello world", "foo", -1},
+		{"Empty substring", "hello", "", 0},
+		{"Empty string", "", "hello", -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := indexFunc.NativeImpl(nil, nil, []environment.Value{
+				environment.StringValue(tt.str),
+				environment.StringValue(tt.substr),
+			})
+			require.NoError(t, err)
+
+			intResult, ok := result.(environment.IntegerValue)
+			require.True(t, ok, "INDEX_OF should return an integer")
+			assert.Equal(t, tt.expected, int(intResult))
+		})
+	}
 }

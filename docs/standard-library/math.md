@@ -10,10 +10,38 @@ I CAN HAS MATH?
 
 BTW Selective import examples
 I CAN HAS ABS FROM MATH?
-I CAN HAS ABS AN MAX AN MIN FROM MATH?
 I CAN HAS SQRT AN POW FROM MATH?
-I CAN HAS RANDOM AN RANDINT FROM MATH?
-I CAN HAS SIN AN COS FROM MATH?
+I CAN HAS PI AN E FROM MATH?
+```
+
+## Mathematical Constants
+
+### PI - Pi Constant
+
+The mathematical constant π (pi) ≈ 3.14159.
+
+**Type:** DUBBLE
+**Value:** 3.14159265359
+
+```lol
+I CAN HAS PI FROM MATH?
+
+I HAS A VARIABLE CIRCLE_AREA TEH DUBBLE ITZ PI TIEMZ RADIUS TIEMZ RADIUS
+I HAS A VARIABLE RADIANS TEH DUBBLE ITZ DEGREES TIEMZ PI DIVIDEZ 180.0
+```
+
+### E - Euler's Number
+
+The mathematical constant e (Euler's number) ≈ 2.71828.
+
+**Type:** DUBBLE
+**Value:** 2.71828182846
+
+```lol
+I CAN HAS E FROM MATH?
+
+I HAS A VARIABLE NATURAL_LOG TEH DUBBLE ITZ LOG WIT E    BTW Result: 1.0
+I HAS A VARIABLE EXPONENTIAL TEH DUBBLE ITZ EXP WIT 1.0  BTW Result: E
 ```
 
 ## Basic Mathematical Functions
@@ -105,9 +133,8 @@ Returns the sine of an angle (in radians).
 **Returns:** DUBBLE
 
 ```lol
-I CAN HAS SIN FROM MATH?
+I CAN HAS SIN AN PI FROM MATH?
 
-I HAS A VARIABLE PI TEH DUBBLE ITZ 3.14159
 I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ SIN WIT 0.0           BTW 0.0
 I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ SIN WIT PI DIVIDEZ 2  BTW 1.0 (sin(π/2))
 I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ SIN WIT PI            BTW ≈0.0 (sin(π))
@@ -121,51 +148,210 @@ Returns the cosine of an angle (in radians).
 **Returns:** DUBBLE
 
 ```lol
-I CAN HAS COS FROM MATH?
+I CAN HAS COS AN PI FROM MATH?
 
-I HAS A VARIABLE PI TEH DUBBLE ITZ 3.14159
 I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ COS WIT 0.0           BTW 1.0
 I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ COS WIT PI DIVIDEZ 2  BTW ≈0.0 (cos(π/2))
 I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ COS WIT PI            BTW -1.0 (cos(π))
 ```
 
-## Random Number Functions
+### TAN - Tangent Function
 
-### RANDOM - Random Float
+Returns the tangent of an angle (in radians).
 
-Returns a random floating-point number between 0 (inclusive) and 1 (exclusive).
-
-**Syntax:** `RANDOM`
+**Syntax:** `TAN WIT <angle_radians>`
 **Returns:** DUBBLE
 
 ```lol
-I CAN HAS RANDOM FROM MATH?
+I CAN HAS TAN AN PI FROM MATH?
 
-I HAS A VARIABLE RAND1 TEH DUBBLE ITZ RANDOM    BTW e.g., 0.7234
-I HAS A VARIABLE RAND2 TEH DUBBLE ITZ RANDOM    BTW e.g., 0.1849
-
-BTW Generate random number in range [0, 100)
-I HAS A VARIABLE PERCENT TEH DUBBLE ITZ RANDOM TIEMZ 100
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ TAN WIT 0.0           BTW 0.0
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ TAN WIT PI DIVIDEZ 4  BTW 1.0 (tan(π/4))
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ TAN WIT PI            BTW ≈0.0 (tan(π))
 ```
 
-### RANDINT - Random Integer
+### ASIN - Arcsine Function
 
-Returns a random integer in the range [min, max).
+Returns the arcsine (inverse sine) of a value. Input must be in range [-1, 1].
 
-**Syntax:** `RANDINT WIT <min> AN WIT <max>`
-**Returns:** INTEGR
+**Syntax:** `ASIN WIT <value>`
+**Returns:** DUBBLE (angle in radians)
 
 ```lol
-I CAN HAS RANDINT FROM MATH?
+I CAN HAS ASIN FROM MATH?
 
-BTW Dice roll (1-6)
-I HAS A VARIABLE DICE TEH INTEGR ITZ RANDINT WIT 1 AN WIT 7
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ASIN WIT 0.0    BTW 0.0
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ ASIN WIT 1.0    BTW π/2
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ ASIN WIT -1.0   BTW -π/2
+```
 
-BTW Random index for array of size 10
-I HAS A VARIABLE INDEX TEH INTEGR ITZ RANDINT WIT 0 AN WIT 10
+### ACOS - Arccosine Function
 
-BTW Random number between -10 and 10
-I HAS A VARIABLE SIGNED TEH INTEGR ITZ RANDINT WIT -10 AN WIT 11
+Returns the arccosine (inverse cosine) of a value. Input must be in range [-1, 1].
+
+**Syntax:** `ACOS WIT <value>`
+**Returns:** DUBBLE (angle in radians)
+
+```lol
+I CAN HAS ACOS FROM MATH?
+
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ACOS WIT 1.0    BTW 0.0
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ ACOS WIT 0.0    BTW π/2
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ ACOS WIT -1.0   BTW π
+```
+
+### ATAN - Arctangent Function
+
+Returns the arctangent (inverse tangent) of a value.
+
+**Syntax:** `ATAN WIT <value>`
+**Returns:** DUBBLE (angle in radians)
+
+```lol
+I CAN HAS ATAN FROM MATH?
+
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ATAN WIT 0.0    BTW 0.0
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ ATAN WIT 1.0    BTW π/4
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ ATAN WIT -1.0   BTW -π/4
+```
+
+### ATAN2 - Two-Argument Arctangent
+
+Returns the angle (in radians) from the x-axis to the point (x,y).
+
+**Syntax:** `ATAN2 WIT <y> AN WIT <x>`
+**Returns:** DUBBLE (angle in radians)
+
+```lol
+I CAN HAS ATAN2 FROM MATH?
+
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ATAN2 WIT 1.0 AN WIT 1.0    BTW π/4
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ ATAN2 WIT 1.0 AN WIT 0.0    BTW π/2
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ ATAN2 WIT 0.0 AN WIT 1.0    BTW 0.0
+```
+
+## Logarithmic and Exponential Functions
+
+### LOG - Natural Logarithm
+
+Returns the natural logarithm (base e) of a number.
+
+**Syntax:** `LOG WIT <value>`
+**Returns:** DUBBLE
+
+```lol
+I CAN HAS LOG AN E FROM MATH?
+
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ LOG WIT E      BTW 1.0
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ LOG WIT 1.0    BTW 0.0
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ LOG WIT 10.0   BTW ≈2.3026
+```
+
+### LOG10 - Base-10 Logarithm
+
+Returns the base-10 logarithm of a number.
+
+**Syntax:** `LOG10 WIT <value>`
+**Returns:** DUBBLE
+
+```lol
+I CAN HAS LOG10 FROM MATH?
+
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ LOG10 WIT 10.0    BTW 1.0
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ LOG10 WIT 100.0   BTW 2.0
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ LOG10 WIT 1.0     BTW 0.0
+```
+
+### LOG2 - Base-2 Logarithm
+
+Returns the base-2 logarithm of a number.
+
+**Syntax:** `LOG2 WIT <value>`
+**Returns:** DUBBLE
+
+```lol
+I CAN HAS LOG2 FROM MATH?
+
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ LOG2 WIT 2.0     BTW 1.0
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ LOG2 WIT 8.0     BTW 3.0
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ LOG2 WIT 1.0     BTW 0.0
+```
+
+### EXP - Exponential Function
+
+Returns e raised to the power of a number.
+
+**Syntax:** `EXP WIT <value>`
+**Returns:** DUBBLE
+
+```lol
+I CAN HAS EXP AN E FROM MATH?
+
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ EXP WIT 1.0     BTW E (≈2.718)
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ EXP WIT 0.0     BTW 1.0
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ EXP WIT 2.0     BTW E² (≈7.389)
+```
+
+## Rounding Functions
+
+### CEIL - Ceiling Function
+
+Returns the smallest integer greater than or equal to the given value.
+
+**Syntax:** `CEIL WIT <value>`
+**Returns:** DUBBLE
+
+```lol
+I CAN HAS CEIL FROM MATH?
+
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ CEIL WIT 3.2     BTW 4.0
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ CEIL WIT 3.0     BTW 3.0
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ CEIL WIT -3.7    BTW -3.0
+```
+
+### FLOOR - Floor Function
+
+Returns the largest integer less than or equal to the given value.
+
+**Syntax:** `FLOOR WIT <value>`
+**Returns:** DUBBLE
+
+```lol
+I CAN HAS FLOOR FROM MATH?
+
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ FLOOR WIT 3.7    BTW 3.0
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ FLOOR WIT 3.0    BTW 3.0
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ FLOOR WIT -3.2   BTW -4.0
+```
+
+### ROUND - Round Function
+
+Returns the value rounded to the nearest integer.
+
+**Syntax:** `ROUND WIT <value>`
+**Returns:** DUBBLE
+
+```lol
+I CAN HAS ROUND FROM MATH?
+
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ROUND WIT 3.4    BTW 3.0
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ ROUND WIT 3.5    BTW 4.0
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ ROUND WIT 3.6    BTW 4.0
+```
+
+### TRUNC - Truncate Function
+
+Returns the integer part of a number, removing any fractional digits.
+
+**Syntax:** `TRUNC WIT <value>`
+**Returns:** DUBBLE
+
+```lol
+I CAN HAS TRUNC FROM MATH?
+
+I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ TRUNC WIT 3.7    BTW 3.0
+I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ TRUNC WIT -3.7   BTW -3.0
+I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ TRUNC WIT 5.0    BTW 5.0
 ```
 
 ## Usage Examples
@@ -210,31 +396,6 @@ HAI ME TEH FUNCSHUN FIND_RANGE WIT NUMBERS TEH BUKKIT
 KTHXBAI
 ```
 
-### Random Number Generation
-
-```lol
-I CAN HAS MATH?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN SIMULATE_DICE_ROLLS WIT NUM_ROLLS TEH INTEGR
-    I HAS A VARIABLE TOTAL TEH INTEGR ITZ 0
-    I HAS A VARIABLE ROLL_COUNT TEH INTEGR ITZ 0
-
-    WHILE ROLL_COUNT SMALLR THAN NUM_ROLLS
-        I HAS A VARIABLE ROLL TEH INTEGR ITZ RANDINT WIT 1 AN WIT 7
-        TOTAL ITZ TOTAL MOAR ROLL
-        SAY WIT "Roll "
-        SAY WIT ROLL_COUNT MOAR 1
-        SAY WIT ": "
-        SAYZ WIT ROLL
-        ROLL_COUNT ITZ ROLL_COUNT MOAR 1
-    KTHX
-
-    SAY WIT "Average: "
-    SAYZ WIT TOTAL DIVIDEZ NUM_ROLLS AS INTEGR
-KTHXBAI
-```
-
 ## Trigonometry Example
 
 ```lol
@@ -242,7 +403,6 @@ I CAN HAS MATH?
 I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN DEGREES_TO_RADIANS WIT DEGREES TEH DUBBLE
-    I HAS A VARIABLE PI TEH DUBBLE ITZ 3.14159265359
     GIVEZ DEGREES TIEMZ PI DIVIDEZ 180.0
 KTHXBAI
 
@@ -253,15 +413,27 @@ HAI ME TEH FUNCSHUN MAIN
 
     I HAS A VARIABLE SINE_VAL TEH DUBBLE ITZ SIN WIT ANGLE_RAD
     I HAS A VARIABLE COSINE_VAL TEH DUBBLE ITZ COS WIT ANGLE_RAD
+    I HAS A VARIABLE TANGENT_VAL TEH DUBBLE ITZ TAN WIT ANGLE_RAD
 
     SAY WIT "sin(45°) = "
     SAYZ WIT SINE_VAL      BTW ≈ 0.7071
     SAY WIT "cos(45°) = "
     SAYZ WIT COSINE_VAL    BTW ≈ 0.7071
+    SAY WIT "tan(45°) = "
+    SAYZ WIT TANGENT_VAL   BTW ≈ 1.0
 KTHXBAI
 ```
 
 ## Function Summary
+
+### Constants
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `PI` | DUBBLE | 3.14159... | Mathematical constant π |
+| `E` | DUBBLE | 2.71828... | Euler's number |
+
+### Functions
 
 | Function | Parameters | Returns | Description |
 |----------|------------|---------|-------------|
@@ -272,10 +444,22 @@ KTHXBAI
 | `POW` | base, exponent | DUBBLE | Power function |
 | `SIN` | angle_radians | DUBBLE | Sine function |
 | `COS` | angle_radians | DUBBLE | Cosine function |
-| `RANDOM` | none | DUBBLE | Random float [0,1) |
-| `RANDINT` | min, max | INTEGR | Random integer [min,max) |
+| `TAN` | angle_radians | DUBBLE | Tangent function |
+| `ASIN` | value | DUBBLE | Arcsine function |
+| `ACOS` | value | DUBBLE | Arccosine function |
+| `ATAN` | value | DUBBLE | Arctangent function |
+| `ATAN2` | y, x | DUBBLE | Two-argument arctangent |
+| `LOG` | value | DUBBLE | Natural logarithm |
+| `LOG10` | value | DUBBLE | Base-10 logarithm |
+| `LOG2` | value | DUBBLE | Base-2 logarithm |
+| `EXP` | value | DUBBLE | Exponential function |
+| `CEIL` | value | DUBBLE | Ceiling function |
+| `FLOOR` | value | DUBBLE | Floor function |
+| `ROUND` | value | DUBBLE | Rounding function |
+| `TRUNC` | value | DUBBLE | Truncation function |
 
 ## Related
 
 - [STDIO Module](stdio.md) - For displaying calculation results
+- [RANDOM Module](random.md) - For random number generation
 - [Examples](../examples/calculator.md) - Mathematical calculation examples

@@ -29,14 +29,15 @@ Welcome to the comprehensive documentation for Objective-LOL, a programming lang
 
 - [**Overview**](standard-library/overview.md) - Import system, scoping rules
 - [**Collections**](standard-library/collections.md) - `BUKKIT` arrays and `BASKIT` maps
-- [**STDIO**](standard-library/stdio.md) - Input/output functions (`SAY`, `SAYZ`, `GIMME`)
-- [**MATH**](standard-library/math.md) - Mathematical functions (`ABS`, `SQRT`, `RANDOM`)
-- [**TIME**](standard-library/time.md) - Date/time functionality (`DATE` class, `SLEEP`)
-- [**STRING**](standard-library/string.md) - String utilities (`LEN`, `CONCAT`)
-- [**TEST**](standard-library/test.md) - Testing and assertions (`ASSERT`)
+- [**STDIO**](standard-library/stdio.md) - Input/output functions
+- [**MATH**](standard-library/math.md) - Mathematical functions
+- [**RANDOM**](standard-library/random.md) - Random number generator
+- [**TIME**](standard-library/time.md) - Date/time functionality
+- [**STRING**](standard-library/string.md) - String utilities
+- [**TEST**](standard-library/test.md) - Testing and assertions
 - [**IO**](standard-library/io.md) - Advanced I/O classes (buffered readers/writers)
-- [**THREAD**](standard-library/threading.md) - Concurrency (`YARN` threads, `KNOT` mutex)
-- [**FILE**](standard-library/file.md) - File system operations (`DOCUMENT` class)
+- [**THREAD**](standard-library/threading.md) - Concurrency
+- [**FILE**](standard-library/file.md) - File system operations
 
 ### 🔍 Reference
 

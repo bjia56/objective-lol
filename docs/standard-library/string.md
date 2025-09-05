@@ -9,8 +9,9 @@ BTW Import entire module
 I CAN HAS STRING?
 
 BTW Selective imports
-I CAN HAS LEN FROM STRING?
-I CAN HAS CONCAT FROM STRING?
+I CAN HAS LEN AN CONCAT FROM STRING?
+I CAN HAS TRIM AN UPPER AN LOWER FROM STRING?
+I CAN HAS SPLIT FROM STRING?
 ```
 
 ## String Functions
@@ -84,6 +85,150 @@ BTW Concatenating with empty strings
 I HAS A VARIABLE TEXT TEH STRIN ITZ "Important"
 I HAS A VARIABLE WITH_EMPTY TEH STRIN ITZ CONCAT WIT TEXT AN WIT ""
 SAYZ WIT WITH_EMPTY               BTW Output: Important
+```
+
+### TRIM - Remove Whitespace
+
+Removes leading and trailing whitespace from a string.
+
+**Syntax:**
+```lol
+TRIM WIT <string>
+```
+
+**Parameters:**
+- **string**: STRIN - The string to trim
+
+**Returns:** STRIN - The trimmed string
+
+**Examples:**
+```lol
+I CAN HAS STRING?
+I CAN HAS STDIO?
+
+BTW Basic trimming
+I HAS A VARIABLE PADDED TEH STRIN ITZ "  Hello World  "
+I HAS A VARIABLE CLEAN TEH STRIN ITZ TRIM WIT PADDED
+SAYZ WIT CLEAN                    BTW Output: Hello World
+
+BTW Trimming tabs and newlines
+I HAS A VARIABLE MESSY TEH STRIN ITZ "\n\t  Text  \t\n"
+I HAS A VARIABLE NEAT TEH STRIN ITZ TRIM WIT MESSY
+SAYZ WIT NEAT                     BTW Output: Text
+
+BTW No change if already trimmed
+I HAS A VARIABLE ALREADY_CLEAN TEH STRIN ITZ "Clean"
+SAYZ WIT TRIM WIT ALREADY_CLEAN   BTW Output: Clean
+```
+
+### UPPER - Convert to Uppercase
+
+Converts all letters in a string to uppercase.
+
+**Syntax:**
+```lol
+UPPER WIT <string>
+```
+
+**Parameters:**
+- **string**: STRIN - The string to convert
+
+**Returns:** STRIN - The uppercase string
+
+**Examples:**
+```lol
+I CAN HAS STRING?
+I CAN HAS STDIO?
+
+BTW Basic uppercase conversion
+I HAS A VARIABLE TEXT TEH STRIN ITZ "Hello World"
+I HAS A VARIABLE LOUD TEH STRIN ITZ UPPER WIT TEXT
+SAYZ WIT LOUD                     BTW Output: HELLO WORLD
+
+BTW Mixed case conversion
+I HAS A VARIABLE MIXED TEH STRIN ITZ "CaSeD tExT 123!"
+SAYZ WIT UPPER WIT MIXED          BTW Output: CASED TEXT 123!
+
+BTW Already uppercase
+I HAS A VARIABLE ALREADY_UPPER TEH STRIN ITZ "LOUD"
+SAYZ WIT UPPER WIT ALREADY_UPPER  BTW Output: LOUD
+```
+
+### LOWER - Convert to Lowercase
+
+Converts all letters in a string to lowercase.
+
+**Syntax:**
+```lol
+LOWER WIT <string>
+```
+
+**Parameters:**
+- **string**: STRIN - The string to convert
+
+**Returns:** STRIN - The lowercase string
+
+**Examples:**
+```lol
+I CAN HAS STRING?
+I CAN HAS STDIO?
+
+BTW Basic lowercase conversion
+I HAS A VARIABLE TEXT TEH STRIN ITZ "HELLO WORLD"
+I HAS A VARIABLE QUIET TEH STRIN ITZ LOWER WIT TEXT
+SAYZ WIT QUIET                    BTW Output: hello world
+
+BTW Mixed case conversion
+I HAS A VARIABLE MIXED TEH STRIN ITZ "CaSeD tExT 123!"
+SAYZ WIT LOWER WIT MIXED          BTW Output: cased text 123!
+
+BTW Already lowercase
+I HAS A VARIABLE ALREADY_LOWER TEH STRIN ITZ "quiet"
+SAYZ WIT LOWER WIT ALREADY_LOWER  BTW Output: quiet
+```
+
+### SPLIT - Split String into Array
+
+Splits a string into an array of substrings using a delimiter.
+
+**Syntax:**
+```lol
+SPLIT WIT <string> AN WIT <delimiter>
+```
+
+**Parameters:**
+- **string**: STRIN - The string to split
+- **delimiter**: STRIN - The delimiter to split on
+
+**Returns:** BUKKIT - Array of string parts
+
+**Examples:**
+```lol
+I CAN HAS STRING?
+I CAN HAS STDIO?
+
+BTW Split by comma
+I HAS A VARIABLE CSV TEH STRIN ITZ "apple,banana,cherry"
+I HAS A VARIABLE FRUITS TEH BUKKIT ITZ SPLIT WIT CSV AN WIT ","
+
+I HAS A VARIABLE I TEH INTEGR ITZ 0
+WHILE I SMALLR THAN FRUITS SIZ
+    SAY WIT "Fruit "
+    SAY WIT I
+    SAY WIT ": "
+    SAYZ WIT FRUITS DO AT WIT I
+    I ITZ I MOAR 1
+KTHX
+
+BTW Split by space
+I HAS A VARIABLE SENTENCE TEH STRIN ITZ "Hello beautiful world"
+I HAS A VARIABLE WORDS TEH BUKKIT ITZ SPLIT WIT SENTENCE AN WIT " "
+SAYZ WIT WORDS SIZ                BTW Output: 3
+
+BTW Split by multiple character delimiter
+I HAS A VARIABLE DATA TEH STRIN ITZ "item1::item2::item3"
+I HAS A VARIABLE ITEMS TEH BUKKIT ITZ SPLIT WIT DATA AN WIT "::"
+SAYZ WIT ITEMS DO AT WIT 0        BTW Output: item1
 ```
 
 ## Practical Examples
@@ -346,6 +491,10 @@ KTHX
 |----------|------------|-------------|-------------|
 | `LEN WIT string` | string: STRIN | INTEGR | Get string length |
 | `CONCAT WIT str1 AN WIT str2` | str1: STRIN, str2: STRIN | STRIN | Concatenate strings |
+| `TRIM WIT string` | string: STRIN | STRIN | Remove leading/trailing whitespace |
+| `UPPER WIT string` | string: STRIN | STRIN | Convert to uppercase |
+| `LOWER WIT string` | string: STRIN | STRIN | Convert to lowercase |
+| `SPLIT WIT string AN WIT delimiter` | string: STRIN, delimiter: STRIN | BUKKIT | Split string into array |
 
 ### Common Patterns
 
@@ -360,6 +509,15 @@ I HAS A VARIABLE SENTENCE TEH STRIN ITZ CONCAT WIT SUBJECT AN WIT " "
 SENTENCE ITZ CONCAT WIT SENTENCE AN WIT VERB
 SENTENCE ITZ CONCAT WIT SENTENCE AN WIT " "
 SENTENCE ITZ CONCAT WIT SENTENCE AN WIT OBJECT
+
+BTW Clean and normalize text
+I HAS A VARIABLE RAW_INPUT TEH STRIN ITZ "  Mixed Case Text  "
+I HAS A VARIABLE CLEAN TEH STRIN ITZ TRIM WIT RAW_INPUT
+I HAS A VARIABLE NORMALIZED TEH STRIN ITZ LOWER WIT CLEAN
+
+BTW Parse CSV-like data
+I HAS A VARIABLE CSV_LINE TEH STRIN ITZ "name,age,city"
+I HAS A VARIABLE FIELDS TEH BUKKIT ITZ SPLIT WIT CSV_LINE AN WIT ","
 
 BTW Length-based validation
 IZ LEN WIT PASSWORD BIGGR THAN 7?

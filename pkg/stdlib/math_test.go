@@ -15,12 +15,19 @@ func TestRegisterMath(t *testing.T) {
 	err := RegisterMATHInEnv(env) // Empty slice imports all
 	require.NoError(t, err)
 
-	// Test that math functions are registered
-	mathFunctions := []string{"ABS", "MAX", "MIN", "SQRT", "POW", "SIN", "COS", "RANDOM", "RANDINT"}
+	// Test that math functions and variables are registered
+	mathFunctions := []string{"ABS", "MAX", "MIN", "SQRT", "POW", "SIN", "COS", "TAN", "ASIN", "ACOS", "ATAN", "ATAN2", "LOG", "LOG10", "LOG2", "EXP", "CEIL", "FLOOR", "ROUND", "TRUNC"}
+	mathVariables := []string{"PI", "E"}
 
 	for _, funcName := range mathFunctions {
 		_, err := env.GetFunction(funcName)
 		assert.NoError(t, err, "Function %s should be registered", funcName)
+	}
+
+	// Test that math variables are registered
+	for _, varName := range mathVariables {
+		_, err := env.GetVariable(varName)
+		assert.NoError(t, err, "Variable %s should be registered", varName)
 	}
 }
 
@@ -348,55 +355,6 @@ func TestMathCOS(t *testing.T) {
 	}
 }
 
-func TestMathRANDOM(t *testing.T) {
-	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env)
-
-	randomFunc, err := env.GetFunction("RANDOM")
-	require.NoError(t, err)
-
-	// Test that RANDOM returns values in expected range
-	for i := 0; i < 100; i++ {
-		args := []environment.Value{}
-		result, err := randomFunc.NativeImpl(nil, nil, args)
-		require.NoError(t, err)
-
-		doubleResult, ok := result.(environment.DoubleValue)
-		require.True(t, ok, "RANDOM should return DoubleValue")
-
-		val := float64(doubleResult)
-		assert.GreaterOrEqual(t, val, 0.0, "RANDOM should be >= 0")
-		assert.Less(t, val, 1.0, "RANDOM should be < 1")
-	}
-}
-
-func TestMathRANDINT(t *testing.T) {
-	env := environment.NewEnvironment(nil)
-	RegisterMATHInEnv(env)
-
-	randintFunc, err := env.GetFunction("RANDINT")
-	require.NoError(t, err)
-
-	// Test that RANDINT returns values in expected range
-	for i := 0; i < 50; i++ {
-		args := []environment.Value{environment.IntegerValue(1), environment.IntegerValue(10)}
-		result, err := randintFunc.NativeImpl(nil, nil, args)
-		require.NoError(t, err)
-
-		intResult, ok := result.(environment.IntegerValue)
-		require.True(t, ok, "RANDINT should return IntegerValue")
-
-		val := int64(intResult)
-		assert.GreaterOrEqual(t, val, int64(1), "RANDINT should be >= min")
-		assert.Less(t, val, int64(10), "RANDINT should be < max")
-	}
-
-	// Test error case: min >= max
-	args := []environment.Value{environment.IntegerValue(10), environment.IntegerValue(5)}
-	_, err = randintFunc.NativeImpl(nil, nil, args)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "min must be less than max")
-}
 
 func TestMathErrorHandling(t *testing.T) {
 	env := environment.NewEnvironment(nil)
@@ -412,4 +370,234 @@ func TestMathErrorHandling(t *testing.T) {
 	// Should return error for negative numbers in this implementation
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "SQRT: negative argument")
+}
+
+func TestMathTAN(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterMATHInEnv(env)
+
+	tanFunc, err := env.GetFunction("TAN")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		input    environment.Value
+		expected float64
+	}{
+		{
+			"Tan of 0",
+			environment.DoubleValue(0.0),
+			0.0,
+		},
+		{
+			"Tan of π/4",
+			environment.DoubleValue(math.Pi / 4),
+			1.0,
+		},
+		{
+			"Tan of π",
+			environment.DoubleValue(math.Pi),
+			0.0,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			args := []environment.Value{test.input}
+			result, err := tanFunc.NativeImpl(nil, nil, args)
+			require.NoError(t, err)
+
+			doubleResult, ok := result.(environment.DoubleValue)
+			require.True(t, ok, "TAN should return DoubleValue")
+			assert.InDelta(t, test.expected, float64(doubleResult), 0.0001)
+		})
+	}
+}
+
+func TestMathLOG(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterMATHInEnv(env)
+
+	logFunc, err := env.GetFunction("LOG")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		input    environment.Value
+		expected float64
+	}{
+		{
+			"Log of E",
+			environment.DoubleValue(math.E),
+			1.0,
+		},
+		{
+			"Log of 1",
+			environment.DoubleValue(1.0),
+			0.0,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			args := []environment.Value{test.input}
+			result, err := logFunc.NativeImpl(nil, nil, args)
+			require.NoError(t, err)
+
+			doubleResult, ok := result.(environment.DoubleValue)
+			require.True(t, ok, "LOG should return DoubleValue")
+			assert.InDelta(t, test.expected, float64(doubleResult), 0.0001)
+		})
+	}
+
+	// Test error case: negative input
+	args := []environment.Value{environment.DoubleValue(-1.0)}
+	_, err = logFunc.NativeImpl(nil, nil, args)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "LOG: input must be positive")
+}
+
+func TestMathCEIL(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterMATHInEnv(env)
+
+	ceilFunc, err := env.GetFunction("CEIL")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		input    environment.Value
+		expected float64
+	}{
+		{
+			"Ceil of 3.2",
+			environment.DoubleValue(3.2),
+			4.0,
+		},
+		{
+			"Ceil of 3.0",
+			environment.DoubleValue(3.0),
+			3.0,
+		},
+		{
+			"Ceil of -3.7",
+			environment.DoubleValue(-3.7),
+			-3.0,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			args := []environment.Value{test.input}
+			result, err := ceilFunc.NativeImpl(nil, nil, args)
+			require.NoError(t, err)
+
+			doubleResult, ok := result.(environment.DoubleValue)
+			require.True(t, ok, "CEIL should return DoubleValue")
+			assert.Equal(t, test.expected, float64(doubleResult))
+		})
+	}
+}
+
+func TestMathFLOOR(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterMATHInEnv(env)
+
+	floorFunc, err := env.GetFunction("FLOOR")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		input    environment.Value
+		expected float64
+	}{
+		{
+			"Floor of 3.7",
+			environment.DoubleValue(3.7),
+			3.0,
+		},
+		{
+			"Floor of 3.0",
+			environment.DoubleValue(3.0),
+			3.0,
+		},
+		{
+			"Floor of -3.2",
+			environment.DoubleValue(-3.2),
+			-4.0,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			args := []environment.Value{test.input}
+			result, err := floorFunc.NativeImpl(nil, nil, args)
+			require.NoError(t, err)
+
+			doubleResult, ok := result.(environment.DoubleValue)
+			require.True(t, ok, "FLOOR should return DoubleValue")
+			assert.Equal(t, test.expected, float64(doubleResult))
+		})
+	}
+}
+
+func TestMathROUND(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterMATHInEnv(env)
+
+	roundFunc, err := env.GetFunction("ROUND")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		input    environment.Value
+		expected float64
+	}{
+		{
+			"Round of 3.4",
+			environment.DoubleValue(3.4),
+			3.0,
+		},
+		{
+			"Round of 3.5",
+			environment.DoubleValue(3.5),
+			4.0,
+		},
+		{
+			"Round of 3.6",
+			environment.DoubleValue(3.6),
+			4.0,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			args := []environment.Value{test.input}
+			result, err := roundFunc.NativeImpl(nil, nil, args)
+			require.NoError(t, err)
+
+			doubleResult, ok := result.(environment.DoubleValue)
+			require.True(t, ok, "ROUND should return DoubleValue")
+			assert.Equal(t, test.expected, float64(doubleResult))
+		})
+	}
+}
+
+func TestMathConstants(t *testing.T) {
+	env := environment.NewEnvironment(nil)
+	RegisterMATHInEnv(env)
+
+	// Test PI constant
+	piVar, err := env.GetVariable("PI")
+	require.NoError(t, err)
+	piValue, ok := piVar.Value.(environment.DoubleValue)
+	require.True(t, ok, "PI should be a DoubleValue")
+	assert.InDelta(t, math.Pi, float64(piValue), 0.0001)
+
+	// Test E constant
+	eVar, err := env.GetVariable("E")
+	require.NoError(t, err)
+	eValue, ok := eVar.Value.(environment.DoubleValue)
+	require.True(t, ok, "E should be a DoubleValue")
+	assert.InDelta(t, math.E, float64(eValue), 0.0001)
 }

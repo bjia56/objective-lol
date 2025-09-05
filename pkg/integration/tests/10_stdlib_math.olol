@@ -1,6 +1,7 @@
 BTW Standard library math functions test
 I CAN HAS STDIO?
 I CAN HAS MATH?
+I CAN HAS RANDOM?
 
 HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT "=== Math Library Test ==="
@@ -8,18 +9,18 @@ HAI ME TEH FUNCSHUN MAIN
     BTW Test basic random functions
     SAY WIT "Random number (0-1): "
     SAYZ WIT ""
-    SAYZ WIT RANDOM
+    SAYZ WIT RANDOM_FLOAT
     SAY WIT "Another random number: "
     SAYZ WIT ""
-    SAYZ WIT RANDOM
+    SAYZ WIT RANDOM_FLOAT
 
     BTW Test random integer
     SAY WIT "Random integer between 1 and 10: "
     SAYZ WIT ""
-    SAYZ WIT RANDINT WIT 1 AN WIT 10
+    SAYZ WIT RANDOM_INT WIT 1 AN WIT 10
     SAY WIT "Another random integer (1-10): "
     SAYZ WIT ""
-    SAYZ WIT RANDINT WIT 1 AN WIT 10
+    SAYZ WIT RANDOM_INT WIT 1 AN WIT 10
 
     BTW Test absolute value
     SAY WIT "Absolute values: "

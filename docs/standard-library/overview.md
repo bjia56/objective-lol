@@ -9,9 +9,10 @@ The Objective-LOL standard library provides essential functionality through a co
 | Module | Description | Key Items |
 |--------|-------------|-----------|
 | [STDIO](stdio.md) | Input/Output functions | `SAY`, `SAYZ`, `GIMME` |
-| [MATH](math.md) | Mathematical functions | `ABS`, `MAX`, `MIN`, `SQRT`, `POW`, `RANDOM` |
+| [MATH](math.md) | Mathematical functions | `ABS`, `MAX`, `MIN`, `SQRT`, `POW`, `SIN`, `COS`, `LOG`, `PI`, `E` |
+| [RANDOM](random.md) | Random number generation | `RANDOM_FLOAT`, `RANDOM_INT`, `RANDOM_BOOL`, `UUID` |
 | [TIME](time.md) | Date and time functionality | `DATE` class, `SLEEP` function |
-| [STRING](string.md) | String utility functions | `LEN`, `CONCAT` |
+| [STRING](string.md) | String utility functions | `LEN`, `CONCAT`, `TRIM`, `UPPER`, `LOWER`, `SPLIT` |
 | [TEST](test.md) | Testing and assertions | `ASSERT` |
 | [IO](io.md) | Advanced I/O classes | `READER`, `WRITER`, `BUFFERED_READER`, `BUFFERED_WRITER` |
 | [THREAD](threading.md) | Concurrency support | `YARN` thread class, `KNOT` mutex class |

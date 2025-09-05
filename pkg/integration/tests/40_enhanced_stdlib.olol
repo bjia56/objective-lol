@@ -1,0 +1,97 @@
+BTW Enhanced Standard Library Demo
+I CAN HAS STDIO?
+I CAN HAS MATH?
+I CAN HAS STRING?
+I CAN HAS RANDOM?
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== Enhanced Objective-LOL Standard Library Demo ==="
+
+    BTW Math enhancements
+    SAYZ WIT "Math Constants:"
+    SAY WIT "PI = "
+    SAYZ WIT PI
+    SAY WIT "E = "
+    SAYZ WIT E
+
+    SAYZ WIT ""
+    SAYZ WIT "Trigonometric Functions:"
+    I HAS A VARIABLE ANGLE TEH DUBBLE ITZ PI DIVIDEZ 4
+    SAY WIT "sin(π/4) = "
+    SAYZ WIT SIN WIT ANGLE
+    SAY WIT "cos(π/4) = "
+    SAYZ WIT COS WIT ANGLE
+    SAY WIT "tan(π/4) = "
+    SAYZ WIT TAN WIT ANGLE
+
+    SAYZ WIT ""
+    SAYZ WIT "Logarithmic Functions:"
+    SAY WIT "ln(E) = "
+    SAYZ WIT LOG WIT E
+    SAY WIT "log10(100) = "
+    SAYZ WIT LOG10 WIT 100.0
+    SAY WIT "exp(1) = "
+    SAYZ WIT EXP WIT 1.0
+
+    SAYZ WIT ""
+    SAYZ WIT "Rounding Functions:"
+    I HAS A VARIABLE NUM TEH DUBBLE ITZ 3.7
+    SAY WIT "ceil(3.7) = "
+    SAYZ WIT CEIL WIT NUM
+    SAY WIT "floor(3.7) = "
+    SAYZ WIT FLOOR WIT NUM
+    SAY WIT "round(3.7) = "
+    SAYZ WIT ROUND WIT NUM
+
+    BTW String enhancements
+    SAYZ WIT ""
+    SAYZ WIT "String Functions:"
+    I HAS A VARIABLE TEXT TEH STRIN ITZ "  Hello World  "
+    SAY WIT "Original: '"
+    SAY WIT TEXT
+    SAYZ WIT "'"
+    SAY WIT "Trimmed: '"
+    SAY WIT TRIM WIT TEXT
+    SAYZ WIT "'"
+    SAY WIT "Uppercase: '"
+    SAY WIT UPPER WIT (TRIM WIT TEXT)
+    SAYZ WIT "'"
+    SAY WIT "Lowercase: '"
+    SAY WIT LOWER WIT (TRIM WIT TEXT)
+    SAYZ WIT "'"
+
+    SAYZ WIT ""
+    I HAS A VARIABLE SENTENCE TEH STRIN ITZ "apple,banana,cherry"
+    SAY WIT "Split '"
+    SAY WIT SENTENCE
+    SAY WIT "' by comma: "
+    I HAS A VARIABLE PARTS TEH BUKKIT ITZ SPLIT WIT SENTENCE AN WIT ","
+    I HAS A VARIABLE IDX TEH INTEGR ITZ 0
+    WHILE IDX SMALLR THAN PARTS SIZ
+        SAY WIT "["
+        SAY WIT (PARTS DO AT WIT IDX)
+        SAY WIT "] "
+        IDX ITZ IDX MOAR 1
+    KTHX
+    SAYZ WIT ""
+
+    BTW Random functions
+    SAYZ WIT ""
+    SAYZ WIT "Random Functions:"
+    SEED_TIME
+    SAY WIT "Random float: "
+    SAYZ WIT RANDOM_FLOAT
+    SAY WIT "Random int (1-10): "
+    SAYZ WIT RANDOM_INT WIT 1 AN WIT 11
+    SAY WIT "Random bool: "
+    SAYZ WIT RANDOM_BOOL
+
+    SAY WIT "Random string (8 chars, alphanumeric): "
+    SAYZ WIT RANDOM_STRING WIT 8 AN WIT "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+    SAY WIT "UUID: "
+    SAYZ WIT UUID
+
+    SAYZ WIT ""
+    SAYZ WIT "=== Demo Complete ==="
+KTHXBAI
