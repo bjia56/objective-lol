@@ -95,6 +95,19 @@ func getIoClasses() map[string]*environment.Class {
 				SharedFunctions:  make(map[string]*environment.Function),
 				PublicVariables:  make(map[string]*environment.Variable),
 			},
+			"READWRITER": {
+				Name:             "READWRITER",
+				QualifiedName:    "stdlib:IO.READWRITER",
+				ModulePath:       "stdlib:IO",
+				ParentClasses:    []string{},
+				MRO:              []string{"stdlib:IO.READWRITER", "stdlib.IO.READER", "stdlib.IO.WRITER"},
+				PublicFunctions:  make(map[string]*environment.Function),
+				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateFunctions: make(map[string]*environment.Function),
+				SharedVariables:  make(map[string]*environment.Variable),
+				SharedFunctions:  make(map[string]*environment.Function),
+				PublicVariables:  make(map[string]*environment.Variable),
+			},
 			"BUFFERED_READER": {
 				Name: "BUFFERED_READER",
 				PublicFunctions: map[string]*environment.Function{
