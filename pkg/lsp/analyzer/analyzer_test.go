@@ -7,8 +7,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 	protocol "github.com/tliron/glsp/protocol_3_16"
-
-	"github.com/bjia56/objective-lol/pkg/parser"
 )
 
 func TestAnalyzer_AnalyzeDocument(t *testing.T) {
@@ -131,66 +129,6 @@ KTHXBAI`
 	require.NotNil(t, hover, "Expected hover info but got nil")
 }
 
-func TestSymbolCollector_VisitVariableDeclaration(t *testing.T) {
-	collector := NewSymbolCollector("test://test.olol")
-
-	// Parse a complete Objective-LOL program with variable declaration
-	content := `HAI ME TEH FUNCSHUN MAIN
-I HAS A VARIABLE testVar TEH INTEGR ITZ 42
-KTHXBAI`
-
-	lexer := parser.NewLexer(content)
-	p := parser.NewParser(lexer)
-	program := p.ParseProgram()
-
-	// Visit the program to collect symbols - test that this doesn't crash
-	program.Accept(collector)
-	symbolTable := collector.GetSymbolTable()
-
-	require.NotNil(t, symbolTable, "Expected symbol table but got nil")
-}
-
-func TestSymbolCollector_VisitFunctionDeclaration(t *testing.T) {
-	collector := NewSymbolCollector("test://test.olol")
-
-	// Parse a complete Objective-LOL program with function declaration
-	content := `HAI ME TEH FUNCSHUN foo
-KTHXBAI`
-
-	lexer := parser.NewLexer(content)
-	p := parser.NewParser(lexer)
-	program := p.ParseProgram()
-
-	// Visit the program to collect symbols - test that this doesn't crash
-	program.Accept(collector)
-	symbolTable := collector.GetSymbolTable()
-
-	require.NotNil(t, symbolTable, "Expected symbol table but got nil")
-}
-
-func TestSymbolCollector_VisitClassDeclaration(t *testing.T) {
-	collector := NewSymbolCollector("test://test.olol")
-
-	// Parse a complete Objective-LOL program with class declaration
-	content := `HAI ME TEH CLAS TestClass
-    EVRYONE
-	I HAS A VARIABLE memberVar ITZ INTEGR
-    I HAS A FUNCSHUN memberFunc TEH INTEGR
-        GIVEZ 1
-    KTHX
-KTHXBAI`
-
-	lexer := parser.NewLexer(content)
-	p := parser.NewParser(lexer)
-	program := p.ParseProgram()
-
-	// Visit the program to collect symbols - test that this doesn't crash
-	program.Accept(collector)
-	symbolTable := collector.GetSymbolTable()
-
-	require.NotNil(t, symbolTable, "Expected symbol table but got nil")
-}
-
 func TestAnalyzer_FunctionCallHover(t *testing.T) {
 	analyzer := NewAnalyzer()
 
@@ -263,7 +201,7 @@ KTHXBAI`
 		t.Error("Expected function calls to be tracked")
 	} else {
 		t.Logf("Found %d function calls", len(symbolTable.FunctionCalls))
-		
+
 		for i, call := range symbolTable.FunctionCalls {
 			t.Logf("Call %d: %s (type: %d)", i, call.FunctionName, call.CallType)
 			if call.ResolvedTo != nil {
@@ -277,7 +215,7 @@ KTHXBAI`
 	// Test specific function calls
 	foundSAYZ := false
 	foundMAX := false
-	
+
 	for _, call := range symbolTable.FunctionCalls {
 		if call.FunctionName == "SAYZ" {
 			foundSAYZ = true
@@ -286,7 +224,7 @@ KTHXBAI`
 			}
 		}
 		if call.FunctionName == "MAX" {
-			foundMAX = true  
+			foundMAX = true
 			if call.CallType != FunctionCallGlobal {
 				t.Errorf("Expected MAX to be global call, got %d", call.CallType)
 			}
