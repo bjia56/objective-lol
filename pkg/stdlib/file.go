@@ -421,7 +421,7 @@ func getFileClasses() map[string]*environment.Class {
 // declarations: empty slice means import all, otherwise import only specified classes
 func RegisterFILEInEnv(env *environment.Environment, declarations ...string) error {
 	// First ensure IO classes are available since DOCUMENT inherits from IO.READWRITER
-	err := RegisterIOInEnv(env)
+	err := RegisterIOInEnv(env, "READWRITER")
 	if err != nil {
 		return fmt.Errorf("failed to register IO classes: %v", err)
 	}

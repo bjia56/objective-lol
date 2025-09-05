@@ -10,8 +10,6 @@ import (
 )
 
 func TestAnalyzer_AnalyzeDocument(t *testing.T) {
-	analyzer := NewAnalyzer()
-
 	tests := []struct {
 		name          string
 		content       string
@@ -47,6 +45,7 @@ KTHXBAI`,
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			analyzer := NewAnalyzer()
 			diagnostics, err := analyzer.AnalyzeDocument("test://test.olol", tt.content)
 
 			if tt.expectError && err == nil {

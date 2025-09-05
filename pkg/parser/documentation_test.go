@@ -2,7 +2,7 @@ package parser
 
 import (
 	"testing"
-	
+
 	"github.com/bjia56/objective-lol/pkg/ast"
 )
 
@@ -180,10 +180,10 @@ KTHXBAI`
 
 func TestClassDocumentationParsing(t *testing.T) {
 	tests := []struct {
-		name             string
-		input            string
+		name              string
+		input             string
 		expectedClassName string
-		expectedDocs     []string
+		expectedDocs      []string
 	}{
 		{
 			name: "Single line class documentation",
@@ -193,7 +193,7 @@ HAI ME TEH CLAS PERSON
     DIS TEH VARIABLE NAME TEH STRIN ITZ "Unknown"
 KTHXBAI`,
 			expectedClassName: "PERSON",
-			expectedDocs:     []string{"This is a simple class for demonstration"},
+			expectedDocs:      []string{"This is a simple class for demonstration"},
 		},
 		{
 			name: "Multi-line class documentation",
@@ -220,7 +220,7 @@ KTHXBAI`,
     DIS TEH VARIABLE VALUE TEH INTEGR ITZ 0
 KTHXBAI`,
 			expectedClassName: "SIMPLE",
-			expectedDocs:     nil,
+			expectedDocs:      nil,
 		},
 	}
 
@@ -329,7 +329,7 @@ KTHXBAI`
 	}
 	expectedAddDocs := []string{
 		"This method adds two numbers",
-		"@param x The first number", 
+		"@param x The first number",
 		"@param y The second number",
 		"@return The sum of x and y",
 	}
@@ -395,8 +395,8 @@ HAI ME TEH VARIABLE MAX_RETRIES TEH INTEGR ITZ 5`,
 			expectedName: "MAX_RETRIES",
 		},
 		{
-			name: "Variable with no documentation",
-			input: `HAI ME TEH VARIABLE SIMPLE TEH STRIN ITZ "test"`,
+			name:         "Variable with no documentation",
+			input:        `HAI ME TEH VARIABLE SIMPLE TEH STRIN ITZ "test"`,
 			expectedDocs: nil,
 			expectedName: "SIMPLE",
 		},
