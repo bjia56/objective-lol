@@ -257,7 +257,7 @@ func (vm *VM) Set(variableName string, value interface{}) error {
 	// Check if variable already exists
 	if _, err := env.GetVariable(variableName); err != nil {
 		// Variable doesn't exist, create it
-		return env.DefineVariable(variableName, ololValue.Type(), ololValue, false)
+		return env.DefineVariable(variableName, ololValue.Type(), ololValue, false, nil)
 	} else {
 		// Variable exists, update its value
 		return env.SetVariable(variableName, ololValue)

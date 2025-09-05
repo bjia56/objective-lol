@@ -323,7 +323,7 @@ func (i *Interpreter) importSelectiveDeclarations(moduleEnv *environment.Environ
 
 		// Try to import as variable
 		if variable, err := moduleEnv.GetVariable(declName); err == nil {
-			if err := i.environment.DefineVariable(declName, variable.Type, variable.Value, variable.IsLocked); err != nil {
+			if err := i.environment.DefineVariable(declName, variable.Type, variable.Value, variable.IsLocked, nil); err != nil {
 				return environment.NOTHIN, fmt.Errorf("failed to import variable %s from module %s: %v", declName, filePath, err)
 			}
 			continue
@@ -371,7 +371,7 @@ func (i *Interpreter) importAllDeclarations(moduleEnv *environment.Environment, 
 			if strings.HasPrefix(name, "_") {
 				continue
 			}
-			if err := i.environment.DefineVariable(name, variable.Type, variable.Value, variable.IsLocked); err != nil {
+			if err := i.environment.DefineVariable(name, variable.Type, variable.Value, variable.IsLocked, nil); err != nil {
 				return environment.NOTHIN, fmt.Errorf("failed to import variable %s from module %s: %v", name, filePath, err)
 			}
 		}
@@ -397,6 +397,7 @@ func (i *Interpreter) VisitVariableDeclaration(node *ast.VariableDeclarationNode
 		strings.ToUpper(node.Type),
 		value,
 		node.IsLocked,
+		node.Documentation,
 	)
 
 	return environment.NOTHIN, err
@@ -405,11 +406,12 @@ func (i *Interpreter) VisitVariableDeclaration(node *ast.VariableDeclarationNode
 // VisitFunctionDeclaration handles function declarations
 func (i *Interpreter) VisitFunctionDeclaration(node *ast.FunctionDeclarationNode) (environment.Value, error) {
 	function := &environment.Function{
-		Name:       strings.ToUpper(node.Name),
-		ReturnType: strings.ToUpper(node.ReturnType),
-		Parameters: node.Parameters,
-		Body:       node.Body,
-		IsShared:   node.IsShared,
+		Documentation: node.Documentation,
+		Name:          strings.ToUpper(node.Name),
+		ReturnType:    strings.ToUpper(node.ReturnType),
+		Parameters:    node.Parameters,
+		Body:          node.Body,
+		IsShared:      node.IsShared,
 	}
 
 	// Normalize parameter names and environment
@@ -435,6 +437,7 @@ func (i *Interpreter) VisitClassDeclaration(node *ast.ClassDeclarationNode) (env
 		i.currentModulePath, // Use current module context
 		qualifiedParents,
 	)
+	class.Documentation = node.Documentation
 
 	// Save current context
 	oldClass := i.currentClass
@@ -465,11 +468,12 @@ func (i *Interpreter) VisitClassDeclaration(node *ast.ClassDeclarationNode) (env
 			}
 
 			variable := &environment.Variable{
-				Name:     strings.ToUpper(member.Variable.Name),
-				Type:     strings.ToUpper(member.Variable.Type),
-				Value:    value,
-				IsLocked: member.Variable.IsLocked,
-				IsPublic: member.IsPublic, // Use visibility from member declaration
+				Documentation: member.Variable.Documentation,
+				Name:          strings.ToUpper(member.Variable.Name),
+				Type:          strings.ToUpper(member.Variable.Type),
+				Value:         value,
+				IsLocked:      member.Variable.IsLocked,
+				IsPublic:      member.IsPublic, // Use visibility from member declaration
 			}
 
 			// Add to appropriate collection based on visibility and sharing
@@ -484,11 +488,12 @@ func (i *Interpreter) VisitClassDeclaration(node *ast.ClassDeclarationNode) (env
 		} else {
 			// Handle member functions
 			function := &environment.Function{
-				Name:       strings.ToUpper(member.Function.Name),
-				ReturnType: strings.ToUpper(member.Function.ReturnType),
-				Parameters: member.Function.Parameters,
-				Body:       member.Function.Body,
-				IsShared:   &member.IsShared,
+				Documentation: member.Function.Documentation,
+				Name:          strings.ToUpper(member.Function.Name),
+				ReturnType:    strings.ToUpper(member.Function.ReturnType),
+				Parameters:    member.Function.Parameters,
+				Body:          member.Function.Body,
+				IsShared:      &member.IsShared,
 			}
 
 			// Normalize parameter names and environment
@@ -722,7 +727,7 @@ func (i *Interpreter) callFunction(function *environment.Function, args []enviro
 
 	// Bind parameters
 	for j, param := range function.Parameters {
-		err := funcEnv.DefineVariable(param.Name, param.Type, args[j], false)
+		err := funcEnv.DefineVariable(param.Name, param.Type, args[j], false, nil)
 		if err != nil {
 			return environment.NOTHIN, err
 		}
@@ -1013,7 +1018,7 @@ func (i *Interpreter) VisitTryStatement(node *ast.TryStatementNode) (environment
 
 		// Bind the exception message to the catch variable
 		exceptionMsg := runtime.GetExceptionMessage(tryErr)
-		i.environment.DefineVariable(node.CatchVar, "STRIN", environment.StringValue(exceptionMsg), false)
+		i.environment.DefineVariable(node.CatchVar, "STRIN", environment.StringValue(exceptionMsg), false, nil)
 
 		// Execute catch block
 		result, tryErr = node.CatchBody.Accept(i)

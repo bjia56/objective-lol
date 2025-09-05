@@ -116,7 +116,6 @@ type FunctionCallType int
 const (
 	FunctionCallGlobal FunctionCallType = iota
 	FunctionCallMethod
-	FunctionCallBuiltin
 )
 
 // AnalysisError represents semantic analysis errors
@@ -139,6 +138,10 @@ const (
 	ErrorTypeCircularImport
 	ErrorTypeDuplicateDeclaration
 )
+
+func joinDocs(docs []string) string {
+	return strings.Join(docs, "\n")
+}
 
 // NewSemanticAnalyzer creates a new semantic analyzer
 func NewSemanticAnalyzer(uri, content string) *SemanticAnalyzer {
@@ -461,6 +464,7 @@ func (sa *SemanticAnalyzer) extractSymbolsFromEnvironment(env *environment.Envir
 		}
 
 		symbol := EnhancedSymbol{
+			Documentation: joinDocs(function.Documentation),
 			Name:          name,
 			Kind:          SymbolKindFunction,
 			Type:          function.ReturnType,
@@ -491,6 +495,7 @@ func (sa *SemanticAnalyzer) extractSymbolsFromEnvironment(env *environment.Envir
 		}
 
 		symbol := EnhancedSymbol{
+			Documentation: joinDocs(class.Documentation),
 			Name:          name,
 			Kind:          SymbolKindClass,
 			Type:          class.Name,
@@ -529,6 +534,7 @@ func (sa *SemanticAnalyzer) analyzeFunctionDeclaration(node *ast.FunctionDeclara
 	}
 
 	funcSymbol := EnhancedSymbol{
+		Documentation: joinDocs(node.Documentation),
 		Name:          functionName,
 		Kind:          SymbolKindFunction,
 		Type:          strings.ToUpper(node.ReturnType),
@@ -588,6 +594,7 @@ func (sa *SemanticAnalyzer) analyzeClassDeclaration(node *ast.ClassDeclarationNo
 	}
 
 	classSymbol := EnhancedSymbol{
+		Documentation: joinDocs(node.Documentation),
 		Name:          className,
 		Kind:          SymbolKindClass,
 		Type:          className,
@@ -631,6 +638,7 @@ func (sa *SemanticAnalyzer) analyzeClassMemberVariable(member *ast.ClassMemberNo
 	}
 
 	memberSymbol := EnhancedSymbol{
+		Documentation: joinDocs(member.Variable.Documentation),
 		Name:          varName,
 		Kind:          SymbolKindVariable,
 		Type:          strings.ToUpper(member.Variable.Type),
@@ -662,6 +670,7 @@ func (sa *SemanticAnalyzer) analyzeClassMemberFunction(member *ast.ClassMemberNo
 	}
 
 	memberSymbol := EnhancedSymbol{
+		Documentation: joinDocs(member.Function.Documentation),
 		Name:          funcName,
 		Kind:          SymbolKindFunction,
 		Type:          strings.ToUpper(member.Function.ReturnType),
@@ -692,6 +701,7 @@ func (sa *SemanticAnalyzer) analyzeVariableDeclarationWithScope(node *ast.Variab
 	}
 
 	varSymbol := EnhancedSymbol{
+		Documentation: joinDocs(node.Documentation),
 		Name:          varName,
 		Kind:          SymbolKindVariable,
 		Type:          strings.ToUpper(node.Type),
@@ -1433,70 +1443,7 @@ func (sa *SemanticAnalyzer) resolveFunctionSymbol(functionName string, callType 
 		}
 	}
 
-	// Check if it's a builtin function
-	if sa.isBuiltinFunction(functionName) {
-		// Create a temporary symbol for builtin functions
-		return &EnhancedSymbol{
-			Name:          functionName,
-			Kind:          SymbolKindFunction,
-			Type:          "builtin",
-			Scope:         ScopeTypeGlobal,
-			Visibility:    VisibilityPublic,
-			Documentation: sa.getBuiltinDocumentation(functionName),
-		}
-	}
-
 	return nil // Function not found
-}
-
-// isBuiltinFunction checks if a function name is a builtin
-func (sa *SemanticAnalyzer) isBuiltinFunction(functionName string) bool {
-	// Check standard library functions
-	builtins := map[string]bool{
-		"SAYZ":   true, // STDIO
-		"SAY":    true,
-		"GIMME":  true,
-		"ABS":    true, // MATH
-		"MAX":    true,
-		"MIN":    true,
-		"SQRT":   true,
-		"POW":    true,
-		"SIN":    true,
-		"COS":    true,
-		"RANDOM": true,
-		"SLEEP":  true, // TIME
-		"ASSERT": true, // TEST
-		"LEN":    true, // STRING
-		"CONCAT": true,
-	}
-
-	return builtins[functionName]
-}
-
-// getBuiltinDocumentation returns documentation for builtin functions
-func (sa *SemanticAnalyzer) getBuiltinDocumentation(functionName string) string {
-	docs := map[string]string{
-		"SAYZ":   "Prints a value followed by a newline",
-		"SAY":    "Prints a value without a newline",
-		"GIMME":  "Reads input from the user",
-		"ABS":    "Returns the absolute value of a number",
-		"MAX":    "Returns the maximum of two numbers",
-		"MIN":    "Returns the minimum of two numbers",
-		"SQRT":   "Returns the square root of a number",
-		"POW":    "Returns base raised to the power of exponent",
-		"SIN":    "Returns the sine of an angle in radians",
-		"COS":    "Returns the cosine of an angle in radians",
-		"RANDOM": "Returns a random number between 0 and 1",
-		"SLEEP":  "Pauses execution for the specified number of milliseconds",
-		"ASSERT": "Asserts that a condition is true, throws exception if false",
-		"LEN":    "Returns the length of a string",
-		"CONCAT": "Concatenates two strings",
-	}
-
-	if doc, exists := docs[functionName]; exists {
-		return doc
-	}
-	return "Built-in function"
 }
 
 // findFunctionCallAtPosition finds a function call at the given position
@@ -1565,8 +1512,6 @@ func (sa *SemanticAnalyzer) functionCallTypeToString(callType FunctionCallType) 
 		return "Global Function"
 	case FunctionCallMethod:
 		return "Method"
-	case FunctionCallBuiltin:
-		return "Built-in Function"
 	default:
 		return "Function"
 	}
@@ -1598,20 +1543,7 @@ func (sa *SemanticAnalyzer) lookupFunctionInOuterScopes(functionName string, cal
 		}
 	}
 
-	// Check if it's a builtin that wasn't caught earlier (with case variations)
-	upperFunctionName := strings.ToUpper(functionName)
-	if sa.isBuiltinFunction(upperFunctionName) {
-		return &EnhancedSymbol{
-			Name:          upperFunctionName,
-			Kind:          SymbolKindFunction,
-			Type:          "builtin",
-			Scope:         ScopeTypeGlobal,
-			Visibility:    VisibilityPublic,
-			Documentation: sa.getBuiltinDocumentation(upperFunctionName),
-		}
-	}
-
-	return nil // Still not found
+	return nil // not found
 }
 
 // lookupInImportedModule looks up a function in imported modules
@@ -1640,12 +1572,12 @@ func (sa *SemanticAnalyzer) lookupInEnvironment(functionName string, _ FunctionC
 	if function, err := sa.environment.GetFunction(upperFunctionName); err == nil {
 		// Create a symbol from the environment function
 		return &EnhancedSymbol{
+			Documentation: joinDocs(function.Documentation),
 			Name:          upperFunctionName,
 			Kind:          SymbolKindFunction,
 			Type:          "function", // Could inspect function.Type for more details
 			Scope:         ScopeTypeGlobal,
 			Visibility:    VisibilityPublic,
-			Documentation: fmt.Sprintf("Function from environment: %s", function.Name),
 		}
 	}
 

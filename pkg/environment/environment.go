@@ -7,11 +7,12 @@ import (
 
 // Variable represents a variable with its type information and mutability
 type Variable struct {
-	Name     string
-	Type     string
-	Value    Value
-	IsLocked bool
-	IsPublic bool // Track if this variable is public
+	Documentation []string
+	Name          string
+	Type          string
+	Value         Value
+	IsLocked      bool
+	IsPublic      bool // Track if this variable is public
 }
 
 // Environment represents a lexical scope for variables and functions
@@ -24,12 +25,13 @@ type Environment struct {
 
 // Function represents a user-defined or native function
 type Function struct {
-	Name       string
-	ReturnType string
-	Parameters []Parameter
-	Body       interface{} // Will hold AST nodes
-	IsShared   *bool       // nil for global functions, true/false for class methods
-	NativeImpl func(ctx interface{}, this *ObjectInstance, args []Value) (Value, error)
+	Documentation []string
+	Name          string
+	ReturnType    string
+	Parameters    []Parameter
+	Body          interface{} // Will hold AST nodes
+	IsShared      *bool       // nil for global functions, true/false for class methods
+	NativeImpl    func(ctx interface{}, this *ObjectInstance, args []Value) (Value, error)
 }
 
 // Parameter represents a function parameter
@@ -40,6 +42,7 @@ type Parameter struct {
 
 // Class represents an Objective-LOL class definition
 type Class struct {
+	Documentation    []string
 	Name             string   // Display name: "READER"
 	QualifiedName    string   // Internal: "stdlib:IO.READER"
 	ModulePath       string   // Internal: "stdlib:IO"
@@ -64,7 +67,7 @@ func NewEnvironment(parent *Environment) *Environment {
 }
 
 // DefineVariable defines a new variable in the current scope
-func (e *Environment) DefineVariable(name, varType string, value Value, isLocked bool) error {
+func (e *Environment) DefineVariable(name, varType string, value Value, isLocked bool, docs []string) error {
 	// Check if variable already exists in current scope
 	if _, exists := e.variables[name]; exists {
 		return fmt.Errorf("variable '%s' already defined in current scope", name)
@@ -77,11 +80,12 @@ func (e *Environment) DefineVariable(name, varType string, value Value, isLocked
 	}
 
 	e.variables[name] = &Variable{
-		Name:     name,
-		Type:     varType,
-		Value:    castedValue,
-		IsLocked: isLocked,
-		IsPublic: true, // Regular variables are public by default
+		Documentation: docs,
+		Name:          name,
+		Type:          varType,
+		Value:         castedValue,
+		IsLocked:      isLocked,
+		IsPublic:      true, // Regular variables are public by default
 	}
 
 	return nil

@@ -26,7 +26,7 @@ func TestEnvironmentVariableOperations(t *testing.T) {
 	env := NewEnvironment(nil)
 
 	// Test defining a variable
-	err := env.DefineVariable("x", "INTEGR", IntegerValue(42), false)
+	err := env.DefineVariable("x", "INTEGR", IntegerValue(42), false, nil)
 	assert.NoError(t, err)
 
 	// Test getting the variable
@@ -51,7 +51,7 @@ func TestEnvironmentVariableScoping(t *testing.T) {
 	child := NewEnvironment(parent)
 
 	// Define variable in parent
-	err := parent.DefineVariable("x", "INTEGR", IntegerValue(42), false)
+	err := parent.DefineVariable("x", "INTEGR", IntegerValue(42), false, nil)
 	assert.NoError(t, err)
 
 	// Child should be able to access parent variable
@@ -60,7 +60,7 @@ func TestEnvironmentVariableScoping(t *testing.T) {
 	assert.Equal(t, IntegerValue(42), variable.Value)
 
 	// Define variable with same name in child (shadowing)
-	err = child.DefineVariable("x", "INTEGR", IntegerValue(100), false)
+	err = child.DefineVariable("x", "INTEGR", IntegerValue(100), false, nil)
 	assert.NoError(t, err)
 
 	// Child should see its own variable
@@ -78,10 +78,10 @@ func TestEnvironmentVariableErrors(t *testing.T) {
 	env := NewEnvironment(nil)
 
 	// Test duplicate variable definition
-	err := env.DefineVariable("x", "INTEGR", IntegerValue(42), false)
+	err := env.DefineVariable("x", "INTEGR", IntegerValue(42), false, nil)
 	assert.NoError(t, err)
 
-	err = env.DefineVariable("x", "STRIN", StringValue("hello"), false)
+	err = env.DefineVariable("x", "STRIN", StringValue("hello"), false, nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "already defined")
 
@@ -100,7 +100,7 @@ func TestEnvironmentLockedVariables(t *testing.T) {
 	env := NewEnvironment(nil)
 
 	// Define locked variable
-	err := env.DefineVariable("constant", "INTEGR", IntegerValue(42), true)
+	err := env.DefineVariable("constant", "INTEGR", IntegerValue(42), true, nil)
 	assert.NoError(t, err)
 
 	// Should not be able to modify locked variable
@@ -113,7 +113,7 @@ func TestEnvironmentTypeCasting(t *testing.T) {
 	env := NewEnvironment(nil)
 
 	// Define variable with type casting
-	err := env.DefineVariable("x", "INTEGR", StringValue("42"), false)
+	err := env.DefineVariable("x", "INTEGR", StringValue("42"), false, nil)
 	assert.NoError(t, err)
 
 	// Should have cast the string to integer
@@ -123,7 +123,7 @@ func TestEnvironmentTypeCasting(t *testing.T) {
 	assert.Equal(t, "INTEGR", variable.Type)
 
 	// Test invalid cast
-	err = env.DefineVariable("y", "INTEGR", StringValue("hello"), false)
+	err = env.DefineVariable("y", "INTEGR", StringValue("hello"), false, nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot initialize variable")
 }
