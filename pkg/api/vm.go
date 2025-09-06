@@ -16,6 +16,7 @@ import (
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/interpreter"
 	"github.com/bjia56/objective-lol/pkg/parser"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 	"github.com/bjia56/objective-lol/pkg/stdlib"
 )
 
@@ -346,7 +347,7 @@ func (vm *VM) DefineFunctionMaxCompat(id, name string, argc int, function func(i
 			return WrapAny(nil), fmt.Errorf("error unmarshaling result from JSON: %v", err)
 		}
 		if errVal, ok := result["error"]; ok && errVal != nil {
-			return WrapAny(nil), fmt.Errorf("error from function: %v", errVal)
+			return WrapAny(nil), runtime.Exception{Message: fmt.Sprintf("%v", errVal)}
 		}
 		if resultVal, ok := result["result"]; ok {
 			return WrapAny(resultVal), nil
