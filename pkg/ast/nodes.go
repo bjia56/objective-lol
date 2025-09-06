@@ -182,12 +182,20 @@ func (n *AssignmentNode) SetPosition(pos PositionInfo) {
 	n.Position = pos
 }
 
+// ElseIfBranch represents a MEBBE (else-if) branch
+type ElseIfBranch struct {
+	Condition Node
+	Block     *StatementBlockNode
+	Position  PositionInfo
+}
+
 // IfStatementNode represents if statements
 type IfStatementNode struct {
-	Condition Node
-	ThenBlock *StatementBlockNode
-	ElseBlock *StatementBlockNode
-	Position  PositionInfo
+	Condition      Node
+	ThenBlock      *StatementBlockNode
+	ElseIfBranches []*ElseIfBranch
+	ElseBlock      *StatementBlockNode
+	Position       PositionInfo
 }
 
 func (n *IfStatementNode) Accept(visitor Visitor) (environment.Value, error) {

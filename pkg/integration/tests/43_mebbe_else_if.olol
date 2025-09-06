@@ -1,0 +1,92 @@
+BTW Test MEBBE (else-if) functionality
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN TEST_GRADE WIT SCORE TEH INTEGR
+    IZ SCORE BIGGR THAN 89?
+        GIVEZ "A"
+    MEBBE SCORE BIGGR THAN 79?
+        GIVEZ "B"
+    MEBBE SCORE BIGGR THAN 69?
+        GIVEZ "C"
+    MEBBE SCORE BIGGR THAN 59?
+        GIVEZ "D"
+    NOPE
+        GIVEZ "F"
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_NUMBER_RANGE WIT NUM TEH INTEGR
+    IZ NUM BIGGR THAN 100?
+        SAYZ WIT "Greater than 100"
+    MEBBE NUM BIGGR THAN 50?
+        SAYZ WIT "Between 51 and 100"
+    MEBBE NUM BIGGR THAN 25?
+        SAYZ WIT "Between 26 and 50"
+    MEBBE NUM BIGGR THAN 0?
+        SAYZ WIT "Between 1 and 25"
+    MEBBE NUM SAEM AS 0?
+        SAYZ WIT "Exactly zero"
+    NOPE
+        SAYZ WIT "Negative number"
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== MEBBE (Else-If) Test ==="
+
+    BTW Test grade function with multiple scores
+    SAYZ WIT "Testing grade function:"
+    I HAS A VARIABLE GRADE1 TEH STRIN ITZ TEST_GRADE WIT 95
+    SAY WIT "Score 95: "
+    SAYZ WIT GRADE1
+
+    I HAS A VARIABLE GRADE2 TEH STRIN ITZ TEST_GRADE WIT 85
+    SAY WIT "Score 85: "
+    SAYZ WIT GRADE2
+
+    I HAS A VARIABLE GRADE3 TEH STRIN ITZ TEST_GRADE WIT 75
+    SAY WIT "Score 75: "
+    SAYZ WIT GRADE3
+
+    I HAS A VARIABLE GRADE4 TEH STRIN ITZ TEST_GRADE WIT 65
+    SAY WIT "Score 65: "
+    SAYZ WIT GRADE4
+
+    I HAS A VARIABLE GRADE5 TEH STRIN ITZ TEST_GRADE WIT 45
+    SAY WIT "Score 45: "
+    SAYZ WIT GRADE5
+
+    BTW Test number range function
+    SAYZ WIT ""
+    SAYZ WIT "Testing number range function:"
+    TEST_NUMBER_RANGE WIT 150
+    TEST_NUMBER_RANGE WIT 75
+    TEST_NUMBER_RANGE WIT 40
+    TEST_NUMBER_RANGE WIT 15
+    TEST_NUMBER_RANGE WIT 0
+    TEST_NUMBER_RANGE WIT -10
+
+    BTW Test nested MEBBE statements
+    SAYZ WIT ""
+    SAYZ WIT "Testing nested MEBBE:"
+    I HAS A VARIABLE X TEH INTEGR ITZ 42
+    I HAS A VARIABLE Y TEH INTEGR ITZ 30
+
+    IZ X BIGGR THAN 50?
+        SAYZ WIT "X is greater than 50"
+    MEBBE X BIGGR THAN 40?
+        IZ Y BIGGR THAN 25?
+            SAYZ WIT "X is 41-50 and Y > 25"
+        MEBBE Y BIGGR THAN 20?
+            SAYZ WIT "X is 41-50 and Y is 21-25"
+        NOPE
+            SAYZ WIT "X is 41-50 and Y <= 20"
+        KTHX
+    MEBBE X BIGGR THAN 30?
+        SAYZ WIT "X is 31-40"
+    NOPE
+        SAYZ WIT "X is 30 or less"
+    KTHX
+
+    SAYZ WIT "=== MEBBE Test Complete ==="
+KTHXBAI

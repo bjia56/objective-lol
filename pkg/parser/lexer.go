@@ -43,6 +43,7 @@ const (
 	EVRYONE
 	MAHSELF
 	IZ
+	MEBBE
 	NOPE
 	WHILE
 	GIVEZ
@@ -148,6 +149,8 @@ func (t TokenType) String() string {
 		return "MAHSELF"
 	case IZ:
 		return "IZ"
+	case MEBBE:
+		return "MEBBE"
 	case NOPE:
 		return "NOPE"
 	case WHILE:
@@ -282,6 +285,7 @@ var keywords = map[string]TokenType{
 	"EVRYONE":  EVRYONE,
 	"MAHSELF":  MAHSELF,
 	"IZ":       IZ,
+	"MEBBE":    MEBBE,
 	"NOPE":     NOPE,
 	"WHILE":    WHILE,
 	"GIVEZ":    GIVEZ,

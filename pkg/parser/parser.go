@@ -859,7 +859,21 @@ func (p *Parser) parseIfStatement() *ast.IfStatementNode {
 		return nil
 	}
 
-	node.ThenBlock = p.parseStatementBlock(KTHX, NOPE)
+	node.ThenBlock = p.parseStatementBlock(KTHX, MEBBE, NOPE)
+
+	// Parse MEBBE (else-if) branches
+	for p.currentTokenIs(MEBBE) {
+		elseIfBranch := &ast.ElseIfBranch{}
+		elseIfBranch.Position = p.convertPosition(p.currentToken.Position)
+		p.nextToken() // move past MEBBE
+		elseIfBranch.Condition = p.parseExpression()
+		if !p.expectPeek(QUESTION) {
+			p.addError(fmt.Sprintf("expected '?' after MEBBE condition, got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
+			return nil
+		}
+		elseIfBranch.Block = p.parseStatementBlock(KTHX, MEBBE, NOPE)
+		node.ElseIfBranches = append(node.ElseIfBranches, elseIfBranch)
+	}
 
 	// Check for NOPE (else)
 	if p.currentTokenIs(NOPE) {

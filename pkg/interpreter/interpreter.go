@@ -578,7 +578,32 @@ func (i *Interpreter) VisitIfStatement(node *ast.IfStatementNode) (environment.V
 		// Restore environment
 		i.environment = oldEnv
 		return result, err
-	} else if node.ElseBlock != nil {
+	}
+
+	// Check MEBBE (else-if) branches
+	for _, elseIfBranch := range node.ElseIfBranches {
+		condition, err := elseIfBranch.Condition.Accept(i)
+		if err != nil {
+			return environment.NOTHIN, err
+		}
+
+		if condition.ToBool() == environment.YEZ {
+			// Create new environment for else-if block
+			oldEnv := i.environment
+			elseIfEnv := environment.NewEnvironment(oldEnv)
+			i.environment = elseIfEnv
+
+			// Execute else-if block
+			result, err := elseIfBranch.Block.Accept(i)
+
+			// Restore environment
+			i.environment = oldEnv
+			return result, err
+		}
+	}
+
+	// Check for NOPE (else) block
+	if node.ElseBlock != nil {
 		// Create new environment for else block
 		oldEnv := i.environment
 		elseEnv := environment.NewEnvironment(oldEnv)

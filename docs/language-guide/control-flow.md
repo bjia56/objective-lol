@@ -48,6 +48,59 @@ NOPE
 KTHX
 ```
 
+### MEBBE (Else-If) Statement
+
+Use `MEBBE` to chain multiple conditions together:
+
+```lol
+IZ <condition>?
+    BTW if block
+MEBBE <condition>?
+    BTW else-if block
+MEBBE <condition>?
+    BTW another else-if block
+NOPE
+    BTW else block
+KTHX
+```
+
+**Example:**
+```lol
+I HAS A VARIABLE SCORE TEH INTEGR ITZ 85
+
+IZ SCORE BIGGR THAN 89?
+    SAYZ WIT "Grade A"
+MEBBE SCORE BIGGR THAN 79?
+    SAYZ WIT "Grade B"
+MEBBE SCORE BIGGR THAN 69?
+    SAYZ WIT "Grade C"
+MEBBE SCORE BIGGR THAN 59?
+    SAYZ WIT "Grade D"
+NOPE
+    SAYZ WIT "Grade F"
+KTHX
+```
+
+**Advanced Example with Nested Conditions:**
+```lol
+I HAS A VARIABLE AGE TEH INTEGR ITZ 25
+I HAS A VARIABLE HAS_LICENSE TEH BOOL ITZ YEZ
+
+IZ AGE SMALLR THAN 16?
+    SAYZ WIT "Too young to drive"
+MEBBE AGE SMALLR THAN 18?
+    IZ HAS_LICENSE?
+        SAYZ WIT "Can drive with restrictions"
+    NOPE
+        SAYZ WIT "Need license first"
+    KTHX
+MEBBE AGE SMALLR THAN 21?
+    SAYZ WIT "Can drive, no alcohol"
+NOPE
+    SAYZ WIT "Full driving privileges"
+KTHX
+```
+
 ### Complex Conditions
 
 ```lol
