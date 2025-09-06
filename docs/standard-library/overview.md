@@ -17,6 +17,7 @@ The Objective-LOL standard library provides essential functionality through a co
 | [IO](io.md) | Advanced I/O classes | `READER`, `WRITER`, `BUFFERED_READER`, `BUFFERED_WRITER` |
 | [THREAD](threading.md) | Concurrency support | `YARN` thread class, `KNOT` mutex class |
 | [FILE](file.md) | File system operations | `DOCUMENT` class with read/write operations |
+| [HTTP](http.md) | HTTP client operations | `INTERWEB` client class, `RESPONSE` class |
 
 ### Collection Types
 
@@ -53,5 +54,15 @@ I CAN HAS MATH?                      BTW Global full
 HAI ME TEH FUNCSHUN ADVANCED_CALC
     I CAN HAS DATE FROM TIME?        BTW Local selective
     BTW Can use SAYZ (global), all MATH (global), DATE (local)
+KTHXBAI
+
+BTW Pattern 5: Network operation example
+I CAN HAS STDIO?                     BTW For output
+I CAN HAS HTTP?                      BTW For web requests
+
+HAI ME TEH FUNCSHUN FETCH_API_DATA WIT URL TEH STRIN
+    I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
+    I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO GET WIT URL
+    SAYZ WIT RESPONSE BODY
 KTHXBAI
 ```

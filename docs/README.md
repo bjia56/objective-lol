@@ -38,6 +38,7 @@ Welcome to the comprehensive documentation for Objective-LOL, a programming lang
 - [**IO**](standard-library/io.md) - Advanced I/O classes (buffered readers/writers)
 - [**THREAD**](standard-library/threading.md) - Concurrency
 - [**FILE**](standard-library/file.md) - File system operations
+- [**HTTP**](standard-library/http.md) - HTTP client operations
 
 ### 🔍 Reference
 
@@ -155,9 +156,10 @@ KTHX
 
 ```lol
 I CAN HAS STDIO?    BTW For SAY, SAYZ, GIMME
-I CAN HAS MATH?     BTW For ABS, MAX, SQRT, RANDOM
+I CAN HAS MATH?     BTW For ABS, MAX, SQRT, PI
 I CAN HAS TIME?     BTW For DATE class, SLEEP function
 I CAN HAS FILE?     BTW For DOCUMENT class, file operations
+I CAN HAS HTTP?     BTW For INTERWEB class, web requests
 I CAN HAS TEST?     BTW For ASSERT function, testing
 ```
 

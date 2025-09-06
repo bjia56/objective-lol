@@ -10,6 +10,7 @@ import (
 func DefaultStdlibInitializers() map[string]interpreter.StdlibInitializer {
 	return map[string]interpreter.StdlibInitializer{
 		"FILE":   RegisterFILEInEnv,
+		"HTTP":   RegisterHTTPInEnv,
 		"IO":     RegisterIOInEnv,
 		"MATH":   RegisterMATHInEnv,
 		"RANDOM": RegisterRANDOMInEnv,

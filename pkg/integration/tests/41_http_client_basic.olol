@@ -1,0 +1,23 @@
+BTW Test basic HTTP client functionality
+I CAN HAS HTTP?
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN MAIN
+    BTW Create HTTP client
+    I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
+    
+    BTW Check default values
+    SAYZ WIT "Default timeout:"
+    SAYZ WIT CLIENT TIMEOUT
+    
+    BTW Set a custom header by accessing the HEADERS baskit
+    I HAS A VARIABLE HEADERS TEH BASKIT ITZ CLIENT HEADERS
+    HEADERS DO PUT WIT "User-Agent" AN WIT "ObjectiveLOL/1.0"
+    
+    BTW Set timeout to 10 seconds
+    CLIENT TIMEOUT ITZ 10
+    SAYZ WIT "Updated timeout:"
+    SAYZ WIT CLIENT TIMEOUT
+    
+    SAYZ WIT "HTTP module loaded successfully!"
+KTHXBAI

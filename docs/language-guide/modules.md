@@ -192,6 +192,7 @@ Error: circular import detected during execution: circular_module_a
 | `IO` | Advanced I/O | `READER`, `WRITER`, buffered classes |
 | `THREAD` | Concurrency | `YARN`, `KNOT` classes |
 | `FILE` | File utilities | `DOCUMENT` class |
+| `HTTP` | HTTP client | `INTERWEB`, `RESPONSE` classes |
 
 ### Standard Library Examples
 

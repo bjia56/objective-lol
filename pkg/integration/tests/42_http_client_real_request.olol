@@ -1,0 +1,80 @@
+BTW Test HTTP client with real network request to GitHub
+I CAN HAS HTTP?
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== HTTP Client Real Request Test ==="
+    
+    BTW Create HTTP client
+    I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
+    
+    BTW Configure client with appropriate headers
+    I HAS A VARIABLE HEADERS TEH BASKIT ITZ CLIENT HEADERS
+    HEADERS DO PUT WIT "User-Agent" AN WIT "ObjectiveLOL-HTTP-Client/1.0"
+    HEADERS DO PUT WIT "Accept" AN WIT "application/vnd.github+json"
+    
+    BTW Set reasonable timeout for network request
+    CLIENT TIMEOUT ITZ 10
+    
+    SAYZ WIT "Making request to GitHub API..."
+    
+    BTW Make request with error handling
+    MAYB
+        BTW Get GitHub API root endpoint
+        I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO GET WIT "https://api.github.com"
+        
+        SAYZ WIT "=== Request Successful ==="
+        SAY WIT "Status Code: "
+        SAYZ WIT RESPONSE STATUS
+        
+        SAY WIT "Success Flag: "
+        SAYZ WIT RESPONSE IS_SUCCESS
+        
+        BTW Check if we got a successful response
+        IZ RESPONSE IS_SUCCESS?
+            SAYZ WIT "Response received successfully!"
+            
+            BTW Show some response headers
+            I HAS A VARIABLE RESP_HEADERS TEH BASKIT ITZ RESPONSE HEADERS
+            SAY WIT "Content-Type: "
+            SAYZ WIT RESP_HEADERS DO GET WIT "Content-Type"
+            
+            SAY WIT "Server: "
+            SAYZ WIT RESP_HEADERS DO GET WIT "Server"
+            
+            BTW Parse and show some JSON data
+            MAYB
+                I HAS A VARIABLE JSON_DATA TEH BASKIT ITZ RESPONSE DO TO_JSON
+                
+                SAYZ WIT "=== API Information ==="
+                SAY WIT "Current User URL: "
+                SAYZ WIT JSON_DATA DO GET WIT "current_user_url"
+                
+                SAY WIT "User Repositories URL: "
+                SAYZ WIT JSON_DATA DO GET WIT "user_repositories_url"
+                
+                SAY WIT "Repository Search URL: "  
+                SAYZ WIT JSON_DATA DO GET WIT "repository_search_url"
+                
+                SAY WIT "Hub URL: "
+                SAYZ WIT JSON_DATA DO GET WIT "hub_url"
+                
+            OOPSIE JSON_ERR
+                SAY WIT "JSON parsing failed: "
+                SAYZ WIT JSON_ERR
+            KTHX
+            
+        NOPE
+            SAYZ WIT "Request failed with non-success status"
+            SAY WIT "Error Flag: "
+            SAYZ WIT RESPONSE IS_ERROR
+        KTHX
+        
+    OOPSIE HTTP_ERR
+        SAY WIT "HTTP request failed: "
+        SAYZ WIT HTTP_ERR
+        SAYZ WIT "This might be due to network issues or connectivity problems"
+    KTHX
+    
+    SAYZ WIT "=== HTTP Client Real Request Test Complete ==="
+KTHXBAI
