@@ -1,11 +1,17 @@
 package api
 
+import "encoding/json"
+
 type GoValue struct {
 	value interface{}
 }
 
 func (v GoValue) Get() interface{} {
 	return v.value
+}
+
+func (v GoValue) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
 }
 
 func WrapAny(value interface{}) GoValue {

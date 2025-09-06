@@ -329,11 +329,7 @@ func (vm *VM) DefineFunctionMaxCompat(id, name string, argc int, function func(i
 		}
 
 		// Convert args to JSON array string
-		argValues := make([]interface{}, 0, len(args))
-		for _, arg := range args {
-			argValues = append(argValues, arg.Get())
-		}
-		jsonBytes, err := json.Marshal(argValues)
+		jsonBytes, err := json.Marshal(args)
 		if err != nil {
 			return WrapAny(nil), fmt.Errorf("error marshaling arguments to JSON: %v", err)
 		}

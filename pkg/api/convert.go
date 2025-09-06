@@ -106,9 +106,9 @@ func FromGoValue(val GoValue) (environment.Value, error) {
 }
 
 // bukkitToGoSlice converts an Objective-LOL BUKKIT object to a Go slice
-func bukkitToGoSlice(bukkit *environment.ObjectInstance) ([]interface{}, error) {
+func bukkitToGoSlice(bukkit *environment.ObjectInstance) ([]GoValue, error) {
 	underlying := bukkit.NativeData.(stdlib.BukkitSlice)
-	result := make([]interface{}, len(underlying))
+	result := make([]GoValue, len(underlying))
 	for i, val := range underlying {
 		goVal, err := ToGoValue(val)
 		if err != nil {
@@ -120,9 +120,9 @@ func bukkitToGoSlice(bukkit *environment.ObjectInstance) ([]interface{}, error) 
 }
 
 // baskitToGoMap converts an Objective-LOL BASKIT object to a Go map
-func baskitToGoMap(baskit *environment.ObjectInstance) (map[string]interface{}, error) {
+func baskitToGoMap(baskit *environment.ObjectInstance) (map[string]GoValue, error) {
 	underlying := baskit.NativeData.(stdlib.BaskitMap)
-	result := make(map[string]interface{})
+	result := make(map[string]GoValue)
 	for key, val := range underlying {
 		goVal, err := ToGoValue(val)
 		if err != nil {
@@ -134,8 +134,8 @@ func baskitToGoMap(baskit *environment.ObjectInstance) (map[string]interface{}, 
 }
 
 // objectToGoMap converts an Objective-LOL object to a Go map
-func objectToGoMap(obj *environment.ObjectInstance) (map[string]interface{}, error) {
-	result := make(map[string]interface{})
+func objectToGoMap(obj *environment.ObjectInstance) (map[string]GoValue, error) {
+	result := make(map[string]GoValue)
 	for key, val := range obj.Variables {
 		goVal, err := ToGoValue(val.Value)
 		if err != nil {
