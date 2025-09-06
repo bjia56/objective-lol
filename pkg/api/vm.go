@@ -33,21 +33,11 @@ type VM struct {
 	originalOut  io.Writer
 }
 
-// NewVM creates a new VM instance with the given options
-func NewVM(options ...VMOption) *VM {
-	config := DefaultConfig()
-
-	// Apply options
-	for _, option := range options {
-		if err := option(config); err != nil {
-			// In a real implementation, you might want to handle this differently
-			panic(fmt.Sprintf("VM configuration error: %v", err))
-		}
-	}
-
+// NewVM creates a new VM instance with the given config
+func NewVM(config *VMConfig) (*VM, error) {
 	// Validate configuration
 	if err := config.Validate(); err != nil {
-		panic(fmt.Sprintf("VM configuration validation error: %v", err))
+		return nil, fmt.Errorf("VM configuration validation error: %v", err)
 	}
 
 	vm := &VM{
@@ -58,10 +48,10 @@ func NewVM(options ...VMOption) *VM {
 	}
 
 	if err := vm.initialize(); err != nil {
-		panic(fmt.Sprintf("VM initialization error: %v", err))
+		return nil, fmt.Errorf("VM initialization error: %v", err)
 	}
 
-	return vm
+	return vm, nil
 }
 
 // initialize sets up the VM interpreter and runtime

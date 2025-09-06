@@ -1,4 +1,6 @@
 olol
 olol-lsp
+!cmd/olol/
 !cmd/olol-lsp/
 *.out
+out/

@@ -11,7 +11,9 @@ import (
 )
 
 func TestNewVM(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 	assert.NotNil(t, vm)
 	assert.NotNil(t, vm.config)
 	assert.True(t, vm.isInitialized)
@@ -21,21 +23,26 @@ func TestVMWithOptions(t *testing.T) {
 	var output bytes.Buffer
 	var input bytes.Buffer
 
-	vm := NewVM(
-		WithStdout(&output),
-		WithStdin(&input),
-		WithTimeout(5*time.Second),
-	)
+	config := DefaultConfig()
+	config.Stdout = &output
+	config.Stdin = &input
+	config.Timeout = 5 * time.Second
 
-	config := vm.GetConfig()
-	assert.Equal(t, &output, config.Stdout)
-	assert.Equal(t, &input, config.Stdin)
-	assert.Equal(t, 5*time.Second, config.Timeout)
+	vm, err := NewVM(config)
+	require.NoError(t, err)
+
+	vmConfig := vm.GetConfig()
+	assert.Equal(t, &output, vmConfig.Stdout)
+	assert.Equal(t, &input, vmConfig.Stdin)
+	assert.Equal(t, 5*time.Second, vmConfig.Timeout)
 }
 
 func TestExecuteBasicProgram(t *testing.T) {
 	var output bytes.Buffer
-	vm := NewVM(WithStdout(&output))
+	config := DefaultConfig()
+	config.Stdout = &output
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	code := `
 		I CAN HAS STDIO?
@@ -52,7 +59,9 @@ func TestExecuteBasicProgram(t *testing.T) {
 }
 
 func TestExecuteWithReturn(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	code := `
 		HAI ME TEH FUNCSHUN MAIN TEH INTEGR
@@ -66,7 +75,9 @@ func TestExecuteWithReturn(t *testing.T) {
 }
 
 func TestExecuteWithMath(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	code := `
 		I CAN HAS STDIO?
@@ -83,10 +94,12 @@ func TestExecuteWithMath(t *testing.T) {
 }
 
 func TestSetAndGetVariables(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Set variables
-	err := vm.Set("MY_STRING", "Hello")
+	err = vm.Set("MY_STRING", "Hello")
 	require.NoError(t, err)
 
 	err = vm.Set("MY_NUMBER", 42)
@@ -117,7 +130,9 @@ func TestSetAndGetVariables(t *testing.T) {
 }
 
 func TestCallFunction(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Define multiple functions with different signatures
 	code := `
@@ -152,7 +167,7 @@ func TestCallFunction(t *testing.T) {
 		KTHXBAI
 	`
 
-	_, err := vm.Execute(code)
+	_, err = vm.Execute(code)
 	require.NoError(t, err)
 
 	t.Run("ADD function with integers", func(t *testing.T) {
@@ -236,7 +251,10 @@ func TestCallFunction(t *testing.T) {
 }
 
 func TestExecuteWithTimeout(t *testing.T) {
-	vm := NewVM(WithTimeout(100 * time.Millisecond))
+	config := DefaultConfig()
+	config.Timeout = 100 * time.Millisecond
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Infinite loop code
 	code := `
@@ -249,7 +267,7 @@ func TestExecuteWithTimeout(t *testing.T) {
 	`
 
 	start := time.Now()
-	_, err := vm.Execute(code)
+	_, err = vm.Execute(code)
 	elapsed := time.Since(start)
 
 	require.Error(t, err)
@@ -262,7 +280,9 @@ func TestExecuteWithTimeout(t *testing.T) {
 }
 
 func TestExecuteWithCompileError(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Invalid syntax
 	code := `
@@ -270,7 +290,7 @@ func TestExecuteWithCompileError(t *testing.T) {
 			THIS IS NOT VALID
 	`
 
-	_, err := vm.Execute(code)
+	_, err = vm.Execute(code)
 	require.Error(t, err)
 
 	vmErr, ok := err.(*VMError)
@@ -279,7 +299,9 @@ func TestExecuteWithCompileError(t *testing.T) {
 }
 
 func TestExecuteWithRuntimeError(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Runtime error - undefined variable
 	code := `
@@ -288,7 +310,7 @@ func TestExecuteWithRuntimeError(t *testing.T) {
 		KTHXBAI
 	`
 
-	_, err := vm.Execute(code)
+	_, err = vm.Execute(code)
 	require.Error(t, err)
 
 	vmErr, ok := err.(*VMError)
@@ -297,10 +319,12 @@ func TestExecuteWithRuntimeError(t *testing.T) {
 }
 
 func TestVMReset(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Set a variable
-	err := vm.Set("TEST_VAR", "test_value")
+	err = vm.Set("TEST_VAR", "test_value")
 	require.NoError(t, err)
 
 	// Verify it exists
@@ -332,7 +356,9 @@ func TestTypeConversions(t *testing.T) {
 		// Note: nil conversion and float32 don't work as expected due to type system differences
 	}
 
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -348,7 +374,9 @@ func TestTypeConversions(t *testing.T) {
 }
 
 func TestBukkitToGoSliceConversion(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Create a BUKKIT array using Objective-LOL code
 	code := `
@@ -365,7 +393,7 @@ func TestBukkitToGoSliceConversion(t *testing.T) {
 		KTHXBAI
 	`
 
-	_, err := vm.Execute(code)
+	_, err = vm.Execute(code)
 	require.NoError(t, err)
 
 	result, err := vm.Call("test_bukkit")
@@ -382,7 +410,9 @@ func TestBukkitToGoSliceConversion(t *testing.T) {
 }
 
 func TestObjectToGoMapConversion(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Create a BASKIT map using Objective-LOL code
 	code := `
@@ -399,7 +429,7 @@ func TestObjectToGoMapConversion(t *testing.T) {
 		KTHXBAI
 	`
 
-	_, err := vm.Execute(code)
+	_, err = vm.Execute(code)
 	require.NoError(t, err)
 
 	result, err := vm.Call("test_baskit")
@@ -416,10 +446,12 @@ func TestObjectToGoMapConversion(t *testing.T) {
 }
 
 func TestSliceToArrayConversion(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Set a Go slice that should be converted to BUKKIT
-	err := vm.Set("MY_ARRAY", []interface{}{1, "hello", 3.14, true})
+	err = vm.Set("MY_ARRAY", []interface{}{1, "hello", 3.14, true})
 	require.NoError(t, err)
 
 	// Test that the variable was converted to BUKKIT and can be used
@@ -451,7 +483,9 @@ func TestSliceToArrayConversion(t *testing.T) {
 }
 
 func TestMapToObjectConversion(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Set a Go map that should be converted to BASKIT
 	goMap := map[string]interface{}{
@@ -460,7 +494,7 @@ func TestMapToObjectConversion(t *testing.T) {
 		"height": 6.2,
 		"active": true,
 	}
-	err := vm.Set("MY_MAP", goMap)
+	err = vm.Set("MY_MAP", goMap)
 	require.NoError(t, err)
 
 	// Test that the variable was converted to BASKIT and can be used
@@ -492,7 +526,9 @@ func TestMapToObjectConversion(t *testing.T) {
 }
 
 func TestStructToObjectConversion(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Define a test struct
 	type TestStruct struct {
@@ -509,7 +545,7 @@ func TestStructToObjectConversion(t *testing.T) {
 		Height: 5.9,
 		Active: false,
 	}
-	err := vm.Set("MY_STRUCT", testStruct)
+	err = vm.Set("MY_STRUCT", testStruct)
 	require.NoError(t, err)
 
 	// Test that the variable was converted to BASKIT and can be used
@@ -550,10 +586,12 @@ func TestStructToObjectConversion(t *testing.T) {
 }
 
 func TestArrayConversion(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Set an array - this tests Go slice → BUKKIT → Go slice conversion
-	err := vm.Set("MY_ARRAY", []int{1, 2, 3, 4, 5})
+	err = vm.Set("MY_ARRAY", []int{1, 2, 3, 4, 5})
 	require.NoError(t, err)
 
 	// Get the array back - should be converted through BUKKIT
@@ -569,20 +607,17 @@ func TestArrayConversion(t *testing.T) {
 }
 
 func TestConfigValidation(t *testing.T) {
-	// Test invalid configuration
-	defer func() {
-		if r := recover(); r != nil {
-			assert.Contains(t, r.(string), "configuration error")
-		}
-	}()
-
-	// This should panic due to nil stdout
-	_ = NewVM(WithStdout(nil))
-	t.Error("Expected panic due to invalid configuration")
+	config := DefaultConfig()
+	config.Stdout = nil
+	_, err := NewVM(config)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "configuration validation error")
 }
 
 func TestConcurrentAccess(t *testing.T) {
-	vm := NewVM()
+	config := DefaultConfig()
+	vm, err := NewVM(config)
+	require.NoError(t, err)
 
 	// Set up concurrent access test
 	done := make(chan bool, 2)
