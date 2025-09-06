@@ -229,7 +229,7 @@ echo "Installing gopy..."
 "$GO_EXE" install github.com/go-python/gopy@v0.4.10
 
 # Define paths
-TARGET_DIR="$PROJECT_ROOT/out"
+TARGET_DIR="$PROJECT_ROOT/python/vm"
 SRC_DIR="$PROJECT_ROOT/pkg/api"
 
 # Set environment variables for gopy
@@ -286,8 +286,6 @@ if [ $? -eq 0 ]; then
 
     # Write __init__.py file
     echo "from .api import *" > __init__.py
-
-    exit 0
 
     # Remove unused files
     rm -f api.h \
