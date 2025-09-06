@@ -1,5 +1,6 @@
 from inspect import signature
 import json
+import uuid
 
 from .vm import *
 
@@ -10,10 +11,10 @@ definedFunctions = {}
 # Additionally, using closures seems to result in a segfault
 # at https://github.com/python/cpython/blob/v3.13.5/Python/generated_cases.c.h#L2462
 # so we use a global dictionary to store the actual functions.
-def gopy_wrapper(name: str, json_args: str):
+def gopy_wrapper(id: str, json_args: str):
     args = json.loads(json_args)
     try:
-        result = definedFunctions[name](*args)
+        result = definedFunctions[id](*args)
         return json.dumps({"result": result, "error": None}).encode('utf-8')
     except Exception as e:
         return json.dumps({"result": None, "error": str(e)}).encode('utf-8')
@@ -43,8 +44,9 @@ class ObjectiveLOLVM:
 
     def declare_function(self, name: str, function) -> None:
         argc = len(signature(function).parameters)
-        definedFunctions[name] = function
-        self.vm.DefineFunctionMaxCompat(name, argc, gopy_wrapper)
+        unique_id = str(uuid.uuid4())
+        definedFunctions[unique_id] = function
+        self.vm.DefineFunctionMaxCompat(unique_id, name, argc, gopy_wrapper)
 
     def execute(self, code: str) -> None:
         return self.vm.Execute(code)

@@ -315,7 +315,8 @@ func (vm *VM) DefineFunction(name string, argc int, function func(args []GoValue
 
 // DefineFunctionMaxCompat defines a global function with maximum compatibility,
 // wrapping arguments and return values as JSON strings.
-func (vm *VM) DefineFunctionMaxCompat(name string, argc int, function func(name, jsonArgs string) string) error {
+// An optional id cookie is passed back to the function to identify it.
+func (vm *VM) DefineFunctionMaxCompat(id, name string, argc int, function func(id, jsonArgs string) string) error {
 	vm.mutex.Lock()
 	defer vm.mutex.Unlock()
 
@@ -335,7 +336,7 @@ func (vm *VM) DefineFunctionMaxCompat(name string, argc int, function func(name,
 		}
 
 		// Call the provided function
-		jsonResult := function(name, string(jsonBytes))
+		jsonResult := function(id, string(jsonBytes))
 
 		// Parse JSON result
 		var result map[string]interface{}
