@@ -1,5 +1,4 @@
 from inspect import signature
-from functools import partial
 import json
 
 from .vm import *
