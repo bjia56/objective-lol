@@ -1,2 +1,4 @@
 vm/*
 !vm/.gitkeep
+*.pyc
+__pycache__/

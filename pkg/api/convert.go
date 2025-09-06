@@ -3,39 +3,50 @@ package api
 import (
 	"fmt"
 	"reflect"
-	"strconv"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/stdlib"
 )
 
 // ToGoValue converts an Objective-LOL value to a Go value
-func ToGoValue(val environment.Value) (interface{}, error) {
+func ToGoValue(val environment.Value) (GoValue, error) {
 	if val == nil || val.IsNothing() {
-		return nil, nil
+		return WrapAny(nil), nil
 	}
 
 	switch v := val.(type) {
 	case environment.IntegerValue:
-		return int64(v), nil
+		return WrapAny(int64(v)), nil
 	case environment.DoubleValue:
-		return float64(v), nil
+		return WrapAny(float64(v)), nil
 	case environment.StringValue:
-		return string(v), nil
+		return WrapAny(string(v)), nil
 	case environment.BoolValue:
-		return bool(v), nil
+		return WrapAny(bool(v)), nil
 	case *environment.ObjectInstance:
 		// Check if it's a BUKKIT (array) object
 		if v.Class.Name == "BUKKIT" {
-			return bukkitToGoSlice(v)
+			bukkitSlice, err := bukkitToGoSlice(v)
+			if err != nil {
+				return WrapAny(nil), err
+			}
+			return WrapAny(bukkitSlice), nil
 		}
 		// Check if it's a BASKIT (map) object
 		if v.Class.Name == "BASKIT" {
-			return baskitToGoMap(v)
+			baskitMap, err := baskitToGoMap(v)
+			if err != nil {
+				return WrapAny(nil), err
+			}
+			return WrapAny(baskitMap), nil
 		}
-		return objectToGoMap(v)
+		goMap, err := objectToGoMap(v)
+		if err != nil {
+			return WrapAny(nil), err
+		}
+		return WrapAny(goMap), nil
 	default:
-		return nil, NewConversionError(
+		return WrapAny(nil), NewConversionError(
 			fmt.Sprintf("cannot convert Objective-LOL type %s to Go value", val.Type()),
 			nil,
 		)
@@ -43,12 +54,12 @@ func ToGoValue(val environment.Value) (interface{}, error) {
 }
 
 // FromGoValue converts a Go value to an Objective-LOL value
-func FromGoValue(val interface{}) (environment.Value, error) {
-	if val == nil {
+func FromGoValue(val GoValue) (environment.Value, error) {
+	if val.Get() == nil {
 		return environment.NOTHIN, nil
 	}
 
-	rv := reflect.ValueOf(val)
+	rv := reflect.ValueOf(val.Get())
 
 	// Handle pointers
 	for rv.Kind() == reflect.Ptr {
@@ -157,7 +168,7 @@ func sliceToArray(rv reflect.Value) (environment.Value, error) {
 	// Populate the BUKKIT object with the slice elements
 	for i := 0; i < rv.Len(); i++ {
 		elem := rv.Index(i)
-		objElem, err := FromGoValue(elem.Interface())
+		objElem, err := FromGoValue(WrapAny(elem.Interface()))
 		if err != nil {
 			return nil, err
 		}
@@ -183,11 +194,11 @@ func mapToObject(rv reflect.Value) (environment.Value, error) {
 	// Populate the BASKIT object with the map elements
 	for _, key := range rv.MapKeys() {
 		val := rv.MapIndex(key)
-		objKey, err := FromGoValue(key.Interface())
+		objKey, err := FromGoValue(WrapAny(key.Interface()))
 		if err != nil {
 			return nil, err
 		}
-		objVal, err := FromGoValue(val.Interface())
+		objVal, err := FromGoValue(WrapAny(val.Interface()))
 		if err != nil {
 			return nil, err
 		}
@@ -217,11 +228,11 @@ func structToObject(rv reflect.Value) (environment.Value, error) {
 		value := rv.Field(i)
 
 		// Convert field name and value to Objective-LOL environment
-		objKey, err := FromGoValue(field.Name)
+		objKey, err := FromGoValue(WrapAny(field.Name))
 		if err != nil {
 			return nil, err
 		}
-		objVal, err := FromGoValue(value.Interface())
+		objVal, err := FromGoValue(WrapAny(value.Interface()))
 		if err != nil {
 			return nil, err
 		}
@@ -239,7 +250,7 @@ func structToObject(rv reflect.Value) (environment.Value, error) {
 func ConvertArguments(args []interface{}) ([]environment.Value, error) {
 	result := make([]environment.Value, len(args))
 	for i, arg := range args {
-		val, err := FromGoValue(arg)
+		val, err := FromGoValue(WrapAny(arg))
 		if err != nil {
 			return nil, NewConversionError(
 				fmt.Sprintf("error converting argument at index %d", i),
@@ -249,25 +260,4 @@ func ConvertArguments(args []interface{}) ([]environment.Value, error) {
 		result[i] = val
 	}
 	return result, nil
-}
-
-// ParseGoValue attempts to parse a string into a Go value of the appropriate type
-func ParseGoValue(str string) interface{} {
-	// Try integer
-	if val, err := strconv.ParseInt(str, 10, 64); err == nil {
-		return val
-	}
-
-	// Try float
-	if val, err := strconv.ParseFloat(str, 64); err == nil {
-		return val
-	}
-
-	// Try boolean
-	if val, err := strconv.ParseBool(str); err == nil {
-		return val
-	}
-
-	// Default to string
-	return str
 }
