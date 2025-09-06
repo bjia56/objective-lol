@@ -51,7 +51,11 @@ func (e *VMError) Error() string {
 		}
 	}
 
-	parts = append(parts, e.Message, e.Wrapped.Error())
+	if e.Wrapped == nil {
+		parts = append(parts, e.Message)
+	} else {
+		parts = append(parts, e.Message, e.Wrapped.Error())
+	}
 
 	if e.Duration > 0 {
 		parts = append(parts, fmt.Sprintf("(after %v)", e.Duration))

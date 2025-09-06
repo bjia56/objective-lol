@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -26,7 +27,6 @@ type VM struct {
 
 	// State tracking
 	isInitialized bool
-	currentFile   string
 
 	// Output capture
 	outputBuffer *bytes.Buffer
@@ -272,4 +272,84 @@ func (vm *VM) GetVariable(variableName string) (GoValue, error) {
 
 	// Convert to Go value
 	return ToGoValue(variable.Value)
+}
+
+// defineFunctionUnsafe defines a global function in the VM without holding the mutex
+func (vm *VM) defineFunctionUnsafe(name string, argc int, function func(args []GoValue) (GoValue, error)) error {
+	return vm.interpreter.GetEnvironment().DefineFunction(&environment.Function{
+		Name:       strings.ToUpper(name),
+		Parameters: make([]environment.Parameter, argc),
+		NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+			// Convert environment.Value args to GoValue
+			goArgs := make([]GoValue, len(args))
+			for i, arg := range args {
+				goVal, err := ToGoValue(arg)
+				if err != nil {
+					return nil, fmt.Errorf("error converting argument %d: %v", i, err)
+				}
+				goArgs[i] = goVal
+			}
+
+			// Call the provided Go function
+			result, err := function(goArgs)
+			if err != nil {
+				return nil, err
+			}
+
+			// Convert result back to environment.Value
+			envVal, err := FromGoValue(result)
+			if err != nil {
+				return nil, fmt.Errorf("error converting return value: %v", err)
+			}
+			return envVal, nil
+		},
+	})
+}
+
+// DefineFunction defines a global function in the VM
+func (vm *VM) DefineFunction(name string, argc int, function func(args []GoValue) (GoValue, error)) error {
+	vm.mutex.Lock()
+	defer vm.mutex.Unlock()
+	return vm.defineFunctionUnsafe(name, argc, function)
+}
+
+// DefineFunctionMaxCompat defines a global function with maximum compatibility,
+// wrapping arguments and return values as JSON strings.
+func (vm *VM) DefineFunctionMaxCompat(name string, argc int, function func(name, jsonArgs string) string) error {
+	vm.mutex.Lock()
+	defer vm.mutex.Unlock()
+
+	fn := func(args []GoValue) (GoValue, error) {
+		if len(args) != argc {
+			return WrapAny(nil), fmt.Errorf("expected %d arguments, got %d", argc, len(args))
+		}
+
+		// Convert args to JSON array string
+		argValues := make([]interface{}, 0, len(args))
+		for _, arg := range args {
+			argValues = append(argValues, arg.Get())
+		}
+		jsonBytes, err := json.Marshal(argValues)
+		if err != nil {
+			return WrapAny(nil), fmt.Errorf("error marshaling arguments to JSON: %v", err)
+		}
+
+		// Call the provided function
+		jsonResult := function(name, string(jsonBytes))
+
+		// Parse JSON result
+		var result map[string]interface{}
+		if err := json.Unmarshal([]byte(jsonResult), &result); err != nil {
+			return WrapAny(nil), fmt.Errorf("error unmarshaling result from JSON: %v", err)
+		}
+		if errVal, ok := result["error"]; ok && errVal != nil {
+			return WrapAny(nil), fmt.Errorf("error from function: %v", errVal)
+		}
+		if resultVal, ok := result["result"]; ok {
+			return WrapAny(resultVal), nil
+		}
+		return WrapAny(nil), nil
+	}
+
+	return vm.defineFunctionUnsafe(name, argc, fn)
 }

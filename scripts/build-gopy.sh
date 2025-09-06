@@ -287,6 +287,8 @@ if [ $? -eq 0 ]; then
     # Write __init__.py file
     echo "from .api import *" > __init__.py
 
+    exit 0
+
     # Remove unused files
     rm -f api.h \
           api.go \
