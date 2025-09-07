@@ -1,6 +1,6 @@
 import asyncio
 import concurrent.futures
-from inspect import signature
+import inspect
 import json
 import threading
 import uuid
@@ -49,7 +49,7 @@ class ObjectiveLOLVM:
         self.declare_variable(name, value, constant)
 
     def declare_function(self, name: str, function, argc: int = None) -> None:
-        argc = argc is None and len(signature(function).parameters) or argc
+        argc = argc is None and len(inspect.signature(function).parameters) or argc
         unique_id = str(uuid.uuid4())
         definedFunctions[unique_id] = function
         self.vm.DefineFunctionMaxCompat(unique_id, name, argc, gopy_wrapper)
@@ -59,7 +59,7 @@ class ObjectiveLOLVM:
 
     async def declare_coroutine_async(self, name: str, function) -> None:
         loop = asyncio.get_event_loop()
-        argc = len(signature(function).parameters)
+        argc = len(inspect.signature(function).parameters)
 
         def wrapper(*args):
             fut = concurrent.futures.Future()
