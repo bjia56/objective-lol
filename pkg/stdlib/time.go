@@ -22,7 +22,7 @@ func getTimeClasses() map[string]*environment.Class {
 					"DATE": {
 						Name:       "DATE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							this.NativeData = time.Now()
 							return environment.NOTHIN, nil
 						},
@@ -31,7 +31,7 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "YEAR",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Year()), nil
 							}
@@ -42,7 +42,7 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "MONTH",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Month()), nil
 							}
@@ -53,7 +53,7 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "DAY",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Day()), nil
 							}
@@ -64,7 +64,7 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "HOUR",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Hour()), nil
 							}
@@ -75,7 +75,7 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "MINUTE",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Minute()), nil
 							}
@@ -86,7 +86,7 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "SECOND",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Second()), nil
 							}
@@ -97,7 +97,7 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "MILLISECOND",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Nanosecond() / 1e6), nil
 							}
@@ -108,7 +108,7 @@ func getTimeClasses() map[string]*environment.Class {
 						Name:       "NANOSECOND",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Nanosecond()), nil
 							}
@@ -121,7 +121,7 @@ func getTimeClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "layout", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							layout := args[0]
 							if stringVal, ok := layout.(environment.StringValue); ok {
 								if date, ok := this.NativeData.(time.Time); ok {
@@ -160,7 +160,7 @@ func getTimeFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "seconds", Type: "INTEGR"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					seconds := args[0]
 
 					if secondsVal, ok := seconds.(environment.IntegerValue); ok {

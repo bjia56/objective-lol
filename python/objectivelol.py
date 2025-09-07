@@ -12,9 +12,14 @@ from .vm import (
     WrapFloat,
     WrapString,
     WrapBool,
+    GoValue,
+    Slice_api_GoValue,
+    Map_string_api_GoValue,
 )
 
+
 definedFunctions = {}
+
 
 # gopy does not support passing complex types directly,
 # so we wrap arguments and return values as JSON strings.
@@ -29,28 +34,58 @@ def gopy_wrapper(id: str, json_args: str):
     except Exception as e:
         return json.dumps({"result": None, "error": str(e)}).encode('utf-8')
 
+
+def convert_to_go_value(value):
+    if isinstance(value, int):
+        return WrapInt(value)
+    elif isinstance(value, float):
+        return WrapFloat(value)
+    elif isinstance(value, str):
+        return WrapString(value)
+    elif isinstance(value, bool):
+        return WrapBool(value)
+    elif isinstance(value, GoValue):
+        return value
+    elif isinstance(value, (list, tuple)):
+        slice = Slice_api_GoValue()
+        for v in value:
+            slice.append(convert_to_go_value(v))
+        return slice
+    elif isinstance(value, dict):
+        map = Map_string_api_GoValue()
+        for k, v in value.items():
+            map[k] = convert_to_go_value(v)
+        return map
+    else:
+        raise ValueError("Unsupported argument type %s" % type(value))
+
+
+def convert_from_go_value(go_value: GoValue):
+    typ = go_value.Type()
+    if typ == "INTEGR":
+        return go_value.Int()
+    elif typ == "DUBBLE":
+        return go_value.Float()
+    elif typ == "STRIN":
+        return go_value.String()
+    elif typ == "BOOL":
+        return go_value.Bool()
+    elif typ == "BUKKIT":
+        return [convert_from_go_value(v) for v in go_value.Slice()]
+    elif typ == "BASKIT":
+        return {k: convert_from_go_value(v) for k, v in go_value.Map().items()}
+    else:
+        raise ValueError("Unsupported Go value type %s" % typ)
+
+
 class ObjectiveLOLVM:
     def __init__(self):
         # todo: figure out how to bridge stdout/stdin
         self.vm = NewVM(DefaultConfig())
 
     def declare_variable(self, name: str, value, constant: bool = False) -> None:
-        if isinstance(value, int):
-            var_type = "INTEGR"
-            goValue = WrapInt(value)
-        elif isinstance(value, float):
-            var_type = "DUBBLE"
-            goValue = WrapFloat(value)
-        elif isinstance(value, str):
-            var_type = "STRIN"
-            goValue = WrapString(value)
-        elif isinstance(value, bool):
-            var_type = "BOOL"
-            goValue = WrapBool(value)
-        else:
-            raise ValueError("Unsupported variable type %s" % type(value))
-
-        self.vm.DefineVariable(name, var_type, goValue, constant)
+        goValue = convert_to_go_value(value)
+        self.vm.DefineVariable(name, goValue, constant)
 
     async def declare_variable_async(self, name: str, value, constant: bool = False) -> None:
         self.declare_variable(name, value, constant)
@@ -80,6 +115,23 @@ class ObjectiveLOLVM:
             return fut.result()
 
         self.declare_function(name, wrapper, argc)
+
+    def call(self, name: str, *args):
+        goArgs = convert_to_go_value(args)
+        result = self.vm.Call(name, goArgs)
+        return convert_from_go_value(result)
+
+    async def call_async(self, name: str, *args):
+        goArgs = convert_to_go_value(args)
+        fut = concurrent.futures.Future()
+        def do():
+            try:
+                result = self.vm.Call(name, goArgs)
+                fut.set_result(convert_from_go_value(result))
+            except Exception as e:
+                fut.set_exception(e)
+        threading.Thread(target=do).start()
+        return await asyncio.wrap_future(fut)
 
     def execute(self, code: str) -> None:
         return self.vm.Execute(code)

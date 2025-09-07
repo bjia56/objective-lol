@@ -54,7 +54,7 @@ func getArrayClasses() map[string]*environment.Class {
 					"BUKKIT": {
 						Name:       "BUKKIT",
 						Parameters: []environment.Parameter{}, // Empty constructor - no arguments
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Create empty slice and store in NativeData
 							slice := make(BukkitSlice, 0)
 							this.NativeData = slice
@@ -65,7 +65,7 @@ func getArrayClasses() map[string]*environment.Class {
 					"AT": {
 						Name:       "AT",
 						Parameters: []environment.Parameter{{Name: "INDEX", Type: "INTEGR"}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							index := args[0]
 
 							if slice, ok := this.NativeData.(BukkitSlice); ok {
@@ -85,7 +85,7 @@ func getArrayClasses() map[string]*environment.Class {
 					"SET": {
 						Name:       "SET",
 						Parameters: []environment.Parameter{{Name: "INDEX", Type: "INTEGR"}, {Name: "VALUE", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							index, value := args[0], args[1]
 
 							if slice, ok := this.NativeData.(BukkitSlice); ok {
@@ -107,7 +107,7 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "PUSH",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							value := args[0]
 
 							if slice, ok := this.NativeData.(BukkitSlice); ok {
@@ -122,7 +122,7 @@ func getArrayClasses() map[string]*environment.Class {
 					"POP": {
 						Name:       "POP",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								if len(slice) == 0 {
 									return nil, fmt.Errorf("cannot pop from empty array")
@@ -140,7 +140,7 @@ func getArrayClasses() map[string]*environment.Class {
 					"SHIFT": {
 						Name:       "SHIFT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								if len(slice) == 0 {
 									return nil, fmt.Errorf("cannot shift from empty array")
@@ -158,7 +158,7 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "UNSHIFT",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							value := args[0]
 
 							if slice, ok := this.NativeData.(BukkitSlice); ok {
@@ -173,7 +173,7 @@ func getArrayClasses() map[string]*environment.Class {
 					"CLEAR": {
 						Name:       "CLEAR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							newSlice := make(BukkitSlice, 0)
 							this.NativeData = newSlice
 							updateSIZ(this, newSlice)
@@ -184,7 +184,7 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "REVERSE",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								// Reverse in-place
 								for i, j := 0, len(slice)-1; i < j; i, j = i+1, j-1 {
@@ -199,7 +199,7 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "SORT",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								sort.Slice(slice, func(i, j int) bool {
 									left, right := slice[i], slice[j]
@@ -236,7 +236,7 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "JOIN",
 						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{{Name: "SEPARATOR", Type: "STRIN"}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							separator := args[0]
 
 							if slice, ok := this.NativeData.(BukkitSlice); ok {
@@ -262,7 +262,7 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "SLICE",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{{Name: "START", Type: "INTEGR"}, {Name: "END", Type: "INTEGR"}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							start, end := args[0], args[1]
 
 							if slice, ok := this.NativeData.(BukkitSlice); ok {
@@ -308,7 +308,7 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "FIND",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							value := args[0]
 
 							if slice, ok := this.NativeData.(BukkitSlice); ok {
@@ -327,7 +327,7 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "CONTAINS",
 						ReturnType: "BOOL",
 						Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							value := args[0]
 
 							if slice, ok := this.NativeData.(BukkitSlice); ok {

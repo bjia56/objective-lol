@@ -53,7 +53,7 @@ func getMapClasses() map[string]*environment.Class {
 					"BASKIT": {
 						Name:       "BASKIT",
 						Parameters: []environment.Parameter{}, // Empty constructor - no arguments
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Create empty map and store in NativeData
 							baskitMap := make(BaskitMap)
 							this.NativeData = baskitMap
@@ -64,7 +64,7 @@ func getMapClasses() map[string]*environment.Class {
 					"PUT": {
 						Name:       "PUT",
 						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}, {Name: "VALUE", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key, value := args[0], args[1]
 
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
@@ -80,7 +80,7 @@ func getMapClasses() map[string]*environment.Class {
 					"GET": {
 						Name:       "GET",
 						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key := args[0]
 
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
@@ -98,7 +98,7 @@ func getMapClasses() map[string]*environment.Class {
 						Name:       "CONTAINS",
 						ReturnType: "BOOL",
 						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key := args[0]
 
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
@@ -116,7 +116,7 @@ func getMapClasses() map[string]*environment.Class {
 					"REMOVE": {
 						Name:       "REMOVE",
 						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key := args[0]
 
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
@@ -135,7 +135,7 @@ func getMapClasses() map[string]*environment.Class {
 					"CLEAR": {
 						Name:       "CLEAR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							newMap := make(BaskitMap)
 							this.NativeData = newMap
 							updateBaskitSIZ(this, newMap)
@@ -146,7 +146,7 @@ func getMapClasses() map[string]*environment.Class {
 						Name:       "KEYS",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Create a new BUKKIT with all keys
 								keys := make([]string, 0, len(baskitMap))
@@ -173,7 +173,7 @@ func getMapClasses() map[string]*environment.Class {
 						Name:       "VALUES",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Create a new BUKKIT with all values
 								// Sort keys first for consistent ordering
@@ -200,7 +200,7 @@ func getMapClasses() map[string]*environment.Class {
 						Name:       "PAIRS",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Create a new BUKKIT with key-value pairs as BUKKIT objects
 								keys := make([]string, 0, len(baskitMap))
@@ -230,7 +230,7 @@ func getMapClasses() map[string]*environment.Class {
 					"MERGE": {
 						Name:       "MERGE",
 						Parameters: []environment.Parameter{{Name: "OTHER", Type: "BASKIT"}},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							other := args[0]
 
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
@@ -258,7 +258,7 @@ func getMapClasses() map[string]*environment.Class {
 						Name:       "COPY",
 						ReturnType: "BASKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Create new BASKIT with copied data
 								newBaskitObj := NewBaskitInstance()

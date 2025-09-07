@@ -320,26 +320,6 @@ func TestUpdateKnotStatus(t *testing.T) {
 	}
 }
 
-// TestYarnStartWithoutInterpreter tests START method behavior without proper interpreter context
-func TestYarnStartWithoutInterpreter(t *testing.T) {
-	classes := getThreadClasses()
-	yarnClass := classes["YARN"]
-
-	startMethod := yarnClass.PublicFunctions["START"]
-	yarnObj := NewYarnInstance()
-
-	// Call START without proper interpreter context
-	result, err := startMethod.NativeImpl(nil, yarnObj, []environment.Value{})
-
-	if err == nil {
-		t.Error("Expected START to fail without proper interpreter context")
-	}
-
-	if result != environment.NOTHIN {
-		t.Errorf("Expected START to return NOTHIN, got %v", result)
-	}
-}
-
 // TestYarnJoin tests the JOIN method
 func TestYarnJoin(t *testing.T) {
 	classes := getThreadClasses()

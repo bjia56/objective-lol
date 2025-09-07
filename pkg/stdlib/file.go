@@ -39,7 +39,7 @@ func getFileClasses() map[string]*environment.Class {
 							{Name: "path", Type: "STRIN"},
 							{Name: "mode", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							path := args[0]
 							mode := args[1]
 
@@ -97,7 +97,7 @@ func getFileClasses() map[string]*environment.Class {
 					// OPEN method
 					"OPEN": {
 						Name: "OPEN",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("OPEN: invalid context")
@@ -142,7 +142,7 @@ func getFileClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "size", Type: "INTEGR"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							size := args[0]
 
 							sizeVal, ok := size.(environment.IntegerValue)
@@ -184,7 +184,7 @@ func getFileClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							data := args[0]
 
 							dataVal, ok := data.(environment.StringValue)
@@ -220,7 +220,7 @@ func getFileClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "position", Type: "INTEGR"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							position := args[0]
 
 							posVal, ok := position.(environment.IntegerValue)
@@ -249,7 +249,7 @@ func getFileClasses() map[string]*environment.Class {
 					"TELL": {
 						Name:       "TELL",
 						ReturnType: "INTEGR",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("TELL: invalid context")
@@ -271,7 +271,7 @@ func getFileClasses() map[string]*environment.Class {
 					"SIZE": {
 						Name:       "SIZE",
 						ReturnType: "INTEGR",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("SIZE: invalid context")
@@ -289,7 +289,7 @@ func getFileClasses() map[string]*environment.Class {
 					"EXISTS": {
 						Name:       "EXISTS",
 						ReturnType: "BOOL",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("EXISTS: invalid context")
@@ -303,7 +303,7 @@ func getFileClasses() map[string]*environment.Class {
 					// FLUSH method
 					"FLUSH": {
 						Name: "FLUSH",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("FLUSH: invalid context")
@@ -324,7 +324,7 @@ func getFileClasses() map[string]*environment.Class {
 					// CLOSE method (implements both READER and WRITER interfaces)
 					"CLOSE": {
 						Name: "CLOSE",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid context")
@@ -353,7 +353,7 @@ func getFileClasses() map[string]*environment.Class {
 					// DELETE method
 					"DELETE": {
 						Name: "DELETE",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("DELETE: invalid context")

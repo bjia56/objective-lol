@@ -5,6 +5,12 @@ import (
 	"slices"
 )
 
+type Interpreter interface {
+	CallFunction(function string, args []Value) (Value, error)
+	CallMemberFunction(object *ObjectInstance, function string, args []Value) (Value, error)
+	Fork() Interpreter
+}
+
 // Variable represents a variable with its type information and mutability
 type Variable struct {
 	Documentation []string
@@ -31,7 +37,7 @@ type Function struct {
 	Parameters    []Parameter
 	Body          interface{} // Will hold AST nodes
 	IsShared      *bool       // nil for global functions, true/false for class methods
-	NativeImpl    func(ctx interface{}, this *ObjectInstance, args []Value) (Value, error)
+	NativeImpl    func(interpreter Interpreter, this *ObjectInstance, args []Value) (Value, error)
 }
 
 // Parameter represents a function parameter
@@ -488,8 +494,8 @@ func (o *ObjectInstance) EqualTo(other Value) (BoolValue, error) {
 }
 
 // GetMemberFunction retrieves a member function from the object's class
-func (obj *ObjectInstance) GetMemberFunction(name string, fromContext string, env *Environment) (*Function, error) {
-	return obj.Class.getMemberFunction(name, fromContext, env)
+func (obj *ObjectInstance) GetMemberFunction(name string, fromContext string) (*Function, error) {
+	return obj.Class.getMemberFunction(name, fromContext, obj.Environment)
 }
 
 // GetHierarchy returns the class hierarchy as a slice of class names (MRO-based)

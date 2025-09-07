@@ -68,7 +68,7 @@ func (m *MockReader) setupAsReader(t *testing.T, env *environment.Environment) *
 				Name:       "READ",
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{{Name: "size", Type: "INTEGR"}},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					m.readCount++
 					if len(args) != 1 {
 						return environment.NOTHIN, assert.AnError
@@ -99,7 +99,7 @@ func (m *MockReader) setupAsReader(t *testing.T, env *environment.Environment) *
 			},
 			"CLOSE": {
 				Name: "CLOSE",
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					m.closeCount++
 					return environment.NOTHIN, nil
 				},
@@ -133,7 +133,7 @@ func (m *MockWriter) setupAsWriter(t *testing.T, env *environment.Environment) *
 				Name:       "WRITE",
 				ReturnType: "INTEGR",
 				Parameters: []environment.Parameter{{Name: "data", Type: "STRIN"}},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					m.writeCount++
 					if len(args) != 1 {
 						return environment.NOTHIN, assert.AnError
@@ -153,7 +153,7 @@ func (m *MockWriter) setupAsWriter(t *testing.T, env *environment.Environment) *
 			},
 			"CLOSE": {
 				Name: "CLOSE",
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					m.closeCount++
 					return environment.NOTHIN, nil
 				},
@@ -257,24 +257,23 @@ func TestBufferedReaderRead(t *testing.T) {
 		},
 		DefaultGlobalInitializers()...,
 	)
-	ctx := interpreter.NewFunctionContext(interp, env)
 
 	readMethod := bufferedClass.PublicFunctions["READ"]
 
 	// Test 1: Read 5 characters
-	result, err := readMethod.NativeImpl(ctx, instance, []environment.Value{environment.IntegerValue(5)})
+	result, err := readMethod.NativeImpl(interp, instance, []environment.Value{environment.IntegerValue(5)})
 	require.NoError(t, err)
 	assert.Equal(t, environment.StringValue("Hello"), result)
 	assert.Equal(t, 1, mockReader.readCount, "Should have called underlying reader once")
 
 	// Test 2: Read 7 more characters (should use buffer)
-	result, err = readMethod.NativeImpl(ctx, instance, []environment.Value{environment.IntegerValue(7)})
+	result, err = readMethod.NativeImpl(interp, instance, []environment.Value{environment.IntegerValue(7)})
 	require.NoError(t, err)
 	assert.Equal(t, environment.StringValue(", World"), result)
 	assert.Equal(t, 1, mockReader.readCount, "Should still have called underlying reader only once")
 
 	// Test 3: Read more to exhaust buffer
-	result, err = readMethod.NativeImpl(ctx, instance, []environment.Value{environment.IntegerValue(10)})
+	result, err = readMethod.NativeImpl(interp, instance, []environment.Value{environment.IntegerValue(10)})
 	require.NoError(t, err)
 	assert.Equal(t, environment.StringValue("! This is "), result)
 	assert.Equal(t, 2, mockReader.readCount, "Should have called underlying reader twice now")
@@ -339,11 +338,10 @@ func TestBufferedReaderClose(t *testing.T) {
 		},
 		DefaultGlobalInitializers()...,
 	)
-	ctx := interpreter.NewFunctionContext(interp, env)
 
 	// Close the buffered reader
 	closeMethod := bufferedClass.PublicFunctions["CLOSE"]
-	_, err = closeMethod.NativeImpl(ctx, instance, []environment.Value{})
+	_, err = closeMethod.NativeImpl(interp, instance, []environment.Value{})
 	require.NoError(t, err)
 
 	// Verify underlying reader was closed
@@ -444,19 +442,18 @@ func TestBufferedWriterWrite(t *testing.T) {
 		},
 		DefaultGlobalInitializers()...,
 	)
-	ctx := interpreter.NewFunctionContext(interp, env)
 
 	writeMethod := bufferedClass.PublicFunctions["WRITE"]
 
 	// Test 1: Write small data that should be buffered
-	result, err := writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue("Hello")})
+	result, err := writeMethod.NativeImpl(interp, instance, []environment.Value{environment.StringValue("Hello")})
 	require.NoError(t, err)
 	assert.Equal(t, environment.IntegerValue(5), result)
 	assert.Equal(t, 0, mockWriter.writeCount, "Should not have called underlying writer yet")
 	assert.Equal(t, "", mockWriter.data, "Mock writer should not have received data yet")
 
 	// Test 2: Write more small data (should still be buffered)
-	result, err = writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue(", World!")})
+	result, err = writeMethod.NativeImpl(interp, instance, []environment.Value{environment.StringValue(", World!")})
 	require.NoError(t, err)
 	assert.Equal(t, environment.IntegerValue(8), result)
 	assert.Equal(t, 0, mockWriter.writeCount, "Should still not have called underlying writer")
@@ -471,7 +468,7 @@ func TestBufferedWriterWrite(t *testing.T) {
 	for i := range largeData {
 		largeData[i] = 'A'
 	}
-	result, err = writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue(string(largeData))})
+	result, err = writeMethod.NativeImpl(interp, instance, []environment.Value{environment.StringValue(string(largeData))})
 	require.NoError(t, err)
 	assert.Equal(t, environment.IntegerValue(2000), result)
 	assert.Equal(t, 2, mockWriter.writeCount, "Should have flushed buffer and written large data")
@@ -505,18 +502,17 @@ func TestBufferedWriterFlush(t *testing.T) {
 		},
 		DefaultGlobalInitializers()...,
 	)
-	ctx := interpreter.NewFunctionContext(interp, env)
 
 	writeMethod := bufferedClass.PublicFunctions["WRITE"]
 	flushMethod := bufferedClass.PublicFunctions["FLUSH"]
 
 	// Write some data
-	_, err = writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue("Buffered data")})
+	_, err = writeMethod.NativeImpl(interp, instance, []environment.Value{environment.StringValue("Buffered data")})
 	require.NoError(t, err)
 	assert.Equal(t, 0, mockWriter.writeCount, "Should not have written yet")
 
 	// Flush the buffer
-	_, err = flushMethod.NativeImpl(ctx, instance, []environment.Value{})
+	_, err = flushMethod.NativeImpl(interp, instance, []environment.Value{})
 	require.NoError(t, err)
 	assert.Equal(t, 1, mockWriter.writeCount, "Should have written after flush")
 	assert.Equal(t, "Buffered data", mockWriter.data)
@@ -552,17 +548,16 @@ func TestBufferedWriterSetSiz(t *testing.T) {
 		},
 		DefaultGlobalInitializers()...,
 	)
-	ctx := interpreter.NewFunctionContext(interp, env)
 
 	writeMethod := bufferedClass.PublicFunctions["WRITE"]
 	setSizMethod := bufferedClass.PublicFunctions["SET_SIZ"]
 
 	// Write some data to buffer
-	_, err = writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue("Test data")})
+	_, err = writeMethod.NativeImpl(interp, instance, []environment.Value{environment.StringValue("Test data")})
 	require.NoError(t, err)
 
 	// Change buffer size (should flush existing buffer)
-	_, err = setSizMethod.NativeImpl(ctx, instance, []environment.Value{environment.IntegerValue(512)})
+	_, err = setSizMethod.NativeImpl(interp, instance, []environment.Value{environment.IntegerValue(512)})
 	require.NoError(t, err)
 
 	// Verify buffer size changed
@@ -604,17 +599,16 @@ func TestBufferedWriterClose(t *testing.T) {
 		},
 		DefaultGlobalInitializers()...,
 	)
-	ctx := interpreter.NewFunctionContext(interp, env)
 
 	writeMethod := bufferedClass.PublicFunctions["WRITE"]
 	closeMethod := bufferedClass.PublicFunctions["CLOSE"]
 
 	// Write some data to buffer
-	_, err = writeMethod.NativeImpl(ctx, instance, []environment.Value{environment.StringValue("Final data")})
+	_, err = writeMethod.NativeImpl(interp, instance, []environment.Value{environment.StringValue("Final data")})
 	require.NoError(t, err)
 
 	// Close the buffered writer
-	_, err = closeMethod.NativeImpl(ctx, instance, []environment.Value{})
+	_, err = closeMethod.NativeImpl(interp, instance, []environment.Value{})
 	require.NoError(t, err)
 
 	// Verify buffer was flushed and underlying writer was closed

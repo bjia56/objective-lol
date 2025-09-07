@@ -40,11 +40,7 @@ func ToGoValue(val environment.Value) (GoValue, error) {
 			}
 			return WrapAny(baskitMap), nil
 		}
-		goMap, err := objectToGoMap(v)
-		if err != nil {
-			return WrapAny(nil), err
-		}
-		return WrapAny(goMap), nil
+		return WrapObject(v), nil
 	default:
 		return WrapAny(nil), NewConversionError(
 			fmt.Sprintf("cannot convert Objective-LOL type %s to Go value", val.Type()),
@@ -57,6 +53,10 @@ func ToGoValue(val environment.Value) (GoValue, error) {
 func FromGoValue(val GoValue) (environment.Value, error) {
 	if val.Get() == nil {
 		return environment.NOTHIN, nil
+	}
+
+	if obj, ok := val.Get().(*environment.ObjectInstance); ok {
+		return obj, nil
 	}
 
 	rv := reflect.ValueOf(val.Get())
@@ -125,26 +125,6 @@ func baskitToGoMap(baskit *environment.ObjectInstance) (map[string]GoValue, erro
 	result := make(map[string]GoValue)
 	for key, val := range underlying {
 		goVal, err := ToGoValue(val)
-		if err != nil {
-			return nil, err
-		}
-		result[key] = goVal
-	}
-	return result, nil
-}
-
-// objectToGoMap converts an Objective-LOL object to a Go map
-func objectToGoMap(obj *environment.ObjectInstance) (map[string]GoValue, error) {
-	result := make(map[string]GoValue)
-	for key, val := range obj.Variables {
-		goVal, err := ToGoValue(val.Value)
-		if err != nil {
-			return nil, err
-		}
-		result[key] = goVal
-	}
-	for key, val := range obj.SharedVariables {
-		goVal, err := ToGoValue(val.Value)
 		if err != nil {
 			return nil, err
 		}

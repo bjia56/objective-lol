@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/interpreter"
 	"github.com/bjia56/objective-lol/pkg/runtime"
 )
 
@@ -15,7 +14,7 @@ type ThreadData struct {
 	goroutineRunning bool
 	finished         bool
 	wg               sync.WaitGroup
-	functionCtx      *interpreter.FunctionContext
+	interpreter      environment.Interpreter
 	result           environment.Value
 	err              error
 }
@@ -102,7 +101,7 @@ func getThreadClasses() map[string]*environment.Class {
 					"YARN": {
 						Name:       "YARN",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Initialize thread data
 							threadData := &ThreadData{}
 							this.NativeData = threadData
@@ -114,7 +113,7 @@ func getThreadClasses() map[string]*environment.Class {
 					"SPIN": {
 						Name:       "SPIN",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return environment.NOTHIN, runtime.Exception{Message: "SPIN method must be implemented by subclass"}
 						},
 					},
@@ -122,7 +121,7 @@ func getThreadClasses() map[string]*environment.Class {
 					"START": {
 						Name:       "START",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if _, ok := this.NativeData.(*ThreadData); !ok {
 								// Initialize thread data
 								threadData := &ThreadData{}
@@ -135,31 +134,27 @@ func getThreadClasses() map[string]*environment.Class {
 									return environment.NOTHIN, runtime.Exception{Message: "Thread already running"}
 								}
 
-								// Get the interpreter from the context
-								if funCtx, ok := ctx.(*interpreter.FunctionContext); ok {
-									// Create a forked interpreter for the thread
-									threadData.functionCtx = funCtx.Fork()
-									threadData.goroutineRunning = true
-									threadData.finished = false
-									threadData.wg.Add(1)
+								// Create a forked interpreter for the thread
+								threadData.interpreter = interpreter.Fork()
+								threadData.goroutineRunning = true
+								threadData.finished = false
+								threadData.wg.Add(1)
 
-									updateYarnStatus(this, threadData)
+								updateYarnStatus(this, threadData)
 
-									// Launch goroutine that calls the SPIN method
-									go func() {
-										defer threadData.wg.Done()
-										defer func() {
-											threadData.goroutineRunning = false
-											threadData.finished = true
-											updateYarnStatus(this, threadData)
-										}()
-
-										threadData.result, threadData.err = threadData.functionCtx.CallMethod(this, "SPIN", "YARN", []environment.Value{})
+								// Launch goroutine that calls the SPIN method
+								go func() {
+									defer threadData.wg.Done()
+									defer func() {
+										threadData.goroutineRunning = false
+										threadData.finished = true
+										updateYarnStatus(this, threadData)
 									}()
 
-									return environment.NOTHIN, nil
-								}
-								return environment.NOTHIN, fmt.Errorf("START: invalid interpreter context")
+									threadData.result, threadData.err = threadData.interpreter.CallMemberFunction(this, "SPIN", []environment.Value{})
+								}()
+
+								return environment.NOTHIN, nil
 							}
 							return environment.NOTHIN, fmt.Errorf("START: invalid thread context")
 						},
@@ -168,7 +163,7 @@ func getThreadClasses() map[string]*environment.Class {
 					"JOIN": {
 						Name:       "JOIN",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if threadData, ok := this.NativeData.(*ThreadData); ok {
 								threadData.wg.Wait()
 								updateYarnStatus(this, threadData)
@@ -219,7 +214,7 @@ func getThreadClasses() map[string]*environment.Class {
 					"KNOT": {
 						Name:       "KNOT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Initialize mutex data
 							mutexData := &MutexData{}
 							this.NativeData = mutexData
@@ -231,7 +226,7 @@ func getThreadClasses() map[string]*environment.Class {
 					"TIE": {
 						Name:       "TIE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if mutexData, ok := this.NativeData.(*MutexData); ok {
 								mutexData.mutex.Lock()
 								mutexData.locked = true
@@ -245,7 +240,7 @@ func getThreadClasses() map[string]*environment.Class {
 					"UNTIE": {
 						Name:       "UNTIE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if mutexData, ok := this.NativeData.(*MutexData); ok {
 								if !mutexData.locked {
 									return environment.NOTHIN, runtime.Exception{Message: "Cannot unlock mutex that is not locked"}

@@ -19,7 +19,7 @@ func getStringFunctions() map[string]*environment.Function {
 				Name:       "LEN",
 				ReturnType: "INTEGR",
 				Parameters: []environment.Parameter{{Name: "STR", Type: "STRIN"}},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str := args[0]
 
 					if strVal, ok := str.(environment.StringValue); ok {
@@ -36,7 +36,7 @@ func getStringFunctions() map[string]*environment.Function {
 					{Name: "STR1", Type: "STRIN"},
 					{Name: "STR2", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str1, ok1 := args[0].(environment.StringValue)
 					str2, ok2 := args[1].(environment.StringValue)
 
@@ -58,7 +58,7 @@ func getStringFunctions() map[string]*environment.Function {
 					{Name: "START", Type: "INTEGR"},
 					{Name: "LENGTH", Type: "INTEGR"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("SUBSTR: first argument is not a string")
@@ -96,7 +96,7 @@ func getStringFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("TRIM: argument is not a string")
@@ -111,7 +111,7 @@ func getStringFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("LTRIM: argument is not a string")
@@ -128,7 +128,7 @@ func getStringFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("RTRIM: argument is not a string")
@@ -146,7 +146,7 @@ func getStringFunctions() map[string]*environment.Function {
 					{Name: "STR", Type: "STRIN"},
 					{Name: "COUNT", Type: "INTEGR"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("REPEAT: first argument is not a string")
@@ -170,7 +170,7 @@ func getStringFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("UPPER: argument is not a string")
@@ -185,7 +185,7 @@ func getStringFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("LOWER: argument is not a string")
@@ -200,7 +200,7 @@ func getStringFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("TITLE: argument is not a string")
@@ -215,7 +215,7 @@ func getStringFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("CAPITALIZE: argument is not a string")
@@ -236,7 +236,7 @@ func getStringFunctions() map[string]*environment.Function {
 					{Name: "STR", Type: "STRIN"},
 					{Name: "SEPARATOR", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("SPLIT: first argument is not a string")
@@ -269,7 +269,7 @@ func getStringFunctions() map[string]*environment.Function {
 					{Name: "OLD", Type: "STRIN"},
 					{Name: "NEW", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("REPLACE: first argument is not a string")
@@ -297,7 +297,7 @@ func getStringFunctions() map[string]*environment.Function {
 					{Name: "OLD", Type: "STRIN"},
 					{Name: "NEW", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("REPLACE_ALL: first argument is not a string")
@@ -324,7 +324,7 @@ func getStringFunctions() map[string]*environment.Function {
 					{Name: "STR", Type: "STRIN"},
 					{Name: "SUBSTR", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("CONTAINS: first argument is not a string")
@@ -346,7 +346,7 @@ func getStringFunctions() map[string]*environment.Function {
 					{Name: "STR", Type: "STRIN"},
 					{Name: "SUBSTR", Type: "STRIN"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
 						return environment.NOTHIN, fmt.Errorf("INDEX_OF: first argument is not a string")

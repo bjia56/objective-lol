@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/interpreter"
 )
 
 func TestRegisterPROCESSInEnv(t *testing.T) {
@@ -60,8 +59,7 @@ func TestMinionConstructor(t *testing.T) {
 		Variables: make(map[string]*environment.Variable),
 	}
 
-	ctx := interpreter.NewFunctionContext(nil, env)
-	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(ctx, minion, []environment.Value{bukkit})
+	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
 		t.Fatalf("MINION constructor failed: %v", err)
 	}
@@ -105,14 +103,13 @@ func TestMinionSetWorkdir(t *testing.T) {
 		Variables: make(map[string]*environment.Variable),
 	}
 
-	ctx := interpreter.NewFunctionContext(nil, env)
-	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(ctx, minion, []environment.Value{bukkit})
+	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
 		t.Fatalf("MINION constructor failed: %v", err)
 	}
 
 	// Test SET_WORKDIR
-	_, err = minionClass.PublicFunctions["SET_WORKDIR"].NativeImpl(ctx, minion, []environment.Value{
+	_, err = minionClass.PublicFunctions["SET_WORKDIR"].NativeImpl(nil, minion, []environment.Value{
 		environment.StringValue("/tmp"),
 	})
 	if err != nil {
@@ -147,14 +144,13 @@ func TestMinionAddEnv(t *testing.T) {
 		Variables: make(map[string]*environment.Variable),
 	}
 
-	ctx := interpreter.NewFunctionContext(nil, env)
-	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(ctx, minion, []environment.Value{bukkit})
+	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
 		t.Fatalf("MINION constructor failed: %v", err)
 	}
 
 	// Test ADD_ENV
-	_, err = minionClass.PublicFunctions["ADD_ENV"].NativeImpl(ctx, minion, []environment.Value{
+	_, err = minionClass.PublicFunctions["ADD_ENV"].NativeImpl(nil, minion, []environment.Value{
 		environment.StringValue("TEST_VAR"),
 		environment.StringValue("test_value"),
 	})
@@ -198,14 +194,13 @@ func TestMinionBasicExecution(t *testing.T) {
 		Variables: make(map[string]*environment.Variable),
 	}
 
-	ctx := interpreter.NewFunctionContext(nil, env)
-	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(ctx, minion, []environment.Value{bukkit})
+	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
 		t.Fatalf("MINION constructor failed: %v", err)
 	}
 
 	// Start the process
-	_, err = minionClass.PublicFunctions["START"].NativeImpl(ctx, minion, []environment.Value{})
+	_, err = minionClass.PublicFunctions["START"].NativeImpl(nil, minion, []environment.Value{})
 	if err != nil {
 		t.Fatalf("START failed: %v", err)
 	}
@@ -246,7 +241,7 @@ func TestMinionBasicExecution(t *testing.T) {
 	}
 
 	// Wait for process to complete
-	result, err := minionClass.PublicFunctions["WAIT"].NativeImpl(ctx, minion, []environment.Value{})
+	result, err := minionClass.PublicFunctions["WAIT"].NativeImpl(nil, minion, []environment.Value{})
 	if err != nil {
 		t.Fatalf("WAIT failed: %v", err)
 	}
@@ -287,14 +282,13 @@ func TestPipeReadWrite(t *testing.T) {
 		Variables: make(map[string]*environment.Variable),
 	}
 
-	ctx := interpreter.NewFunctionContext(nil, env)
-	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(ctx, minion, []environment.Value{bukkit})
+	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
 		t.Fatalf("MINION constructor failed: %v", err)
 	}
 
 	// Start the process
-	_, err = minionClass.PublicFunctions["START"].NativeImpl(ctx, minion, []environment.Value{})
+	_, err = minionClass.PublicFunctions["START"].NativeImpl(nil, minion, []environment.Value{})
 	if err != nil {
 		t.Fatalf("START failed: %v", err)
 	}
@@ -307,7 +301,7 @@ func TestPipeReadWrite(t *testing.T) {
 
 	// Write to stdin
 	testData := "hello pipe test\n"
-	_, err = pipeClass.PublicFunctions["WRITE"].NativeImpl(ctx, stdinPipe, []environment.Value{
+	_, err = pipeClass.PublicFunctions["WRITE"].NativeImpl(nil, stdinPipe, []environment.Value{
 		environment.StringValue(testData),
 	})
 	if err != nil {
@@ -315,13 +309,13 @@ func TestPipeReadWrite(t *testing.T) {
 	}
 
 	// Close stdin to signal EOF to cat
-	_, err = pipeClass.PublicFunctions["CLOSE"].NativeImpl(ctx, stdinPipe, []environment.Value{})
+	_, err = pipeClass.PublicFunctions["CLOSE"].NativeImpl(nil, stdinPipe, []environment.Value{})
 	if err != nil {
 		t.Fatalf("CLOSE stdin failed: %v", err)
 	}
 
 	// Read from stdout
-	output, err := pipeClass.PublicFunctions["READ"].NativeImpl(ctx, stdoutPipe, []environment.Value{
+	output, err := pipeClass.PublicFunctions["READ"].NativeImpl(nil, stdoutPipe, []environment.Value{
 		environment.IntegerValue(100),
 	})
 	if err != nil {
@@ -338,7 +332,7 @@ func TestPipeReadWrite(t *testing.T) {
 	}
 
 	// Wait for process to complete
-	_, err = minionClass.PublicFunctions["WAIT"].NativeImpl(ctx, minion, []environment.Value{})
+	_, err = minionClass.PublicFunctions["WAIT"].NativeImpl(nil, minion, []environment.Value{})
 	if err != nil {
 		t.Fatalf("WAIT failed: %v", err)
 	}
@@ -366,14 +360,13 @@ func TestMinionIsAlive(t *testing.T) {
 		Variables: make(map[string]*environment.Variable),
 	}
 
-	ctx := interpreter.NewFunctionContext(nil, env)
-	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(ctx, minion, []environment.Value{bukkit})
+	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
 		t.Fatalf("MINION constructor failed: %v", err)
 	}
 
 	// Check IS_ALIVE before starting
-	result, err := minionClass.PublicFunctions["IS_ALIVE"].NativeImpl(ctx, minion, []environment.Value{})
+	result, err := minionClass.PublicFunctions["IS_ALIVE"].NativeImpl(nil, minion, []environment.Value{})
 	if err != nil {
 		t.Fatalf("IS_ALIVE failed: %v", err)
 	}
@@ -382,13 +375,13 @@ func TestMinionIsAlive(t *testing.T) {
 	}
 
 	// Start the process
-	_, err = minionClass.PublicFunctions["START"].NativeImpl(ctx, minion, []environment.Value{})
+	_, err = minionClass.PublicFunctions["START"].NativeImpl(nil, minion, []environment.Value{})
 	if err != nil {
 		t.Fatalf("START failed: %v", err)
 	}
 
 	// Check IS_ALIVE after starting
-	result, err = minionClass.PublicFunctions["IS_ALIVE"].NativeImpl(ctx, minion, []environment.Value{})
+	result, err = minionClass.PublicFunctions["IS_ALIVE"].NativeImpl(nil, minion, []environment.Value{})
 	if err != nil {
 		t.Fatalf("IS_ALIVE failed: %v", err)
 	}
@@ -397,13 +390,13 @@ func TestMinionIsAlive(t *testing.T) {
 	}
 
 	// Wait for process to complete
-	_, err = minionClass.PublicFunctions["WAIT"].NativeImpl(ctx, minion, []environment.Value{})
+	_, err = minionClass.PublicFunctions["WAIT"].NativeImpl(nil, minion, []environment.Value{})
 	if err != nil {
 		t.Fatalf("WAIT failed: %v", err)
 	}
 
 	// Check IS_ALIVE after completion
-	result, err = minionClass.PublicFunctions["IS_ALIVE"].NativeImpl(ctx, minion, []environment.Value{})
+	result, err = minionClass.PublicFunctions["IS_ALIVE"].NativeImpl(nil, minion, []environment.Value{})
 	if err != nil {
 		t.Fatalf("IS_ALIVE failed: %v", err)
 	}
@@ -430,8 +423,7 @@ func TestMinionErrorHandling(t *testing.T) {
 		Variables: make(map[string]*environment.Variable),
 	}
 
-	ctx := interpreter.NewFunctionContext(nil, env)
-	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(ctx, minion, []environment.Value{emptyBukkit})
+	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{emptyBukkit})
 	if err == nil {
 		t.Error("MINION constructor should fail with empty command line")
 	}
@@ -441,7 +433,7 @@ func TestMinionErrorHandling(t *testing.T) {
 		Class:     minionClass,
 		Variables: make(map[string]*environment.Variable),
 	}
-	_, err = minionClass.PublicFunctions["START"].NativeImpl(ctx, minion2, []environment.Value{})
+	_, err = minionClass.PublicFunctions["START"].NativeImpl(nil, minion2, []environment.Value{})
 	if err == nil {
 		t.Error("START should fail when MINION not properly constructed")
 	}
@@ -460,12 +452,12 @@ func TestMinionErrorHandling(t *testing.T) {
 		Class:     minionClass,
 		Variables: make(map[string]*environment.Variable),
 	}
-	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(ctx, minion3, []environment.Value{bukkit})
+	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion3, []environment.Value{bukkit})
 	if err != nil {
 		t.Fatalf("MINION constructor failed: %v", err)
 	}
 
-	_, err = minionClass.PublicFunctions["WAIT"].NativeImpl(ctx, minion3, []environment.Value{})
+	_, err = minionClass.PublicFunctions["WAIT"].NativeImpl(nil, minion3, []environment.Value{})
 	if err == nil {
 		t.Error("WAIT should fail when process not started")
 	}

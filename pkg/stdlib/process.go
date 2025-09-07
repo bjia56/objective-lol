@@ -127,7 +127,7 @@ func getProcessClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "size", Type: "INTEGR"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							size := args[0]
 
 							sizeVal, ok := size.(environment.IntegerValue)
@@ -183,7 +183,7 @@ func getProcessClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							data := args[0]
 
 							dataVal, ok := data.(environment.StringValue)
@@ -221,7 +221,7 @@ func getProcessClasses() map[string]*environment.Class {
 					// CLOSE method
 					"CLOSE": {
 						Name: "CLOSE",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							pipeData, ok := this.NativeData.(*PipeData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid pipe context")
@@ -286,7 +286,7 @@ func getProcessClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "cmdline", Type: "BUKKIT"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							cmdline := args[0]
 
 							// Validate that the argument is a BUKKIT
@@ -379,7 +379,7 @@ func getProcessClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "dir", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							dir := args[0]
 
 							dirVal, ok := dir.(environment.StringValue)
@@ -406,7 +406,7 @@ func getProcessClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "env", Type: "BASKIT"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							env := args[0]
 
 							// Validate that the argument is a BASKIT
@@ -453,7 +453,7 @@ func getProcessClasses() map[string]*environment.Class {
 							{Name: "key", Type: "STRIN"},
 							{Name: "value", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key := args[0]
 							value := args[1]
 
@@ -498,7 +498,7 @@ func getProcessClasses() map[string]*environment.Class {
 					// START method
 					"START": {
 						Name: "START",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("START: invalid minion context")
@@ -598,7 +598,7 @@ func getProcessClasses() map[string]*environment.Class {
 					"WAIT": {
 						Name:       "WAIT",
 						ReturnType: "INTEGR",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("WAIT: invalid minion context")
@@ -635,7 +635,7 @@ func getProcessClasses() map[string]*environment.Class {
 					// KILL method
 					"KILL": {
 						Name: "KILL",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("KILL: invalid minion context")
@@ -667,7 +667,7 @@ func getProcessClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "code", Type: "INTEGR"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							code := args[0]
 
 							codeVal, ok := code.(environment.IntegerValue)
@@ -697,7 +697,7 @@ func getProcessClasses() map[string]*environment.Class {
 					"IS_ALIVE": {
 						Name:       "IS_ALIVE",
 						ReturnType: "BOOL",
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("IS_ALIVE: invalid minion context")

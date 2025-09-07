@@ -48,7 +48,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -65,7 +65,7 @@ func getMathFunctions() map[string]*environment.Function {
 					{Name: "a", Type: "DUBBLE"},
 					{Name: "b", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					a, b := args[0], args[1]
 
 					if val1, ok := a.(environment.DoubleValue); ok {
@@ -84,7 +84,7 @@ func getMathFunctions() map[string]*environment.Function {
 					{Name: "a", Type: "DUBBLE"},
 					{Name: "b", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					a, b := args[0], args[1]
 
 					if val1, ok := a.(environment.DoubleValue); ok {
@@ -102,7 +102,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -122,7 +122,7 @@ func getMathFunctions() map[string]*environment.Function {
 					{Name: "base", Type: "DUBBLE"},
 					{Name: "exponent", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					base, exp := args[0], args[1]
 
 					if baseVal, ok := base.(environment.DoubleValue); ok {
@@ -141,7 +141,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -157,7 +157,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -173,7 +173,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -189,7 +189,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -209,7 +209,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -229,7 +229,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -246,7 +246,7 @@ func getMathFunctions() map[string]*environment.Function {
 					{Name: "y", Type: "DUBBLE"},
 					{Name: "x", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					y, x := args[0], args[1]
 
 					if yVal, ok := y.(environment.DoubleValue); ok {
@@ -264,7 +264,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -284,7 +284,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -304,7 +304,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -324,7 +324,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -340,7 +340,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -356,7 +356,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -372,7 +372,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
@@ -388,7 +388,7 @@ func getMathFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
 				},
-				NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					value := args[0]
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {

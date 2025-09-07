@@ -44,7 +44,7 @@ func getHTTPClasses() map[string]*environment.Class {
 					"INTERWEB": {
 						Name:       "INTERWEB",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Initialize HTTP client
 							client := &http.Client{
 								Timeout: 30 * time.Second,
@@ -84,7 +84,7 @@ func getHTTPClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "url", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "GET", args[0], environment.StringValue(""))
 						},
 					},
@@ -96,7 +96,7 @@ func getHTTPClasses() map[string]*environment.Class {
 							{Name: "url", Type: "STRIN"},
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "POST", args[0], args[1])
 						},
 					},
@@ -108,7 +108,7 @@ func getHTTPClasses() map[string]*environment.Class {
 							{Name: "url", Type: "STRIN"},
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "PUT", args[0], args[1])
 						},
 					},
@@ -119,7 +119,7 @@ func getHTTPClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "url", Type: "STRIN"},
 						},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "DELETE", args[0], environment.StringValue(""))
 						},
 					},
@@ -156,7 +156,7 @@ func getHTTPClasses() map[string]*environment.Class {
 					"RESPONSE": {
 						Name:       "RESPONSE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// This constructor is for internal use only
 							return environment.NOTHIN, nil
 						},
@@ -166,7 +166,7 @@ func getHTTPClasses() map[string]*environment.Class {
 						Name:       "TO_JSON",
 						ReturnType: "BASKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							bodyVar, exists := this.Variables["BODY"]
 							if !exists {
 								return environment.NOTHIN, runtime.Exception{Message: "TO_JSON: BODY variable not found"}

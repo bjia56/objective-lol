@@ -198,17 +198,8 @@ func (vm *VM) Call(functionName string, args []GoValue) (GoValue, error) {
 		return WrapAny(nil), err
 	}
 
-	// Get function from environment
-	function, err := vm.interpreter.GetEnvironment().GetFunction(strings.ToUpper(functionName))
-	if err != nil {
-		return WrapAny(nil), NewRuntimeError(
-			fmt.Sprintf("function %s not found", functionName),
-			nil,
-		)
-	}
-
 	// Call function through interpreter
-	result, err := vm.interpreter.CallFunction(function, ololArgs)
+	result, err := vm.interpreter.CallFunction(strings.ToUpper(functionName), ololArgs)
 	if err != nil {
 		return WrapAny(nil), wrapError(err, RuntimeErrorType, "function call failed")
 	}
@@ -217,8 +208,41 @@ func (vm *VM) Call(functionName string, args []GoValue) (GoValue, error) {
 	return ToGoValue(result)
 }
 
+// CallMethod calls a method on an Objective-LOL object
+func (vm *VM) CallMethod(object GoValue, methodName string, args []GoValue) (GoValue, error) {
+	vm.mutex.RLock()
+	defer vm.mutex.RUnlock()
+
+	// Convert object to environment.Value
+	ololObject, err := FromGoValue(object)
+	if err != nil {
+		return WrapAny(nil), wrapError(err, RuntimeErrorType, "could not convert object to Objective-LOL value")
+	}
+
+	// Ensure it's an object instance
+	objInstance, ok := ololObject.(*environment.ObjectInstance)
+	if !ok {
+		return WrapAny(nil), NewRuntimeError("provided value is not an Objective-LOL object", nil)
+	}
+
+	// Convert Go arguments to Objective-LOL values
+	ololArgs, err := ConvertArguments(args)
+	if err != nil {
+		return WrapAny(nil), err
+	}
+
+	// Call method through interpreter
+	result, err := vm.interpreter.CallMemberFunction(objInstance, strings.ToUpper(methodName), ololArgs)
+	if err != nil {
+		return WrapAny(nil), wrapError(err, RuntimeErrorType, "method call failed")
+	}
+
+	// Convert result back to Go value
+	return ToGoValue(result)
+}
+
 // DefineVariable defines a global variable in the VM
-func (vm *VM) DefineVariable(name string, varType string, value GoValue, constant bool) error {
+func (vm *VM) DefineVariable(name string, value GoValue, constant bool) error {
 	vm.mutex.Lock()
 	defer vm.mutex.Unlock()
 
@@ -229,7 +253,7 @@ func (vm *VM) DefineVariable(name string, varType string, value GoValue, constan
 	}
 
 	// Define variable in the global environment
-	return vm.interpreter.GetEnvironment().DefineVariable(strings.ToUpper(name), varType, ololValue, constant, nil)
+	return vm.interpreter.GetEnvironment().DefineVariable(strings.ToUpper(name), ololValue.Type(), ololValue, constant, nil)
 }
 
 // SetVariable sets a variable in the global environment
@@ -280,7 +304,7 @@ func (vm *VM) defineFunctionUnsafe(name string, argc int, function func(args []G
 	return vm.interpreter.GetEnvironment().DefineFunction(&environment.Function{
 		Name:       strings.ToUpper(name),
 		Parameters: make([]environment.Parameter, argc),
-		NativeImpl: func(ctx interface{}, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+		NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 			// Convert environment.Value args to GoValue
 			goArgs := make([]GoValue, len(args))
 			for i, arg := range args {

@@ -73,8 +73,8 @@ func (i *Interpreter) ForkGlobal() *Interpreter {
 	}
 }
 
-// ForkAll creates a new Interpreter from the current Interpreter with all state
-func (i *Interpreter) ForkAll() *Interpreter {
+// Fork creates a new Interpreter from the current Interpreter with all state
+func (i *Interpreter) Fork() environment.Interpreter {
 	return &Interpreter{
 		runtime:           i.runtime,
 		moduleResolver:    i.moduleResolver,
@@ -708,7 +708,7 @@ func (i *Interpreter) VisitFunctionCall(node *ast.FunctionCallNode) (environment
 		}
 
 		if obj, ok := objectValue.(*environment.ObjectInstance); ok {
-			function, err := obj.GetMemberFunction(strings.ToUpper(funcNode.Member), i.currentClass, i.environment)
+			function, err := obj.GetMemberFunction(strings.ToUpper(funcNode.Member), i.currentClass)
 			if err != nil {
 				return environment.NOTHIN, err
 			}
@@ -741,10 +741,7 @@ func (i *Interpreter) callFunction(function *environment.Function, args []enviro
 			argsCasted[i] = casted
 		}
 
-		// Create function context
-		ctx := NewFunctionContext(i, i.environment)
-
-		return function.NativeImpl(ctx, i.currentObject, argsCasted)
+		return function.NativeImpl(i, i.currentObject, argsCasted)
 	}
 
 	// Create new environment for function execution
@@ -793,7 +790,7 @@ func (i *Interpreter) callFunction(function *environment.Function, args []enviro
 
 // callMemberFunction executes a member function
 func (i *Interpreter) callMemberFunction(function *environment.Function, obj *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-	memberInterpreter := i.ForkAll()
+	memberInterpreter := i.Fork().(*Interpreter)
 	memberInterpreter.currentClass = obj.Class.QualifiedName
 	memberInterpreter.currentObject = obj
 	return memberInterpreter.callFunction(function, args)
@@ -965,7 +962,7 @@ func (i *Interpreter) VisitObjectInstantiation(node *ast.ObjectInstantiationNode
 
 	// Look for a constructor method with the same name as the class
 	constructorName := strings.ToUpper(node.ClassName)
-	function, err := instance.GetMemberFunction(constructorName, i.currentClass, i.environment)
+	function, err := instance.GetMemberFunction(constructorName, i.currentClass)
 
 	// Only proceed if constructor exists
 	if err == nil {
@@ -1102,7 +1099,20 @@ func (i *Interpreter) GetEnvironment() *environment.Environment {
 	return i.environment
 }
 
-// CallFunction calls a function with the provided arguments (for API use)
-func (i *Interpreter) CallFunction(function *environment.Function, args []environment.Value) (environment.Value, error) {
-	return i.callFunction(function, args)
+// CallFunction finds and calls a function with the provided arguments
+func (i *Interpreter) CallFunction(function string, args []environment.Value) (environment.Value, error) {
+	fn, err := i.environment.GetFunction(strings.ToUpper(function))
+	if err != nil {
+		return environment.NOTHIN, err
+	}
+	return i.callFunction(fn, args)
+}
+
+// CallMemberFunction calls a member function on the given object with arguments
+func (i *Interpreter) CallMemberFunction(object *environment.ObjectInstance, function string, args []environment.Value) (environment.Value, error) {
+	fn, err := object.GetMemberFunction(strings.ToUpper(function), i.currentClass)
+	if err != nil {
+		return environment.NOTHIN, err
+	}
+	return i.callMemberFunction(fn, object, args)
 }

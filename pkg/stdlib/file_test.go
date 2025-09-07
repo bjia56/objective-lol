@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
-	"github.com/bjia56/objective-lol/pkg/interpreter"
 )
 
 func TestDOCUMENTConstructor(t *testing.T) {
@@ -22,9 +21,6 @@ func TestDOCUMENTConstructor(t *testing.T) {
 		t.Fatal("DOCUMENT class not found")
 	}
 
-	// Create interpreter context
-	ctx := interpreter.NewFunctionContext(nil, env)
-
 	// Test valid constructor
 	instance := &environment.ObjectInstance{
 		Class:     docClass,
@@ -37,7 +33,7 @@ func TestDOCUMENTConstructor(t *testing.T) {
 		environment.StringValue("W"),
 	}
 
-	_, err = constructor.NativeImpl(ctx, instance, args)
+	_, err = constructor.NativeImpl(nil, instance, args)
 	if err != nil {
 		t.Errorf("Constructor failed: %v", err)
 	}
@@ -71,7 +67,7 @@ func TestDOCUMENTConstructor(t *testing.T) {
 		environment.StringValue("INVALID"),
 	}
 
-	_, err = constructor.NativeImpl(ctx, instance2, invalidArgs)
+	_, err = constructor.NativeImpl(nil, instance2, invalidArgs)
 	if err == nil {
 		t.Error("Expected constructor to fail with invalid mode")
 	}
@@ -94,7 +90,6 @@ func TestDOCUMENTFileOperations(t *testing.T) {
 	}
 
 	docClass, _ := env.GetClass("DOCUMENT")
-	ctx := interpreter.NewFunctionContext(nil, env)
 
 	// Create DOCUMENT instance
 	instance := &environment.ObjectInstance{
@@ -108,14 +103,14 @@ func TestDOCUMENTFileOperations(t *testing.T) {
 		environment.StringValue("W"),
 	}
 
-	_, err = constructor.NativeImpl(ctx, instance, args)
+	_, err = constructor.NativeImpl(nil, instance, args)
 	if err != nil {
 		t.Fatalf("Constructor failed: %v", err)
 	}
 
 	// Test OPEN
 	openFunc := docClass.PublicFunctions["OPEN"]
-	_, err = openFunc.NativeImpl(ctx, instance, []environment.Value{})
+	_, err = openFunc.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
 		t.Errorf("OPEN failed: %v", err)
 	}
@@ -123,7 +118,7 @@ func TestDOCUMENTFileOperations(t *testing.T) {
 	// Test WRITE
 	writeFunc := docClass.PublicFunctions["WRITE"]
 	testData := "Hello, World!"
-	result, err := writeFunc.NativeImpl(ctx, instance, []environment.Value{
+	result, err := writeFunc.NativeImpl(nil, instance, []environment.Value{
 		environment.StringValue(testData),
 	})
 	if err != nil {
@@ -141,14 +136,14 @@ func TestDOCUMENTFileOperations(t *testing.T) {
 
 	// Test FLUSH
 	flushFunc := docClass.PublicFunctions["FLUSH"]
-	_, err = flushFunc.NativeImpl(ctx, instance, []environment.Value{})
+	_, err = flushFunc.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
 		t.Errorf("FLUSH failed: %v", err)
 	}
 
 	// Test SIZE
 	sizeFunc := docClass.PublicFunctions["SIZE"]
-	sizeResult, err := sizeFunc.NativeImpl(ctx, instance, []environment.Value{})
+	sizeResult, err := sizeFunc.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
 		t.Errorf("SIZE failed: %v", err)
 	}
@@ -163,7 +158,7 @@ func TestDOCUMENTFileOperations(t *testing.T) {
 
 	// Test CLOSE
 	closeFunc := docClass.PublicFunctions["CLOSE"]
-	_, err = closeFunc.NativeImpl(ctx, instance, []environment.Value{})
+	_, err = closeFunc.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
 		t.Errorf("CLOSE failed: %v", err)
 	}
@@ -203,7 +198,6 @@ func TestDOCUMENTReadOperations(t *testing.T) {
 	}
 
 	docClass, _ := env.GetClass("DOCUMENT")
-	ctx := interpreter.NewFunctionContext(nil, env)
 
 	// Create DOCUMENT instance for reading
 	instance := &environment.ObjectInstance{
@@ -217,21 +211,21 @@ func TestDOCUMENTReadOperations(t *testing.T) {
 		environment.StringValue("R"),
 	}
 
-	_, err = constructor.NativeImpl(ctx, instance, args)
+	_, err = constructor.NativeImpl(nil, instance, args)
 	if err != nil {
 		t.Fatalf("Constructor failed: %v", err)
 	}
 
 	// Open file for reading
 	openFunc := docClass.PublicFunctions["OPEN"]
-	_, err = openFunc.NativeImpl(ctx, instance, []environment.Value{})
+	_, err = openFunc.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
 		t.Errorf("OPEN failed: %v", err)
 	}
 
 	// Test READ
 	readFunc := docClass.PublicFunctions["READ"]
-	readResult, err := readFunc.NativeImpl(ctx, instance, []environment.Value{
+	readResult, err := readFunc.NativeImpl(nil, instance, []environment.Value{
 		environment.IntegerValue(5),
 	})
 	if err != nil {
@@ -248,7 +242,7 @@ func TestDOCUMENTReadOperations(t *testing.T) {
 
 	// Test TELL (current position)
 	tellFunc := docClass.PublicFunctions["TELL"]
-	posResult, err := tellFunc.NativeImpl(ctx, instance, []environment.Value{})
+	posResult, err := tellFunc.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
 		t.Errorf("TELL failed: %v", err)
 	}
@@ -263,7 +257,7 @@ func TestDOCUMENTReadOperations(t *testing.T) {
 
 	// Test SEEK
 	seekFunc := docClass.PublicFunctions["SEEK"]
-	_, err = seekFunc.NativeImpl(ctx, instance, []environment.Value{
+	_, err = seekFunc.NativeImpl(nil, instance, []environment.Value{
 		environment.IntegerValue(0),
 	})
 	if err != nil {
@@ -271,7 +265,7 @@ func TestDOCUMENTReadOperations(t *testing.T) {
 	}
 
 	// Read entire content
-	fullReadResult, err := readFunc.NativeImpl(ctx, instance, []environment.Value{
+	fullReadResult, err := readFunc.NativeImpl(nil, instance, []environment.Value{
 		environment.IntegerValue(100),
 	})
 	if err != nil {
@@ -286,7 +280,7 @@ func TestDOCUMENTReadOperations(t *testing.T) {
 
 	// Test EXISTS
 	existsFunc := docClass.PublicFunctions["EXISTS"]
-	existsResult, err := existsFunc.NativeImpl(ctx, instance, []environment.Value{})
+	existsResult, err := existsFunc.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
 		t.Errorf("EXISTS failed: %v", err)
 	}
@@ -301,7 +295,7 @@ func TestDOCUMENTReadOperations(t *testing.T) {
 
 	// Close file
 	closeFunc := docClass.PublicFunctions["CLOSE"]
-	_, err = closeFunc.NativeImpl(ctx, instance, []environment.Value{})
+	_, err = closeFunc.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
 		t.Errorf("CLOSE failed: %v", err)
 	}
@@ -315,7 +309,6 @@ func TestDOCUMENTErrorHandling(t *testing.T) {
 	}
 
 	docClass, _ := env.GetClass("DOCUMENT")
-	ctx := interpreter.NewFunctionContext(nil, env)
 
 	// Create DOCUMENT instance
 	instance := &environment.ObjectInstance{
@@ -329,14 +322,14 @@ func TestDOCUMENTErrorHandling(t *testing.T) {
 		environment.StringValue("R"),
 	}
 
-	_, err = constructor.NativeImpl(ctx, instance, args)
+	_, err = constructor.NativeImpl(nil, instance, args)
 	if err != nil {
 		t.Fatalf("Constructor failed: %v", err)
 	}
 
 	// Test operations on closed file should fail
 	readFunc := docClass.PublicFunctions["READ"]
-	_, err = readFunc.NativeImpl(ctx, instance, []environment.Value{
+	_, err = readFunc.NativeImpl(nil, instance, []environment.Value{
 		environment.IntegerValue(10),
 	})
 	if err == nil {
@@ -344,7 +337,7 @@ func TestDOCUMENTErrorHandling(t *testing.T) {
 	}
 
 	writeFunc := docClass.PublicFunctions["WRITE"]
-	_, err = writeFunc.NativeImpl(ctx, instance, []environment.Value{
+	_, err = writeFunc.NativeImpl(nil, instance, []environment.Value{
 		environment.StringValue("test"),
 	})
 	if err == nil {
@@ -353,7 +346,7 @@ func TestDOCUMENTErrorHandling(t *testing.T) {
 
 	// Test opening nonexistent file for reading should fail
 	openFunc := docClass.PublicFunctions["OPEN"]
-	_, err = openFunc.NativeImpl(ctx, instance, []environment.Value{})
+	_, err = openFunc.NativeImpl(nil, instance, []environment.Value{})
 	if err == nil {
 		t.Error("OPEN nonexistent file for reading should fail")
 	}
@@ -382,7 +375,6 @@ func TestDOCUMENTDeleteOperation(t *testing.T) {
 	}
 
 	docClass, _ := env.GetClass("DOCUMENT")
-	ctx := interpreter.NewFunctionContext(nil, env)
 
 	// Create DOCUMENT instance
 	instance := &environment.ObjectInstance{
@@ -396,14 +388,14 @@ func TestDOCUMENTDeleteOperation(t *testing.T) {
 		environment.StringValue("R"),
 	}
 
-	_, err = constructor.NativeImpl(ctx, instance, args)
+	_, err = constructor.NativeImpl(nil, instance, args)
 	if err != nil {
 		t.Fatalf("Constructor failed: %v", err)
 	}
 
 	// Test DELETE
 	deleteFunc := docClass.PublicFunctions["DELETE"]
-	_, err = deleteFunc.NativeImpl(ctx, instance, []environment.Value{})
+	_, err = deleteFunc.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
 		t.Errorf("DELETE failed: %v", err)
 	}
