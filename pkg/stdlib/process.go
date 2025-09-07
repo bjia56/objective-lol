@@ -80,54 +80,6 @@ func NewPipeInstance(fdType string, process *exec.Cmd) *environment.ObjectInstan
 	}
 }
 
-// NewMinionInstance creates a new MINION object instance
-func NewMinionInstance() *environment.ObjectInstance {
-	class := getProcessClasses()["MINION"]
-	env := environment.NewEnvironment(nil)
-	env.DefineClass(class)
-	return &environment.ObjectInstance{
-		Environment: env,
-		Class:       class,
-		NativeData: &MinionData{
-			Running:  false,
-			Finished: false,
-			ExitCode: 0,
-			PID:      -1,
-		},
-		MRO: class.MRO,
-		Variables: map[string]*environment.Variable{
-			"RUNNING": {
-				Name:     "RUNNING",
-				Type:     "BOOL",
-				Value:    environment.NO,
-				IsLocked: true,
-				IsPublic: true,
-			},
-			"FINISHED": {
-				Name:     "FINISHED",
-				Type:     "BOOL",
-				Value:    environment.NO,
-				IsLocked: true,
-				IsPublic: true,
-			},
-			"EXIT_CODE": {
-				Name:     "EXIT_CODE",
-				Type:     "INTEGR",
-				Value:    environment.IntegerValue(0),
-				IsLocked: true,
-				IsPublic: true,
-			},
-			"PID": {
-				Name:     "PID",
-				Type:     "INTEGR",
-				Value:    environment.IntegerValue(-1),
-				IsLocked: true,
-				IsPublic: true,
-			},
-		},
-	}
-}
-
 // updatePipeStatus updates the status variables of a PIPE object
 func updatePipeStatus(obj *environment.ObjectInstance, pipeData *PipeData) {
 	if isOpenVar, exists := obj.Variables["IS_OPEN"]; exists {
