@@ -5,7 +5,14 @@ import json
 import threading
 import uuid
 
-from .vm import *
+from .vm import (
+    NewVM,
+    DefaultConfig,
+    WrapInt,
+    WrapFloat,
+    WrapString,
+    WrapBool,
+)
 
 definedFunctions = {}
 
