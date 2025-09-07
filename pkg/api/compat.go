@@ -8,7 +8,8 @@ import (
 )
 
 // VMCompatibilityShim is a shim to provide compatibility for external
-// languages that cannot interact with the standard VM interface.
+// languages that cannot interact with the standard VM interface through
+// Go types. Message passing is done through JSON strings.
 type VMCompatibilityShim struct {
 	vm *VM
 }
