@@ -6,6 +6,8 @@ import threading
 import uuid
 
 from .vm import (
+    VM,
+    VMCompatibilityShim,
     NewVM,
     DefaultConfig,
     WrapInt,
@@ -81,27 +83,31 @@ def convert_from_go_value(go_value: GoValue):
 
 
 class ObjectiveLOLVM:
+    __vm: VM
+    __compat: VMCompatibilityShim
+
     def __init__(self):
         # todo: figure out how to bridge stdout/stdin
-        self.vm = NewVM(DefaultConfig())
+        self.__vm = NewVM(DefaultConfig())
+        self.__compat = self.__vm.GetCompatibilityShim()
 
-    def declare_variable(self, name: str, value, constant: bool = False) -> None:
+    def define_variable(self, name: str, value, constant: bool = False) -> None:
         goValue = convert_to_go_value(value)
-        self.vm.DefineVariable(name, goValue, constant)
+        self.__vm.DefineVariable(name, goValue, constant)
 
-    async def declare_variable_async(self, name: str, value, constant: bool = False) -> None:
-        self.declare_variable(name, value, constant)
+    async def define_variable_async(self, name: str, value, constant: bool = False) -> None:
+        self.define_variable(name, value, constant)
 
-    def declare_function(self, name: str, function, argc: int = None) -> None:
+    def define_function(self, name: str, function, argc: int = None) -> None:
         argc = argc is None and len(inspect.signature(function).parameters) or argc
         unique_id = str(uuid.uuid4())
         definedFunctions[unique_id] = function
-        self.vm.DefineFunctionMaxCompat(unique_id, name, argc, gopy_wrapper)
+        self.__compat.DefineFunction(unique_id, name, argc, gopy_wrapper)
 
-    async def declare_function_async(self, name: str, function) -> None:
-        self.declare_function(name, function)
+    async def define_function_async(self, name: str, function) -> None:
+        self.define_function(name, function)
 
-    async def declare_coroutine_async(self, name: str, function) -> None:
+    async def define_coroutine_async(self, name: str, function) -> None:
         loop = asyncio.get_event_loop()
         argc = len(inspect.signature(function).parameters)
 
@@ -116,11 +122,11 @@ class ObjectiveLOLVM:
             threading.Thread(target=do).start()
             return fut.result()
 
-        self.declare_function(name, wrapper, argc)
+        self.define_function(name, wrapper, argc)
 
     def call(self, name: str, *args):
         goArgs = convert_to_go_value(args)
-        result = self.vm.Call(name, goArgs)
+        result = self.__vm.Call(name, goArgs)
         return convert_from_go_value(result)
 
     async def call_async(self, name: str, *args):
@@ -128,7 +134,7 @@ class ObjectiveLOLVM:
         fut = concurrent.futures.Future()
         def do():
             try:
-                result = self.vm.Call(name, goArgs)
+                result = self.__vm.Call(name, goArgs)
                 fut.set_result(convert_from_go_value(result))
             except Exception as e:
                 fut.set_exception(e)
@@ -137,7 +143,7 @@ class ObjectiveLOLVM:
 
     def call_method(self, receiver: GoValue, name: str, *args):
         goArgs = convert_to_go_value(args)
-        result = self.vm.CallMethod(receiver, name, goArgs)
+        result = self.__vm.CallMethod(receiver, name, goArgs)
         return convert_from_go_value(result)
 
     async def call_method_async(self, receiver: GoValue, name: str, *args):
@@ -145,7 +151,7 @@ class ObjectiveLOLVM:
         fut = concurrent.futures.Future()
         def do():
             try:
-                result = self.vm.CallMethod(receiver, name, goArgs)
+                result = self.__vm.CallMethod(receiver, name, goArgs)
                 fut.set_result(convert_from_go_value(result))
             except Exception as e:
                 fut.set_exception(e)
@@ -153,13 +159,13 @@ class ObjectiveLOLVM:
         return await asyncio.wrap_future(fut)
 
     def execute(self, code: str) -> None:
-        return self.vm.Execute(code)
+        return self.__vm.Execute(code)
 
     async def execute_async(self, code: str) -> None:
         fut = concurrent.futures.Future()
         def do():
             try:
-                result = self.vm.Execute(code)
+                result = self.__vm.Execute(code)
                 fut.set_result(result)
             except Exception as e:
                 fut.set_exception(e)
