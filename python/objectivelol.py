@@ -1,5 +1,8 @@
+import asyncio
+import concurrent.futures
 from inspect import signature
 import json
+import threading
 import uuid
 
 from .vm import *
@@ -42,12 +45,45 @@ class ObjectiveLOLVM:
 
         self.vm.DefineVariable(name, var_type, goValue, constant)
 
-    def declare_function(self, name: str, function) -> None:
-        argc = len(signature(function).parameters)
+    async def declare_variable_async(self, name: str, value, constant: bool = False) -> None:
+        self.declare_variable(name, value, constant)
+
+    def declare_function(self, name: str, function, argc: int = None) -> None:
+        argc = argc is None and len(signature(function).parameters) or argc
         unique_id = str(uuid.uuid4())
         definedFunctions[unique_id] = function
         self.vm.DefineFunctionMaxCompat(unique_id, name, argc, gopy_wrapper)
 
+    async def declare_function_async(self, name: str, function) -> None:
+        self.declare_function(name, function)
+
+    async def declare_coroutine_async(self, name: str, function) -> None:
+        loop = asyncio.get_event_loop()
+        argc = len(signature(function).parameters)
+
+        def wrapper(*args):
+            fut = concurrent.futures.Future()
+            def do():
+                try:
+                    result = asyncio.run_coroutine_threadsafe(function(*args), loop).result()
+                    fut.set_result(result)
+                except Exception as e:
+                    fut.set_exception(e)
+            threading.Thread(target=do).start()
+            return fut.result()
+
+        self.declare_function(name, wrapper, argc)
+
     def execute(self, code: str) -> None:
         return self.vm.Execute(code)
 
+    async def execute_async(self, code: str) -> None:
+        fut = concurrent.futures.Future()
+        def do():
+            try:
+                result = self.vm.Execute(code)
+                fut.set_result(result)
+            except Exception as e:
+                fut.set_exception(e)
+        threading.Thread(target=do).start()
+        return await asyncio.wrap_future(fut)
