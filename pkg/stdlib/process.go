@@ -40,8 +40,12 @@ type MinionData struct {
 // NewPipeInstance creates a new PIPE object instance
 func NewPipeInstance(fdType string, process *exec.Cmd) *environment.ObjectInstance {
 	class := getProcessClasses()["PIPE"]
+	env := environment.NewEnvironment(nil)
+	env.DefineClass(class)
+	_ = RegisterIOInEnv(env, "READERWRITER", "READER", "WRITER") // Ensure IO interfaces are registered
 	return &environment.ObjectInstance{
-		Class: class,
+		Environment: env,
+		Class:       class,
 		NativeData: &PipeData{
 			FDType:  fdType,
 			Pipe:    nil,
@@ -79,8 +83,11 @@ func NewPipeInstance(fdType string, process *exec.Cmd) *environment.ObjectInstan
 // NewMinionInstance creates a new MINION object instance
 func NewMinionInstance() *environment.ObjectInstance {
 	class := getProcessClasses()["MINION"]
+	env := environment.NewEnvironment(nil)
+	env.DefineClass(class)
 	return &environment.ObjectInstance{
-		Class: class,
+		Environment: env,
+		Class:       class,
 		NativeData: &MinionData{
 			Running:  false,
 			Finished: false,
