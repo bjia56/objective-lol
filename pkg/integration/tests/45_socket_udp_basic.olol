@@ -1,0 +1,85 @@
+BTW Test basic UDP socket functionality
+I CAN HAS SOCKET?
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN TEST_UDP_SOCKET_CREATION
+    SAYZ WIT "Testing UDP socket creation..."
+    
+    BTW Create UDP socket
+    I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+    SERVER PROTOCOL ITZ "UDP"
+    SERVER HOST ITZ "localhost"
+    SERVER PORT ITZ 9877
+    
+    SAYZ WIT "Socket created with protocol:"
+    SAYZ WIT SERVER PROTOCOL
+    SAYZ WIT "Host:"
+    SAYZ WIT SERVER HOST
+    SAYZ WIT "Port:"
+    SAYZ WIT SERVER PORT
+    
+    SAYZ WIT "✓ UDP socket creation test passed"
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_UDP_BIND_AND_CLOSE
+    SAYZ WIT "Testing UDP bind and close..."
+    
+    BTW Create and bind UDP socket
+    I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+    SERVER PROTOCOL ITZ "UDP"
+    SERVER HOST ITZ "localhost"
+    SERVER PORT ITZ 9877
+    
+    MAYB
+        SERVER DO BIND
+        SAYZ WIT "✓ UDP socket bound successfully"
+        
+        BTW Close the server
+        SERVER DO CLOSE
+        SAYZ WIT "✓ UDP socket closed successfully"
+    OOPSIE ERR
+        SAYZ WIT "✗ UDP bind/close test failed:"
+        SAYZ WIT ERR
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_UDP_OPERATIONS_WITHOUT_BIND
+    SAYZ WIT "Testing UDP operations without bind..."
+    
+    I HAS A VARIABLE UDP_SOCKET TEH SOKKIT ITZ NEW SOKKIT
+    UDP_SOCKET PROTOCOL ITZ "UDP"
+    
+    BTW Try RECEIVE_FROM without binding
+    MAYB
+        I HAS A VARIABLE DATA TEH BASKIT ITZ UDP_SOCKET DO RECEIVE_FROM
+        SAYZ WIT "✗ Expected RECEIVE_FROM without bind to fail"
+    OOPSIE ERR
+        SAYZ WIT "✓ RECEIVE_FROM correctly failed without bind:"
+        SAYZ WIT ERR
+    KTHX
+    
+    BTW Try SEND_TO without binding
+    MAYB
+        UDP_SOCKET DO SEND_TO WIT "test" AN WIT "localhost" AN WIT 9995
+        SAYZ WIT "✗ Expected SEND_TO without bind to fail"
+    OOPSIE ERR
+        SAYZ WIT "✓ SEND_TO correctly failed without bind:"
+        SAYZ WIT ERR
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "Starting UDP socket tests..."
+    SAYZ WIT ""
+    
+    TEST_UDP_SOCKET_CREATION
+    SAYZ WIT ""
+    
+    TEST_UDP_BIND_AND_CLOSE
+    SAYZ WIT ""
+    
+    TEST_UDP_OPERATIONS_WITHOUT_BIND
+    SAYZ WIT ""
+    
+    SAYZ WIT "UDP socket tests completed!"
+KTHXBAI

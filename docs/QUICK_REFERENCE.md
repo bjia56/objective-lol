@@ -153,6 +153,7 @@ SAYZ WIT MAP DO GET WIT "name"    BTW Alice
 - `THREAD`
 - `FILE`
 - `HTTP`
+- `SOCKET`
 - `PROCESS`
 
 ## Common Patterns

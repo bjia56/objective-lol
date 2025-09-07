@@ -1,0 +1,81 @@
+BTW Test basic TCP socket functionality
+I CAN HAS SOCKET?
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN TEST_TCP_SOCKET_CREATION
+    SAYZ WIT "Testing TCP socket creation..."
+    
+    BTW Create TCP socket
+    I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+    SERVER PROTOCOL ITZ "TCP"
+    SERVER HOST ITZ "localhost"
+    SERVER PORT ITZ 9876
+    
+    SAYZ WIT "Socket created with protocol:"
+    SAYZ WIT SERVER PROTOCOL
+    SAYZ WIT "Host:"
+    SAYZ WIT SERVER HOST
+    SAYZ WIT "Port:"
+    SAYZ WIT SERVER PORT
+    SAYZ WIT "Timeout:"
+    SAYZ WIT SERVER TIMEOUT
+    
+    SAYZ WIT "✓ TCP socket creation test passed"
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_TCP_BIND_AND_CLOSE
+    SAYZ WIT "Testing TCP bind and close..."
+    
+    BTW Create and bind server socket
+    I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+    SERVER PROTOCOL ITZ "TCP"
+    SERVER HOST ITZ "localhost"
+    SERVER PORT ITZ 9876
+    
+    MAYB
+        SERVER DO BIND
+        SAYZ WIT "✓ Server socket bound successfully"
+        
+        BTW Close the server
+        SERVER DO CLOSE
+        SAYZ WIT "✓ Server socket closed successfully"
+    OOPSIE ERR
+        SAYZ WIT "✗ TCP bind/close test failed:"
+        SAYZ WIT ERR
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_CONNECTION_REFUSED
+    SAYZ WIT "Testing connection to non-existent server..."
+    
+    BTW Try to connect to non-existent server
+    I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
+    CLIENT HOST ITZ "localhost"
+    CLIENT PORT ITZ 9999
+    CLIENT TIMEOUT ITZ 2
+    
+    MAYB
+        I HAS A VARIABLE WIRE TEH WIRE ITZ CLIENT DO CONNECT
+        SAYZ WIT "✗ Expected connection to fail but it succeeded"
+        WIRE DO CLOSE
+    OOPSIE ERR
+        SAYZ WIT "✓ Connection correctly failed as expected:"
+        SAYZ WIT ERR
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "Starting TCP socket tests..."
+    SAYZ WIT ""
+    
+    TEST_TCP_SOCKET_CREATION
+    SAYZ WIT ""
+    
+    TEST_TCP_BIND_AND_CLOSE
+    SAYZ WIT ""
+    
+    TEST_CONNECTION_REFUSED
+    SAYZ WIT ""
+    
+    SAYZ WIT "TCP socket tests completed!"
+KTHXBAI

@@ -15,6 +15,7 @@ func DefaultStdlibInitializers() map[string]interpreter.StdlibInitializer {
 		"MATH":    RegisterMATHInEnv,
 		"PROCESS": RegisterPROCESSInEnv,
 		"RANDOM":  RegisterRANDOMInEnv,
+		"SOCKET":  RegisterSOCKETInEnv,
 		"STDIO":   RegisterSTDIOInEnv,
 		"STRING":  RegisterSTRINGInEnv,
 		"TEST":    RegisterTESTInEnv,

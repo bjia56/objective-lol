@@ -153,18 +153,6 @@ ALWAYZ
 KTHX
 ```
 
-### Essential Imports
-
-```lol
-I CAN HAS STDIO?    BTW For SAY, SAYZ, GIMME
-I CAN HAS MATH?     BTW For ABS, MAX, SQRT, PI
-I CAN HAS TIME?     BTW For DATE class, SLEEP function
-I CAN HAS FILE?     BTW For DOCUMENT class, file operations
-I CAN HAS HTTP?     BTW For INTERWEB class, web requests
-I CAN HAS PROCESS?  BTW For MINION class, process management
-I CAN HAS TEST?     BTW For ASSERT function, testing
-```
-
 ## File Extensions
 
 All Objective-LOL source files must use the `.olol` extension.

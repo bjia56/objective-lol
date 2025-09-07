@@ -1,0 +1,180 @@
+BTW Test socket error handling scenarios
+I CAN HAS SOCKET?
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN TEST_CONNECTION_REFUSED
+    SAYZ WIT "Testing connection refused..."
+    
+    BTW Try to connect to non-existent server
+    I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
+    CLIENT HOST ITZ "localhost"
+    CLIENT PORT ITZ 9999
+    CLIENT TIMEOUT ITZ 2
+    
+    MAYB
+        I HAS A VARIABLE WIRE TEH WIRE ITZ CLIENT DO CONNECT
+        SAYZ WIT "✗ Expected connection to fail but it succeeded"
+    OOPSIE ERR
+        SAYZ WIT "✓ Connection correctly failed with error:"
+        SAYZ WIT ERR
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_BIND_ADDRESS_IN_USE
+    SAYZ WIT "Testing bind address already in use..."
+    
+    BTW Create first server
+    I HAS A VARIABLE SERVER1 TEH SOKKIT ITZ NEW SOKKIT
+    SERVER1 HOST ITZ "localhost"
+    SERVER1 PORT ITZ 9998
+    
+    MAYB
+        SERVER1 DO BIND
+        SAYZ WIT "First server bound successfully"
+        
+        BTW Try to bind second server to same port
+        I HAS A VARIABLE SERVER2 TEH SOKKIT ITZ NEW SOKKIT
+        SERVER2 HOST ITZ "localhost" 
+        SERVER2 PORT ITZ 9998
+        
+        MAYB
+            SERVER2 DO BIND
+            SAYZ WIT "✗ Expected second bind to fail but it succeeded"
+            SERVER2 DO CLOSE
+        OOPSIE ERR
+            SAYZ WIT "✓ Second bind correctly failed with error:"
+            SAYZ WIT ERR
+        KTHX
+        
+        SERVER1 DO CLOSE
+    OOPSIE ERR
+        SAYZ WIT "✗ First bind failed unexpectedly:"
+        SAYZ WIT ERR
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_INVALID_PROTOCOL
+    SAYZ WIT "Testing invalid protocol..."
+    
+    I HAS A VARIABLE SOCKET TEH SOKKIT ITZ NEW SOKKIT
+    SOCKET PROTOCOL ITZ "INVALID"
+    SOCKET HOST ITZ "localhost"
+    SOCKET PORT ITZ 9997
+    
+    MAYB
+        SOCKET DO BIND
+        SAYZ WIT "✗ Expected bind with invalid protocol to fail"
+        SOCKET DO CLOSE
+    OOPSIE ERR
+        SAYZ WIT "✓ Invalid protocol correctly failed with error:"
+        SAYZ WIT ERR
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_WIRE_OPERATIONS_ON_CLOSED
+    SAYZ WIT "Testing operations on closed connection..."
+    
+    BTW Create a server socket first
+    I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+    SERVER HOST ITZ "localhost"
+    SERVER PORT ITZ 9996
+    
+    MAYB
+        SERVER DO BIND
+        SERVER DO LISTEN
+        
+        BTW Create client connection in separate context
+        I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
+        CLIENT HOST ITZ "localhost"
+        CLIENT PORT ITZ 9996
+        CLIENT TIMEOUT ITZ 2
+        
+        MAYB
+            I HAS A VARIABLE WIRE TEH WIRE ITZ CLIENT DO CONNECT
+            
+            BTW Accept the connection on server side
+            I HAS A VARIABLE SERVER_WIRE TEH WIRE ITZ SERVER DO ACCEPT
+            
+            BTW Close the connection
+            WIRE DO CLOSE
+            
+            SAYZ WIT "Connection closed, testing operations on closed wire..."
+            
+            BTW Try to send on closed connection
+            MAYB
+                WIRE DO SEND WIT "test message"
+                SAYZ WIT "✗ Expected SEND to fail on closed connection"
+            OOPSIE ERR
+                SAYZ WIT "✓ SEND correctly failed on closed connection:"
+                SAYZ WIT ERR
+            KTHX
+            
+            BTW Try to receive on closed connection  
+            MAYB
+                I HAS A VARIABLE DATA TEH STRIN ITZ WIRE DO RECEIVE WIT 10
+                SAYZ WIT "✓ RECEIVE on closed connection returned:"
+                SAYZ WIT DATA
+            OOPSIE ERR
+                SAYZ WIT "✓ RECEIVE correctly failed on closed connection:"
+                SAYZ WIT ERR
+            KTHX
+            
+            SERVER_WIRE DO CLOSE
+        OOPSIE ERR
+            SAYZ WIT "Client connection failed:"
+            SAYZ WIT ERR
+        KTHX
+        
+        SERVER DO CLOSE
+    OOPSIE ERR
+        SAYZ WIT "Server setup failed:"
+        SAYZ WIT ERR
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_UDP_WITHOUT_BIND
+    SAYZ WIT "Testing UDP operations without bind..."
+    
+    I HAS A VARIABLE UDP_SOCKET TEH SOKKIT ITZ NEW SOKKIT
+    UDP_SOCKET PROTOCOL ITZ "UDP"
+    
+    BTW Try RECEIVE_FROM without binding
+    MAYB
+        I HAS A VARIABLE DATA TEH BASKIT ITZ UDP_SOCKET DO RECEIVE_FROM
+        SAYZ WIT "✗ Expected RECEIVE_FROM without bind to fail"
+    OOPSIE ERR
+        SAYZ WIT "✓ RECEIVE_FROM correctly failed without bind:"
+        SAYZ WIT ERR
+    KTHX
+    
+    BTW Try SEND_TO without binding
+    MAYB
+        UDP_SOCKET DO SEND_TO WIT "test" AN WIT "localhost" AN WIT 9995
+        SAYZ WIT "✗ Expected SEND_TO without bind to fail"
+    OOPSIE ERR
+        SAYZ WIT "✓ SEND_TO correctly failed without bind:"
+        SAYZ WIT ERR
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "Starting socket error handling tests..."
+    SAYZ WIT ""
+    
+    TEST_CONNECTION_REFUSED
+    SAYZ WIT ""
+    
+    TEST_BIND_ADDRESS_IN_USE
+    SAYZ WIT ""
+    
+    TEST_INVALID_PROTOCOL
+    SAYZ WIT ""
+    
+    TEST_WIRE_OPERATIONS_ON_CLOSED
+    SAYZ WIT ""
+    
+    TEST_UDP_WITHOUT_BIND
+    SAYZ WIT ""
+    
+    SAYZ WIT "Socket error handling tests completed!"
+KTHXBAI
