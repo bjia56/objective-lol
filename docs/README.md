@@ -39,6 +39,7 @@ Welcome to the comprehensive documentation for Objective-LOL, a programming lang
 - [**THREAD**](standard-library/threading.md) - Concurrency
 - [**FILE**](standard-library/file.md) - File system operations
 - [**HTTP**](standard-library/http.md) - HTTP client operations
+- [**PROCESS**](standard-library/process.md) - Process management operations
 
 ### 🔍 Reference
 
@@ -160,6 +161,7 @@ I CAN HAS MATH?     BTW For ABS, MAX, SQRT, PI
 I CAN HAS TIME?     BTW For DATE class, SLEEP function
 I CAN HAS FILE?     BTW For DOCUMENT class, file operations
 I CAN HAS HTTP?     BTW For INTERWEB class, web requests
+I CAN HAS PROCESS?  BTW For MINION class, process management
 I CAN HAS TEST?     BTW For ASSERT function, testing
 ```
 

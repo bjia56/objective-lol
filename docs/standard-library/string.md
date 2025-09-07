@@ -242,13 +242,13 @@ I CAN HAS STDIO?
 HAI ME TEH FUNCSHUN BUILD_MESSAGE WIT NAME TEH STRIN AN WIT AGE TEH INTEGR
     BTW Convert age to string for concatenation
     I HAS A VARIABLE AGE_STR TEH STRIN ITZ AGE AS STRIN
-    
+
     BTW Build message step by step
     I HAS A VARIABLE MSG TEH STRIN ITZ CONCAT WIT "Name: " AN WIT NAME
     MSG ITZ CONCAT WIT MSG AN WIT ", Age: "
     MSG ITZ CONCAT WIT MSG AN WIT AGE_STR
     MSG ITZ CONCAT WIT MSG AN WIT " years old"
-    
+
     GIVEZ MSG
 KTHXBAI
 
@@ -266,14 +266,14 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN ANALYZE_TEXT WIT TEXT TEH STRIN
     I HAS A VARIABLE LENGTH TEH INTEGR ITZ LEN WIT TEXT
-    
+
     SAY WIT "Text: \""
     SAY WIT TEXT
     SAYZ WIT "\""
-    
+
     SAY WIT "Length: "
     SAYZ WIT LENGTH
-    
+
     BTW Categorize by length
     IZ LENGTH SAEM AS 0?
         SAYZ WIT "Category: Empty string"
@@ -307,19 +307,19 @@ I CAN HAS STDIO?
 HAI ME TEH FUNCSHUN COMPARE_STRINGS WIT STR1 TEH STRIN AN WIT STR2 TEH STRIN
     I HAS A VARIABLE LEN1 TEH INTEGR ITZ LEN WIT STR1
     I HAS A VARIABLE LEN2 TEH INTEGR ITZ LEN WIT STR2
-    
+
     SAY WIT "String 1: \""
     SAY WIT STR1
     SAY WIT "\" (length: "
     SAY WIT LEN1
     SAYZ WIT ")"
-    
+
     SAY WIT "String 2: \""
     SAY WIT STR2
     SAY WIT "\" (length: "
     SAY WIT LEN2
     SAYZ WIT ")"
-    
+
     IZ STR1 SAEM AS STR2?
         SAYZ WIT "Result: Strings are identical"
     NOPE
@@ -352,31 +352,31 @@ I CAN HAS STDIO?
 HAI ME TEH FUNCSHUN FORMAT_TABLE_ROW WIT COL1 TEH STRIN AN WIT COL2 TEH STRIN AN WIT COL3 TEH STRIN
     BTW Create table separator
     I HAS A VARIABLE SEPARATOR TEH STRIN ITZ " | "
-    
+
     BTW Build the row
     I HAS A VARIABLE ROW TEH STRIN ITZ CONCAT WIT COL1 AN WIT SEPARATOR
     ROW ITZ CONCAT WIT ROW AN WIT COL2
     ROW ITZ CONCAT WIT ROW AN WIT SEPARATOR
     ROW ITZ CONCAT WIT ROW AN WIT COL3
-    
+
     GIVEZ ROW
 KTHXBAI
 
 HAI ME TEH FUNCSHUN CREATE_REPORT
     SAYZ WIT "Employee Report"
     SAYZ WIT "==============="
-    
+
     BTW Header
     I HAS A VARIABLE HEADER TEH STRIN ITZ FORMAT_TABLE_ROW WIT "Name" AN WIT "Department" AN WIT "Years"
     SAYZ WIT HEADER
-    
+
     BTW Data rows
     I HAS A VARIABLE ROW1 TEH STRIN ITZ FORMAT_TABLE_ROW WIT "Alice" AN WIT "Engineering" AN WIT "5"
     SAYZ WIT ROW1
-    
+
     I HAS A VARIABLE ROW2 TEH STRIN ITZ FORMAT_TABLE_ROW WIT "Bob" AN WIT "Marketing" AN WIT "3"
     SAYZ WIT ROW2
-    
+
     I HAS A VARIABLE ROW3 TEH STRIN ITZ FORMAT_TABLE_ROW WIT "Carol" AN WIT "Design" AN WIT "7"
     SAYZ WIT ROW3
 KTHXBAI
@@ -391,13 +391,13 @@ I CAN HAS STDIO?
 HAI ME TEH FUNCSHUN VALIDATE_PASSWORD WIT PASSWORD TEH STRIN
     I HAS A VARIABLE LENGTH TEH INTEGR ITZ LEN WIT PASSWORD
     I HAS A VARIABLE IS_VALID TEH BOOL ITZ YEZ
-    
+
     SAY WIT "Validating password: "
     SAY WIT PASSWORD
     SAY WIT " (length: "
     SAY WIT LENGTH
     SAYZ WIT ")"
-    
+
     BTW Check minimum length
     IZ LENGTH SMALLR THAN 8?
         SAYZ WIT "❌ Password must be at least 8 characters"
@@ -405,7 +405,7 @@ HAI ME TEH FUNCSHUN VALIDATE_PASSWORD WIT PASSWORD TEH STRIN
     NOPE
         SAYZ WIT "✓ Length requirement met"
     KTHX
-    
+
     BTW Check maximum length
     IZ LENGTH BIGGR THAN 128?
         SAYZ WIT "❌ Password must be no more than 128 characters"
@@ -413,14 +413,14 @@ HAI ME TEH FUNCSHUN VALIDATE_PASSWORD WIT PASSWORD TEH STRIN
     NOPE
         SAYZ WIT "✓ Length within limits"
     KTHX
-    
+
     BTW Overall result
     IZ IS_VALID?
         SAYZ WIT "✓ Password is valid!"
     NOPE
         SAYZ WIT "❌ Password validation failed"
     KTHX
-    
+
     SAYZ WIT ""
 KTHXBAI
 
@@ -442,16 +442,16 @@ I CAN HAS STDIO?
 HAI ME TEH FUNCSHUN DEMONSTRATE_STRING_OPERATIONS
     I HAS A VARIABLE TEXT1 TEH STRIN ITZ "Hello"
     I HAS A VARIABLE TEXT2 TEH STRIN ITZ "World"
-    
+
     BTW Built-in concatenation with MOAR operator
     I HAS A VARIABLE COMBINED1 TEH STRIN ITZ TEXT1 MOAR " " MOAR TEXT2
     SAYZ WIT COMBINED1
-    
+
     BTW STRING module concatenation
     I HAS A VARIABLE COMBINED2 TEH STRIN ITZ CONCAT WIT TEXT1 AN WIT " "
     COMBINED2 ITZ CONCAT WIT COMBINED2 AN WIT TEXT2
     SAYZ WIT COMBINED2
-    
+
     BTW Both produce the same result
     IZ COMBINED1 SAEM AS COMBINED2?
         SAYZ WIT "Both methods produce identical results!"
@@ -495,37 +495,6 @@ KTHX
 | `UPPER WIT string` | string: STRIN | STRIN | Convert to uppercase |
 | `LOWER WIT string` | string: STRIN | STRIN | Convert to lowercase |
 | `SPLIT WIT string AN WIT delimiter` | string: STRIN, delimiter: STRIN | BUKKIT | Split string into array |
-
-### Common Patterns
-
-```lol
-BTW Check if string is empty
-IZ LEN WIT MY_STRING SAEM AS 0?
-    SAYZ WIT "String is empty"
-KTHX
-
-BTW Build a sentence
-I HAS A VARIABLE SENTENCE TEH STRIN ITZ CONCAT WIT SUBJECT AN WIT " "
-SENTENCE ITZ CONCAT WIT SENTENCE AN WIT VERB
-SENTENCE ITZ CONCAT WIT SENTENCE AN WIT " "
-SENTENCE ITZ CONCAT WIT SENTENCE AN WIT OBJECT
-
-BTW Clean and normalize text
-I HAS A VARIABLE RAW_INPUT TEH STRIN ITZ "  Mixed Case Text  "
-I HAS A VARIABLE CLEAN TEH STRIN ITZ TRIM WIT RAW_INPUT
-I HAS A VARIABLE NORMALIZED TEH STRIN ITZ LOWER WIT CLEAN
-
-BTW Parse CSV-like data
-I HAS A VARIABLE CSV_LINE TEH STRIN ITZ "name,age,city"
-I HAS A VARIABLE FIELDS TEH BUKKIT ITZ SPLIT WIT CSV_LINE AN WIT ","
-
-BTW Length-based validation
-IZ LEN WIT PASSWORD BIGGR THAN 7?
-    SAYZ WIT "Password meets minimum length"
-NOPE
-    SAYZ WIT "Password too short"
-KTHX
-```
 
 ## Related
 

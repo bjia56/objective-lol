@@ -18,6 +18,7 @@ The Objective-LOL standard library provides essential functionality through a co
 | [THREAD](threading.md) | Concurrency support | `YARN` thread class, `KNOT` mutex class |
 | [FILE](file.md) | File system operations | `DOCUMENT` class with read/write operations |
 | [HTTP](http.md) | HTTP client operations | `INTERWEB` client class, `RESPONSE` class |
+| [PROCESS](process.md) | Process management operations | `MINION` process class, `PIPE` I/O class |
 
 ### Collection Types
 

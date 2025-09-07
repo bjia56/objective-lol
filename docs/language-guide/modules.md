@@ -193,6 +193,7 @@ Error: circular import detected during execution: circular_module_a
 | `THREAD` | Concurrency | `YARN`, `KNOT` classes |
 | `FILE` | File utilities | `DOCUMENT` class |
 | `HTTP` | HTTP client | `INTERWEB`, `RESPONSE` classes |
+| `PROCESS` | Process management | `MINION`, `PIPE` classes |
 
 ### Standard Library Examples
 

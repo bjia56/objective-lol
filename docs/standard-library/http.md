@@ -128,21 +128,21 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN SIMPLE_GET_REQUEST WIT URL TEH STRIN
     SAYZ WIT "=== Simple GET Request ==="
-    
+
     BTW Create HTTP client
     I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
-    
+
     MAYB
         BTW Make GET request
         I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO GET WIT URL
-        
+
         SAYZ WIT "Request successful!"
         SAY WIT "Status Code: "
         SAYZ WIT RESPONSE STATUS
-        
+
         SAY WIT "Response Body: "
         SAYZ WIT RESPONSE BODY
-        
+
     OOPSIE HTTP_ERROR
         SAY WIT "Request failed: "
         SAYZ WIT HTTP_ERROR
@@ -158,24 +158,24 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN POST_JSON_DATA WIT URL TEH STRIN AN WIT JSON_DATA TEH STRIN
     SAYZ WIT "=== POST JSON Data ==="
-    
+
     BTW Create HTTP client
     I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
-    
+
     BTW Configure headers
     I HAS A VARIABLE HEADERS TEH BASKIT ITZ CLIENT HEADERS
     HEADERS DO PUT WIT "Content-Type" AN WIT "application/json"
     HEADERS DO PUT WIT "Accept" AN WIT "application/json"
-    
+
     MAYB
         BTW Make POST request
         I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO POST WIT URL AN WIT JSON_DATA
-        
+
         IZ RESPONSE IS_SUCCESS?
             SAYZ WIT "POST successful!"
             SAY WIT "Status Code: "
             SAYZ WIT RESPONSE STATUS
-            
+
             BTW Parse JSON response if applicable
             MAYB
                 I HAS A VARIABLE RESULT TEH BASKIT ITZ RESPONSE DO TO_JSON
@@ -183,13 +183,13 @@ HAI ME TEH FUNCSHUN POST_JSON_DATA WIT URL TEH STRIN AN WIT JSON_DATA TEH STRIN
             OOPSIE JSON_ERROR
                 SAYZ WIT "Response is not JSON"
             KTHX
-            
+
         NOPE
             SAYZ WIT "POST failed"
             SAY WIT "Status Code: "
             SAYZ WIT RESPONSE STATUS
         KTHX
-        
+
     OOPSIE HTTP_ERROR
         SAY WIT "Request failed: "
         SAYZ WIT HTTP_ERROR
@@ -210,25 +210,25 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN AUTHENTICATED_REQUEST WIT URL TEH STRIN AN WIT TOKEN TEH STRIN
     SAYZ WIT "=== Authenticated Request ==="
-    
+
     BTW Create HTTP client with custom configuration
     I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
-    
+
     BTW Set timeout to 60 seconds
     CLIENT TIMEOUT ITZ 60
-    
+
     BTW Configure authentication headers
     I HAS A VARIABLE HEADERS TEH BASKIT ITZ CLIENT HEADERS
     HEADERS DO PUT WIT "Authorization" AN WIT "Bearer " + TOKEN
     HEADERS DO PUT WIT "User-Agent" AN WIT "ObjectiveLOL-Client/1.0"
     HEADERS DO PUT WIT "Accept" AN WIT "application/json"
-    
+
     MAYB
         I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO GET WIT URL
-        
+
         IZ RESPONSE IS_SUCCESS?
             SAYZ WIT "Authenticated request successful!"
-            
+
             BTW Show response headers
             I HAS A VARIABLE RESP_HEADERS TEH BASKIT ITZ RESPONSE HEADERS
             MAYB
@@ -237,13 +237,13 @@ HAI ME TEH FUNCSHUN AUTHENTICATED_REQUEST WIT URL TEH STRIN AN WIT TOKEN TEH STR
             OOPSIE HEADER_ERROR
                 SAYZ WIT "Server header not found"
             KTHX
-            
+
         NOPE
             SAYZ WIT "Authentication failed"
             SAY WIT "Status: "
             SAYZ WIT RESPONSE STATUS
         KTHX
-        
+
     OOPSIE HTTP_ERROR
         SAY WIT "Request failed: "
         SAYZ WIT HTTP_ERROR
@@ -261,27 +261,27 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN API_CLIENT_DEMO WIT BASE_URL TEH STRIN
     SAYZ WIT "=== JSON API Client Demo ==="
-    
+
     BTW Create configured HTTP client
     I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
     CLIENT TIMEOUT ITZ 30
-    
+
     I HAS A VARIABLE HEADERS TEH BASKIT ITZ CLIENT HEADERS
     HEADERS DO PUT WIT "Content-Type" AN WIT "application/json"
     HEADERS DO PUT WIT "Accept" AN WIT "application/json"
     HEADERS DO PUT WIT "User-Agent" AN WIT "ObjectiveLOL-API-Client/1.0"
-    
+
     MAYB
         BTW Get API information
         I HAS A VARIABLE INFO_URL TEH STRIN ITZ BASE_URL
         I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO GET WIT INFO_URL
-        
+
         IZ RESPONSE IS_SUCCESS?
             SAYZ WIT "API connection successful"
-            
+
             BTW Parse JSON response
             I HAS A VARIABLE API_INFO TEH BASKIT ITZ RESPONSE DO TO_JSON
-            
+
             BTW Display API information
             MAYB
                 SAY WIT "Current User URL: "
@@ -289,11 +289,11 @@ HAI ME TEH FUNCSHUN API_CLIENT_DEMO WIT BASE_URL TEH STRIN
             OOPSIE KEY_ERROR
                 SAYZ WIT "API structure may have changed"
             KTHX
-            
+
             BTW Show response metadata
             SAY WIT "Response size: "
             SAYZ WIT LEN WIT RESPONSE BODY
-            
+
             I HAS A VARIABLE RESP_HEADERS TEH BASKIT ITZ RESPONSE HEADERS
             MAYB
                 SAY WIT "Content-Type: "
@@ -301,7 +301,7 @@ HAI ME TEH FUNCSHUN API_CLIENT_DEMO WIT BASE_URL TEH STRIN
             OOPSIE HEADER_ERROR
                 SAYZ WIT "Content-Type header not found"
             KTHX
-            
+
         NOPE
             SAYZ WIT "API connection failed"
             IZ RESPONSE IS_ERROR?
@@ -309,7 +309,7 @@ HAI ME TEH FUNCSHUN API_CLIENT_DEMO WIT BASE_URL TEH STRIN
                 SAYZ WIT RESPONSE STATUS
             KTHX
         KTHX
-        
+
     OOPSIE HTTP_ERROR
         SAY WIT "Network error: "
         SAYZ WIT HTTP_ERROR
@@ -329,29 +329,29 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN UPLOAD_DATA WIT UPLOAD_URL TEH STRIN AN WIT DATA TEH STRIN
     SAYZ WIT "=== File Upload Simulation ==="
-    
+
     BTW Create HTTP client for upload
     I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
     CLIENT TIMEOUT ITZ 120  BTW Longer timeout for uploads
-    
+
     BTW Configure upload headers
     I HAS A VARIABLE HEADERS TEH BASKIT ITZ CLIENT HEADERS
     HEADERS DO PUT WIT "Content-Type" AN WIT "text/plain"
     HEADERS DO PUT WIT "Content-Length" AN WIT LEN WIT DATA
-    
+
     MAYB
         BTW Simulate file upload with PUT
         I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO PUT WIT UPLOAD_URL AN WIT DATA
-        
+
         IZ RESPONSE IS_SUCCESS?
             SAYZ WIT "Upload successful!"
             SAY WIT "Status: "
             SAYZ WIT RESPONSE STATUS
-            
+
             BTW Show upload confirmation
             SAY WIT "Response: "
             SAYZ WIT RESPONSE BODY
-            
+
         NOPE
             SAYZ WIT "Upload failed"
             SAY WIT "Status: "
@@ -359,7 +359,7 @@ HAI ME TEH FUNCSHUN UPLOAD_DATA WIT UPLOAD_URL TEH STRIN AN WIT DATA TEH STRIN
             SAY WIT "Error: "
             SAYZ WIT RESPONSE BODY
         KTHX
-        
+
     OOPSIE UPLOAD_ERROR
         SAY WIT "Upload error: "
         SAYZ WIT UPLOAD_ERROR
@@ -380,21 +380,21 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN REST_API_DEMO WIT API_BASE TEH STRIN
     SAYZ WIT "=== RESTful API Operations ==="
-    
+
     BTW Create API client
     I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
     CLIENT TIMEOUT ITZ 30
-    
+
     I HAS A VARIABLE HEADERS TEH BASKIT ITZ CLIENT HEADERS
     HEADERS DO PUT WIT "Content-Type" AN WIT "application/json"
     HEADERS DO PUT WIT "Accept" AN WIT "application/json"
-    
+
     BTW GET - List resources
     SAYZ WIT "1. GET - Listing resources"
     MAYB
         I HAS A VARIABLE LIST_URL TEH STRIN ITZ API_BASE + "/users"
         I HAS A VARIABLE GET_RESPONSE TEH RESPONSE ITZ CLIENT DO GET WIT LIST_URL
-        
+
         IZ GET_RESPONSE IS_SUCCESS?
             SAYZ WIT "GET successful"
             SAY WIT "Status: "
@@ -405,14 +405,14 @@ HAI ME TEH FUNCSHUN REST_API_DEMO WIT API_BASE TEH STRIN
     OOPSIE GET_ERROR
         SAYZ WIT "GET operation failed"
     KTHX
-    
+
     BTW POST - Create resource
     SAYZ WIT "2. POST - Creating resource"
     MAYB
         I HAS A VARIABLE CREATE_URL TEH STRIN ITZ API_BASE + "/users"
         I HAS A VARIABLE USER_DATA TEH STRIN ITZ "{\"name\": \"Test User\", \"email\": \"test@example.com\"}"
         I HAS A VARIABLE POST_RESPONSE TEH RESPONSE ITZ CLIENT DO POST WIT CREATE_URL AN WIT USER_DATA
-        
+
         IZ POST_RESPONSE IS_SUCCESS?
             SAYZ WIT "POST successful"
             SAY WIT "Status: "
@@ -423,14 +423,14 @@ HAI ME TEH FUNCSHUN REST_API_DEMO WIT API_BASE TEH STRIN
     OOPSIE POST_ERROR
         SAYZ WIT "POST operation failed"
     KTHX
-    
+
     BTW PUT - Update resource
     SAYZ WIT "3. PUT - Updating resource"
     MAYB
         I HAS A VARIABLE UPDATE_URL TEH STRIN ITZ API_BASE + "/users/1"
         I HAS A VARIABLE UPDATE_DATA TEH STRIN ITZ "{\"name\": \"Updated User\", \"email\": \"updated@example.com\"}"
         I HAS A VARIABLE PUT_RESPONSE TEH RESPONSE ITZ CLIENT DO PUT WIT UPDATE_URL AN WIT UPDATE_DATA
-        
+
         IZ PUT_RESPONSE IS_SUCCESS?
             SAYZ WIT "PUT successful"
             SAY WIT "Status: "
@@ -441,13 +441,13 @@ HAI ME TEH FUNCSHUN REST_API_DEMO WIT API_BASE TEH STRIN
     OOPSIE PUT_ERROR
         SAYZ WIT "PUT operation failed"
     KTHX
-    
+
     BTW DELETE - Remove resource
     SAYZ WIT "4. DELETE - Removing resource"
     MAYB
         I HAS A VARIABLE DELETE_URL TEH STRIN ITZ API_BASE + "/users/1"
         I HAS A VARIABLE DELETE_RESPONSE TEH RESPONSE ITZ CLIENT DO DELETE WIT DELETE_URL
-        
+
         IZ DELETE_RESPONSE IS_SUCCESS?
             SAYZ WIT "DELETE successful"
             SAY WIT "Status: "
@@ -475,24 +475,24 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN ROBUST_HTTP_REQUEST WIT URL TEH STRIN
     SAYZ WIT "=== Robust HTTP Request ==="
-    
+
     I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
     CLIENT TIMEOUT ITZ 10  BTW Short timeout for demo
-    
+
     MAYB
         I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO GET WIT URL
-        
+
         BTW Check response status
         IZ RESPONSE IS_SUCCESS?
             SAYZ WIT "Request successful!"
             SAY WIT "Status: "
             SAYZ WIT RESPONSE STATUS
-            
+
         NOPE IZ RESPONSE IS_ERROR?
             SAYZ WIT "Client or server error"
             SAY WIT "Status: "
             SAYZ WIT RESPONSE STATUS
-            
+
             BTW Handle specific error codes
             IZ RESPONSE STATUS SAEM AS 404?
                 SAYZ WIT "Resource not found"
@@ -503,13 +503,13 @@ HAI ME TEH FUNCSHUN ROBUST_HTTP_REQUEST WIT URL TEH STRIN
             NOPE
                 SAYZ WIT "Other error occurred"
             KTHX
-            
+
         NOPE
             SAYZ WIT "Unexpected response status"
             SAY WIT "Status: "
             SAYZ WIT RESPONSE STATUS
         KTHX
-        
+
     OOPSIE HTTP_ERROR
         SAYZ WIT "HTTP operation failed: "
         SAYZ WIT HTTP_ERROR
@@ -524,13 +524,13 @@ KTHXBAI
 HAI ME TEH FUNCSHUN DEMO_ERROR_HANDLING
     BTW Test with valid URL
     ROBUST_HTTP_REQUEST WIT "https://httpbin.org/status/200"
-    
+
     BTW Test with error status
     ROBUST_HTTP_REQUEST WIT "https://httpbin.org/status/404"
-    
+
     BTW Test with invalid URL
     ROBUST_HTTP_REQUEST WIT "invalid-url"
-    
+
     BTW Test with timeout (very slow response)
     ROBUST_HTTP_REQUEST WIT "https://httpbin.org/delay/15"
 KTHXBAI
@@ -544,19 +544,19 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN SAFE_JSON_PARSING WIT URL TEH STRIN
     SAYZ WIT "=== Safe JSON Parsing ==="
-    
+
     I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
-    
+
     MAYB
         I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO GET WIT URL
-        
+
         IZ RESPONSE IS_SUCCESS?
             SAYZ WIT "Response received, attempting JSON parse..."
-            
+
             MAYB
                 I HAS A VARIABLE JSON_DATA TEH BASKIT ITZ RESPONSE DO TO_JSON
                 SAYZ WIT "JSON parsing successful!"
-                
+
                 BTW Safe access to JSON fields
                 MAYB
                     I HAS A VARIABLE NAME TEH STRIN ITZ JSON_DATA DO GET WIT "name"
@@ -565,7 +565,7 @@ HAI ME TEH FUNCSHUN SAFE_JSON_PARSING WIT URL TEH STRIN
                 OOPSIE FIELD_ERROR
                     SAYZ WIT "Name field not found in JSON"
                 KTHX
-                
+
             OOPSIE JSON_ERROR
                 SAYZ WIT "JSON parsing failed: "
                 SAYZ WIT JSON_ERROR
@@ -573,11 +573,11 @@ HAI ME TEH FUNCSHUN SAFE_JSON_PARSING WIT URL TEH STRIN
                 SAYZ WIT "Response body preview:"
                 SAYZ WIT RESPONSE BODY
             KTHX
-            
+
         NOPE
             SAYZ WIT "HTTP request failed, no JSON to parse"
         KTHX
-        
+
     OOPSIE REQUEST_ERROR
         SAYZ WIT "Request failed: "
         SAYZ WIT REQUEST_ERROR
@@ -587,7 +587,7 @@ KTHXBAI
 HAI ME TEH FUNCSHUN DEMO_JSON_HANDLING
     BTW Test with valid JSON
     SAFE_JSON_PARSING WIT "https://httpbin.org/json"
-    
+
     BTW Test with non-JSON response
     SAFE_JSON_PARSING WIT "https://httpbin.org/html"
 KTHXBAI
@@ -632,35 +632,6 @@ KTHXBAI
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `TO_JSON` | BASKIT | Parse response body as JSON |
-
-### Common Patterns
-
-```lol
-BTW Basic GET request
-I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
-I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO GET WIT "https://api.example.com"
-
-BTW Configured request with headers
-I HAS A VARIABLE CLIENT TEH INTERWEB ITZ NEW INTERWEB
-CLIENT TIMEOUT ITZ 60
-I HAS A VARIABLE HEADERS TEH BASKIT ITZ CLIENT HEADERS
-HEADERS DO PUT WIT "Authorization" AN WIT "Bearer token123"
-I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO GET WIT "https://api.example.com"
-
-BTW Safe request with error handling
-MAYB
-    I HAS A VARIABLE RESPONSE TEH RESPONSE ITZ CLIENT DO GET WIT URL
-    IZ RESPONSE IS_SUCCESS?
-        BTW Process successful response
-        I HAS A VARIABLE JSON_DATA TEH BASKIT ITZ RESPONSE DO TO_JSON
-    NOPE
-        BTW Handle error response
-        SAYZ WIT "Request failed"
-    KTHX
-OOPSIE HTTP_ERROR
-    SAYZ WIT "Network error occurred"
-KTHX
-```
 
 ## Related
 
