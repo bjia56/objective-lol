@@ -45,6 +45,7 @@ def convert_to_go_value(value):
     elif isinstance(value, bool):
         return WrapBool(value)
     elif isinstance(value, GoValue):
+        # object handle, pass through
         return value
     elif isinstance(value, (list, tuple)):
         slice = Slice_api_GoValue()
@@ -75,7 +76,8 @@ def convert_from_go_value(go_value: GoValue):
     elif typ == "BASKIT":
         return {k: convert_from_go_value(v) for k, v in go_value.Map().items()}
     else:
-        raise ValueError("Unsupported Go value type %s" % typ)
+        # object handle
+        return go_value
 
 
 class ObjectiveLOLVM:
@@ -127,6 +129,23 @@ class ObjectiveLOLVM:
         def do():
             try:
                 result = self.vm.Call(name, goArgs)
+                fut.set_result(convert_from_go_value(result))
+            except Exception as e:
+                fut.set_exception(e)
+        threading.Thread(target=do).start()
+        return await asyncio.wrap_future(fut)
+
+    def call_method(self, receiver: GoValue, name: str, *args):
+        goArgs = convert_to_go_value(args)
+        result = self.vm.CallMethod(receiver, name, goArgs)
+        return convert_from_go_value(result)
+
+    async def call_method_async(self, receiver: GoValue, name: str, *args):
+        goArgs = convert_to_go_value(args)
+        fut = concurrent.futures.Future()
+        def do():
+            try:
+                result = self.vm.CallMethod(receiver, name, goArgs)
                 fut.set_result(convert_from_go_value(result))
             except Exception as e:
                 fut.set_exception(e)
