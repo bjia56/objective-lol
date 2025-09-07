@@ -247,10 +247,10 @@ func structToObject(rv reflect.Value) (environment.Value, error) {
 }
 
 // ConvertArguments converts a slice of Go values to Objective-LOL values
-func ConvertArguments(args []interface{}) ([]environment.Value, error) {
+func ConvertArguments(args []GoValue) ([]environment.Value, error) {
 	result := make([]environment.Value, len(args))
 	for i, arg := range args {
-		val, err := FromGoValue(WrapAny(arg))
+		val, err := FromGoValue(arg)
 		if err != nil {
 			return nil, NewConversionError(
 				fmt.Sprintf("error converting argument at index %d", i),

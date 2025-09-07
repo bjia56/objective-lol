@@ -188,20 +188,20 @@ func (vm *VM) parseCode(code string) (*ast.ProgramNode, error) {
 }
 
 // Call calls an Objective-LOL function with the given arguments
-func (vm *VM) Call(functionName string, args ...interface{}) (interface{}, error) {
+func (vm *VM) Call(functionName string, args []GoValue) (GoValue, error) {
 	vm.mutex.RLock()
 	defer vm.mutex.RUnlock()
 
 	// Convert Go arguments to Objective-LOL values
 	ololArgs, err := ConvertArguments(args)
 	if err != nil {
-		return nil, err
+		return WrapAny(nil), err
 	}
 
 	// Get function from environment
 	function, err := vm.interpreter.GetEnvironment().GetFunction(strings.ToUpper(functionName))
 	if err != nil {
-		return nil, NewRuntimeError(
+		return WrapAny(nil), NewRuntimeError(
 			fmt.Sprintf("function %s not found", functionName),
 			nil,
 		)
@@ -210,7 +210,7 @@ func (vm *VM) Call(functionName string, args ...interface{}) (interface{}, error
 	// Call function through interpreter
 	result, err := vm.interpreter.CallFunction(function, ololArgs)
 	if err != nil {
-		return nil, wrapError(err, RuntimeErrorType, "function call failed")
+		return WrapAny(nil), wrapError(err, RuntimeErrorType, "function call failed")
 	}
 
 	// Convert result back to Go value
