@@ -1,0 +1,27 @@
+BTW Test the new PROCESS module
+I CAN HAS STDIO?
+I CAN HAS PROCESS?
+
+HAI ME TEH FUNCSHUN MAIN
+    BTW Create command line
+    I HAS A VARIABLE CMD TEH BUKKIT ITZ NEW BUKKIT
+    CMD DO PUSH WIT "echo"
+    CMD DO PUSH WIT "Hello from subprocess!"
+
+    BTW Create and run process
+    I HAS A VARIABLE WORKER TEH MINION ITZ NEW MINION WIT CMD
+    SAYZ WIT "Starting process..."
+
+    WORKER DO START
+    
+    BTW Read output from stdout pipe
+    I HAS A VARIABLE STDOUT_PIPE TEH PIPE ITZ WORKER STDOUT
+    I HAS A VARIABLE OUTPUT TEH STRIN ITZ STDOUT_PIPE DO READ WIT 100
+    SAY WIT "Process output: "
+    SAYZ WIT OUTPUT
+
+    BTW Wait for completion
+    I HAS A VARIABLE EXIT_CODE TEH INTEGR ITZ WORKER DO WAIT
+    SAY WIT "Process finished with exit code: "
+    SAYZ WIT EXIT_CODE
+KTHXBAI

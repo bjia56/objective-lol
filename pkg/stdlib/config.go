@@ -9,16 +9,17 @@ import (
 // used by the Objective-LOL interpreter
 func DefaultStdlibInitializers() map[string]interpreter.StdlibInitializer {
 	return map[string]interpreter.StdlibInitializer{
-		"FILE":   RegisterFILEInEnv,
-		"HTTP":   RegisterHTTPInEnv,
-		"IO":     RegisterIOInEnv,
-		"MATH":   RegisterMATHInEnv,
-		"RANDOM": RegisterRANDOMInEnv,
-		"STDIO":  RegisterSTDIOInEnv,
-		"STRING": RegisterSTRINGInEnv,
-		"TEST":   RegisterTESTInEnv,
-		"THREAD": RegisterTHREADInEnv,
-		"TIME":   RegisterTIMEInEnv,
+		"FILE":    RegisterFILEInEnv,
+		"HTTP":    RegisterHTTPInEnv,
+		"IO":      RegisterIOInEnv,
+		"MATH":    RegisterMATHInEnv,
+		"PROCESS": RegisterPROCESSInEnv,
+		"RANDOM":  RegisterRANDOMInEnv,
+		"STDIO":   RegisterSTDIOInEnv,
+		"STRING":  RegisterSTRINGInEnv,
+		"TEST":    RegisterTESTInEnv,
+		"THREAD":  RegisterTHREADInEnv,
+		"TIME":    RegisterTIMEInEnv,
 	}
 }
 
