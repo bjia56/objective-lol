@@ -804,11 +804,11 @@ func (i *Interpreter) VisitMemberAccess(node *ast.MemberAccessNode) (environment
 	}
 
 	if obj, ok := objectValue.(environment.GenericObject); ok {
-		variable, err := obj.GetMemberVariable(strings.ToUpper(node.Member), i.currentClass)
+		val, err := obj.GetMemberVariable(strings.ToUpper(node.Member), i.currentClass)
 		if err != nil {
 			return environment.NOTHIN, err
 		}
-		return variable.Value, nil
+		return val, nil
 	}
 
 	return environment.NOTHIN, fmt.Errorf("cannot access member of non-object")
@@ -933,8 +933,8 @@ func (i *Interpreter) VisitIdentifier(node *ast.IdentifierNode) (environment.Val
 
 	// If we're in a method call and the identifier might be a member variable, check current object first
 	if i.currentObject != nil {
-		if memberVar, err := i.currentObject.GetMemberVariable(name, i.currentClass); err == nil {
-			return memberVar.Value, nil
+		if memberVal, err := i.currentObject.GetMemberVariable(name, i.currentClass); err == nil {
+			return memberVal, nil
 		}
 	}
 

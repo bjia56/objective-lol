@@ -9,9 +9,9 @@ import (
 type GenericObject interface {
 	Value
 	GetQualifiedClassName() string
-	GetMemberVariable(name string, fromContext string) (*Variable, error)
-	SetMemberVariable(name string, value Value, fromContext string) error
-	GetMemberFunction(name string, fromContext string) (*Function, error)
+	GetMemberVariable(name string, callingContext string) (Value, error)
+	SetMemberVariable(name string, value Value, callingContext string) error
+	GetMemberFunction(name string, callingContext string) (*Function, error)
 }
 
 // ObjectInstance represents a native Objective-LOL instance of a class
@@ -29,12 +29,12 @@ func (obj *ObjectInstance) GetQualifiedClassName() string {
 	return obj.Class.QualifiedName
 }
 
-// GetMemberVariable retrieves a member variable from the object instance
-func (obj *ObjectInstance) GetMemberVariable(name string, fromContext string) (*Variable, error) {
+// getMemberVariable retrieves a member variable from the object instance
+func (obj *ObjectInstance) getMemberVariable(name string, callingContext string) (*Variable, error) {
 	// Check instance variables first
 	if variable, exists := obj.Variables[name]; exists {
 		// Check visibility using the variable's IsPublic flag
-		if variable.IsPublic || fromContext == obj.Class.QualifiedName {
+		if variable.IsPublic || callingContext == obj.Class.QualifiedName {
 			return variable, nil
 		}
 		return nil, fmt.Errorf("variable '%s' is private", name)
@@ -48,9 +48,18 @@ func (obj *ObjectInstance) GetMemberVariable(name string, fromContext string) (*
 	return nil, fmt.Errorf("undefined member variable '%s'", name)
 }
 
+// GetMemberVariable retrieves the value of a member variable from the object instance
+func (obj *ObjectInstance) GetMemberVariable(name string, callingContext string) (Value, error) {
+	variable, err := obj.getMemberVariable(name, callingContext)
+	if err != nil {
+		return nil, err
+	}
+	return variable.Value, nil
+}
+
 // SetMemberVariable sets a member variable in the object instance
-func (obj *ObjectInstance) SetMemberVariable(name string, value Value, fromContext string) error {
-	variable, err := obj.GetMemberVariable(name, fromContext)
+func (obj *ObjectInstance) SetMemberVariable(name string, value Value, callingContext string) error {
+	variable, err := obj.getMemberVariable(name, callingContext)
 	if err != nil {
 		return err
 	}
@@ -119,6 +128,6 @@ func (o *ObjectInstance) EqualTo(other Value) (BoolValue, error) {
 }
 
 // GetMemberFunction retrieves a member function from the object's class
-func (obj *ObjectInstance) GetMemberFunction(name string, fromContext string) (*Function, error) {
-	return obj.Class.getMemberFunction(name, fromContext, obj.Environment)
+func (obj *ObjectInstance) GetMemberFunction(name string, callingContext string) (*Function, error) {
+	return obj.Class.getMemberFunction(name, callingContext, obj.Environment)
 }

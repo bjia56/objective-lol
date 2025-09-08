@@ -285,17 +285,17 @@ func TestObjectInstanceMemberAccess(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test getting member using the actual method names
-	variable, err := instance.GetMemberVariable("name", "TestClass")
+	value, err := instance.GetMemberVariable("name", "TestClass")
 	assert.NoError(t, err)
-	assert.Equal(t, StringValue("initial"), variable.Value)
+	assert.Equal(t, StringValue("initial"), value)
 
 	// Test setting member
 	err = instance.SetMemberVariable("name", StringValue("updated"), "TestClass")
 	assert.NoError(t, err)
 
-	variable, err = instance.GetMemberVariable("name", "TestClass")
+	value, err = instance.GetMemberVariable("name", "TestClass")
 	assert.NoError(t, err)
-	assert.Equal(t, StringValue("updated"), variable.Value)
+	assert.Equal(t, StringValue("updated"), value)
 
 	// Test accessing undefined member
 	_, err = instance.GetMemberVariable("undefined", "TestClass")
