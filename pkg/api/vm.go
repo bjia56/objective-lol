@@ -25,7 +25,7 @@ type VM struct {
 	mutex       sync.RWMutex // For thread safety
 
 	// State tracking
-	isInitialized bool
+	isStarted bool
 
 	// Output capture
 	outputBuffer *bytes.Buffer
@@ -40,10 +40,10 @@ func NewVM(config *VMConfig) (*VM, error) {
 	}
 
 	vm := &VM{
-		config:        config,
-		outputBuffer:  &bytes.Buffer{},
-		originalOut:   config.Stdout,
-		isInitialized: false,
+		config:       config,
+		outputBuffer: &bytes.Buffer{},
+		originalOut:  config.Stdout,
+		isStarted:    false,
 	}
 
 	if err := vm.initialize(); err != nil {
@@ -57,10 +57,6 @@ func NewVM(config *VMConfig) (*VM, error) {
 func (vm *VM) initialize() error {
 	vm.mutex.Lock()
 	defer vm.mutex.Unlock()
-
-	if vm.isInitialized {
-		return nil
-	}
 
 	// Combine default stdlib with custom stdlib
 	stdlibInit := stdlib.DefaultStdlibInitializers()
@@ -89,7 +85,6 @@ func (vm *VM) initialize() error {
 		stdlib.SetInput(vm.config.Stdin)
 	}
 
-	vm.isInitialized = true
 	return nil
 }
 
@@ -102,6 +97,11 @@ func (vm *VM) Execute(code string) (*ExecutionResult, error) {
 func (vm *VM) ExecuteWithContext(ctx context.Context, code string) (*ExecutionResult, error) {
 	vm.mutex.Lock()
 	defer vm.mutex.Unlock()
+
+	if vm.isStarted {
+		return nil, NewRuntimeError("VM has already been started; create a new VM instance to run code again", nil)
+	}
+	vm.isStarted = true
 
 	startTime := time.Now()
 	result := &ExecutionResult{}
@@ -244,6 +244,10 @@ func (vm *VM) DefineVariable(name string, value GoValue, constant bool) error {
 	vm.mutex.Lock()
 	defer vm.mutex.Unlock()
 
+	if vm.isStarted {
+		return NewRuntimeError("cannot define variable after VM has started; create a new VM instance to define variables", nil)
+	}
+
 	// Convert Go value to Objective-LOL value
 	ololValue, err := FromGoValue(value)
 	if err != nil {
@@ -297,8 +301,15 @@ func (vm *VM) GetVariable(variableName string) (GoValue, error) {
 	return ToGoValue(variable.Value)
 }
 
-// defineFunctionUnsafe defines a global function in the VM without holding the mutex
-func (vm *VM) defineFunctionUnsafe(name string, argc int, function func(args []GoValue) (GoValue, error)) error {
+// DefineFunction defines a global function in the VM
+func (vm *VM) DefineFunction(name string, argc int, function func(args []GoValue) (GoValue, error)) error {
+	vm.mutex.Lock()
+	defer vm.mutex.Unlock()
+
+	if vm.isStarted {
+		return NewRuntimeError("cannot define function after VM has started; create a new VM instance to define functions", nil)
+	}
+
 	return vm.interpreter.GetEnvironment().DefineFunction(&environment.Function{
 		Name:       strings.ToUpper(name),
 		Parameters: make([]environment.Parameter, argc),
@@ -327,13 +338,6 @@ func (vm *VM) defineFunctionUnsafe(name string, argc int, function func(args []G
 			return envVal, nil
 		},
 	})
-}
-
-// DefineFunction defines a global function in the VM
-func (vm *VM) DefineFunction(name string, argc int, function func(args []GoValue) (GoValue, error)) error {
-	vm.mutex.Lock()
-	defer vm.mutex.Unlock()
-	return vm.defineFunctionUnsafe(name, argc, function)
 }
 
 // GetCompatibilityShim returns a compatibility shim for the VM
