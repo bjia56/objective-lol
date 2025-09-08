@@ -154,7 +154,6 @@ func sliceToArray(rv reflect.Value) (environment.Value, error) {
 		}
 		instance.NativeData = append(instance.NativeData.(stdlib.BukkitSlice), objElem)
 	}
-	instance.Variables["SIZ"].Value = environment.IntegerValue(rv.Len())
 
 	return instance, nil
 }
@@ -163,7 +162,20 @@ func sliceToArray(rv reflect.Value) (environment.Value, error) {
 func mapToObject(rv reflect.Value) (environment.Value, error) {
 	if rv.Kind() != reflect.Map {
 		return nil, NewConversionError(
-			fmt.Sprintf("cannot convert Go type %s to BUKKIT", rv.Type()),
+			fmt.Sprintf("cannot convert Go type %s to BASKIT", rv.Type()),
+			nil,
+		)
+	}
+
+	// Check for existing constructed object to avoid duplication
+	if val := rv.MapIndex(reflect.ValueOf(GoValueIDKey)); val.IsValid() {
+		value := val.Interface().(string)
+		instance, ok := constructedObjects[value]
+		if ok {
+			return instance, nil
+		}
+		return nil, NewConversionError(
+			fmt.Sprintf("found %s as %s but no corresponding constructed object", value, GoValueIDKey),
 			nil,
 		)
 	}
@@ -185,7 +197,6 @@ func mapToObject(rv reflect.Value) (environment.Value, error) {
 		underlying := instance.NativeData.(stdlib.BaskitMap)
 		underlying[objKey.String()] = objVal
 	}
-	instance.Variables["SIZ"].Value = environment.IntegerValue(rv.Len())
 
 	return instance, nil
 }

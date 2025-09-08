@@ -1,14 +1,12 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
@@ -18,18 +16,15 @@ import (
 	"github.com/bjia56/objective-lol/pkg/stdlib"
 )
 
+// constructedObjects keeps track of all constructed object instances
+// for ease of lookup during conversion from GoValue to ObjectInstance
+var constructedObjects = make(map[string]*environment.ObjectInstance)
+
 // VM represents an Objective-LOL virtual machine instance
 type VM struct {
 	config      *VMConfig
 	interpreter *interpreter.Interpreter
-	mutex       sync.RWMutex // For thread safety
-
-	// State tracking
-	isStarted bool
-
-	// Output capture
-	outputBuffer *bytes.Buffer
-	originalOut  io.Writer
+	isStarted   bool
 }
 
 // NewVM creates a new VM instance with the given config
@@ -40,10 +35,7 @@ func NewVM(config *VMConfig) (*VM, error) {
 	}
 
 	vm := &VM{
-		config:       config,
-		outputBuffer: &bytes.Buffer{},
-		originalOut:  config.Stdout,
-		isStarted:    false,
+		config: config,
 	}
 
 	if err := vm.initialize(); err != nil {
@@ -55,9 +47,6 @@ func NewVM(config *VMConfig) (*VM, error) {
 
 // initialize sets up the VM interpreter and runtime
 func (vm *VM) initialize() error {
-	vm.mutex.Lock()
-	defer vm.mutex.Unlock()
-
 	// Combine default stdlib with custom stdlib
 	stdlibInit := stdlib.DefaultStdlibInitializers()
 	for name, init := range vm.config.CustomStdlib {
@@ -88,6 +77,11 @@ func (vm *VM) initialize() error {
 	return nil
 }
 
+// GetCompatibilityShim returns a compatibility shim for the VM
+func (vm *VM) GetCompatibilityShim() *VMCompatibilityShim {
+	return &VMCompatibilityShim{vm: vm}
+}
+
 // Execute executes Objective-LOL code from a string
 func (vm *VM) Execute(code string) (*ExecutionResult, error) {
 	return vm.ExecuteWithContext(context.Background(), code)
@@ -95,9 +89,6 @@ func (vm *VM) Execute(code string) (*ExecutionResult, error) {
 
 // ExecuteWithContext executes code with a context for cancellation/timeout
 func (vm *VM) ExecuteWithContext(ctx context.Context, code string) (*ExecutionResult, error) {
-	vm.mutex.Lock()
-	defer vm.mutex.Unlock()
-
 	if vm.isStarted {
 		return nil, NewRuntimeError("VM has already been started; create a new VM instance to run code again", nil)
 	}
@@ -119,13 +110,6 @@ func (vm *VM) ExecuteWithContext(ctx context.Context, code string) (*ExecutionRe
 		return nil, err
 	}
 
-	// Set up output capture if needed
-	var outputBuf bytes.Buffer
-	if vm.config.Stdout != vm.originalOut {
-		stdlib.SetOutput(&outputBuf)
-		defer stdlib.SetOutput(vm.originalOut)
-	}
-
 	// Execute with timeout handling
 	var value environment.Value
 
@@ -133,6 +117,7 @@ func (vm *VM) ExecuteWithContext(ctx context.Context, code string) (*ExecutionRe
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
+				fmt.Println(string(debug.Stack()))
 				done <- NewRuntimeError(fmt.Sprintf("panic during execution: %v", r), nil)
 			}
 		}()
@@ -158,7 +143,6 @@ func (vm *VM) ExecuteWithContext(ctx context.Context, code string) (*ExecutionRe
 
 	result.Value = goValue
 	result.RawValue = value
-	result.Output = outputBuf.String()
 
 	return result, nil
 }
@@ -185,11 +169,28 @@ func (vm *VM) parseCode(code string) (*ast.ProgramNode, error) {
 	return program, nil
 }
 
+func (vm *VM) NewObjectInstance(className string) (GoValue, error) {
+	class, err := vm.interpreter.GetEnvironment().GetClass(strings.ToUpper(className))
+	if err != nil {
+		return WrapAny(nil), wrapError(err, RuntimeErrorType, fmt.Sprintf("class %s not found", className))
+	}
+
+	instance, err := class.NewObject(vm.interpreter.GetEnvironment())
+	if err != nil {
+		return WrapAny(nil), wrapError(err, RuntimeErrorType, "could not create object instance")
+	}
+
+	goVal, err := ToGoValue(instance)
+	if err != nil {
+		return WrapAny(nil), wrapError(err, RuntimeErrorType, "could not convert object instance to Go value")
+	}
+
+	constructedObjects[goVal.ID()] = instance
+	return goVal, nil
+}
+
 // Call calls an Objective-LOL function with the given arguments
 func (vm *VM) Call(functionName string, args []GoValue) (GoValue, error) {
-	vm.mutex.RLock()
-	defer vm.mutex.RUnlock()
-
 	// Convert Go arguments to Objective-LOL values
 	ololArgs, err := ConvertArguments(args)
 	if err != nil {
@@ -208,9 +209,6 @@ func (vm *VM) Call(functionName string, args []GoValue) (GoValue, error) {
 
 // CallMethod calls a method on an Objective-LOL object
 func (vm *VM) CallMethod(object GoValue, methodName string, args []GoValue) (GoValue, error) {
-	vm.mutex.RLock()
-	defer vm.mutex.RUnlock()
-
 	// Convert object to environment.Value
 	ololObject, err := FromGoValue(object)
 	if err != nil {
@@ -241,13 +239,6 @@ func (vm *VM) CallMethod(object GoValue, methodName string, args []GoValue) (GoV
 
 // DefineVariable defines a global variable in the VM
 func (vm *VM) DefineVariable(name string, value GoValue, constant bool) error {
-	vm.mutex.Lock()
-	defer vm.mutex.Unlock()
-
-	if vm.isStarted {
-		return NewRuntimeError("cannot define variable after VM has started; create a new VM instance to define variables", nil)
-	}
-
 	// Convert Go value to Objective-LOL value
 	ololValue, err := FromGoValue(value)
 	if err != nil {
@@ -260,9 +251,6 @@ func (vm *VM) DefineVariable(name string, value GoValue, constant bool) error {
 
 // SetVariable sets a variable in the global environment
 func (vm *VM) SetVariable(variableName string, value GoValue) error {
-	vm.mutex.Lock()
-	defer vm.mutex.Unlock()
-
 	// Convert Go value to Objective-LOL value
 	ololValue, err := FromGoValue(value)
 	if err != nil {
@@ -285,9 +273,6 @@ func (vm *VM) SetVariable(variableName string, value GoValue) error {
 
 // Get gets a variable from the global environment
 func (vm *VM) GetVariable(variableName string) (GoValue, error) {
-	vm.mutex.RLock()
-	defer vm.mutex.RUnlock()
-
 	// Get variable from global environment
 	variable, err := vm.interpreter.GetEnvironment().GetVariable(strings.ToUpper(variableName))
 	if err != nil {
@@ -303,13 +288,6 @@ func (vm *VM) GetVariable(variableName string) (GoValue, error) {
 
 // DefineFunction defines a global function in the VM
 func (vm *VM) DefineFunction(name string, argc int, function func(args []GoValue) (GoValue, error)) error {
-	vm.mutex.Lock()
-	defer vm.mutex.Unlock()
-
-	if vm.isStarted {
-		return NewRuntimeError("cannot define function after VM has started; create a new VM instance to define functions", nil)
-	}
-
 	return vm.interpreter.GetEnvironment().DefineFunction(&environment.Function{
 		Name:       strings.ToUpper(name),
 		Parameters: make([]environment.Parameter, argc),
@@ -340,7 +318,173 @@ func (vm *VM) DefineFunction(name string, argc int, function func(args []GoValue
 	})
 }
 
-// GetCompatibilityShim returns a compatibility shim for the VM
-func (vm *VM) GetCompatibilityShim() *VMCompatibilityShim {
-	return &VMCompatibilityShim{vm: vm}
+type ClassVariable struct {
+	Name   string
+	Value  GoValue
+	Locked bool
+	Getter func(this GoValue) (GoValue, error)
+	Setter func(this GoValue, value GoValue) error
+}
+
+type ClassMethod struct {
+	Name     string
+	Argc     int
+	Function func(this GoValue, args []GoValue) (GoValue, error)
+}
+
+type ClassDefinition struct {
+	Name             string
+	PublicVariables  map[string]*ClassVariable
+	PrivateVariables map[string]*ClassVariable
+	SharedVariables  map[string]*ClassVariable
+	PublicMethods    map[string]*ClassMethod
+	PrivateMethods   map[string]*ClassMethod
+}
+
+func NewClassDefinition() *ClassDefinition {
+	return &ClassDefinition{
+		PublicVariables:  make(map[string]*ClassVariable),
+		PrivateVariables: make(map[string]*ClassVariable),
+		SharedVariables:  make(map[string]*ClassVariable),
+		PublicMethods:    make(map[string]*ClassMethod),
+		PrivateMethods:   make(map[string]*ClassMethod),
+	}
+}
+
+// convertClassVariable converts a ClassVariable to a MemberVariable
+func convertClassVariable(name string, classVar *ClassVariable, isPublic bool) (*environment.MemberVariable, error) {
+	memberVar := &environment.MemberVariable{
+		Variable: environment.Variable{
+			Name:     strings.ToUpper(name),
+			IsLocked: classVar.Locked,
+			IsPublic: isPublic,
+		},
+	}
+
+	// Set initial value if provided
+	if classVar.Value.Get() != nil {
+		ololValue, err := FromGoValue(classVar.Value)
+		if err != nil {
+			return nil, fmt.Errorf("error converting initial value for variable %s: %v", name, err)
+		}
+		memberVar.Value = ololValue
+	} else {
+		memberVar.Value = environment.NOTHIN
+	}
+
+	// Set custom getter/setter if provided
+	if classVar.Getter != nil || classVar.Setter != nil {
+		getter := classVar.Getter
+		setter := classVar.Setter
+
+		if getter != nil {
+			memberVar.NativeGet = func(this *environment.ObjectInstance) (environment.Value, error) {
+				thisGoValue, err := ToGoValue(this)
+				if err != nil {
+					return nil, err
+				}
+				result, err := getter(thisGoValue)
+				if err != nil {
+					return nil, err
+				}
+				return FromGoValue(result)
+			}
+		}
+
+		if setter != nil {
+			memberVar.NativeSet = func(this *environment.ObjectInstance, value environment.Value) error {
+				thisGoValue, err := ToGoValue(this)
+				if err != nil {
+					return err
+				}
+				goValue, err := ToGoValue(value)
+				if err != nil {
+					return err
+				}
+				return setter(thisGoValue, goValue)
+			}
+		}
+	}
+
+	return memberVar, nil
+}
+
+// convertClassMethod converts a ClassMethod to a Function
+func convertClassMethod(name string, method *ClassMethod) *environment.Function {
+	return &environment.Function{
+		Name:       strings.ToUpper(name),
+		Parameters: make([]environment.Parameter, method.Argc),
+		NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+			// Convert 'this' and args to Go values
+			thisGoValue, err := ToGoValue(this)
+			if err != nil {
+				return nil, fmt.Errorf("error converting 'this' object: %v", err)
+			}
+
+			goArgs := make([]GoValue, len(args))
+			for i, arg := range args {
+				goVal, err := ToGoValue(arg)
+				if err != nil {
+					return nil, fmt.Errorf("error converting argument %d: %v", i, err)
+				}
+				goArgs[i] = goVal
+			}
+
+			// Call the method
+			result, err := method.Function(thisGoValue, goArgs)
+			if err != nil {
+				return nil, err
+			}
+
+			// Convert result back to environment.Value
+			return FromGoValue(result)
+		},
+	}
+}
+
+func (vm *VM) DefineClass(classDef *ClassDefinition) error {
+	// Create the Objective-LOL class
+	class := environment.NewClass(strings.ToUpper(classDef.Name), "foreign:anonymous", nil)
+
+	// Convert and add public variables
+	for name, classVar := range classDef.PublicVariables {
+		memberVar, err := convertClassVariable(name, classVar, true)
+		if err != nil {
+			return err
+		}
+		class.PublicVariables[strings.ToUpper(name)] = memberVar
+	}
+
+	// Convert and add private variables
+	for name, classVar := range classDef.PrivateVariables {
+		memberVar, err := convertClassVariable(name, classVar, false)
+		if err != nil {
+			return err
+		}
+		class.PrivateVariables[strings.ToUpper(name)] = memberVar
+	}
+
+	// Convert and add shared variables
+	for name, classVar := range classDef.SharedVariables {
+		memberVar, err := convertClassVariable(name, classVar, true)
+		if err != nil {
+			return err
+		}
+		class.SharedVariables[strings.ToUpper(name)] = memberVar
+	}
+
+	// Convert and add public methods
+	for name, method := range classDef.PublicMethods {
+		function := convertClassMethod(name, method)
+		class.PublicFunctions[strings.ToUpper(name)] = function
+	}
+
+	// Convert and add private methods
+	for name, method := range classDef.PrivateMethods {
+		function := convertClassMethod(name, method)
+		class.PrivateFunctions[strings.ToUpper(name)] = function
+	}
+
+	// Define the class in the environment
+	return vm.interpreter.GetEnvironment().DefineClass(class)
 }

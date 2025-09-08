@@ -7,7 +7,6 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/runtime"
-	"github.com/davecgh/go-spew/spew"
 )
 
 // ThreadData holds the native Go threading constructs for YARN objects
@@ -147,8 +146,6 @@ func getThreadClasses() map[string]*environment.Class {
 							if threadData, ok := this.NativeData.(*ThreadData); ok {
 								return environment.BoolValue(threadData.goroutineRunning), nil
 							}
-							fmt.Println(spew.Sdump(this))
-							panic("Here")
 							return environment.NOTHIN, fmt.Errorf("RUNNING: invalid thread context")
 						},
 						NativeSet: nil, // Read-only

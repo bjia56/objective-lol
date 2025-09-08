@@ -7,6 +7,10 @@ import (
 	"github.com/bjia56/objective-lol/pkg/environment"
 )
 
+const (
+	GoValueIDKey = "__GoValue_id"
+)
+
 type GoValue struct {
 	value interface{}
 }
@@ -15,7 +19,19 @@ func (v GoValue) Get() interface{} {
 	return v.value
 }
 
+func (v GoValue) ID() string {
+	if obj, ok := v.value.(*environment.ObjectInstance); ok {
+		return fmt.Sprintf("%p", obj)
+	}
+	return ""
+}
+
 func (v GoValue) MarshalJSON() ([]byte, error) {
+	if id := v.ID(); id != "" {
+		return json.Marshal(map[string]string{
+			GoValueIDKey: id,
+		})
+	}
 	return json.Marshal(v.value)
 }
 
