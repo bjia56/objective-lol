@@ -44,7 +44,7 @@ func getHTTPClasses() map[string]*environment.Class {
 					"INTERWEB": {
 						Name:       "INTERWEB",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 							// Initialize HTTP client
 							client := &http.Client{
 								Timeout: 30 * time.Second,
@@ -53,10 +53,11 @@ func getHTTPClasses() map[string]*environment.Class {
 							interwebData := &InterwebData{
 								Client: client,
 							}
-							this.NativeData = interwebData
+							thisObj := this.(*environment.ObjectInstance)
+							thisObj.NativeData = interwebData
 
 							// Initialize public variables
-							this.Variables["TIMEOUT"] = &environment.Variable{
+							thisObj.Variables["TIMEOUT"] = &environment.Variable{
 								Name:     "TIMEOUT",
 								Type:     "INTEGR",
 								Value:    environment.IntegerValue(30),
@@ -66,7 +67,7 @@ func getHTTPClasses() map[string]*environment.Class {
 
 							// Initialize empty headers BASKIT
 							headers := NewBaskitInstance()
-							this.Variables["HEADERS"] = &environment.Variable{
+							thisObj.Variables["HEADERS"] = &environment.Variable{
 								Name:     "HEADERS",
 								Type:     "BASKIT",
 								Value:    headers,
@@ -84,7 +85,7 @@ func getHTTPClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "url", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "GET", args[0], environment.StringValue(""))
 						},
 					},
@@ -96,7 +97,7 @@ func getHTTPClasses() map[string]*environment.Class {
 							{Name: "url", Type: "STRIN"},
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "POST", args[0], args[1])
 						},
 					},
@@ -108,7 +109,7 @@ func getHTTPClasses() map[string]*environment.Class {
 							{Name: "url", Type: "STRIN"},
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "PUT", args[0], args[1])
 						},
 					},
@@ -119,7 +120,7 @@ func getHTTPClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "url", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "DELETE", args[0], environment.StringValue(""))
 						},
 					},
@@ -156,7 +157,7 @@ func getHTTPClasses() map[string]*environment.Class {
 					"RESPONSE": {
 						Name:       "RESPONSE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 							// This constructor is for internal use only
 							return environment.NOTHIN, nil
 						},
@@ -166,8 +167,9 @@ func getHTTPClasses() map[string]*environment.Class {
 						Name:       "TO_JSON",
 						ReturnType: "BASKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							bodyVar, exists := this.Variables["BODY"]
+						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+							thisObj := this.(*environment.ObjectInstance)
+							bodyVar, exists := thisObj.Variables["BODY"]
 							if !exists {
 								return environment.NOTHIN, runtime.Exception{Message: "TO_JSON: BODY variable not found"}
 							}
@@ -237,7 +239,7 @@ func getHTTPClasses() map[string]*environment.Class {
 }
 
 // executeHTTPRequest performs the actual HTTP request
-func executeHTTPRequest(this *environment.ObjectInstance, method string, urlArg environment.Value, dataArg environment.Value) (environment.Value, error) {
+func executeHTTPRequest(this environment.GenericObject, method string, urlArg environment.Value, dataArg environment.Value) (environment.Value, error) {
 	// Get URL
 	urlVal, ok := urlArg.(environment.StringValue)
 	if !ok {
@@ -255,13 +257,14 @@ func executeHTTPRequest(this *environment.ObjectInstance, method string, urlArg 
 	}
 
 	// Get INTERWEB data
-	interwebData, ok := this.NativeData.(*InterwebData)
+	thisObj := this.(*environment.ObjectInstance)
+	interwebData, ok := thisObj.NativeData.(*InterwebData)
 	if !ok {
 		return environment.NOTHIN, fmt.Errorf("%s: invalid context", method)
 	}
 
 	// Read timeout from public variable
-	timeoutVar, exists := this.Variables["TIMEOUT"]
+	timeoutVar, exists := thisObj.Variables["TIMEOUT"]
 	if exists {
 		if timeoutVal, ok := timeoutVar.Value.(environment.IntegerValue); ok {
 			interwebData.Client.Timeout = time.Duration(int(timeoutVal)) * time.Second
@@ -283,7 +286,7 @@ func executeHTTPRequest(this *environment.ObjectInstance, method string, urlArg 
 	}
 
 	// Apply headers from HEADERS baskit
-	headersVar, exists := this.Variables["HEADERS"]
+	headersVar, exists := thisObj.Variables["HEADERS"]
 	if exists {
 		if headersBaskit, ok := headersVar.Value.(*environment.ObjectInstance); ok {
 			if baskitMap, ok := headersBaskit.NativeData.(BaskitMap); ok {

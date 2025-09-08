@@ -2,12 +2,11 @@ package environment
 
 import (
 	"fmt"
-	"slices"
 )
 
 type Interpreter interface {
 	CallFunction(function string, args []Value) (Value, error)
-	CallMemberFunction(object *ObjectInstance, function string, args []Value) (Value, error)
+	CallMemberFunction(object GenericObject, function string, args []Value) (Value, error)
 	Fork() Interpreter
 }
 
@@ -37,7 +36,7 @@ type Function struct {
 	Parameters    []Parameter
 	Body          interface{} // Will hold AST nodes
 	IsShared      *bool       // nil for global functions, true/false for class methods
-	NativeImpl    func(interpreter Interpreter, this *ObjectInstance, args []Value) (Value, error)
+	NativeImpl    func(interpreter Interpreter, this GenericObject, args []Value) (Value, error)
 }
 
 // Parameter represents a function parameter
@@ -204,16 +203,6 @@ func NewClass(name, modulePath string, parentClasses []string) *Class {
 		SharedVariables:  make(map[string]*Variable),
 		SharedFunctions:  make(map[string]*Function),
 	}
-}
-
-// ObjectInstance represents an instance of a class
-type ObjectInstance struct {
-	Environment     *Environment // Environment in which the instance was created
-	Class           *Class
-	MRO             []string // Method Resolution Order (stored for efficiency)
-	Variables       map[string]*Variable
-	SharedVariables map[string]*Variable // Reference to class shared variables
-	NativeData      any                  // For native classes, stores internal data
 }
 
 // NewObjectInstance creates a new instance of the specified class
@@ -402,105 +391,6 @@ func (e *Environment) initializeInstanceVariablesWithMRO(instance *ObjectInstanc
 			}
 		}
 	}
-}
-
-// GetMemberVariable retrieves a member variable from the object instance
-func (obj *ObjectInstance) GetMemberVariable(name string, fromContext string) (*Variable, error) {
-	// Check instance variables first
-	if variable, exists := obj.Variables[name]; exists {
-		// Check visibility using the variable's IsPublic flag
-		if variable.IsPublic || fromContext == obj.Class.QualifiedName {
-			return variable, nil
-		}
-		return nil, fmt.Errorf("variable '%s' is private", name)
-	}
-
-	// Check shared variables
-	if variable, exists := obj.SharedVariables[name]; exists {
-		return variable, nil
-	}
-
-	return nil, fmt.Errorf("undefined member variable '%s'", name)
-}
-
-// SetMemberVariable sets a member variable in the object instance
-func (obj *ObjectInstance) SetMemberVariable(name string, value Value, fromContext string) error {
-	variable, err := obj.GetMemberVariable(name, fromContext)
-	if err != nil {
-		return err
-	}
-
-	if variable.IsLocked {
-		return fmt.Errorf("cannot assign to locked variable '%s'", name)
-	}
-
-	// Cast value to the variable's type
-	castedValue, err := value.Cast(variable.Type)
-	if err != nil {
-		return fmt.Errorf("cannot assign to variable '%s': %v", name, err)
-	}
-
-	variable.Value = castedValue
-	return nil
-}
-
-func (o *ObjectInstance) Type() string      { return o.Class.Name }
-func (o *ObjectInstance) String() string    { return fmt.Sprintf("<%s object>", o.Class.Name) }
-func (o *ObjectInstance) Copy() Value       { return o }   // Objects are reference types
-func (o *ObjectInstance) ToBool() BoolValue { return YEZ } // Objects are always truthy
-func (o *ObjectInstance) IsNothing() bool   { return o == nil }
-
-func (o *ObjectInstance) Cast(targetType string) (Value, error) {
-	if targetType == "" {
-		return o, nil
-	}
-
-	switch targetType {
-	case "STRIN":
-		return StringValue(o.String()), nil
-	case "BOOL":
-		return o.ToBool(), nil
-	case "INTEGR", "DUBBLE", "NOTHIN":
-		return nil, fmt.Errorf("cannot cast %s to %s", o.Class.Name, targetType)
-	}
-
-	if o.Environment == nil {
-		return nil, fmt.Errorf("cannot cast %s to type %s", o.Class.Name, targetType)
-	}
-
-	targetCls, err := o.Environment.GetClass(targetType)
-	if err != nil {
-		return nil, fmt.Errorf("cannot cast %s to unknown type %s", o.Class.Name, targetType)
-	}
-
-	if slices.Contains(o.MRO, targetCls.QualifiedName) {
-		return o, nil
-	}
-
-	return nil, fmt.Errorf("cannot cast %s (%s) to type %s (%s)", o.Class.Name, o.Class.QualifiedName, targetType, targetCls.QualifiedName)
-}
-
-func (o *ObjectInstance) EqualTo(other Value) (BoolValue, error) {
-	if other.IsNothing() {
-		return BoolValue(o.IsNothing()), nil
-	}
-
-	if otherObj, ok := other.(*ObjectInstance); ok {
-		// Simple reference equality for now
-		return BoolValue(o == otherObj), nil
-	}
-
-	return NO, nil
-}
-
-// GetMemberFunction retrieves a member function from the object's class
-func (obj *ObjectInstance) GetMemberFunction(name string, fromContext string) (*Function, error) {
-	return obj.Class.getMemberFunction(name, fromContext, obj.Environment)
-}
-
-// GetHierarchy returns the class hierarchy as a slice of class names (MRO-based)
-func (obj *ObjectInstance) GetHierarchy() []string {
-	return obj.MRO
 }
 
 // getMemberFunction is a helper that recursively searches for a function in the class hierarchy

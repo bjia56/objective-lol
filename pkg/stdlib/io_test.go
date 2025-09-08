@@ -68,7 +68,7 @@ func (m *MockReader) setupAsReader(t *testing.T, env *environment.Environment) *
 				Name:       "READ",
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{{Name: "size", Type: "INTEGR"}},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					m.readCount++
 					if len(args) != 1 {
 						return environment.NOTHIN, assert.AnError
@@ -99,7 +99,7 @@ func (m *MockReader) setupAsReader(t *testing.T, env *environment.Environment) *
 			},
 			"CLOSE": {
 				Name: "CLOSE",
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					m.closeCount++
 					return environment.NOTHIN, nil
 				},
@@ -133,7 +133,7 @@ func (m *MockWriter) setupAsWriter(t *testing.T, env *environment.Environment) *
 				Name:       "WRITE",
 				ReturnType: "INTEGR",
 				Parameters: []environment.Parameter{{Name: "data", Type: "STRIN"}},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					m.writeCount++
 					if len(args) != 1 {
 						return environment.NOTHIN, assert.AnError
@@ -153,7 +153,7 @@ func (m *MockWriter) setupAsWriter(t *testing.T, env *environment.Environment) *
 			},
 			"CLOSE": {
 				Name: "CLOSE",
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					m.closeCount++
 					return environment.NOTHIN, nil
 				},

@@ -21,11 +21,11 @@ type Interpreter struct {
 	ctx               context.Context              // For cancellation and timeout support
 
 	// Interpreter-local state
-	environment       *environment.Environment    // Current environment/scope
-	currentClass      string                      // For tracking visibility context
-	currentObject     *environment.ObjectInstance // For tracking current object instance in method calls
-	currentFile       string                      // For tracking current file being processed (for relative imports)
-	currentModulePath string                      // For tracking current module context for qualified class names
+	environment       *environment.Environment  // Current environment/scope
+	currentClass      string                    // For tracking visibility context
+	currentObject     environment.GenericObject // For tracking current object instance in method calls
+	currentFile       string                    // For tracking current file being processed (for relative imports)
+	currentModulePath string                    // For tracking current module context for qualified class names
 }
 
 type StdlibInitializer func(*environment.Environment, ...string) error
@@ -549,7 +549,7 @@ func (i *Interpreter) VisitAssignment(node *ast.AssignmentNode) (environment.Val
 			return environment.NOTHIN, err
 		}
 
-		if obj, ok := objectValue.(*environment.ObjectInstance); ok {
+		if obj, ok := objectValue.(environment.GenericObject); ok {
 			return value, obj.SetMemberVariable(strings.ToUpper(target.Member), value, i.currentClass)
 		}
 		return environment.NOTHIN, fmt.Errorf("cannot assign to member of non-object")
@@ -707,7 +707,7 @@ func (i *Interpreter) VisitFunctionCall(node *ast.FunctionCallNode) (environment
 			return environment.NOTHIN, err
 		}
 
-		if obj, ok := objectValue.(*environment.ObjectInstance); ok {
+		if obj, ok := objectValue.(environment.GenericObject); ok {
 			function, err := obj.GetMemberFunction(strings.ToUpper(funcNode.Member), i.currentClass)
 			if err != nil {
 				return environment.NOTHIN, err
@@ -789,9 +789,9 @@ func (i *Interpreter) callFunction(function *environment.Function, args []enviro
 }
 
 // callMemberFunction executes a member function
-func (i *Interpreter) callMemberFunction(function *environment.Function, obj *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+func (i *Interpreter) callMemberFunction(function *environment.Function, obj environment.GenericObject, args []environment.Value) (environment.Value, error) {
 	memberInterpreter := i.Fork().(*Interpreter)
-	memberInterpreter.currentClass = obj.Class.QualifiedName
+	memberInterpreter.currentClass = obj.GetQualifiedClassName()
 	memberInterpreter.currentObject = obj
 	return memberInterpreter.callFunction(function, args)
 }
@@ -803,7 +803,7 @@ func (i *Interpreter) VisitMemberAccess(node *ast.MemberAccessNode) (environment
 		return environment.NOTHIN, err
 	}
 
-	if obj, ok := objectValue.(*environment.ObjectInstance); ok {
+	if obj, ok := objectValue.(environment.GenericObject); ok {
 		variable, err := obj.GetMemberVariable(strings.ToUpper(node.Member), i.currentClass)
 		if err != nil {
 			return environment.NOTHIN, err
@@ -1109,7 +1109,7 @@ func (i *Interpreter) CallFunction(function string, args []environment.Value) (e
 }
 
 // CallMemberFunction calls a member function on the given object with arguments
-func (i *Interpreter) CallMemberFunction(object *environment.ObjectInstance, function string, args []environment.Value) (environment.Value, error) {
+func (i *Interpreter) CallMemberFunction(object environment.GenericObject, function string, args []environment.Value) (environment.Value, error) {
 	fn, err := object.GetMemberFunction(strings.ToUpper(function), i.currentClass)
 	if err != nil {
 		return environment.NOTHIN, err

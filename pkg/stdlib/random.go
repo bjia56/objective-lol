@@ -22,7 +22,7 @@ func getRandomFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "seed", Type: "INTEGR"},
 				},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					seed := args[0]
 
 					if seedVal, ok := seed.(environment.IntegerValue); ok {
@@ -36,7 +36,7 @@ func getRandomFunctions() map[string]*environment.Function {
 			"SEED_TIME": {
 				Name:       "SEED_TIME",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					rand.Seed(time.Now().UnixNano())
 					return environment.NOTHIN, nil
 				},
@@ -45,7 +45,7 @@ func getRandomFunctions() map[string]*environment.Function {
 				Name:       "RANDOM_FLOAT",
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					return environment.DoubleValue(rand.Float64()), nil
 				},
 			},
@@ -56,7 +56,7 @@ func getRandomFunctions() map[string]*environment.Function {
 					{Name: "min", Type: "DUBBLE"},
 					{Name: "max", Type: "DUBBLE"},
 				},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					min, max := args[0], args[1]
 
 					if minVal, ok := min.(environment.DoubleValue); ok {
@@ -79,7 +79,7 @@ func getRandomFunctions() map[string]*environment.Function {
 					{Name: "min", Type: "INTEGR"},
 					{Name: "max", Type: "INTEGR"},
 				},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					min, max := args[0], args[1]
 
 					if minVal, ok := min.(environment.IntegerValue); ok {
@@ -99,7 +99,7 @@ func getRandomFunctions() map[string]*environment.Function {
 				Name:       "RANDOM_BOOL",
 				ReturnType: "BOOL",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					if rand.Float64() < 0.5 {
 						return environment.NO, nil
 					}
@@ -111,7 +111,7 @@ func getRandomFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "array", Type: "BUKKIT"},
 				},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					array := args[0]
 
 					if arrayObj, ok := array.(*environment.ObjectInstance); ok {
@@ -133,7 +133,7 @@ func getRandomFunctions() map[string]*environment.Function {
 				Parameters: []environment.Parameter{
 					{Name: "array", Type: "BUKKIT"},
 				},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					array := args[0]
 
 					if arrayObj, ok := array.(*environment.ObjectInstance); ok {
@@ -166,7 +166,7 @@ func getRandomFunctions() map[string]*environment.Function {
 					{Name: "length", Type: "INTEGR"},
 					{Name: "charset", Type: "STRIN"},
 				},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					length := args[0]
 					charset := args[1]
 
@@ -197,7 +197,7 @@ func getRandomFunctions() map[string]*environment.Function {
 				Name:       "UUID",
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
 					// Simple UUID v4 implementation
 					uuid := make([]byte, 16)
 					rand.Read(uuid)
