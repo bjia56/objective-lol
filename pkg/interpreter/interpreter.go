@@ -692,10 +692,17 @@ func (i *Interpreter) VisitFunctionCall(node *ast.FunctionCallNode) (environment
 
 	switch funcNode := node.Function.(type) {
 	case *ast.IdentifierNode:
-		// Global function call
+		// Function call by identifier
 		functionName := strings.ToUpper(funcNode.Name)
 
-		// Check local environment first
+		// If we're in a method call and the identifier might be a member function, check current object first
+		if i.currentObject != nil {
+			if function, err := i.currentObject.GetMemberFunction(functionName, i.currentClass); err == nil {
+				return i.callMemberFunction(function, i.currentObject, args)
+			}
+		}
+
+		// Check local environment functions
 		if function, err := i.environment.GetFunction(functionName); err == nil {
 			return i.callFunction(function, args)
 		}
@@ -946,6 +953,14 @@ func (i *Interpreter) VisitIdentifier(node *ast.IdentifierNode) (environment.Val
 	}
 
 	// Check if it's a zero-argument function call
+	// First check member functions if we're in a method context
+	if i.currentObject != nil {
+		if function, err := i.currentObject.GetMemberFunction(name, i.currentClass); err == nil {
+			return i.callMemberFunction(function, i.currentObject, []environment.Value{})
+		}
+	}
+	
+	// Then check local environment functions
 	if function, err := i.environment.GetFunction(name); err == nil {
 		return i.callFunction(function, []environment.Value{})
 	}
@@ -962,65 +977,33 @@ func (i *Interpreter) VisitObjectInstantiation(node *ast.ObjectInstantiationNode
 		return environment.NOTHIN, err
 	}
 
-	// Evaluate constructor arguments once
-	args := make([]environment.Value, len(node.ConstructorArgs))
-	for j, arg := range node.ConstructorArgs {
-		val, err := arg.Accept(i)
-		if err != nil {
-			return environment.NOTHIN, err
-		}
-		args[j] = val
-	}
-
-	// Walk MRO hierarchy and call constructors from parent to child
-	// Skip the first element (current class) since we'll handle it last
-	mro := instance.Class.MRO
-	var constructorErrors []string
-	foundAnyConstructor := false
-
-	// Call parent constructors first (in reverse MRO order, excluding the current class)
-	for idx := len(mro) - 1; idx > 0; idx-- {
-		parentClassName := mro[idx]
-		parentClass, err := i.environment.GetClass(parentClassName)
-		if err != nil {
-			return environment.NOTHIN, fmt.Errorf("failed to resolve parent class '%s' in MRO: %v", parentClassName, err)
-		}
-
-		// Try to find constructor for this parent class
-		function, err := instance.GetMemberFunction(strings.ToUpper(parentClass.Name), i.currentClass)
-		if err == nil {
-			foundAnyConstructor = true
-			// Call the parent constructor
-			// TODO: we currently only support zero-arg parent constructors
-			// We should modify the language for a super-style call with args
-			_, err = i.callMemberFunction(function, instance, []environment.Value{})
-			if err != nil {
-				constructorErrors = append(constructorErrors, fmt.Sprintf("parent constructor '%s' failed: %v", parentClass.Name, err))
-			}
-		}
-	}
-
-	// Finally, call the current class constructor
+	// Look for a constructor method with the same name as the class
 	constructorName := strings.ToUpper(node.ClassName)
 	function, err := instance.GetMemberFunction(constructorName, i.currentClass)
+
+	// Only proceed if constructor exists
 	if err == nil {
-		foundAnyConstructor = true
-		// Call the current class constructor
+		// Evaluate constructor arguments
+		args := make([]environment.Value, len(node.ConstructorArgs))
+		for j, arg := range node.ConstructorArgs {
+			val, err := arg.Accept(i)
+			if err != nil {
+				return environment.NOTHIN, err
+			}
+			args[j] = val
+		}
+
+		// Call the constructor method with arguments
 		_, err = i.callMemberFunction(function, instance, args)
 		if err != nil {
-			constructorErrors = append(constructorErrors, fmt.Sprintf("constructor '%s' failed: %v", constructorName, err))
+			return environment.NOTHIN, fmt.Errorf("constructor call failed: %v", err)
 		}
-	} else if len(node.ConstructorArgs) > 0 && !foundAnyConstructor {
+	} else if len(node.ConstructorArgs) > 0 {
 		// Check if the error indicates a private constructor
 		if err.Error() == fmt.Sprintf("function '%s' is private", constructorName) {
 			return environment.NOTHIN, fmt.Errorf("constructor '%s' is private and cannot be accessed from outside the class", constructorName)
 		}
 		return environment.NOTHIN, fmt.Errorf("constructor '%s' not found, but %d arguments were provided (error: %v)", constructorName, len(node.ConstructorArgs), err)
-	}
-
-	// Report any constructor errors
-	if len(constructorErrors) > 0 {
-		return environment.NOTHIN, fmt.Errorf("constructor chain failed: %s", strings.Join(constructorErrors, "; "))
 	}
 
 	return instance, nil
