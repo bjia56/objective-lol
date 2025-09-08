@@ -28,7 +28,9 @@ func TestBaskitConstructor(t *testing.T) {
 	// Verify SIZ is 0
 	sizVar, exists := instance.Variables["SIZ"]
 	require.True(t, exists)
-	assert.Equal(t, environment.IntegerValue(0), sizVar.Value)
+	val, err := sizVar.Get(instance)
+	require.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(0), val)
 }
 
 func TestBaskitPutAndGet(t *testing.T) {
@@ -47,7 +49,9 @@ func TestBaskitPutAndGet(t *testing.T) {
 
 	// Verify SIZ updated
 	sizVar := instance.Variables["SIZ"]
-	assert.Equal(t, environment.IntegerValue(1), sizVar.Value)
+	val, err := sizVar.Get(instance)
+	require.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(1), val)
 
 	// GET the value
 	result, err := getMethod.NativeImpl(nil, instance, []environment.Value{
@@ -72,7 +76,9 @@ func TestBaskitPutAndGet(t *testing.T) {
 
 	// Verify SIZ updated
 	sizVar = instance.Variables["SIZ"]
-	assert.Equal(t, environment.IntegerValue(2), sizVar.Value)
+	val, err = sizVar.Get(instance)
+	require.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(2), val)
 }
 
 func TestBaskitGetNonexistentKey(t *testing.T) {
@@ -146,7 +152,9 @@ func TestBaskitRemove(t *testing.T) {
 
 	// Verify SIZ updated
 	sizVar := instance.Variables["SIZ"]
-	assert.Equal(t, environment.IntegerValue(0), sizVar.Value)
+	val, err := sizVar.Get(instance)
+	require.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(0), val)
 
 	// Verify key no longer exists
 	containsResult, err := containsMethod.NativeImpl(nil, instance, []environment.Value{
@@ -190,15 +198,19 @@ func TestBaskitClear(t *testing.T) {
 
 	// Verify SIZ before clear
 	sizVar := instance.Variables["SIZ"]
-	assert.Equal(t, environment.IntegerValue(3), sizVar.Value)
+	val, err := sizVar.Get(instance)
+	require.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(3), val)
 
 	// CLEAR all values
-	_, err := clearMethod.NativeImpl(nil, instance, []environment.Value{})
+	_, err = clearMethod.NativeImpl(nil, instance, []environment.Value{})
 	require.NoError(t, err)
 
 	// Verify SIZ is 0
 	sizVar = instance.Variables["SIZ"]
-	assert.Equal(t, environment.IntegerValue(0), sizVar.Value)
+	val, err = sizVar.Get(instance)
+	require.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(0), val)
 
 	// Verify map is empty
 	baskitMap := instance.NativeData.(BaskitMap)
@@ -372,7 +384,9 @@ func TestBaskitMerge(t *testing.T) {
 
 	// Verify SIZ updated (should be 3: key1, key2, key3)
 	sizVar := instance1.Variables["SIZ"]
-	assert.Equal(t, environment.IntegerValue(3), sizVar.Value)
+	val, err := sizVar.Get(instance1)
+	require.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(3), val)
 
 	// Verify values
 	baskitMap := instance1.NativeData.(BaskitMap)
@@ -503,7 +517,7 @@ func TestNewBaskitInstance(t *testing.T) {
 
 	// Verify basic structure
 	assert.NotNil(t, instance)
-	assert.Equal(t, []string{"stdlib:MAPS.BASKIT"}, instance.MRO)
+	assert.Equal(t, []string{"stdlib:MAPS.BASKIT"}, instance.Class.MRO)
 
 	// Verify NativeData is initialized
 	baskitMap, ok := instance.NativeData.(BaskitMap)
@@ -515,7 +529,9 @@ func TestNewBaskitInstance(t *testing.T) {
 	require.True(t, exists)
 	assert.Equal(t, "SIZ", sizVar.Name)
 	assert.Equal(t, "INTEGR", sizVar.Type)
-	assert.Equal(t, environment.IntegerValue(0), sizVar.Value)
+	val, err := sizVar.Get(instance)
+	require.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(0), val)
 	assert.True(t, sizVar.IsLocked)
 }
 

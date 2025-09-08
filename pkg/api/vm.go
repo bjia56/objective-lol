@@ -313,7 +313,7 @@ func (vm *VM) DefineFunction(name string, argc int, function func(args []GoValue
 	return vm.interpreter.GetEnvironment().DefineFunction(&environment.Function{
 		Name:       strings.ToUpper(name),
 		Parameters: make([]environment.Parameter, argc),
-		NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+		NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 			// Convert environment.Value args to GoValue
 			goArgs := make([]GoValue, len(args))
 			for i, arg := range args {

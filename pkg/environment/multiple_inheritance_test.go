@@ -20,7 +20,7 @@ func TestC3LinearizationSimple(t *testing.T) {
 	env.DefineClass(classD)
 
 	// Test MRO computation
-	mro, err := env.computeC3Linearization(classD)
+	mro, err := classD.computeC3Linearization(env)
 	if err != nil {
 		t.Fatalf("Failed to compute C3 linearization: %v", err)
 	}
@@ -50,7 +50,7 @@ func TestC3LinearizationDiamond(t *testing.T) {
 	env.DefineClass(classC)
 	env.DefineClass(classD)
 
-	mro, err := env.computeC3Linearization(classD)
+	mro, err := classD.computeC3Linearization(env)
 	if err != nil {
 		t.Fatalf("Failed to compute C3 linearization: %v", err)
 	}
@@ -88,7 +88,7 @@ func TestC3LinearizationComplex(t *testing.T) {
 	env.DefineClass(classE)
 	env.DefineClass(classF)
 
-	mro, err := env.computeC3Linearization(classF)
+	mro, err := classF.computeC3Linearization(env)
 	if err != nil {
 		t.Fatalf("Failed to compute C3 linearization: %v", err)
 	}
@@ -118,7 +118,7 @@ func TestC3LinearizationConflict(t *testing.T) {
 	env.DefineClass(classY)
 	env.DefineClass(classZ)
 
-	_, err := env.computeC3Linearization(classZ)
+	_, err := classZ.computeC3Linearization(env)
 	if err == nil {
 		t.Error("Expected C3 linearization to fail for inconsistent hierarchy, but it succeeded")
 	}
@@ -131,7 +131,7 @@ func TestC3LinearizationNoParents(t *testing.T) {
 	classA := NewClass("A", "main.olol", []string{})
 	env.DefineClass(classA)
 
-	mro, err := env.computeC3Linearization(classA)
+	mro, err := classA.computeC3Linearization(env)
 	if err != nil {
 		t.Fatalf("Failed to compute C3 linearization: %v", err)
 	}
@@ -152,7 +152,7 @@ func TestC3LinearizationSingleParent(t *testing.T) {
 	env.DefineClass(classA)
 	env.DefineClass(classB)
 
-	mro, err := env.computeC3Linearization(classB)
+	mro, err := classB.computeC3Linearization(env)
 	if err != nil {
 		t.Fatalf("Failed to compute C3 linearization: %v", err)
 	}
@@ -174,13 +174,13 @@ func TestMROCaching(t *testing.T) {
 	env.DefineClass(classB)
 
 	// First computation should cache MRO
-	mro1, err := env.computeOrGetMRO(classB)
+	mro1, err := classB.computeOrGetMRO(env)
 	if err != nil {
 		t.Fatalf("Failed to compute MRO: %v", err)
 	}
 
 	// Second computation should use cached result
-	mro2, err := env.computeOrGetMRO(classB)
+	mro2, err := classB.computeOrGetMRO(env)
 	if err != nil {
 		t.Fatalf("Failed to get cached MRO: %v", err)
 	}
@@ -201,18 +201,33 @@ func TestObjectInstanceWithMultipleInheritance(t *testing.T) {
 
 	// Create inheritance hierarchy
 	classA := NewClass("A", "main.olol", []string{})
-	classA.PublicVariables["A_VAR"] = &Variable{
-		Name: "A_VAR", Type: "STRIN", Value: StringValue("from A"), IsPublic: true,
+	classA.PublicVariables["A_VAR"] = &MemberVariable{
+		Variable: Variable{
+			Name:     "A_VAR",
+			Type:     "STRING",
+			Value:    StringValue("from A"),
+			IsPublic: true,
+		},
 	}
 
 	classB := NewClass("B", "main.olol", []string{})
-	classB.PublicVariables["B_VAR"] = &Variable{
-		Name: "B_VAR", Type: "STRIN", Value: StringValue("from B"), IsPublic: true,
+	classB.PublicVariables["B_VAR"] = &MemberVariable{
+		Variable: Variable{
+			Name:     "B_VAR",
+			Type:     "STRING",
+			Value:    StringValue("from B"),
+			IsPublic: true,
+		},
 	}
 
 	classC := NewClass("C", "main.olol", []string{"A", "B"})
-	classC.PublicVariables["C_VAR"] = &Variable{
-		Name: "C_VAR", Type: "STRIN", Value: StringValue("from C"), IsPublic: true,
+	classC.PublicVariables["C_VAR"] = &MemberVariable{
+		Variable: Variable{
+			Name:     "C_VAR",
+			Type:     "STRING",
+			Value:    StringValue("from C"),
+			IsPublic: true,
+		},
 	}
 
 	env.DefineClass(classA)
@@ -227,8 +242,8 @@ func TestObjectInstanceWithMultipleInheritance(t *testing.T) {
 
 	// Verify MRO is stored
 	expectedMRO := []string{"main.olol.C", "main.olol.A", "main.olol.B"}
-	if !reflect.DeepEqual(instance.MRO, expectedMRO) {
-		t.Errorf("Expected instance MRO %v, got %v", expectedMRO, instance.MRO)
+	if !reflect.DeepEqual(instance.Class.MRO, expectedMRO) {
+		t.Errorf("Expected instance MRO %v, got %v", expectedMRO, instance.Class.MRO)
 	}
 
 	// Verify all variables are initialized

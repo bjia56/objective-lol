@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRegisterTHREADInEnv(t *testing.T) {
@@ -66,8 +67,8 @@ func TestNewYarnInstance(t *testing.T) {
 	yarnObj := NewYarnInstance()
 
 	// Check class hierarchy
-	if len(yarnObj.MRO) != 1 || yarnObj.MRO[0] != "YARN" {
-		t.Errorf("Expected MRO [YARN], got %v", yarnObj.MRO)
+	if len(yarnObj.Class.MRO) != 1 || yarnObj.Class.MRO[0] != "stdlib:THREAD.YARN" {
+		t.Errorf("Expected MRO [YARN], got %v", yarnObj.Class.MRO)
 	}
 
 	// Check that NativeData is ThreadData
@@ -77,7 +78,9 @@ func TestNewYarnInstance(t *testing.T) {
 
 	// Check initial variable values
 	if runningVar, exists := yarnObj.Variables["RUNNING"]; exists {
-		if runningVar.Value != environment.NO {
+		val, err := runningVar.Get(yarnObj)
+		require.NoError(t, err)
+		if val != environment.NO {
 			t.Error("Expected RUNNING to be initially NO")
 		}
 	} else {
@@ -85,7 +88,9 @@ func TestNewYarnInstance(t *testing.T) {
 	}
 
 	if finishedVar, exists := yarnObj.Variables["FINISHED"]; exists {
-		if finishedVar.Value != environment.NO {
+		val, err := finishedVar.Get(yarnObj)
+		require.NoError(t, err)
+		if val != environment.NO {
 			t.Error("Expected FINISHED to be initially NO")
 		}
 	} else {
@@ -97,8 +102,8 @@ func TestNewKnotInstance(t *testing.T) {
 	knotObj := NewKnotInstance()
 
 	// Check class hierarchy
-	if len(knotObj.MRO) != 1 || knotObj.MRO[0] != "KNOT" {
-		t.Errorf("Expected MRO [KNOT], got %v", knotObj.MRO)
+	if len(knotObj.Class.MRO) != 1 || knotObj.Class.MRO[0] != "stdlib:THREAD.KNOT" {
+		t.Errorf("Expected MRO [KNOT], got %v", knotObj.Class.MRO)
 	}
 
 	// Check that NativeData is MutexData
@@ -108,7 +113,9 @@ func TestNewKnotInstance(t *testing.T) {
 
 	// Check initial variable values
 	if lockedVar, exists := knotObj.Variables["LOCKED"]; exists {
-		if lockedVar.Value != environment.NO {
+		val, err := lockedVar.Get(knotObj)
+		require.NoError(t, err)
+		if val != environment.NO {
 			t.Error("Expected LOCKED to be initially NO")
 		}
 	} else {
@@ -206,7 +213,9 @@ func TestKnotTieUntie(t *testing.T) {
 
 	// Check that LOCKED status is updated
 	if lockedVar, exists := knotObj.Variables["LOCKED"]; exists {
-		if lockedVar.Value != environment.YEZ {
+		val, err := lockedVar.Get(knotObj)
+		require.NoError(t, err)
+		if val != environment.YEZ {
 			t.Error("Expected LOCKED to be YEZ after TIE")
 		}
 	}
@@ -222,7 +231,9 @@ func TestKnotTieUntie(t *testing.T) {
 
 	// Check that LOCKED status is updated
 	if lockedVar, exists := knotObj.Variables["LOCKED"]; exists {
-		if lockedVar.Value != environment.NO {
+		val, err := lockedVar.Get(knotObj)
+		require.NoError(t, err)
+		if val != environment.NO {
 			t.Error("Expected LOCKED to be NO after UNTIE")
 		}
 	}
@@ -280,43 +291,6 @@ func TestKnotConcurrentAccess(t *testing.T) {
 
 	if counter != 10 {
 		t.Errorf("Expected counter to be 10 with proper mutex synchronization, got %d", counter)
-	}
-}
-
-func TestUpdateYarnStatus(t *testing.T) {
-	yarnObj := NewYarnInstance()
-	threadData := &ThreadData{
-		goroutineRunning: true,
-		finished:         false,
-	}
-
-	updateYarnStatus(yarnObj, threadData)
-
-	if runningVar, exists := yarnObj.Variables["RUNNING"]; exists {
-		if runningVar.Value != environment.YEZ {
-			t.Error("Expected RUNNING to be YEZ after update")
-		}
-	}
-
-	if finishedVar, exists := yarnObj.Variables["FINISHED"]; exists {
-		if finishedVar.Value != environment.NO {
-			t.Error("Expected FINISHED to be NO after update")
-		}
-	}
-}
-
-func TestUpdateKnotStatus(t *testing.T) {
-	knotObj := NewKnotInstance()
-	mutexData := &MutexData{
-		locked: true,
-	}
-
-	updateKnotStatus(knotObj, mutexData)
-
-	if lockedVar, exists := knotObj.Variables["LOCKED"]; exists {
-		if lockedVar.Value != environment.YEZ {
-			t.Error("Expected LOCKED to be YEZ after update")
-		}
 	}
 }
 

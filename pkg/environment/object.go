@@ -5,23 +5,13 @@ import (
 	"slices"
 )
 
-// GenericObject is an interface for all objects.
-type GenericObject interface {
-	Value
-	GetQualifiedClassName() string
-	GetMemberVariable(name string, callingContext string) (Value, error)
-	SetMemberVariable(name string, value Value, callingContext string) error
-	GetMemberFunction(name string, callingContext string) (*Function, error)
-}
-
 // ObjectInstance represents a native Objective-LOL instance of a class
 type ObjectInstance struct {
 	Environment     *Environment // Environment in which the instance was created
 	Class           *Class
-	MRO             []string // Method Resolution Order (stored for efficiency)
-	Variables       map[string]*Variable
-	SharedVariables map[string]*Variable // Reference to class shared variables
-	NativeData      any                  // For native classes, stores internal data
+	Variables       map[string]*MemberVariable
+	SharedVariables map[string]*MemberVariable // Reference to class shared variables
+	NativeData      any                        // For native classes, stores internal data
 }
 
 // GetQualifiedClassName returns the class name of the object instance
@@ -30,7 +20,7 @@ func (obj *ObjectInstance) GetQualifiedClassName() string {
 }
 
 // getMemberVariable retrieves a member variable from the object instance
-func (obj *ObjectInstance) getMemberVariable(name string, callingContext string) (*Variable, error) {
+func (obj *ObjectInstance) getMemberVariable(name string, callingContext string) (*MemberVariable, error) {
 	// Check instance variables first
 	if variable, exists := obj.Variables[name]; exists {
 		// Check visibility using the variable's IsPublic flag
@@ -54,7 +44,7 @@ func (obj *ObjectInstance) GetMemberVariable(name string, callingContext string)
 	if err != nil {
 		return nil, err
 	}
-	return variable.Value, nil
+	return variable.Get(obj)
 }
 
 // SetMemberVariable sets a member variable in the object instance
@@ -74,7 +64,7 @@ func (obj *ObjectInstance) SetMemberVariable(name string, value Value, callingCo
 		return fmt.Errorf("cannot assign to variable '%s': %v", name, err)
 	}
 
-	variable.Value = castedValue
+	variable.Set(obj, castedValue)
 	return nil
 }
 
@@ -107,7 +97,7 @@ func (o *ObjectInstance) Cast(targetType string) (Value, error) {
 		return nil, fmt.Errorf("cannot cast %s to unknown type %s", o.Class.Name, targetType)
 	}
 
-	if slices.Contains(o.MRO, targetCls.QualifiedName) {
+	if slices.Contains(o.Class.MRO, targetCls.QualifiedName) {
 		return o, nil
 	}
 
@@ -129,5 +119,5 @@ func (o *ObjectInstance) EqualTo(other Value) (BoolValue, error) {
 
 // GetMemberFunction retrieves a member function from the object's class
 func (obj *ObjectInstance) GetMemberFunction(name string, callingContext string) (*Function, error) {
-	return obj.Class.getMemberFunction(name, callingContext, obj.Environment)
+	return obj.Class.GetMemberFunction(name, callingContext, obj.Environment)
 }

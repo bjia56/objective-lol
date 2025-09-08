@@ -16,28 +16,14 @@ func NewBukkitInstance() *environment.ObjectInstance {
 	class := getArrayClasses()["BUKKIT"]
 	env := environment.NewEnvironment(nil)
 	env.DefineClass(class)
-	return &environment.ObjectInstance{
+	obj := &environment.ObjectInstance{
 		Environment: env,
 		Class:       class,
 		NativeData:  make(BukkitSlice, 0),
-		MRO:         class.MRO,
-		Variables: map[string]*environment.Variable{
-			"SIZ": {
-				Name:     "SIZ",
-				Type:     "INTEGR",
-				Value:    environment.IntegerValue(0),
-				IsLocked: true,
-				IsPublic: true,
-			},
-		},
+		Variables:   make(map[string]*environment.MemberVariable),
 	}
-}
-
-// updateSIZ updates the SIZ variable in the object instance based on slice length
-func updateSIZ(obj *environment.ObjectInstance, slice BukkitSlice) {
-	if sizVar, exists := obj.Variables["SIZ"]; exists {
-		sizVar.Value = environment.IntegerValue(len(slice))
-	}
+	env.InitializeInstanceVariablesWithMRO(obj)
+	return obj
 }
 
 // Global BUKKIT class definition - created once and reused
@@ -54,10 +40,10 @@ func getArrayClasses() map[string]*environment.Class {
 					"BUKKIT": {
 						Name:       "BUKKIT",
 						Parameters: []environment.Parameter{}, // Empty constructor - no arguments
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Create empty slice and store in NativeData
 							slice := make(BukkitSlice, 0)
-							this.(*environment.ObjectInstance).NativeData = slice
+							this.NativeData = slice
 							return environment.NOTHIN, nil
 						},
 					},
@@ -65,11 +51,10 @@ func getArrayClasses() map[string]*environment.Class {
 					"AT": {
 						Name:       "AT",
 						Parameters: []environment.Parameter{{Name: "INDEX", Type: "INTEGR"}},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							index := args[0]
 
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								indexVal, ok := index.(environment.IntegerValue)
 								if !ok {
 									return nil, fmt.Errorf("AT expects INTEGR index, got %s", index.Type())
@@ -86,11 +71,10 @@ func getArrayClasses() map[string]*environment.Class {
 					"SET": {
 						Name:       "SET",
 						Parameters: []environment.Parameter{{Name: "INDEX", Type: "INTEGR"}, {Name: "VALUE", Type: ""}},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							index, value := args[0], args[1]
 
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								indexVal, ok := index.(environment.IntegerValue)
 								if !ok {
 									return nil, fmt.Errorf("SET expects INTEGR index, got %s", index.Type())
@@ -109,14 +93,12 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "PUSH",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							value := args[0]
 
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								newSlice := append(slice, value)
-								thisObj.NativeData = newSlice
-								updateSIZ(thisObj, newSlice)
+								this.NativeData = newSlice
 								return environment.IntegerValue(len(newSlice)), nil
 							}
 							return environment.NOTHIN, fmt.Errorf("PUSH: invalid context")
@@ -125,17 +107,15 @@ func getArrayClasses() map[string]*environment.Class {
 					"POP": {
 						Name:       "POP",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								if len(slice) == 0 {
 									return nil, fmt.Errorf("cannot pop from empty array")
 								}
 								lastIndex := len(slice) - 1
 								element := slice[lastIndex]
 								newSlice := slice[:lastIndex]
-								thisObj.NativeData = newSlice
-								updateSIZ(thisObj, newSlice)
+								this.NativeData = newSlice
 								return element, nil
 							}
 							return environment.NOTHIN, fmt.Errorf("POP: invalid context")
@@ -144,16 +124,14 @@ func getArrayClasses() map[string]*environment.Class {
 					"SHIFT": {
 						Name:       "SHIFT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								if len(slice) == 0 {
 									return nil, fmt.Errorf("cannot shift from empty array")
 								}
 								element := slice[0]
 								newSlice := slice[1:]
-								thisObj.NativeData = newSlice
-								updateSIZ(thisObj, newSlice)
+								this.NativeData = newSlice
 								return element, nil
 							}
 							return environment.NOTHIN, fmt.Errorf("SHIFT: invalid context")
@@ -163,14 +141,12 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "UNSHIFT",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							value := args[0]
 
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								newSlice := append(BukkitSlice{value}, slice...)
-								thisObj.NativeData = newSlice
-								updateSIZ(thisObj, newSlice)
+								this.NativeData = newSlice
 								return environment.IntegerValue(len(newSlice)), nil
 							}
 							return environment.NOTHIN, fmt.Errorf("UNSHIFT: invalid context")
@@ -179,11 +155,9 @@ func getArrayClasses() map[string]*environment.Class {
 					"CLEAR": {
 						Name:       "CLEAR",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							newSlice := make(BukkitSlice, 0)
-							thisObj := this.(*environment.ObjectInstance)
-							thisObj.NativeData = newSlice
-							updateSIZ(thisObj, newSlice)
+							this.NativeData = newSlice
 							return environment.NOTHIN, nil
 						},
 					},
@@ -191,14 +165,13 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "REVERSE",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								// Reverse in-place
 								for i, j := 0, len(slice)-1; i < j; i, j = i+1, j-1 {
 									slice[i], slice[j] = slice[j], slice[i]
 								}
-								return thisObj, nil
+								return this, nil
 							}
 							return environment.NOTHIN, fmt.Errorf("REVERSE: invalid context")
 						},
@@ -207,9 +180,8 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "SORT",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								sort.Slice(slice, func(i, j int) bool {
 									left, right := slice[i], slice[j]
 
@@ -236,7 +208,7 @@ func getArrayClasses() map[string]*environment.Class {
 									// Default: convert both to strings and compare
 									return left.String() < right.String()
 								})
-								return thisObj, nil
+								return this, nil
 							}
 							return environment.NOTHIN, fmt.Errorf("SORT: invalid context")
 						},
@@ -245,11 +217,10 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "JOIN",
 						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{{Name: "SEPARATOR", Type: "STRIN"}},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							separator := args[0]
 
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								separatorVal, ok := separator.(environment.StringValue)
 								if !ok {
 									return nil, fmt.Errorf("JOIN expects STRIN separator, got %s", args[0].Type())
@@ -272,11 +243,10 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "SLICE",
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{{Name: "START", Type: "INTEGR"}, {Name: "END", Type: "INTEGR"}},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							start, end := args[0], args[1]
 
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								startVal, ok := start.(environment.IntegerValue)
 								if !ok {
 									return nil, fmt.Errorf("SLICE expects INTEGR start, got %s", start.Type())
@@ -308,7 +278,6 @@ func getArrayClasses() map[string]*environment.Class {
 								// Create a new BUKKIT object with the sliced array
 								newObject := NewBukkitInstance()
 								newObject.NativeData = newSlice
-								updateSIZ(newObject, newSlice)
 
 								return newObject, nil
 							}
@@ -319,11 +288,10 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "FIND",
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							value := args[0]
 
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								for i, elem := range slice {
 									equal, err := elem.EqualTo(value)
 									if err == nil && equal {
@@ -339,11 +307,10 @@ func getArrayClasses() map[string]*environment.Class {
 						Name:       "CONTAINS",
 						ReturnType: "BOOL",
 						Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							value := args[0]
 
-							thisObj := this.(*environment.ObjectInstance)
-							if slice, ok := thisObj.NativeData.(BukkitSlice); ok {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
 								for _, elem := range slice {
 									equal, err := elem.EqualTo(value)
 									if err == nil && equal {
@@ -356,22 +323,30 @@ func getArrayClasses() map[string]*environment.Class {
 						},
 					},
 				},
-				PublicVariables: map[string]*environment.Variable{
+				PublicVariables: map[string]*environment.MemberVariable{
 					"SIZ": {
-						Name:     "SIZ",
-						Type:     "INTEGR",
-						Value:    environment.IntegerValue(0),
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "SIZ",
+							Type:     "INTEGR",
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if slice, ok := this.NativeData.(BukkitSlice); ok {
+								return environment.IntegerValue(len(slice)), nil
+							}
+							return environment.IntegerValue(0), fmt.Errorf("invalid context for SIZ")
+						},
+						NativeSet: nil, // Read-only
 					},
 				},
 				QualifiedName:    "stdlib:ARRAYS.BUKKIT",
 				ModulePath:       "stdlib:ARRAYS",
 				ParentClasses:    []string{},
 				MRO:              []string{"stdlib:ARRAYS.BUKKIT"},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 		}

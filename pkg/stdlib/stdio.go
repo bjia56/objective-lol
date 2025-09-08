@@ -43,7 +43,7 @@ func getStdioFunctions() map[string]*environment.Function {
 			"SAY": {
 				Name:       "SAY",
 				Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
-				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					fmt.Fprint(StdoutWriter, args[0].String())
 					return environment.NOTHIN, nil
 				},
@@ -51,7 +51,7 @@ func getStdioFunctions() map[string]*environment.Function {
 			"SAYZ": {
 				Name:       "SAYZ",
 				Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
-				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					fmt.Fprintln(StdoutWriter, args[0].String())
 					return environment.NOTHIN, nil
 				},
@@ -60,7 +60,7 @@ func getStdioFunctions() map[string]*environment.Function {
 				Name:       "GIMME",
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{},
-				NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					reader := bufio.NewReader(StdinReader)
 					line, err := reader.ReadString('\n')
 					if err != nil {

@@ -39,7 +39,7 @@ func getFileClasses() map[string]*environment.Class {
 							{Name: "path", Type: "STRIN"},
 							{Name: "mode", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							path := args[0]
 							mode := args[1]
 
@@ -66,32 +66,7 @@ func getFileClasses() map[string]*environment.Class {
 								File:     nil,
 								IsOpen:   false,
 							}
-
-							thisObj := this.(*environment.ObjectInstance)
-							thisObj.NativeData = docData
-
-							// Set public variables
-							thisObj.Variables["PATH"] = &environment.Variable{
-								Name:     "PATH",
-								Type:     "STRIN",
-								Value:    pathVal,
-								IsLocked: true,
-								IsPublic: true,
-							}
-							thisObj.Variables["MODE"] = &environment.Variable{
-								Name:     "MODE",
-								Type:     "STRIN",
-								Value:    environment.StringValue(modeStr),
-								IsLocked: true,
-								IsPublic: true,
-							}
-							thisObj.Variables["IS_OPEN"] = &environment.Variable{
-								Name:     "IS_OPEN",
-								Type:     "BOOL",
-								Value:    environment.NO,
-								IsLocked: false,
-								IsPublic: true,
-							}
+							this.NativeData = docData
 
 							return environment.NOTHIN, nil
 						},
@@ -99,9 +74,8 @@ func getFileClasses() map[string]*environment.Class {
 					// OPEN method
 					"OPEN": {
 						Name: "OPEN",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							docData, ok := thisObj.NativeData.(*DocumentData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("OPEN: invalid context")
 							}
@@ -130,11 +104,6 @@ func getFileClasses() map[string]*environment.Class {
 							docData.File = file
 							docData.IsOpen = true
 
-							// Update IS_OPEN variable
-							if isOpenVar, exists := thisObj.Variables["IS_OPEN"]; exists {
-								isOpenVar.Value = environment.YEZ
-							}
-
 							return environment.NOTHIN, nil
 						},
 					},
@@ -145,7 +114,7 @@ func getFileClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "size", Type: "INTEGR"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							size := args[0]
 
 							sizeVal, ok := size.(environment.IntegerValue)
@@ -153,7 +122,7 @@ func getFileClasses() map[string]*environment.Class {
 								return environment.NOTHIN, fmt.Errorf("READ expects INTEGR size, got %s", size.Type())
 							}
 
-							docData, ok := this.(*environment.ObjectInstance).NativeData.(*DocumentData)
+							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("READ: invalid context")
 							}
@@ -187,7 +156,7 @@ func getFileClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							data := args[0]
 
 							dataVal, ok := data.(environment.StringValue)
@@ -195,7 +164,7 @@ func getFileClasses() map[string]*environment.Class {
 								return environment.NOTHIN, fmt.Errorf("WRITE expects STRIN data, got %s", data.Type())
 							}
 
-							docData, ok := this.(*environment.ObjectInstance).NativeData.(*DocumentData)
+							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("WRITE: invalid context")
 							}
@@ -223,7 +192,7 @@ func getFileClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "position", Type: "INTEGR"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							position := args[0]
 
 							posVal, ok := position.(environment.IntegerValue)
@@ -231,7 +200,7 @@ func getFileClasses() map[string]*environment.Class {
 								return environment.NOTHIN, fmt.Errorf("SEEK expects INTEGR position, got %s", position.Type())
 							}
 
-							docData, ok := this.(*environment.ObjectInstance).NativeData.(*DocumentData)
+							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("SEEK: invalid context")
 							}
@@ -252,8 +221,8 @@ func getFileClasses() map[string]*environment.Class {
 					"TELL": {
 						Name:       "TELL",
 						ReturnType: "INTEGR",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							docData, ok := this.(*environment.ObjectInstance).NativeData.(*DocumentData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("TELL: invalid context")
 							}
@@ -274,8 +243,8 @@ func getFileClasses() map[string]*environment.Class {
 					"SIZE": {
 						Name:       "SIZE",
 						ReturnType: "INTEGR",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							docData, ok := this.(*environment.ObjectInstance).NativeData.(*DocumentData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("SIZE: invalid context")
 							}
@@ -292,8 +261,8 @@ func getFileClasses() map[string]*environment.Class {
 					"EXISTS": {
 						Name:       "EXISTS",
 						ReturnType: "BOOL",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							docData, ok := this.(*environment.ObjectInstance).NativeData.(*DocumentData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("EXISTS: invalid context")
 							}
@@ -306,8 +275,8 @@ func getFileClasses() map[string]*environment.Class {
 					// FLUSH method
 					"FLUSH": {
 						Name: "FLUSH",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							docData, ok := this.(*environment.ObjectInstance).NativeData.(*DocumentData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("FLUSH: invalid context")
 							}
@@ -327,9 +296,8 @@ func getFileClasses() map[string]*environment.Class {
 					// CLOSE method (implements both READER and WRITER interfaces)
 					"CLOSE": {
 						Name: "CLOSE",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							docData, ok := thisObj.NativeData.(*DocumentData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid context")
 							}
@@ -346,20 +314,14 @@ func getFileClasses() map[string]*environment.Class {
 							docData.IsOpen = false
 							docData.File = nil
 
-							// Update IS_OPEN variable
-							if isOpenVar, exists := thisObj.Variables["IS_OPEN"]; exists {
-								isOpenVar.Value = environment.NO
-							}
-
 							return environment.NOTHIN, nil
 						},
 					},
 					// DELETE method
 					"DELETE": {
 						Name: "DELETE",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							docData, ok := thisObj.NativeData.(*DocumentData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("DELETE: invalid context")
 							}
@@ -372,11 +334,6 @@ func getFileClasses() map[string]*environment.Class {
 								}
 								docData.IsOpen = false
 								docData.File = nil
-
-								// Update IS_OPEN variable
-								if isOpenVar, exists := thisObj.Variables["IS_OPEN"]; exists {
-									isOpenVar.Value = environment.NO
-								}
 							}
 
 							// Delete the file
@@ -389,32 +346,56 @@ func getFileClasses() map[string]*environment.Class {
 						},
 					},
 				},
-				PublicVariables: map[string]*environment.Variable{
+				PublicVariables: map[string]*environment.MemberVariable{
 					"PATH": {
-						Name:     "PATH",
-						Type:     "STRIN",
-						Value:    environment.StringValue(""),
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "PATH",
+							Type:     "STRIN",
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if data, ok := this.NativeData.(*DocumentData); ok {
+								return environment.StringValue(data.FilePath), nil
+							}
+							return environment.StringValue(""), fmt.Errorf("invalid context for PATH")
+						},
 					},
 					"MODE": {
-						Name:     "MODE",
-						Type:     "STRIN",
-						Value:    environment.StringValue(""),
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "MODE",
+							Type:     "STRIN",
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if data, ok := this.NativeData.(*DocumentData); ok {
+								return environment.StringValue(data.FileMode), nil
+							}
+							return environment.StringValue(""), fmt.Errorf("invalid context for MODE")
+						},
 					},
 					"IS_OPEN": {
-						Name:     "IS_OPEN",
-						Type:     "BOOL",
-						Value:    environment.NO,
-						IsLocked: false,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "IS_OPEN",
+							Type:     "BOOL",
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if data, ok := this.NativeData.(*DocumentData); ok {
+								if data.IsOpen {
+									return environment.YEZ, nil
+								}
+								return environment.NO, nil
+							}
+							return environment.NO, fmt.Errorf("invalid context for IS_OPEN")
+						},
 					},
 				},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 		}
@@ -426,7 +407,7 @@ func getFileClasses() map[string]*environment.Class {
 // declarations: empty slice means import all, otherwise import only specified classes
 func RegisterFILEInEnv(env *environment.Environment, declarations ...string) error {
 	// First ensure IO classes are available since DOCUMENT inherits from IO.READWRITER
-	err := RegisterIOInEnv(env, "READWRITER")
+	err := RegisterIOInEnv(env, "READWRITER", "READER", "WRITER")
 	if err != nil {
 		return fmt.Errorf("failed to register IO classes: %v", err)
 	}

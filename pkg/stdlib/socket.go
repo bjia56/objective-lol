@@ -13,7 +13,10 @@ import (
 
 // SocketData stores the internal state of a SOKKIT
 type SocketData struct {
+	Host        string
+	Port        int
 	Protocol    string
+	Timeout     time.Duration
 	Listener    net.Listener   // For TCP server sockets
 	PacketConn  net.PacketConn // For UDP sockets
 	IsBound     bool
@@ -44,44 +47,15 @@ func getSocketClasses() map[string]*environment.Class {
 					"SOKKIT": {
 						Name:       "SOKKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							socketData := &SocketData{
+								Host:        "localhost",
+								Port:        8080,
 								Protocol:    "TCP",
 								IsBound:     false,
 								IsListening: false,
 							}
-							thisObj := this.(*environment.ObjectInstance)
-							thisObj.NativeData = socketData
-
-							// Initialize public variables
-							thisObj.Variables["PROTOCOL"] = &environment.Variable{
-								Name:     "PROTOCOL",
-								Type:     "STRIN",
-								Value:    environment.StringValue("TCP"),
-								IsLocked: false,
-								IsPublic: true,
-							}
-							thisObj.Variables["HOST"] = &environment.Variable{
-								Name:     "HOST",
-								Type:     "STRIN",
-								Value:    environment.StringValue("localhost"),
-								IsLocked: false,
-								IsPublic: true,
-							}
-							thisObj.Variables["PORT"] = &environment.Variable{
-								Name:     "PORT",
-								Type:     "INTEGR",
-								Value:    environment.IntegerValue(8080),
-								IsLocked: false,
-								IsPublic: true,
-							}
-							thisObj.Variables["TIMEOUT"] = &environment.Variable{
-								Name:     "TIMEOUT",
-								Type:     "INTEGR",
-								Value:    environment.IntegerValue(30),
-								IsLocked: false,
-								IsPublic: true,
-							}
+							this.NativeData = socketData
 
 							return environment.NOTHIN, nil
 						},
@@ -90,21 +64,15 @@ func getSocketClasses() map[string]*environment.Class {
 					"BIND": {
 						Name:       "BIND",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							socketData, ok := this.(*environment.ObjectInstance).NativeData.(*SocketData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							socketData, ok := this.NativeData.(*SocketData)
 							if !ok {
 								return environment.NOTHIN, runtime.Exception{Message: "BIND: invalid socket context"}
 							}
 
-							// Get host and port from variables
-							thisObj := this.(*environment.ObjectInstance)
-							hostVar, _ := thisObj.Variables["HOST"]
-							portVar, _ := thisObj.Variables["PORT"]
-							protocolVar, _ := thisObj.Variables["PROTOCOL"]
-
-							host := string(hostVar.Value.(environment.StringValue))
-							port := int(portVar.Value.(environment.IntegerValue))
-							protocol := strings.ToUpper(string(protocolVar.Value.(environment.StringValue)))
+							host := socketData.Host
+							port := socketData.Port
+							protocol := socketData.Protocol
 
 							socketData.Protocol = protocol
 							address := fmt.Sprintf("%s:%d", host, port)
@@ -133,8 +101,8 @@ func getSocketClasses() map[string]*environment.Class {
 					"LISTEN": {
 						Name:       "LISTEN",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							socketData, ok := this.(*environment.ObjectInstance).NativeData.(*SocketData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							socketData, ok := this.NativeData.(*SocketData)
 							if !ok {
 								return environment.NOTHIN, runtime.Exception{Message: "LISTEN: invalid socket context"}
 							}
@@ -156,8 +124,8 @@ func getSocketClasses() map[string]*environment.Class {
 						Name:       "ACCEPT",
 						ReturnType: "WIRE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							socketData, ok := this.(*environment.ObjectInstance).NativeData.(*SocketData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							socketData, ok := this.NativeData.(*SocketData)
 							if !ok {
 								return environment.NOTHIN, runtime.Exception{Message: "ACCEPT: invalid socket context"}
 							}
@@ -179,18 +147,17 @@ func getSocketClasses() map[string]*environment.Class {
 						Name:       "CONNECT",
 						ReturnType: "WIRE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Get connection parameters
-							thisObj := this.(*environment.ObjectInstance)
-							hostVar, _ := thisObj.Variables["HOST"]
-							portVar, _ := thisObj.Variables["PORT"]
-							protocolVar, _ := thisObj.Variables["PROTOCOL"]
-							timeoutVar, _ := thisObj.Variables["TIMEOUT"]
+							socketData, ok := this.NativeData.(*SocketData)
+							if !ok {
+								return environment.NOTHIN, runtime.Exception{Message: "CONNECT: invalid socket context"}
+							}
 
-							host := string(hostVar.Value.(environment.StringValue))
-							port := int(portVar.Value.(environment.IntegerValue))
-							protocol := strings.ToUpper(string(protocolVar.Value.(environment.StringValue)))
-							timeout := time.Duration(int(timeoutVar.Value.(environment.IntegerValue))) * time.Second
+							host := socketData.Host
+							port := socketData.Port
+							protocol := strings.ToUpper(socketData.Protocol)
+							timeout := time.Duration(socketData.Timeout) * time.Second
 
 							if protocol != "TCP" {
 								return environment.NOTHIN, runtime.Exception{Message: "CONNECT: only supported for TCP sockets"}
@@ -213,8 +180,8 @@ func getSocketClasses() map[string]*environment.Class {
 							{Name: "host", Type: "STRIN"},
 							{Name: "port", Type: "INTEGR"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							socketData, ok := this.(*environment.ObjectInstance).NativeData.(*SocketData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							socketData, ok := this.NativeData.(*SocketData)
 							if !ok {
 								return environment.NOTHIN, runtime.Exception{Message: "SEND_TO: invalid socket context"}
 							}
@@ -250,8 +217,8 @@ func getSocketClasses() map[string]*environment.Class {
 						Name:       "RECEIVE_FROM",
 						ReturnType: "BASKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							socketData, ok := this.(*environment.ObjectInstance).NativeData.(*SocketData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							socketData, ok := this.NativeData.(*SocketData)
 							if !ok {
 								return environment.NOTHIN, runtime.Exception{Message: "RECEIVE_FROM: invalid socket context"}
 							}
@@ -281,7 +248,6 @@ func getSocketClasses() map[string]*environment.Class {
 							baskitMap["DATA"] = environment.StringValue(string(buffer[:n]))
 							baskitMap["HOST"] = environment.StringValue(host)
 							baskitMap["PORT"] = environment.IntegerValue(port)
-							updateBaskitSIZ(result, baskitMap)
 
 							return result, nil
 						},
@@ -290,8 +256,8 @@ func getSocketClasses() map[string]*environment.Class {
 					"CLOSE": {
 						Name:       "CLOSE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							socketData, ok := this.(*environment.ObjectInstance).NativeData.(*SocketData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							socketData, ok := this.NativeData.(*SocketData)
 							if !ok {
 								return environment.NOTHIN, runtime.Exception{Message: "CLOSE: invalid socket context"}
 							}
@@ -312,39 +278,125 @@ func getSocketClasses() map[string]*environment.Class {
 						},
 					},
 				},
-				PublicVariables: map[string]*environment.Variable{
+				PublicVariables: map[string]*environment.MemberVariable{
 					"PROTOCOL": {
-						Name:     "PROTOCOL",
-						Type:     "STRIN",
-						Value:    environment.StringValue("TCP"),
-						IsLocked: false,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "PROTOCOL",
+							Type:     "STRIN",
+							IsLocked: false,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							socketData, ok := this.NativeData.(*SocketData)
+							if !ok {
+								return nil, fmt.Errorf("invalid socket context")
+							}
+							return environment.StringValue(socketData.Protocol), nil
+						},
+						NativeSet: func(this *environment.ObjectInstance, value environment.Value) error {
+							socketData, ok := this.NativeData.(*SocketData)
+							if !ok {
+								return fmt.Errorf("invalid socket context")
+							}
+							if strVal, ok := value.(environment.StringValue); ok {
+								proto := strings.ToUpper(string(strVal))
+								if proto != "TCP" && proto != "UDP" {
+									return fmt.Errorf("PROTOCOL must be 'TCP' or 'UDP'")
+								}
+								socketData.Protocol = proto
+								return nil
+							}
+							return fmt.Errorf("PROTOCOL must be a string")
+						},
 					},
 					"HOST": {
-						Name:     "HOST",
-						Type:     "STRIN",
-						Value:    environment.StringValue("localhost"),
-						IsLocked: false,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "HOST",
+							Type:     "STRIN",
+							IsLocked: false,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							socketData, ok := this.NativeData.(*SocketData)
+							if !ok {
+								return nil, fmt.Errorf("invalid socket context")
+							}
+							return environment.StringValue(socketData.Host), nil
+						},
+						NativeSet: func(this *environment.ObjectInstance, value environment.Value) error {
+							socketData, ok := this.NativeData.(*SocketData)
+							if !ok {
+								return fmt.Errorf("invalid socket context")
+							}
+							if strVal, ok := value.(environment.StringValue); ok {
+								socketData.Host = string(strVal)
+								return nil
+							}
+							return fmt.Errorf("HOST must be a string")
+						},
 					},
 					"PORT": {
-						Name:     "PORT",
-						Type:     "INTEGR",
-						Value:    environment.IntegerValue(8080),
-						IsLocked: false,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "PORT",
+							Type:     "INTEGR",
+							IsLocked: false,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							socketData, ok := this.NativeData.(*SocketData)
+							if !ok {
+								return nil, fmt.Errorf("invalid socket context")
+							}
+							return environment.IntegerValue(socketData.Port), nil
+						},
+						NativeSet: func(this *environment.ObjectInstance, value environment.Value) error {
+							socketData, ok := this.NativeData.(*SocketData)
+							if !ok {
+								return fmt.Errorf("invalid socket context")
+							}
+							if intVal, ok := value.(environment.IntegerValue); ok {
+								if intVal < 0 || intVal > 65535 {
+									return fmt.Errorf("PORT must be between 0 and 65535")
+								}
+								socketData.Port = int(intVal)
+								return nil
+							}
+							return fmt.Errorf("PORT must be an integer")
+						},
 					},
 					"TIMEOUT": {
-						Name:     "TIMEOUT",
-						Type:     "INTEGR",
-						Value:    environment.IntegerValue(30),
-						IsLocked: false,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "TIMEOUT",
+							Type:     "INTEGR",
+							IsLocked: false,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							socketData, ok := this.NativeData.(*SocketData)
+							if !ok {
+								return nil, fmt.Errorf("invalid socket context")
+							}
+							return environment.IntegerValue(int64(socketData.Timeout.Seconds())), nil
+						},
+						NativeSet: func(this *environment.ObjectInstance, value environment.Value) error {
+							socketData, ok := this.NativeData.(*SocketData)
+							if !ok {
+								return fmt.Errorf("invalid socket context")
+							}
+							if intVal, ok := value.(environment.IntegerValue); ok {
+								if intVal < 0 {
+									return fmt.Errorf("TIMEOUT must be non-negative")
+								}
+								socketData.Timeout = time.Duration(intVal) * time.Second
+								return nil
+							}
+							return fmt.Errorf("TIMEOUT must be an integer")
+						},
 					},
 				},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 			"WIRE": {
@@ -354,22 +406,14 @@ func getSocketClasses() map[string]*environment.Class {
 				ParentClasses: []string{},
 				MRO:           []string{"stdlib:SOCKET.WIRE"},
 				PublicFunctions: map[string]*environment.Function{
-					// Constructor (internal use only)
-					"WIRE": {
-						Name:       "WIRE",
-						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							return environment.NOTHIN, nil
-						},
-					},
 					// SEND method
 					"SEND": {
 						Name: "SEND",
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							wireData, ok := this.(*environment.ObjectInstance).NativeData.(*WireData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							wireData, ok := this.NativeData.(*WireData)
 							if !ok || !wireData.IsConnected {
 								return environment.NOTHIN, runtime.Exception{Message: "SEND: connection not established"}
 							}
@@ -391,8 +435,8 @@ func getSocketClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "length", Type: "INTEGR"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							wireData, ok := this.(*environment.ObjectInstance).NativeData.(*WireData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							wireData, ok := this.NativeData.(*WireData)
 							if !ok || !wireData.IsConnected {
 								return environment.NOTHIN, runtime.Exception{Message: "RECEIVE: connection not established"}
 							}
@@ -419,8 +463,8 @@ func getSocketClasses() map[string]*environment.Class {
 						Name:       "RECEIVE_ALL",
 						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							wireData, ok := this.(*environment.ObjectInstance).NativeData.(*WireData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							wireData, ok := this.NativeData.(*WireData)
 							if !ok || !wireData.IsConnected {
 								return environment.NOTHIN, runtime.Exception{Message: "RECEIVE_ALL: connection not established"}
 							}
@@ -446,8 +490,8 @@ func getSocketClasses() map[string]*environment.Class {
 					"CLOSE": {
 						Name:       "CLOSE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							wireData, ok := this.(*environment.ObjectInstance).NativeData.(*WireData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							wireData, ok := this.NativeData.(*WireData)
 							if !ok {
 								return environment.NOTHIN, runtime.Exception{Message: "CLOSE: invalid connection context"}
 							}
@@ -461,46 +505,110 @@ func getSocketClasses() map[string]*environment.Class {
 						},
 					},
 				},
-				PublicVariables: map[string]*environment.Variable{
+				PublicVariables: map[string]*environment.MemberVariable{
 					"REMOTE_HOST": {
-						Name:     "REMOTE_HOST",
-						Type:     "STRIN",
-						Value:    environment.StringValue(""),
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "REMOTE_HOST",
+							Type:     "STRIN",
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							wireData, ok := this.NativeData.(*WireData)
+							if !ok {
+								return nil, fmt.Errorf("invalid connection context")
+							}
+							if !wireData.IsConnected {
+								return environment.StringValue(""), nil
+							}
+							remoteAddr := wireData.Conn.RemoteAddr().(*net.TCPAddr)
+							return environment.StringValue(remoteAddr.IP.String()), nil
+						},
+						NativeSet: nil, // Read-only
 					},
 					"REMOTE_PORT": {
-						Name:     "REMOTE_PORT",
-						Type:     "INTEGR",
-						Value:    environment.IntegerValue(0),
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "REMOTE_PORT",
+							Type:     "INTEGR",
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							wireData, ok := this.NativeData.(*WireData)
+							if !ok {
+								return nil, fmt.Errorf("invalid connection context")
+							}
+							if !wireData.IsConnected {
+								return environment.IntegerValue(0), nil
+							}
+							remoteAddr := wireData.Conn.RemoteAddr().(*net.TCPAddr)
+							return environment.IntegerValue(remoteAddr.Port), nil
+						},
+						NativeSet: nil, // Read-only
 					},
 					"LOCAL_HOST": {
-						Name:     "LOCAL_HOST",
-						Type:     "STRIN",
-						Value:    environment.StringValue(""),
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "LOCAL_HOST",
+							Type:     "STRIN",
+							Value:    environment.StringValue(""),
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							wireData, ok := this.NativeData.(*WireData)
+							if !ok {
+								return nil, fmt.Errorf("invalid connection context")
+							}
+							if !wireData.IsConnected {
+								return environment.StringValue(""), nil
+							}
+							localAddr := wireData.Conn.LocalAddr().(*net.TCPAddr)
+							return environment.StringValue(localAddr.IP.String()), nil
+						},
+						NativeSet: nil, // Read-only
 					},
 					"LOCAL_PORT": {
-						Name:     "LOCAL_PORT",
-						Type:     "INTEGR",
-						Value:    environment.IntegerValue(0),
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "LOCAL_PORT",
+							Type:     "INTEGR",
+							Value:    environment.IntegerValue(0),
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							wireData, ok := this.NativeData.(*WireData)
+							if !ok {
+								return nil, fmt.Errorf("invalid connection context")
+							}
+							if !wireData.IsConnected {
+								return environment.IntegerValue(0), nil
+							}
+							localAddr := wireData.Conn.LocalAddr().(*net.TCPAddr)
+							return environment.IntegerValue(localAddr.Port), nil
+						},
+						NativeSet: nil, // Read-only
 					},
 					"IS_CONNECTED": {
-						Name:     "IS_CONNECTED",
-						Type:     "BOOL",
-						Value:    environment.NO,
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "IS_CONNECTED",
+							Type:     "BOOL",
+							Value:    environment.NO,
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							wireData, ok := this.NativeData.(*WireData)
+							if !ok {
+								return nil, fmt.Errorf("invalid connection context")
+							}
+							return environment.BoolValue(wireData.IsConnected), nil
+						},
+						NativeSet: nil, // Read-only
 					},
 				},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 		}
@@ -517,53 +625,13 @@ func createWireInstance(conn net.Conn) (environment.Value, error) {
 	wireInstance := &environment.ObjectInstance{
 		Environment: env,
 		Class:       wireClass,
-		MRO:         wireClass.MRO,
-		Variables:   make(map[string]*environment.Variable),
+		Variables:   make(map[string]*environment.MemberVariable),
 		NativeData: &WireData{
 			Conn:        conn,
 			IsConnected: true,
 		},
 	}
-
-	// Set connection info variables
-	remoteAddr := conn.RemoteAddr().(*net.TCPAddr)
-	localAddr := conn.LocalAddr().(*net.TCPAddr)
-
-	wireInstance.Variables["REMOTE_HOST"] = &environment.Variable{
-		Name:     "REMOTE_HOST",
-		Type:     "STRIN",
-		Value:    environment.StringValue(remoteAddr.IP.String()),
-		IsLocked: true,
-		IsPublic: true,
-	}
-	wireInstance.Variables["REMOTE_PORT"] = &environment.Variable{
-		Name:     "REMOTE_PORT",
-		Type:     "INTEGR",
-		Value:    environment.IntegerValue(remoteAddr.Port),
-		IsLocked: true,
-		IsPublic: true,
-	}
-	wireInstance.Variables["LOCAL_HOST"] = &environment.Variable{
-		Name:     "LOCAL_HOST",
-		Type:     "STRIN",
-		Value:    environment.StringValue(localAddr.IP.String()),
-		IsLocked: true,
-		IsPublic: true,
-	}
-	wireInstance.Variables["LOCAL_PORT"] = &environment.Variable{
-		Name:     "LOCAL_PORT",
-		Type:     "INTEGR",
-		Value:    environment.IntegerValue(localAddr.Port),
-		IsLocked: true,
-		IsPublic: true,
-	}
-	wireInstance.Variables["IS_CONNECTED"] = &environment.Variable{
-		Name:     "IS_CONNECTED",
-		Type:     "BOOL",
-		Value:    environment.BoolValue(true),
-		IsLocked: true,
-		IsPublic: true,
-	}
+	env.InitializeInstanceVariablesWithMRO(wireInstance)
 
 	return wireInstance, nil
 }

@@ -56,8 +56,9 @@ func TestMinionConstructor(t *testing.T) {
 	minionClass := env.GetAllClasses()["MINION"]
 	minion := &environment.ObjectInstance{
 		Class:     minionClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(minion)
 
 	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
@@ -76,7 +77,11 @@ func TestMinionConstructor(t *testing.T) {
 	if runningVar, exists := minion.Variables["RUNNING"]; !exists {
 		t.Error("RUNNING variable not set")
 	} else {
-		if runningVar.Value != environment.NO {
+		val, err := runningVar.Get(minion)
+		if err != nil {
+			t.Errorf("Failed to get RUNNING value: %v", err)
+		}
+		if val != environment.NO {
 			t.Error("RUNNING should be NO initially")
 		}
 	}
@@ -100,8 +105,9 @@ func TestMinionSetWorkdir(t *testing.T) {
 	minionClass := env.GetAllClasses()["MINION"]
 	minion := &environment.ObjectInstance{
 		Class:     minionClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(minion)
 
 	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
@@ -141,8 +147,9 @@ func TestMinionAddEnv(t *testing.T) {
 	minionClass := env.GetAllClasses()["MINION"]
 	minion := &environment.ObjectInstance{
 		Class:     minionClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(minion)
 
 	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
@@ -191,8 +198,9 @@ func TestMinionBasicExecution(t *testing.T) {
 	minionClass := env.GetAllClasses()["MINION"]
 	minion := &environment.ObjectInstance{
 		Class:     minionClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(minion)
 
 	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
@@ -209,7 +217,11 @@ func TestMinionBasicExecution(t *testing.T) {
 	if runningVar, exists := minion.Variables["RUNNING"]; !exists {
 		t.Error("RUNNING variable not found")
 	} else {
-		if runningVar.Value != environment.YEZ {
+		val, err := runningVar.Get(minion)
+		if err != nil {
+			t.Errorf("Failed to get RUNNING value: %v", err)
+		}
+		if val != environment.YEZ {
 			t.Error("RUNNING should be YEZ after start")
 		}
 	}
@@ -218,7 +230,11 @@ func TestMinionBasicExecution(t *testing.T) {
 	if pidVar, exists := minion.Variables["PID"]; !exists {
 		t.Error("PID variable not found")
 	} else {
-		if pidVal, ok := pidVar.Value.(environment.IntegerValue); !ok || int(pidVal) <= 0 {
+		val, err := pidVar.Get(minion)
+		if err != nil {
+			t.Errorf("Failed to get PID value: %v", err)
+		}
+		if pidVal, ok := val.(environment.IntegerValue); !ok || int(pidVal) <= 0 {
 			t.Error("PID should be positive after start")
 		}
 	}
@@ -255,7 +271,11 @@ func TestMinionBasicExecution(t *testing.T) {
 	if finishedVar, exists := minion.Variables["FINISHED"]; !exists {
 		t.Error("FINISHED variable not found")
 	} else {
-		if finishedVar.Value != environment.YEZ {
+		val, err := finishedVar.Get(minion)
+		if err != nil {
+			t.Errorf("Failed to get FINISHED value: %v", err)
+		}
+		if val != environment.YEZ {
 			t.Error("FINISHED should be YEZ after wait")
 		}
 	}
@@ -279,8 +299,9 @@ func TestPipeReadWrite(t *testing.T) {
 	minionClass := env.GetAllClasses()["MINION"]
 	minion := &environment.ObjectInstance{
 		Class:     minionClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(minion)
 
 	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
@@ -357,8 +378,9 @@ func TestMinionIsAlive(t *testing.T) {
 	minionClass := env.GetAllClasses()["MINION"]
 	minion := &environment.ObjectInstance{
 		Class:     minionClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(minion)
 
 	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{bukkit})
 	if err != nil {
@@ -420,8 +442,9 @@ func TestMinionErrorHandling(t *testing.T) {
 	minionClass := env.GetAllClasses()["MINION"]
 	minion := &environment.ObjectInstance{
 		Class:     minionClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(minion)
 
 	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion, []environment.Value{emptyBukkit})
 	if err == nil {
@@ -431,8 +454,10 @@ func TestMinionErrorHandling(t *testing.T) {
 	// Test starting before construction
 	minion2 := &environment.ObjectInstance{
 		Class:     minionClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(minion2)
+
 	_, err = minionClass.PublicFunctions["START"].NativeImpl(nil, minion2, []environment.Value{})
 	if err == nil {
 		t.Error("START should fail when MINION not properly constructed")
@@ -450,8 +475,10 @@ func TestMinionErrorHandling(t *testing.T) {
 
 	minion3 := &environment.ObjectInstance{
 		Class:     minionClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(minion3)
+
 	_, err = minionClass.PublicFunctions["MINION"].NativeImpl(nil, minion3, []environment.Value{bukkit})
 	if err != nil {
 		t.Fatalf("MINION constructor failed: %v", err)

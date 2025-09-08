@@ -44,7 +44,7 @@ func getHTTPClasses() map[string]*environment.Class {
 					"INTERWEB": {
 						Name:       "INTERWEB",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Initialize HTTP client
 							client := &http.Client{
 								Timeout: 30 * time.Second,
@@ -53,27 +53,11 @@ func getHTTPClasses() map[string]*environment.Class {
 							interwebData := &InterwebData{
 								Client: client,
 							}
-							thisObj := this.(*environment.ObjectInstance)
-							thisObj.NativeData = interwebData
-
-							// Initialize public variables
-							thisObj.Variables["TIMEOUT"] = &environment.Variable{
-								Name:     "TIMEOUT",
-								Type:     "INTEGR",
-								Value:    environment.IntegerValue(30),
-								IsLocked: false,
-								IsPublic: true,
-							}
+							this.NativeData = interwebData
 
 							// Initialize empty headers BASKIT
 							headers := NewBaskitInstance()
-							thisObj.Variables["HEADERS"] = &environment.Variable{
-								Name:     "HEADERS",
-								Type:     "BASKIT",
-								Value:    headers,
-								IsLocked: false,
-								IsPublic: true,
-							}
+							this.Variables["HEADERS"].Value = headers
 
 							return environment.NOTHIN, nil
 						},
@@ -85,7 +69,7 @@ func getHTTPClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "url", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "GET", args[0], environment.StringValue(""))
 						},
 					},
@@ -97,7 +81,7 @@ func getHTTPClasses() map[string]*environment.Class {
 							{Name: "url", Type: "STRIN"},
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "POST", args[0], args[1])
 						},
 					},
@@ -109,7 +93,7 @@ func getHTTPClasses() map[string]*environment.Class {
 							{Name: "url", Type: "STRIN"},
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "PUT", args[0], args[1])
 						},
 					},
@@ -120,30 +104,51 @@ func getHTTPClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "url", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return executeHTTPRequest(this, "DELETE", args[0], environment.StringValue(""))
 						},
 					},
 				},
-				PublicVariables: map[string]*environment.Variable{
+				PublicVariables: map[string]*environment.MemberVariable{
 					"TIMEOUT": {
-						Name:     "TIMEOUT",
-						Type:     "INTEGR",
-						Value:    environment.IntegerValue(30),
-						IsLocked: false,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "TIMEOUT",
+							Type:     "INTEGR",
+							IsLocked: false,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if interwebData, ok := this.NativeData.(*InterwebData); ok {
+								return environment.IntegerValue(int(interwebData.Client.Timeout.Seconds())), nil
+							}
+							return environment.IntegerValue(0), fmt.Errorf("invalid context for TIMEOUT")
+						},
+						NativeSet: func(this *environment.ObjectInstance, value environment.Value) error {
+							if interwebData, ok := this.NativeData.(*InterwebData); ok {
+								if intVal, ok := value.(environment.IntegerValue); ok {
+									interwebData.Client.Timeout = time.Duration(int(intVal)) * time.Second
+									return nil
+								}
+								return fmt.Errorf("TIMEOUT expects INTEGR value, got %s", value.Type())
+							}
+							return fmt.Errorf("invalid context for TIMEOUT")
+						},
 					},
 					"HEADERS": {
-						Name:     "HEADERS",
-						Type:     "BASKIT",
-						Value:    NewBaskitInstance(),
-						IsLocked: false,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "HEADERS",
+							Type:     "BASKIT",
+							Value:    NewBaskitInstance(),
+							IsLocked: false,
+							IsPublic: true,
+						},
+						// Since we are returning an object (BASKIT), we cannot
+						// use NativeGet/NativeSet.
 					},
 				},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 			"RESPONSE": {
@@ -153,23 +158,13 @@ func getHTTPClasses() map[string]*environment.Class {
 				ParentClasses: []string{},
 				MRO:           []string{"stdlib:HTTP.RESPONSE"},
 				PublicFunctions: map[string]*environment.Function{
-					// Constructor (internal use only)
-					"RESPONSE": {
-						Name:       "RESPONSE",
-						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							// This constructor is for internal use only
-							return environment.NOTHIN, nil
-						},
-					},
 					// TO_JSON method
 					"TO_JSON": {
 						Name:       "TO_JSON",
 						ReturnType: "BASKIT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							bodyVar, exists := thisObj.Variables["BODY"]
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							bodyVar, exists := this.Variables["BODY"]
 							if !exists {
 								return environment.NOTHIN, runtime.Exception{Message: "TO_JSON: BODY variable not found"}
 							}
@@ -191,46 +186,56 @@ func getHTTPClasses() map[string]*environment.Class {
 						},
 					},
 				},
-				PublicVariables: map[string]*environment.Variable{
+				PublicVariables: map[string]*environment.MemberVariable{
 					"STATUS": {
-						Name:     "STATUS",
-						Type:     "INTEGR",
-						Value:    environment.IntegerValue(0),
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "STATUS",
+							Type:     "INTEGR",
+							Value:    environment.IntegerValue(0),
+							IsLocked: true,
+							IsPublic: true,
+						},
 					},
 					"BODY": {
-						Name:     "BODY",
-						Type:     "STRIN",
-						Value:    environment.StringValue(""),
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "BODY",
+							Type:     "STRIN",
+							Value:    environment.StringValue(""),
+							IsLocked: true,
+							IsPublic: true,
+						},
 					},
 					"HEADERS": {
-						Name:     "HEADERS",
-						Type:     "BASKIT",
-						Value:    NewBaskitInstance(),
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "HEADERS",
+							Type:     "BASKIT",
+							Value:    NewBaskitInstance(),
+							IsLocked: true,
+							IsPublic: true,
+						},
 					},
 					"IS_SUCCESS": {
-						Name:     "IS_SUCCESS",
-						Type:     "BOOL",
-						Value:    environment.NO,
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "IS_SUCCESS",
+							Type:     "BOOL",
+							Value:    environment.NO,
+							IsLocked: true,
+							IsPublic: true,
+						},
 					},
 					"IS_ERROR": {
-						Name:     "IS_ERROR",
-						Type:     "BOOL",
-						Value:    environment.NO,
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "IS_ERROR",
+							Type:     "BOOL",
+							Value:    environment.NO,
+							IsLocked: true,
+							IsPublic: true,
+						},
 					},
 				},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 		}
@@ -239,7 +244,7 @@ func getHTTPClasses() map[string]*environment.Class {
 }
 
 // executeHTTPRequest performs the actual HTTP request
-func executeHTTPRequest(this environment.GenericObject, method string, urlArg environment.Value, dataArg environment.Value) (environment.Value, error) {
+func executeHTTPRequest(this *environment.ObjectInstance, method string, urlArg environment.Value, dataArg environment.Value) (environment.Value, error) {
 	// Get URL
 	urlVal, ok := urlArg.(environment.StringValue)
 	if !ok {
@@ -257,18 +262,9 @@ func executeHTTPRequest(this environment.GenericObject, method string, urlArg en
 	}
 
 	// Get INTERWEB data
-	thisObj := this.(*environment.ObjectInstance)
-	interwebData, ok := thisObj.NativeData.(*InterwebData)
+	interwebData, ok := this.NativeData.(*InterwebData)
 	if !ok {
 		return environment.NOTHIN, fmt.Errorf("%s: invalid context", method)
-	}
-
-	// Read timeout from public variable
-	timeoutVar, exists := thisObj.Variables["TIMEOUT"]
-	if exists {
-		if timeoutVal, ok := timeoutVar.Value.(environment.IntegerValue); ok {
-			interwebData.Client.Timeout = time.Duration(int(timeoutVal)) * time.Second
-		}
 	}
 
 	// Create request
@@ -286,7 +282,7 @@ func executeHTTPRequest(this environment.GenericObject, method string, urlArg en
 	}
 
 	// Apply headers from HEADERS baskit
-	headersVar, exists := thisObj.Variables["HEADERS"]
+	headersVar, exists := this.Variables["HEADERS"]
 	if exists {
 		if headersBaskit, ok := headersVar.Value.(*environment.ObjectInstance); ok {
 			if baskitMap, ok := headersBaskit.NativeData.(BaskitMap); ok {
@@ -319,26 +315,13 @@ func executeHTTPRequest(this environment.GenericObject, method string, urlArg en
 	responseInstance := &environment.ObjectInstance{
 		Environment: env,
 		Class:       responseClass,
-		MRO:         responseClass.MRO,
-		Variables:   make(map[string]*environment.Variable),
+		Variables:   make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(responseInstance)
 
 	// Set response data
-	responseInstance.Variables["STATUS"] = &environment.Variable{
-		Name:     "STATUS",
-		Type:     "INTEGR",
-		Value:    environment.IntegerValue(resp.StatusCode),
-		IsLocked: true,
-		IsPublic: true,
-	}
-
-	responseInstance.Variables["BODY"] = &environment.Variable{
-		Name:     "BODY",
-		Type:     "STRIN",
-		Value:    environment.StringValue(string(body)),
-		IsLocked: true,
-		IsPublic: true,
-	}
+	responseInstance.Variables["STATUS"].Value = environment.IntegerValue(resp.StatusCode)
+	responseInstance.Variables["BODY"].Value = environment.StringValue(string(body))
 
 	// Convert response headers to BASKIT
 	headerBaskit := NewBaskitInstance()
@@ -348,34 +331,14 @@ func executeHTTPRequest(this environment.GenericObject, method string, urlArg en
 			headerMap[key] = environment.StringValue(values[0])
 		}
 	}
-	updateBaskitSIZ(headerBaskit, headerMap)
-	responseInstance.Variables["HEADERS"] = &environment.Variable{
-		Name:     "HEADERS",
-		Type:     "BASKIT",
-		Value:    headerBaskit,
-		IsLocked: true,
-		IsPublic: true,
-	}
+	responseInstance.Variables["HEADERS"].Value = headerBaskit
 
 	// Set success/error flags
 	isSuccess := resp.StatusCode >= 200 && resp.StatusCode < 300
 	isError := resp.StatusCode >= 400
 
-	responseInstance.Variables["IS_SUCCESS"] = &environment.Variable{
-		Name:     "IS_SUCCESS",
-		Type:     "BOOL",
-		Value:    environment.BoolValue(isSuccess),
-		IsLocked: true,
-		IsPublic: true,
-	}
-
-	responseInstance.Variables["IS_ERROR"] = &environment.Variable{
-		Name:     "IS_ERROR",
-		Type:     "BOOL",
-		Value:    environment.BoolValue(isError),
-		IsLocked: true,
-		IsPublic: true,
-	}
+	responseInstance.Variables["IS_SUCCESS"].Value = environment.BoolValue(isSuccess)
+	responseInstance.Variables["IS_ERROR"].Value = environment.BoolValue(isError)
 
 	return responseInstance, nil
 }
@@ -389,7 +352,6 @@ func jsonToBaskit(data interface{}) environment.Value {
 		for key, value := range v {
 			baskitMap[key] = jsonToBaskit(value)
 		}
-		updateBaskitSIZ(baskit, baskitMap)
 		return baskit
 	case []interface{}:
 		bukkit := NewBukkitInstance()
@@ -398,7 +360,6 @@ func jsonToBaskit(data interface{}) environment.Value {
 			bukkitSlice = append(bukkitSlice, jsonToBaskit(value))
 		}
 		bukkit.NativeData = bukkitSlice
-		updateSIZ(bukkit, bukkitSlice)
 		return bukkit
 	case string:
 		return environment.StringValue(v)

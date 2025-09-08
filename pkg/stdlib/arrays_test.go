@@ -45,7 +45,9 @@ func TestBUKKITConstructor(t *testing.T) {
 	// Check that SIZ variable is initialized
 	sizVar, exists := instance.Variables["SIZ"]
 	require.True(t, exists, "SIZ variable should be initialized")
-	assert.Equal(t, environment.IntegerValue(0), sizVar.Value)
+	val, err := sizVar.Get(instance)
+	assert.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(0), val)
 	assert.True(t, sizVar.IsLocked, "SIZ should be locked")
 	assert.True(t, sizVar.IsPublic, "SIZ should be public")
 }
@@ -87,7 +89,9 @@ func TestBUKKITPUSH(t *testing.T) {
 
 			// Check SIZ variable was updated
 			sizVar := instance.Variables["SIZ"]
-			assert.Equal(t, environment.IntegerValue(test.expected), sizVar.Value)
+			val, err := sizVar.Get(instance)
+			assert.NoError(t, err)
+			assert.Equal(t, environment.IntegerValue(test.expected), val)
 		})
 	}
 }
@@ -115,7 +119,9 @@ func TestBUKKITPOP(t *testing.T) {
 	// Check size updated
 	slice := instance.NativeData.(BukkitSlice)
 	assert.Equal(t, 2, len(slice))
-	assert.Equal(t, environment.IntegerValue(2), instance.Variables["SIZ"].Value)
+	val, err := instance.Variables["SIZ"].Get(instance)
+	assert.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(2), val)
 
 	// Test error case: pop from empty array
 	popFunc.NativeImpl(nil, instance, BukkitSlice{}) // Pop 2
@@ -274,7 +280,10 @@ func TestBUKKITCLEAR(t *testing.T) {
 	// Check array is empty
 	slice := instance.NativeData.(BukkitSlice)
 	assert.Equal(t, 0, len(slice))
-	assert.Equal(t, environment.IntegerValue(0), instance.Variables["SIZ"].Value)
+
+	val, err := instance.Variables["SIZ"].Get(instance)
+	assert.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(0), val)
 }
 
 func TestBUKKITREVERSE(t *testing.T) {
@@ -473,7 +482,9 @@ func TestBUKKITSLICE(t *testing.T) {
 	assert.Equal(t, environment.IntegerValue(3), newSlice[2])
 
 	// Check SIZ variable
-	assert.Equal(t, environment.IntegerValue(3), objVal.Variables["SIZ"].Value)
+	val, err := objVal.Variables["SIZ"].Get(objVal)
+	assert.NoError(t, err)
+	assert.Equal(t, environment.IntegerValue(3), val)
 
 	// Test error case: invalid bounds
 	_, err = sliceFunc.NativeImpl(nil, instance, BukkitSlice{
@@ -481,30 +492,6 @@ func TestBUKKITSLICE(t *testing.T) {
 		environment.IntegerValue(15),
 	})
 	assert.Error(t, err)
-}
-
-func TestUpdateSIZHelper(t *testing.T) {
-	// Create a mock object instance with SIZ variable
-	instance := &environment.ObjectInstance{
-		Variables: map[string]*environment.Variable{
-			"SIZ": {
-				Name:  "SIZ",
-				Type:  "INTEGR",
-				Value: environment.IntegerValue(0),
-			},
-		},
-	}
-
-	// Test updating SIZ
-	slice := BukkitSlice{
-		environment.IntegerValue(1),
-		environment.IntegerValue(2),
-		environment.IntegerValue(3),
-	}
-
-	updateSIZ(instance, slice)
-
-	assert.Equal(t, environment.IntegerValue(3), instance.Variables["SIZ"].Value)
 }
 
 // Helper function to create and initialize a BUKKIT instance

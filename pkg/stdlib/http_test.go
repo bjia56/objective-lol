@@ -42,8 +42,9 @@ func TestINTERWEBConstructor(t *testing.T) {
 	// Create instance
 	instance := &environment.ObjectInstance{
 		Class:     interwebClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(instance)
 
 	_, err = constructor.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
@@ -54,8 +55,14 @@ func TestINTERWEBConstructor(t *testing.T) {
 	timeoutVar, exists := instance.Variables["TIMEOUT"]
 	if !exists {
 		t.Error("TIMEOUT variable not set")
-	} else if timeoutVal, ok := timeoutVar.Value.(environment.IntegerValue); !ok || int(timeoutVal) != 30 {
-		t.Errorf("Expected TIMEOUT=30, got %v", timeoutVar.Value)
+	} else {
+		val, err := timeoutVar.Get(instance)
+		if err != nil {
+			t.Errorf("Failed to get TIMEOUT value: %v", err)
+		}
+		if int(val.(environment.IntegerValue)) != 30 {
+			t.Errorf("Expected TIMEOUT=30, got %v", val)
+		}
 	}
 
 	headersVar, exists := instance.Variables["HEADERS"]
@@ -92,9 +99,10 @@ func TestHTTPGETRequest(t *testing.T) {
 	}
 	instance := &environment.ObjectInstance{
 		Class:     interwebClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
-	
+	env.InitializeInstanceVariablesWithMRO(instance)
+
 	constructor := interwebClass.PublicFunctions["INTERWEB"]
 	_, err = constructor.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
@@ -156,15 +164,15 @@ func TestHTTPPOSTRequest(t *testing.T) {
 		if r.Method != "POST" {
 			t.Errorf("Expected POST request, got %s", r.Method)
 		}
-		
+
 		// Read body
 		body := make([]byte, r.ContentLength)
 		r.Body.Read(body)
-		
+
 		if string(body) != "test data" {
 			t.Errorf("Expected body 'test data', got %s", string(body))
 		}
-		
+
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte("Created"))
 	}))
@@ -184,9 +192,10 @@ func TestHTTPPOSTRequest(t *testing.T) {
 	}
 	instance := &environment.ObjectInstance{
 		Class:     interwebClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
-	
+	env.InitializeInstanceVariablesWithMRO(instance)
+
 	constructor := interwebClass.PublicFunctions["INTERWEB"]
 	_, err = constructor.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
@@ -229,12 +238,12 @@ func TestHTTPHeaders(t *testing.T) {
 		if auth != "Bearer token123" {
 			t.Errorf("Expected Authorization header 'Bearer token123', got %s", auth)
 		}
-		
+
 		contentType := r.Header.Get("Content-Type")
 		if contentType != "application/json" {
 			t.Errorf("Expected Content-Type 'application/json', got %s", contentType)
 		}
-		
+
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Headers OK"))
 	}))
@@ -254,9 +263,10 @@ func TestHTTPHeaders(t *testing.T) {
 	}
 	instance := &environment.ObjectInstance{
 		Class:     interwebClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
-	
+	env.InitializeInstanceVariablesWithMRO(instance)
+
 	constructor := interwebClass.PublicFunctions["INTERWEB"]
 	_, err = constructor.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
@@ -269,7 +279,6 @@ func TestHTTPHeaders(t *testing.T) {
 	baskitMap := headersBaskit.NativeData.(BaskitMap)
 	baskitMap["Authorization"] = environment.StringValue("Bearer token123")
 	baskitMap["Content-Type"] = environment.StringValue("application/json")
-	updateBaskitSIZ(headersBaskit, baskitMap)
 
 	// Execute GET request
 	getMethod := interwebClass.PublicFunctions["GET"]
@@ -284,9 +293,9 @@ func TestHTTPHeaders(t *testing.T) {
 func TestJSONParsing(t *testing.T) {
 	// Create test server that returns JSON
 	jsonData := map[string]interface{}{
-		"name":  "Alice",
-		"age":   30,
-		"email": "alice@example.com",
+		"name":   "Alice",
+		"age":    30,
+		"email":  "alice@example.com",
 		"active": true,
 	}
 	jsonBytes, _ := json.Marshal(jsonData)
@@ -312,9 +321,10 @@ func TestJSONParsing(t *testing.T) {
 	}
 	instance := &environment.ObjectInstance{
 		Class:     interwebClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
-	
+	env.InitializeInstanceVariablesWithMRO(instance)
+
 	constructor := interwebClass.PublicFunctions["INTERWEB"]
 	_, err = constructor.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {
@@ -381,7 +391,7 @@ func TestJSONParsing(t *testing.T) {
 
 func TestSelectiveImport(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	
+
 	// Import only INTERWEB class
 	err := RegisterHTTPInEnv(env, "INTERWEB")
 	if err != nil {
@@ -414,9 +424,10 @@ func TestErrorHandling(t *testing.T) {
 	}
 	instance := &environment.ObjectInstance{
 		Class:     interwebClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
-	
+	env.InitializeInstanceVariablesWithMRO(instance)
+
 	constructor := interwebClass.PublicFunctions["INTERWEB"]
 	_, err = constructor.NativeImpl(nil, instance, []environment.Value{})
 	if err != nil {

@@ -96,7 +96,7 @@ func TestWIREClassFunctions(t *testing.T) {
 	wireClass := socketClasses["WIRE"]
 
 	expectedFunctions := []string{
-		"WIRE", "SEND", "RECEIVE", "RECEIVE_ALL", "CLOSE",
+		"SEND", "RECEIVE", "RECEIVE_ALL", "CLOSE",
 	}
 
 	for _, funcName := range expectedFunctions {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/runtime"
+	"github.com/davecgh/go-spew/spew"
 )
 
 // ThreadData holds the native Go threading constructs for YARN objects
@@ -28,63 +29,31 @@ type MutexData struct {
 // NewYarnInstance creates a new YARN thread object instance
 func NewYarnInstance() *environment.ObjectInstance {
 	class := getThreadClasses()["YARN"]
-	return &environment.ObjectInstance{
-		Class:      class,
-		NativeData: &ThreadData{},
-		MRO:        []string{"YARN"},
-		Variables: map[string]*environment.Variable{
-			"RUNNING": {
-				Name:     "RUNNING",
-				Type:     "BOOL",
-				Value:    environment.NO,
-				IsLocked: true,
-				IsPublic: true,
-			},
-			"FINISHED": {
-				Name:     "FINISHED",
-				Type:     "BOOL",
-				Value:    environment.NO,
-				IsLocked: true,
-				IsPublic: true,
-			},
-		},
+	env := environment.NewEnvironment(nil)
+	env.DefineClass(class)
+	obj := &environment.ObjectInstance{
+		Environment: env,
+		Class:       class,
+		NativeData:  &ThreadData{},
+		Variables:   make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(obj)
+	return obj
 }
 
 // NewKnotInstance creates a new KNOT mutex object instance
 func NewKnotInstance() *environment.ObjectInstance {
 	class := getThreadClasses()["KNOT"]
-	return &environment.ObjectInstance{
-		Class:      class,
-		NativeData: &MutexData{},
-		MRO:        []string{"KNOT"},
-		Variables: map[string]*environment.Variable{
-			"LOCKED": {
-				Name:     "LOCKED",
-				Type:     "BOOL",
-				Value:    environment.NO,
-				IsLocked: true,
-				IsPublic: true,
-			},
-		},
+	env := environment.NewEnvironment(nil)
+	env.DefineClass(class)
+	obj := &environment.ObjectInstance{
+		Environment: env,
+		Class:       class,
+		NativeData:  &MutexData{},
+		Variables:   make(map[string]*environment.MemberVariable),
 	}
-}
-
-// updateYarnStatus updates the status variables of a YARN object
-func updateYarnStatus(obj *environment.ObjectInstance, threadData *ThreadData) {
-	if runningVar, exists := obj.Variables["RUNNING"]; exists {
-		runningVar.Value = environment.BoolValue(threadData.goroutineRunning)
-	}
-	if finishedVar, exists := obj.Variables["FINISHED"]; exists {
-		finishedVar.Value = environment.BoolValue(threadData.finished)
-	}
-}
-
-// updateKnotStatus updates the status variables of a KNOT object
-func updateKnotStatus(obj *environment.ObjectInstance, mutexData *MutexData) {
-	if lockedVar, exists := obj.Variables["LOCKED"]; exists {
-		lockedVar.Value = environment.BoolValue(mutexData.locked)
-	}
+	env.InitializeInstanceVariablesWithMRO(obj)
+	return obj
 }
 
 // Global THREAD class definitions - created once and reused
@@ -101,12 +70,10 @@ func getThreadClasses() map[string]*environment.Class {
 					"YARN": {
 						Name:       "YARN",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Initialize thread data
 							threadData := &ThreadData{}
-							thisObj := this.(*environment.ObjectInstance)
-							thisObj.NativeData = threadData
-							updateYarnStatus(thisObj, threadData)
+							this.NativeData = threadData
 							return environment.NOTHIN, nil
 						},
 					},
@@ -114,7 +81,7 @@ func getThreadClasses() map[string]*environment.Class {
 					"SPIN": {
 						Name:       "SPIN",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return environment.NOTHIN, runtime.Exception{Message: "SPIN method must be implemented by subclass"}
 						},
 					},
@@ -122,16 +89,8 @@ func getThreadClasses() map[string]*environment.Class {
 					"START": {
 						Name:       "START",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							if _, ok := thisObj.NativeData.(*ThreadData); !ok {
-								// Initialize thread data
-								threadData := &ThreadData{}
-								thisObj.NativeData = threadData
-								updateYarnStatus(thisObj, threadData)
-							}
-
-							if threadData, ok := thisObj.NativeData.(*ThreadData); ok {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							if threadData, ok := this.NativeData.(*ThreadData); ok {
 								if threadData.goroutineRunning {
 									return environment.NOTHIN, runtime.Exception{Message: "Thread already running"}
 								}
@@ -142,18 +101,15 @@ func getThreadClasses() map[string]*environment.Class {
 								threadData.finished = false
 								threadData.wg.Add(1)
 
-								updateYarnStatus(thisObj, threadData)
-
 								// Launch goroutine that calls the SPIN method
 								go func() {
 									defer threadData.wg.Done()
 									defer func() {
 										threadData.goroutineRunning = false
 										threadData.finished = true
-										updateYarnStatus(thisObj, threadData)
 									}()
 
-									threadData.result, threadData.err = threadData.interpreter.CallMemberFunction(thisObj, "SPIN", []environment.Value{})
+									threadData.result, threadData.err = threadData.interpreter.CallMemberFunction(this, "SPIN", []environment.Value{})
 								}()
 
 								return environment.NOTHIN, nil
@@ -165,11 +121,9 @@ func getThreadClasses() map[string]*environment.Class {
 					"JOIN": {
 						Name:       "JOIN",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							if threadData, ok := thisObj.NativeData.(*ThreadData); ok {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							if threadData, ok := this.NativeData.(*ThreadData); ok {
 								threadData.wg.Wait()
-								updateYarnStatus(thisObj, threadData)
 
 								// Return any error from the SPIN method
 								if threadData.err != nil {
@@ -181,29 +135,47 @@ func getThreadClasses() map[string]*environment.Class {
 						},
 					},
 				},
-				PublicVariables: map[string]*environment.Variable{
+				PublicVariables: map[string]*environment.MemberVariable{
 					"RUNNING": {
-						Name:     "RUNNING",
-						Type:     "BOOL",
-						Value:    environment.NO,
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "RUNNING",
+							Type:     "BOOL",
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if threadData, ok := this.NativeData.(*ThreadData); ok {
+								return environment.BoolValue(threadData.goroutineRunning), nil
+							}
+							fmt.Println(spew.Sdump(this))
+							panic("Here")
+							return environment.NOTHIN, fmt.Errorf("RUNNING: invalid thread context")
+						},
+						NativeSet: nil, // Read-only
 					},
 					"FINISHED": {
-						Name:     "FINISHED",
-						Type:     "BOOL",
-						Value:    environment.NO,
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "FINISHED",
+							Type:     "BOOL",
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if threadData, ok := this.NativeData.(*ThreadData); ok {
+								return environment.BoolValue(threadData.finished), nil
+							}
+							return environment.NOTHIN, fmt.Errorf("FINISHED: invalid thread context")
+						},
+						NativeSet: nil, // Read-only
 					},
 				},
 				QualifiedName:    "stdlib:THREAD.YARN",
 				ModulePath:       "stdlib:THREAD",
 				ParentClasses:    []string{},
 				MRO:              []string{"stdlib:THREAD.YARN"},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 			"KNOT": {
@@ -217,12 +189,10 @@ func getThreadClasses() map[string]*environment.Class {
 					"KNOT": {
 						Name:       "KNOT",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Initialize mutex data
 							mutexData := &MutexData{}
-							thisObj := this.(*environment.ObjectInstance)
-							thisObj.NativeData = mutexData
-							updateKnotStatus(thisObj, mutexData)
+							this.NativeData = mutexData
 							return environment.NOTHIN, nil
 						},
 					},
@@ -230,12 +200,10 @@ func getThreadClasses() map[string]*environment.Class {
 					"TIE": {
 						Name:       "TIE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							if mutexData, ok := thisObj.NativeData.(*MutexData); ok {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							if mutexData, ok := this.NativeData.(*MutexData); ok {
 								mutexData.mutex.Lock()
 								mutexData.locked = true
-								updateKnotStatus(thisObj, mutexData)
 								return environment.NOTHIN, nil
 							}
 							return environment.NOTHIN, fmt.Errorf("TIE: invalid mutex context")
@@ -245,33 +213,39 @@ func getThreadClasses() map[string]*environment.Class {
 					"UNTIE": {
 						Name:       "UNTIE",
 						Parameters: []environment.Parameter{},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							thisObj := this.(*environment.ObjectInstance)
-							if mutexData, ok := thisObj.NativeData.(*MutexData); ok {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							if mutexData, ok := this.NativeData.(*MutexData); ok {
 								if !mutexData.locked {
 									return environment.NOTHIN, runtime.Exception{Message: "Cannot unlock mutex that is not locked"}
 								}
 								mutexData.mutex.Unlock()
 								mutexData.locked = false
-								updateKnotStatus(thisObj, mutexData)
 								return environment.NOTHIN, nil
 							}
 							return environment.NOTHIN, fmt.Errorf("UNTIE: invalid mutex context")
 						},
 					},
 				},
-				PublicVariables: map[string]*environment.Variable{
+				PublicVariables: map[string]*environment.MemberVariable{
 					"LOCKED": {
-						Name:     "LOCKED",
-						Type:     "BOOL",
-						Value:    environment.NO,
-						IsLocked: true,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "LOCKED",
+							Type:     "BOOL",
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if mutexData, ok := this.NativeData.(*MutexData); ok {
+								return environment.BoolValue(mutexData.locked), nil
+							}
+							return environment.NOTHIN, fmt.Errorf("LOCKED: invalid mutex context")
+						},
+						NativeSet: nil, // Read-only
 					},
 				},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 		}

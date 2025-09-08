@@ -21,11 +21,11 @@ type Interpreter struct {
 	ctx               context.Context              // For cancellation and timeout support
 
 	// Interpreter-local state
-	environment       *environment.Environment  // Current environment/scope
-	currentClass      string                    // For tracking visibility context
-	currentObject     environment.GenericObject // For tracking current object instance in method calls
-	currentFile       string                    // For tracking current file being processed (for relative imports)
-	currentModulePath string                    // For tracking current module context for qualified class names
+	environment       *environment.Environment    // Current environment/scope
+	currentClass      string                      // For tracking visibility context
+	currentObject     *environment.ObjectInstance // For tracking current object instance in method calls
+	currentFile       string                      // For tracking current file being processed (for relative imports)
+	currentModulePath string                      // For tracking current module context for qualified class names
 }
 
 type StdlibInitializer func(*environment.Environment, ...string) error
@@ -467,13 +467,15 @@ func (i *Interpreter) VisitClassDeclaration(node *ast.ClassDeclarationNode) (env
 				}
 			}
 
-			variable := &environment.Variable{
-				Documentation: member.Variable.Documentation,
-				Name:          strings.ToUpper(member.Variable.Name),
-				Type:          strings.ToUpper(member.Variable.Type),
-				Value:         value,
-				IsLocked:      member.Variable.IsLocked,
-				IsPublic:      member.IsPublic, // Use visibility from member declaration
+			variable := &environment.MemberVariable{
+				Variable: environment.Variable{
+					Documentation: member.Variable.Documentation,
+					Name:          strings.ToUpper(member.Variable.Name),
+					Type:          strings.ToUpper(member.Variable.Type),
+					Value:         value,
+					IsLocked:      member.Variable.IsLocked,
+					IsPublic:      member.IsPublic, // Use visibility from member declaration
+				},
 			}
 
 			// Add to appropriate collection based on visibility and sharing
@@ -549,7 +551,7 @@ func (i *Interpreter) VisitAssignment(node *ast.AssignmentNode) (environment.Val
 			return environment.NOTHIN, err
 		}
 
-		if obj, ok := objectValue.(environment.GenericObject); ok {
+		if obj, ok := objectValue.(*environment.ObjectInstance); ok {
 			return value, obj.SetMemberVariable(strings.ToUpper(target.Member), value, i.currentClass)
 		}
 		return environment.NOTHIN, fmt.Errorf("cannot assign to member of non-object")
@@ -707,7 +709,7 @@ func (i *Interpreter) VisitFunctionCall(node *ast.FunctionCallNode) (environment
 			return environment.NOTHIN, err
 		}
 
-		if obj, ok := objectValue.(environment.GenericObject); ok {
+		if obj, ok := objectValue.(*environment.ObjectInstance); ok {
 			function, err := obj.GetMemberFunction(strings.ToUpper(funcNode.Member), i.currentClass)
 			if err != nil {
 				return environment.NOTHIN, err
@@ -789,7 +791,7 @@ func (i *Interpreter) callFunction(function *environment.Function, args []enviro
 }
 
 // callMemberFunction executes a member function
-func (i *Interpreter) callMemberFunction(function *environment.Function, obj environment.GenericObject, args []environment.Value) (environment.Value, error) {
+func (i *Interpreter) callMemberFunction(function *environment.Function, obj *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 	memberInterpreter := i.Fork().(*Interpreter)
 	memberInterpreter.currentClass = obj.GetQualifiedClassName()
 	memberInterpreter.currentObject = obj
@@ -803,7 +805,7 @@ func (i *Interpreter) VisitMemberAccess(node *ast.MemberAccessNode) (environment
 		return environment.NOTHIN, err
 	}
 
-	if obj, ok := objectValue.(environment.GenericObject); ok {
+	if obj, ok := objectValue.(*environment.ObjectInstance); ok {
 		val, err := obj.GetMemberVariable(strings.ToUpper(node.Member), i.currentClass)
 		if err != nil {
 			return environment.NOTHIN, err
@@ -960,33 +962,65 @@ func (i *Interpreter) VisitObjectInstantiation(node *ast.ObjectInstantiationNode
 		return environment.NOTHIN, err
 	}
 
-	// Look for a constructor method with the same name as the class
+	// Evaluate constructor arguments once
+	args := make([]environment.Value, len(node.ConstructorArgs))
+	for j, arg := range node.ConstructorArgs {
+		val, err := arg.Accept(i)
+		if err != nil {
+			return environment.NOTHIN, err
+		}
+		args[j] = val
+	}
+
+	// Walk MRO hierarchy and call constructors from parent to child
+	// Skip the first element (current class) since we'll handle it last
+	mro := instance.Class.MRO
+	var constructorErrors []string
+	foundAnyConstructor := false
+
+	// Call parent constructors first (in reverse MRO order, excluding the current class)
+	for idx := len(mro) - 1; idx > 0; idx-- {
+		parentClassName := mro[idx]
+		parentClass, err := i.environment.GetClass(parentClassName)
+		if err != nil {
+			return environment.NOTHIN, fmt.Errorf("failed to resolve parent class '%s' in MRO: %v", parentClassName, err)
+		}
+
+		// Try to find constructor for this parent class
+		function, err := instance.GetMemberFunction(strings.ToUpper(parentClass.Name), i.currentClass)
+		if err == nil {
+			foundAnyConstructor = true
+			// Call the parent constructor
+			// TODO: we currently only support zero-arg parent constructors
+			// We should modify the language for a super-style call with args
+			_, err = i.callMemberFunction(function, instance, []environment.Value{})
+			if err != nil {
+				constructorErrors = append(constructorErrors, fmt.Sprintf("parent constructor '%s' failed: %v", parentClass.Name, err))
+			}
+		}
+	}
+
+	// Finally, call the current class constructor
 	constructorName := strings.ToUpper(node.ClassName)
 	function, err := instance.GetMemberFunction(constructorName, i.currentClass)
-
-	// Only proceed if constructor exists
 	if err == nil {
-		// Evaluate constructor arguments
-		args := make([]environment.Value, len(node.ConstructorArgs))
-		for j, arg := range node.ConstructorArgs {
-			val, err := arg.Accept(i)
-			if err != nil {
-				return environment.NOTHIN, err
-			}
-			args[j] = val
-		}
-
-		// Call the constructor method with arguments
+		foundAnyConstructor = true
+		// Call the current class constructor
 		_, err = i.callMemberFunction(function, instance, args)
 		if err != nil {
-			return environment.NOTHIN, fmt.Errorf("constructor call failed: %v", err)
+			constructorErrors = append(constructorErrors, fmt.Sprintf("constructor '%s' failed: %v", constructorName, err))
 		}
-	} else if len(node.ConstructorArgs) > 0 {
+	} else if len(node.ConstructorArgs) > 0 && !foundAnyConstructor {
 		// Check if the error indicates a private constructor
 		if err.Error() == fmt.Sprintf("function '%s' is private", constructorName) {
 			return environment.NOTHIN, fmt.Errorf("constructor '%s' is private and cannot be accessed from outside the class", constructorName)
 		}
 		return environment.NOTHIN, fmt.Errorf("constructor '%s' not found, but %d arguments were provided (error: %v)", constructorName, len(node.ConstructorArgs), err)
+	}
+
+	// Report any constructor errors
+	if len(constructorErrors) > 0 {
+		return environment.NOTHIN, fmt.Errorf("constructor chain failed: %s", strings.Join(constructorErrors, "; "))
 	}
 
 	return instance, nil
@@ -1109,7 +1143,7 @@ func (i *Interpreter) CallFunction(function string, args []environment.Value) (e
 }
 
 // CallMemberFunction calls a member function on the given object with arguments
-func (i *Interpreter) CallMemberFunction(object environment.GenericObject, function string, args []environment.Value) (environment.Value, error) {
+func (i *Interpreter) CallMemberFunction(object *environment.ObjectInstance, function string, args []environment.Value) (environment.Value, error) {
 	fn, err := object.GetMemberFunction(strings.ToUpper(function), i.currentClass)
 	if err != nil {
 		return environment.NOTHIN, err

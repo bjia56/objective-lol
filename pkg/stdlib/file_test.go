@@ -24,8 +24,9 @@ func TestDOCUMENTConstructor(t *testing.T) {
 	// Test valid constructor
 	instance := &environment.ObjectInstance{
 		Class:     docClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(instance)
 
 	constructor := docClass.PublicFunctions["DOCUMENT"]
 	args := []environment.Value{
@@ -59,8 +60,9 @@ func TestDOCUMENTConstructor(t *testing.T) {
 	// Test invalid mode
 	instance2 := &environment.ObjectInstance{
 		Class:     docClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(instance2)
 
 	invalidArgs := []environment.Value{
 		environment.StringValue("test.txt"),
@@ -94,8 +96,9 @@ func TestDOCUMENTFileOperations(t *testing.T) {
 	// Create DOCUMENT instance
 	instance := &environment.ObjectInstance{
 		Class:     docClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(instance)
 
 	constructor := docClass.PublicFunctions["DOCUMENT"]
 	args := []environment.Value{
@@ -202,8 +205,9 @@ func TestDOCUMENTReadOperations(t *testing.T) {
 	// Create DOCUMENT instance for reading
 	instance := &environment.ObjectInstance{
 		Class:     docClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(instance)
 
 	constructor := docClass.PublicFunctions["DOCUMENT"]
 	args := []environment.Value{
@@ -313,8 +317,9 @@ func TestDOCUMENTErrorHandling(t *testing.T) {
 	// Create DOCUMENT instance
 	instance := &environment.ObjectInstance{
 		Class:     docClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(instance)
 
 	constructor := docClass.PublicFunctions["DOCUMENT"]
 	args := []environment.Value{
@@ -379,8 +384,9 @@ func TestDOCUMENTDeleteOperation(t *testing.T) {
 	// Create DOCUMENT instance
 	instance := &environment.ObjectInstance{
 		Class:     docClass,
-		Variables: make(map[string]*environment.Variable),
+		Variables: make(map[string]*environment.MemberVariable),
 	}
+	env.InitializeInstanceVariablesWithMRO(instance)
 
 	constructor := docClass.PublicFunctions["DOCUMENT"]
 	args := []environment.Value{

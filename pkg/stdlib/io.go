@@ -47,22 +47,22 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "size", Type: "INTEGR"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return environment.NOTHIN, runtime.Exception{Message: "Not implemented"}
 						},
 					},
 					"CLOSE": {
 						Name: "CLOSE",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return environment.NOTHIN, nil
 						},
 					},
 				},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
-				PublicVariables:  make(map[string]*environment.Variable),
+				PublicVariables:  make(map[string]*environment.MemberVariable),
 			},
 			"WRITER": {
 				Name:          "WRITER",
@@ -77,22 +77,22 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return environment.NOTHIN, runtime.Exception{Message: "Not implemented"}
 						},
 					},
 					"CLOSE": {
 						Name: "CLOSE",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return environment.NOTHIN, nil
 						},
 					},
 				},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
-				PublicVariables:  make(map[string]*environment.Variable),
+				PublicVariables:  make(map[string]*environment.MemberVariable),
 			},
 			"READWRITER": {
 				Name:             "READWRITER",
@@ -101,11 +101,11 @@ func getIoClasses() map[string]*environment.Class {
 				ParentClasses:    []string{},
 				MRO:              []string{"stdlib:IO.READWRITER", "stdlib:IO.READER", "stdlib:IO.WRITER"},
 				PublicFunctions:  make(map[string]*environment.Function),
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
-				PublicVariables:  make(map[string]*environment.Variable),
+				PublicVariables:  make(map[string]*environment.MemberVariable),
 			},
 			"BUFFERED_READER": {
 				Name: "BUFFERED_READER",
@@ -116,7 +116,7 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "reader", Type: "READER"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							reader := args[0]
 
 							// Validate that the argument is an object with READ and CLOSE methods
@@ -146,7 +146,7 @@ func getIoClasses() map[string]*environment.Class {
 								BufferSize: defaultBufferSize,
 								EOF:        false,
 							}
-							this.(*environment.ObjectInstance).NativeData = bufferData
+							this.NativeData = bufferData
 
 							return environment.NOTHIN, nil
 						},
@@ -157,7 +157,7 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "newSize", Type: "INTEGR"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							newSize := args[0]
 
 							newSizeVal, ok := newSize.(environment.IntegerValue)
@@ -170,8 +170,7 @@ func getIoClasses() map[string]*environment.Class {
 								return environment.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", size)
 							}
 
-							thisObj := this.(*environment.ObjectInstance)
-							if bufferData, ok := thisObj.NativeData.(*BufferedReaderData); ok {
+							if bufferData, ok := this.NativeData.(*BufferedReaderData); ok {
 								bufferData.BufferSize = size
 								// Clear the buffer when size changes
 								bufferData.Buffer = ""
@@ -179,7 +178,7 @@ func getIoClasses() map[string]*environment.Class {
 								bufferData.EOF = false
 
 								// Update SIZ variable
-								if sizVar, exists := thisObj.Variables["SIZ"]; exists {
+								if sizVar, exists := this.Variables["SIZ"]; exists {
 									sizVar.Value = environment.IntegerValue(size)
 								}
 
@@ -195,7 +194,7 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "size", Type: "INTEGR"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							size := args[0]
 
 							sizeVal, ok := size.(environment.IntegerValue)
@@ -207,7 +206,7 @@ func getIoClasses() map[string]*environment.Class {
 							if requestedSize <= 0 {
 								return environment.StringValue(""), nil
 							}
-							bufferData, ok := this.(*environment.ObjectInstance).NativeData.(*BufferedReaderData)
+							bufferData, ok := this.NativeData.(*BufferedReaderData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("READ: invalid context")
 							}
@@ -277,8 +276,8 @@ func getIoClasses() map[string]*environment.Class {
 					// CLOSE method
 					"CLOSE": {
 						Name: "CLOSE",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							bufferData, ok := this.(*environment.ObjectInstance).NativeData.(*BufferedReaderData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							bufferData, ok := this.NativeData.(*BufferedReaderData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid context")
 							}
@@ -298,22 +297,50 @@ func getIoClasses() map[string]*environment.Class {
 						},
 					},
 				},
-				PublicVariables: map[string]*environment.Variable{
+				PublicVariables: map[string]*environment.MemberVariable{
 					"SIZ": {
-						Name:     "SIZ",
-						Type:     "INTEGR",
-						Value:    environment.IntegerValue(defaultBufferSize),
-						IsLocked: false,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "SIZ",
+							Type:     "INTEGR",
+							IsLocked: false,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if bufferData, ok := this.NativeData.(*BufferedReaderData); ok {
+								return environment.IntegerValue(bufferData.BufferSize), nil
+							}
+							return environment.NOTHIN, fmt.Errorf("SIZ: invalid context")
+						},
+						NativeSet: func(this *environment.ObjectInstance, newValue environment.Value) error {
+							newSizeVal, ok := newValue.(environment.IntegerValue)
+							if !ok {
+								return fmt.Errorf("SIZ expects INTEGR, got %s", newValue.Type())
+							}
+
+							size := int(newSizeVal)
+							if size <= 0 {
+								return fmt.Errorf("SIZ: buffer size must be positive, got %d", size)
+							}
+
+							if bufferData, ok := this.NativeData.(*BufferedReaderData); ok {
+								bufferData.BufferSize = size
+								// Clear the buffer when size changes
+								bufferData.Buffer = ""
+								bufferData.Position = 0
+								bufferData.EOF = false
+								return nil
+							}
+							return fmt.Errorf("SIZ: invalid context")
+						},
 					},
 				},
 				QualifiedName:    "stdlib:IO.BUFFERED_READER",
 				ModulePath:       "stdlib:IO",
 				ParentClasses:    []string{"stdlib:IO.READER"},
 				MRO:              []string{"stdlib:IO.BUFFERED_READER", "stdlib:IO.READER"},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 			"BUFFERED_WRITER": {
@@ -329,7 +356,7 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "writer", Type: "WRITER"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							writer := args[0]
 
 							// Validate that the argument is an object with WRITE and CLOSE methods
@@ -356,7 +383,7 @@ func getIoClasses() map[string]*environment.Class {
 								Buffer:     "",
 								BufferSize: defaultBufferSize,
 							}
-							this.(*environment.ObjectInstance).NativeData = bufferData
+							this.NativeData = bufferData
 
 							return environment.NOTHIN, nil
 						},
@@ -367,7 +394,7 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "newSize", Type: "INTEGR"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							newSize := args[0]
 
 							newSizeVal, ok := newSize.(environment.IntegerValue)
@@ -380,8 +407,7 @@ func getIoClasses() map[string]*environment.Class {
 								return environment.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", size)
 							}
 
-							thisObj := this.(*environment.ObjectInstance)
-							if bufferData, ok := thisObj.NativeData.(*BufferedWriterData); ok {
+							if bufferData, ok := this.NativeData.(*BufferedWriterData); ok {
 								// Flush existing buffer before changing size
 								if len(bufferData.Buffer) > 0 {
 									_, err := interpreter.CallMemberFunction(bufferData.Writer, "WRITE", []environment.Value{environment.StringValue(bufferData.Buffer)})
@@ -394,7 +420,7 @@ func getIoClasses() map[string]*environment.Class {
 								bufferData.BufferSize = size
 
 								// Update SIZ variable
-								if sizVar, exists := thisObj.Variables["SIZ"]; exists {
+								if sizVar, exists := this.Variables["SIZ"]; exists {
 									sizVar.Value = environment.IntegerValue(size)
 								}
 
@@ -410,7 +436,7 @@ func getIoClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
 						},
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							data := args[0]
 
 							dataVal, ok := data.(environment.StringValue)
@@ -421,7 +447,7 @@ func getIoClasses() map[string]*environment.Class {
 							dataBuffer := string(dataVal)
 							originalLength := len(dataBuffer)
 
-							bufferData, ok := this.(*environment.ObjectInstance).NativeData.(*BufferedWriterData)
+							bufferData, ok := this.NativeData.(*BufferedWriterData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("WRITE: invalid context")
 							}
@@ -458,8 +484,8 @@ func getIoClasses() map[string]*environment.Class {
 					// FLUSH method
 					"FLUSH": {
 						Name: "FLUSH",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							bufferData, ok := this.(*environment.ObjectInstance).NativeData.(*BufferedWriterData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							bufferData, ok := this.NativeData.(*BufferedWriterData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("FLUSH: invalid context")
 							}
@@ -479,8 +505,8 @@ func getIoClasses() map[string]*environment.Class {
 					// CLOSE method
 					"CLOSE": {
 						Name: "CLOSE",
-						NativeImpl: func(interpreter environment.Interpreter, this environment.GenericObject, args []environment.Value) (environment.Value, error) {
-							bufferData, ok := this.(*environment.ObjectInstance).NativeData.(*BufferedWriterData)
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							bufferData, ok := this.NativeData.(*BufferedWriterData)
 							if !ok {
 								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid context")
 							}
@@ -504,18 +530,49 @@ func getIoClasses() map[string]*environment.Class {
 						},
 					},
 				},
-				PublicVariables: map[string]*environment.Variable{
+				PublicVariables: map[string]*environment.MemberVariable{
 					"SIZ": {
-						Name:     "SIZ",
-						Type:     "INTEGR",
-						Value:    environment.IntegerValue(defaultBufferSize),
-						IsLocked: false,
-						IsPublic: true,
+						Variable: environment.Variable{
+							Name:     "SIZ",
+							Type:     "INTEGR",
+							IsLocked: false,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if bufferData, ok := this.NativeData.(*BufferedWriterData); ok {
+								return environment.IntegerValue(bufferData.BufferSize), nil
+							}
+							return environment.NOTHIN, fmt.Errorf("SIZ: invalid context")
+						},
+						NativeSet: func(this *environment.ObjectInstance, newValue environment.Value) error {
+							newSizeVal, ok := newValue.(environment.IntegerValue)
+							if !ok {
+								return fmt.Errorf("SIZ expects INTEGR, got %s", newValue.Type())
+							}
+
+							size := int(newSizeVal)
+							if size <= 0 {
+								return fmt.Errorf("SIZ: buffer size must be positive, got %d", size)
+							}
+
+							if bufferData, ok := this.NativeData.(*BufferedWriterData); ok {
+								// Flush existing buffer before changing size
+								if len(bufferData.Buffer) > 0 {
+									// TODO: pass interpreter into NativeGet/Set?
+									// interpreter.CallMemberFunction(bufferData.Writer, "WRITE", []environment.Value{environment.StringValue(bufferData.Buffer)})
+									bufferData.Buffer = ""
+								}
+
+								bufferData.BufferSize = size
+								return nil
+							}
+							return fmt.Errorf("SIZ: invalid context")
+						},
 					},
 				},
-				PrivateVariables: make(map[string]*environment.Variable),
+				PrivateVariables: make(map[string]*environment.MemberVariable),
 				PrivateFunctions: make(map[string]*environment.Function),
-				SharedVariables:  make(map[string]*environment.Variable),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 		}

@@ -169,11 +169,11 @@ func TestEnvironmentClassOperations(t *testing.T) {
 		Name:             "Person",
 		ParentClasses:    []string{},
 		MRO:              []string{"Person"},
-		PublicVariables:  make(map[string]*Variable),
-		PrivateVariables: make(map[string]*Variable),
+		PublicVariables:  make(map[string]*MemberVariable),
+		PrivateVariables: make(map[string]*MemberVariable),
 		PublicFunctions:  make(map[string]*Function),
 		PrivateFunctions: make(map[string]*Function),
-		SharedVariables:  make(map[string]*Variable),
+		SharedVariables:  make(map[string]*MemberVariable),
 		SharedFunctions:  make(map[string]*Function),
 	}
 
@@ -217,21 +217,23 @@ func TestObjectInstance(t *testing.T) {
 		Name:             "TestClass",
 		ParentClasses:    []string{},
 		MRO:              []string{"TestClass"},
-		PublicVariables:  make(map[string]*Variable),
-		PrivateVariables: make(map[string]*Variable),
+		PublicVariables:  make(map[string]*MemberVariable),
+		PrivateVariables: make(map[string]*MemberVariable),
 		PublicFunctions:  make(map[string]*Function),
 		PrivateFunctions: make(map[string]*Function),
-		SharedVariables:  make(map[string]*Variable),
+		SharedVariables:  make(map[string]*MemberVariable),
 		SharedFunctions:  make(map[string]*Function),
 	}
 
 	// Add a public variable to the class
-	class.PublicVariables["name"] = &Variable{
-		Name:     "name",
-		Type:     "STRIN",
-		Value:    StringValue("test"),
-		IsLocked: false,
-		IsPublic: true,
+	class.PublicVariables["name"] = &MemberVariable{
+		Variable: Variable{
+			Name:     "name",
+			Type:     "STRING",
+			Value:    StringValue("test"),
+			IsLocked: false,
+			IsPublic: true,
+		},
 	}
 
 	// Define the class in environment
@@ -263,20 +265,22 @@ func TestObjectInstanceMemberAccess(t *testing.T) {
 		Name:             "TestClass",
 		ParentClasses:    []string{},
 		MRO:              []string{"TestClass"},
-		PublicVariables:  make(map[string]*Variable),
-		PrivateVariables: make(map[string]*Variable),
+		PublicVariables:  make(map[string]*MemberVariable),
+		PrivateVariables: make(map[string]*MemberVariable),
 		PublicFunctions:  make(map[string]*Function),
 		PrivateFunctions: make(map[string]*Function),
-		SharedVariables:  make(map[string]*Variable),
+		SharedVariables:  make(map[string]*MemberVariable),
 		SharedFunctions:  make(map[string]*Function),
 	}
 
-	class.PublicVariables["name"] = &Variable{
-		Name:     "name",
-		Type:     "STRIN",
-		Value:    StringValue("initial"),
-		IsLocked: false,
-		IsPublic: true,
+	class.PublicVariables["name"] = &MemberVariable{
+		Variable: Variable{
+			Name:     "name",
+			Type:     "STRIN",
+			Value:    StringValue("initial"),
+			IsLocked: false,
+			IsPublic: true,
+		},
 	}
 
 	err := env.DefineClass(class)
