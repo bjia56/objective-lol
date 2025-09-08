@@ -1,4 +1,6 @@
-vm/*
-!vm/.gitkeep
 *.pyc
 __pycache__/
+.toolchain/
+build/
+dist/
+*.egg-info/

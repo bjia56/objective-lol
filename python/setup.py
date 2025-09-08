@@ -1,0 +1,269 @@
+import json
+import os
+import platform
+import shutil
+import subprocess
+import sys
+import tarfile
+import zipfile
+from urllib.request import urlretrieve
+try:
+    from distutils.core import Extension
+except:
+    from setuptools import Extension
+
+import setuptools
+from setuptools.command.build_ext import build_ext
+
+
+PACKAGE_PATH="pkg/api"
+PACKAGE_NAME="objective_lol"
+
+def detect_platform():
+    """Detect platform and architecture for downloading binaries"""
+    os_name = platform.system().lower()
+    arch = platform.machine().lower()
+
+    if os_name == "linux":
+        if arch in ["x86_64", "amd64"]:
+            return "linux-x86_64"
+        elif arch in ["aarch64", "arm64"]:
+            return "linux-aarch64"
+        else:
+            return "linux-x86_64"  # Default fallback
+    elif os_name == "darwin":
+        return "darwin-universal2"
+    elif os_name == "windows":
+        if arch in ["x86_64", "amd64"]:
+            return "windows-x86_64"
+        elif arch in ["aarch64", "arm64"]:
+            return "windows-aarch64"
+        else:
+            return "windows-x86_64"  # Default fallback
+    else:
+        return "linux-x86_64"  # Default fallback
+
+
+def download_and_extract_go(toolchain_dir, detected_platform):
+    """Download and extract Go toolchain"""
+    go_version = "1.21.13"
+    go_dir = os.path.join(toolchain_dir, "go")
+
+    # Map platform to Go's naming convention
+    go_platform_map = {
+        "linux-x86_64": "linux-amd64",
+        "linux-aarch64": "linux-arm64",
+        "darwin-universal2": "darwin-amd64",
+        "windows-x86_64": "windows-amd64",
+        "windows-aarch64": "windows-arm64"
+    }
+    go_platform = go_platform_map.get(detected_platform, "linux-amd64")
+
+    # Determine archive format
+    if detected_platform.startswith("windows"):
+        archive_name = f"go{go_version}.{go_platform}.zip"
+    else:
+        archive_name = f"go{go_version}.{go_platform}.tar.gz"
+
+    download_url = f"https://go.dev/dl/{archive_name}"
+    archive_path = os.path.join(toolchain_dir, archive_name)
+
+    # Check if Go is already installed
+    go_exe = os.path.join(go_dir, "bin", "go")
+    if detected_platform.startswith("windows"):
+        go_exe += ".exe"
+
+    if os.path.exists(go_exe):
+        try:
+            result = subprocess.run([go_exe, "version"], capture_output=True, text=True)
+            if f"go{go_version}" in result.stdout:
+                print(f"Go {go_version} already installed")
+                return go_dir
+        except:
+            pass
+
+    # Create directory and download
+    os.makedirs(toolchain_dir, exist_ok=True)
+
+    if not os.path.exists(archive_path):
+        print(f"Downloading Go {go_version} for {go_platform}...")
+        urlretrieve(download_url, archive_path)
+
+    # Remove existing installation
+    if os.path.exists(go_dir):
+        shutil.rmtree(go_dir)
+
+    # Extract
+    print("Extracting Go...")
+    if detected_platform.startswith("windows"):
+        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+            zip_ref.extractall(toolchain_dir)
+    else:
+        with tarfile.open(archive_path, 'r:gz') as tar_ref:
+            tar_ref.extractall(toolchain_dir)
+
+    return go_dir
+
+
+def download_and_extract_python(toolchain_dir, detected_platform):
+    """Download and extract Python"""
+    python_version = "3.13.5"
+    build_type = "headless"
+    archive_name = f"python-{build_type}-{python_version}-{detected_platform}.zip"
+    download_url = f"https://github.com/bjia56/portable-python/releases/download/cpython-v{python_version}-build.1/{archive_name}"
+
+    python_dir = os.path.join(toolchain_dir, "python")
+    archive_path = os.path.join(toolchain_dir, archive_name)
+    extract_dir = os.path.join(python_dir, f"python-{python_version}")
+
+    # Check if already extracted
+    if os.path.exists(extract_dir):
+        print(f"Python {python_version} already installed")
+        return extract_dir
+
+    # Create directory and download
+    os.makedirs(python_dir, exist_ok=True)
+
+    if not os.path.exists(archive_path):
+        print(f"Downloading Python {python_version} for {detected_platform}...")
+        urlretrieve(download_url, archive_path)
+
+    # Extract
+    print("Extracting Python...")
+    with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+        zip_ref.extractall(python_dir)
+
+    # Handle directory naming - the archive might extract to different name
+    extracted_name = archive_name.replace(".zip", "")
+    extracted_path = os.path.join(python_dir, extracted_name)
+    if os.path.exists(extracted_path) and not os.path.exists(extract_dir):
+        os.rename(extracted_path, extract_dir)
+
+    return extract_dir
+
+
+def install_go_dependencies(go_exe, gobin_dir):
+    """Install Go dependencies (goimports and gopy)"""
+    env = os.environ.copy()
+    env["GOBIN"] = gobin_dir
+
+    print("Installing goimports...")
+    subprocess.check_call([go_exe, "install", "golang.org/x/tools/cmd/goimports@v0.17.0"], env=env)
+
+    print("Installing gopy...")
+    subprocess.check_call([go_exe, "install", "github.com/go-python/gopy@v0.4.10"], env=env)
+
+
+class CustomBuildExt(build_ext):
+    def build_extension(self, ext: Extension):
+        # Detect platform
+        detected_platform = detect_platform()
+
+        # Setup toolchain directories
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        toolchain_dir = os.path.join(script_dir, ".toolchain")
+
+        # Download and setup Go
+        go_dir = download_and_extract_go(toolchain_dir, detected_platform)
+        go_exe = os.path.join(go_dir, "bin", "go")
+        if detected_platform.startswith("windows"):
+            go_exe += ".exe"
+
+        # Download and setup Python
+        python_dir = download_and_extract_python(toolchain_dir, detected_platform)
+        if detected_platform.startswith("windows"):
+            python_exe = os.path.join(python_dir, "bin", "python.exe")
+        else:
+            python_exe = os.path.join(python_dir, "bin", "python3")
+            os.chmod(python_exe, 0o755)
+
+        # Setup GOBIN directory and install dependencies
+        gobin_dir = os.path.join(toolchain_dir, "gobin")
+        os.makedirs(gobin_dir, exist_ok=True)
+        install_go_dependencies(go_exe, gobin_dir)
+
+        # Install pybindgen for the downloaded Python
+        subprocess.check_call([python_exe, "-m", "pip", "install", "pybindgen"])
+
+        # Get Go environment
+        go_env_result = subprocess.check_output([go_exe, "env", "-json"], text=True)
+        go_env = json.loads(go_env_result)
+
+        # Setup destination directory
+        destination = os.path.join(os.path.dirname(os.path.abspath(self.get_ext_fullpath(ext.name))), PACKAGE_NAME)
+        if os.path.isdir(destination):
+            shutil.rmtree(destination)
+
+        # Setup environment variables
+        env = {
+            "PATH": f"{gobin_dir}:{go_dir}/bin:{os.environ.get('PATH', '')}",
+            **go_env,
+            "CGO_LDFLAGS_ALLOW": ".*",
+            "GOWORK": "off",
+            "CGO_ENABLED": "1",
+        }
+
+        # Platform-specific environment setup
+        if sys.platform == "win32":
+            env["SYSTEMROOT"] = os.environ.get("SYSTEMROOT", "")
+            # Use downloaded Python paths
+            python_include = os.path.join(python_dir, "include")
+            python_lib = os.path.join(python_dir, "libs")
+            env["CGO_CFLAGS"] = f"-I{python_include}"
+            env["CGO_LDFLAGS"] = f"-L{python_lib} -l:python313.lib"
+            env["GOPY_INCLUDE"] = python_include
+            env["GOPY_LIBDIR"] = python_lib
+            env["GOPY_PYLIB"] = ":python313.lib"
+        elif sys.platform == "darwin":
+            min_ver = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "10.15")
+            env["MACOSX_DEPLOYMENT_TARGET"] = min_ver
+            env["CGO_LDFLAGS"] = f"-mmacosx-version-min={min_ver}"
+            env["CGO_CFLAGS"] = f"-mmacosx-version-min={min_ver}"
+
+        # Change to the source directory
+        original_cwd = os.getcwd()
+        source_dir = os.path.join(os.path.dirname(script_dir), PACKAGE_PATH)
+        os.chdir(source_dir)
+
+        try:
+            # Run gopy build
+            gopy_exe = os.path.join(gobin_dir, "gopy")
+            if detected_platform.startswith("windows"):
+                gopy_exe += ".exe"
+
+            subprocess.check_call([
+                gopy_exe,
+                "build",
+                "-no-make",
+                "-dynamic-link=True",
+                "-symbols=False",
+                "-output", destination,
+                "--vm", python_exe,
+                "."
+            ], env=env)
+        finally:
+            for file in ["__init__.py", "olol.py"]:
+                source_file = os.path.join(script_dir, file)
+                shutil.copy(source_file, os.path.join(destination, file))
+            os.chdir(original_cwd)
+
+
+setuptools.setup(
+    name=PACKAGE_NAME,
+    version="0.1.0",
+    author="Brett Jia",
+    author_email="dev.bjia56@gmail.com",
+    description="Python bindings for Objective-LOL",
+    url="https://github.com/bjia56/objective-lol",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+    ],
+    include_package_data=True,
+    cmdclass={
+        "build_ext": CustomBuildExt,
+    },
+    ext_modules=[
+        Extension(PACKAGE_NAME, [PACKAGE_PATH]),
+    ],
+)

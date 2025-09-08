@@ -6,7 +6,7 @@ import json
 import threading
 import uuid
 
-from .vm import (
+from .api import (
     VM,
     VMCompatibilityShim,
     NewVM,

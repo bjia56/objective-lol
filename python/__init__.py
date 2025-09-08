@@ -1,1 +1,1 @@
-from .objectivelol import ObjectiveLOLVM
+from .olol import ObjectiveLOLVM
