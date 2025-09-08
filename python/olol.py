@@ -126,7 +126,7 @@ class ObjectiveLOLVM:
         self.__vm.DefineVariable(name, goValue, constant)
 
     def define_function(self, name: str, function, argc: int = None) -> None:
-        argc = argc is None and len(inspect.signature(function).parameters) or argc
+        argc = len(inspect.signature(function).parameters) if argc is None else argc
         unique_id = str(uuid.uuid4())
         defined_functions[unique_id] = (self, function)
         self.__compat.DefineFunction(unique_id, name, argc, gopy_wrapper)
@@ -286,7 +286,7 @@ class ClassBuilder:
         return self
 
     def __build_method(self, name: str, function, argc: int = None) -> ClassMethod:
-        argc = argc is None and len(inspect.signature(function).parameters) - 1 or argc
+        argc = len(inspect.signature(function).parameters) - 1 if argc is None else argc
         unique_id = str(uuid.uuid4())
 
         def wrapper(this_id, *args):
