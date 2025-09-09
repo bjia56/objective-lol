@@ -6,7 +6,8 @@ import subprocess
 import sys
 import tarfile
 import zipfile
-from urllib.request import urlretrieve
+from urllib.request import urlopen, urlretrieve
+from urllib.error import URLError
 try:
     from distutils.core import Extension
 except:
@@ -17,7 +18,78 @@ from setuptools.command.build_ext import build_ext
 
 
 PACKAGE_PATH="pkg/api"
-PACKAGE_NAME="objective_lol"
+PACKAGE_NAME="olol"
+
+
+def get_python_version():
+    """Get the current Python interpreter version"""
+    return f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+
+
+def find_matching_python_release(target_version, detected_platform):
+    """Find the best matching Python release from GitHub API with pagination support"""
+    base_api_url = "https://api.github.com/repos/bjia56/portable-python/releases"
+
+    try:
+        # Parse target version
+        target_parts = [int(x) for x in target_version.split('.')]
+
+        # Find releases that match major.minor version
+        matching_releases = []
+        page = 1
+        per_page = 100  # GitHub API max per page
+
+        while True:
+            api_url = f"{base_api_url}?per_page={per_page}&page={page}"
+
+            with urlopen(api_url) as response:
+                releases = json.loads(response.read())
+
+            # If no releases returned, we've reached the end
+            if not releases:
+                break
+
+            # Process releases on this page
+            for release in releases:
+                tag = release['tag_name']
+                if tag.startswith('cpython-v'):
+                    # Extract version and build suffix from tag (e.g., cpython-v3.13.5-build.1)
+                    tag_suffix = tag.replace('cpython-v', '')
+                    version_str = tag_suffix.split('-')[0]
+                    build_suffix = tag_suffix[len(version_str)+1:]  # Extract build.X part
+
+                    try:
+                        version_parts = [int(x) for x in version_str.split('.')]
+                        if len(version_parts) >= 3 and version_parts[0] == target_parts[0] and version_parts[1] == target_parts[1]:
+                            # Check if assets exist for our platform
+                            build_type = "headless"
+                            expected_asset = f"python-{build_type}-{version_str}-{detected_platform}.zip"
+                            if any(asset['name'] == expected_asset for asset in release['assets']):
+                                matching_releases.append((version_str, version_parts, build_suffix))
+                    except ValueError:
+                        continue
+
+            # If we found matching releases or got less than per_page results, we can stop
+            if matching_releases or len(releases) < per_page:
+                break
+
+            page += 1
+
+        if not matching_releases:
+            print(f"Warning: No matching Python {target_parts[0]}.{target_parts[1]}.x release found for {detected_platform}")
+            return None, None
+
+        # Sort by version (highest patch version first)
+        matching_releases.sort(key=lambda x: x[1], reverse=True)
+        best_match = matching_releases[0]
+        version_str, _, build_suffix = best_match
+
+        print(f"Found Python {version_str} with build suffix {build_suffix} matching interpreter version {target_version}")
+        return version_str, build_suffix
+
+    except (URLError, json.JSONDecodeError, KeyError) as e:
+        print(f"Error querying GitHub API: {e}")
+        return None, None
 
 def detect_platform():
     """Detect platform and architecture for downloading binaries"""
@@ -107,10 +179,17 @@ def download_and_extract_go(toolchain_dir, detected_platform):
 
 def download_and_extract_python(toolchain_dir, detected_platform):
     """Download and extract Python"""
-    python_version = "3.13.5"
+    # Get current Python version and find matching release
+    current_version = get_python_version()
+    python_version, build_suffix = find_matching_python_release(current_version, detected_platform)
+
+    if python_version is None:
+        raise RuntimeError(f"No compatible Python release found for version {current_version} and platform {detected_platform}")
+
+    print(f"Using Python version {python_version} with build suffix {build_suffix}")
     build_type = "headless"
     archive_name = f"python-{build_type}-{python_version}-{detected_platform}.zip"
-    download_url = f"https://github.com/bjia56/portable-python/releases/download/cpython-v{python_version}-build.1/{archive_name}"
+    download_url = f"https://github.com/bjia56/portable-python/releases/download/cpython-v{python_version}-{build_suffix}/{archive_name}"
 
     python_dir = os.path.join(toolchain_dir, "python")
     archive_path = os.path.join(toolchain_dir, archive_name)
