@@ -11,6 +11,17 @@ const (
 	GoValueIDKey = "__GoValue_id"
 )
 
+// constructedObjects keeps track of all constructed object instances
+// for ease of lookup during conversion from GoValue to ObjectInstance
+var constructedObjects = make(map[string]*environment.ObjectInstance)
+
+func LookupObject(id string) (*environment.ObjectInstance, error) {
+	if obj, ok := constructedObjects[id]; ok {
+		return obj, nil
+	}
+	return environment.LookupObject(id)
+}
+
 type GoValue struct {
 	value interface{}
 }
@@ -21,7 +32,7 @@ func (v GoValue) Get() interface{} {
 
 func (v GoValue) ID() string {
 	if obj, ok := v.value.(*environment.ObjectInstance); ok {
-		return fmt.Sprintf("%p", obj)
+		return obj.ID()
 	}
 	return ""
 }
@@ -108,6 +119,9 @@ func (v GoValue) Object() (*environment.ObjectInstance, error) {
 }
 
 func WrapAny(value interface{}) GoValue {
+	if _, ok := value.(*environment.ObjectInstance); ok {
+		return WrapObject(value.(*environment.ObjectInstance))
+	}
 	return GoValue{value: value}
 }
 
@@ -128,5 +142,7 @@ func WrapBool(value bool) GoValue {
 }
 
 func WrapObject(value *environment.ObjectInstance) GoValue {
-	return GoValue{value: value}
+	val := GoValue{value: value}
+	constructedObjects[val.ID()] = value
+	return val
 }

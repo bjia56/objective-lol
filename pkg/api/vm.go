@@ -16,9 +16,9 @@ import (
 	"github.com/bjia56/objective-lol/pkg/stdlib"
 )
 
-// constructedObjects keeps track of all constructed object instances
-// for ease of lookup during conversion from GoValue to ObjectInstance
-var constructedObjects = make(map[string]*environment.ObjectInstance)
+const (
+	ForeignModuleNamespace = "foreign:anonymous"
+)
 
 // VM represents an Objective-LOL virtual machine instance
 type VM struct {
@@ -185,7 +185,6 @@ func (vm *VM) NewObjectInstance(className string) (GoValue, error) {
 		return WrapAny(nil), wrapError(err, RuntimeErrorType, "could not convert object instance to Go value")
 	}
 
-	constructedObjects[goVal.ID()] = instance
 	return goVal, nil
 }
 
@@ -444,7 +443,7 @@ func convertClassMethod(name string, method *ClassMethod) *environment.Function 
 
 func (vm *VM) DefineClass(classDef *ClassDefinition) error {
 	// Create the Objective-LOL class
-	class := environment.NewClass(strings.ToUpper(classDef.Name), "foreign:anonymous", nil)
+	class := environment.NewClass(strings.ToUpper(classDef.Name), ForeignModuleNamespace, nil)
 
 	// Convert and add public variables
 	for name, classVar := range classDef.PublicVariables {

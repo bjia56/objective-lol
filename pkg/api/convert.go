@@ -170,8 +170,8 @@ func mapToObject(rv reflect.Value) (environment.Value, error) {
 	// Check for existing constructed object to avoid duplication
 	if val := rv.MapIndex(reflect.ValueOf(GoValueIDKey)); val.IsValid() {
 		value := val.Interface().(string)
-		instance, ok := constructedObjects[value]
-		if ok {
+		instance, err := LookupObject(value)
+		if err == nil {
 			return instance, nil
 		}
 		return nil, NewConversionError(

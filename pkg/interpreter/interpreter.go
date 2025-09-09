@@ -800,7 +800,7 @@ func (i *Interpreter) callFunction(function *environment.Function, args []enviro
 // callMemberFunction executes a member function
 func (i *Interpreter) callMemberFunction(function *environment.Function, obj *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 	memberInterpreter := i.Fork().(*Interpreter)
-	memberInterpreter.currentClass = obj.GetQualifiedClassName()
+	memberInterpreter.currentClass = obj.Class.QualifiedName
 	memberInterpreter.currentObject = obj
 	return memberInterpreter.callFunction(function, args)
 }
@@ -959,7 +959,7 @@ func (i *Interpreter) VisitIdentifier(node *ast.IdentifierNode) (environment.Val
 			return i.callMemberFunction(function, i.currentObject, []environment.Value{})
 		}
 	}
-	
+
 	// Then check local environment functions
 	if function, err := i.environment.GetFunction(name); err == nil {
 		return i.callFunction(function, []environment.Value{})

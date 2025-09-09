@@ -4,6 +4,15 @@ import (
 	"fmt"
 )
 
+var constructedObjects = make(map[string]*ObjectInstance)
+
+func LookupObject(id string) (*ObjectInstance, error) {
+	if obj, ok := constructedObjects[id]; ok {
+		return obj, nil
+	}
+	return nil, fmt.Errorf("no object found with id %s", id)
+}
+
 type Interpreter interface {
 	CallFunction(function string, args []Value) (Value, error)
 	CallMemberFunction(object *ObjectInstance, function string, args []Value) (Value, error)
@@ -203,6 +212,8 @@ func (e *Environment) NewObjectInstance(className string) (*ObjectInstance, erro
 	if err != nil {
 		return nil, err
 	}
+
+	constructedObjects[instance.ID()] = instance
 
 	return instance, nil
 }

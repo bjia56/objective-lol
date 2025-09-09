@@ -14,9 +14,8 @@ type ObjectInstance struct {
 	NativeData      any                        // For native classes, stores internal data
 }
 
-// GetQualifiedClassName returns the class name of the object instance
-func (obj *ObjectInstance) GetQualifiedClassName() string {
-	return obj.Class.QualifiedName
+func (obj *ObjectInstance) ID() string {
+	return fmt.Sprintf("%p", obj)
 }
 
 // getMemberVariable retrieves a member variable from the object instance

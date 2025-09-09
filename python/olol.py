@@ -22,23 +22,23 @@ from .api import (
     ClassVariable,
     ClassMethod,
     NewClassDefinition,
-    GoValueIDKey
+    GoValueIDKey,
+    ForeignModuleNamespace,
 )
 
 
 defined_functions = {}
+defined_classes = {}
 object_instances = {}
 
 
 def serialize_go_value(vm: VM, go_value: GoValue):
     if isinstance(go_value, GoValue):
-        converted = convert_from_go_value(go_value)
-        if isinstance(converted, GoValue):
-            if converted.Type() == "NOTHIN":
-                return None
-            return {GoValueIDKey: converted.ID()}
-        else:
-            return converted
+        if go_value.ID() != "":
+            return {GoValueIDKey: go_value.ID()}
+
+        converted = convert_from_go_value(vm, go_value)
+        return converted
     else:
         return go_value
 
@@ -82,6 +82,8 @@ def convert_to_go_value(vm: 'ObjectiveLOLVM', value):
         for k, v in value.items():
             map[k] = convert_to_go_value(vm, v)
         return map
+    elif isinstance(type(value), ProxyMeta):
+        return value._go_value
     else:
         vm.define_class(type(value))
         instance = vm._ObjectiveLOLVM__vm.NewObjectInstance(type(value).__name__)
@@ -89,7 +91,7 @@ def convert_to_go_value(vm: 'ObjectiveLOLVM', value):
         return instance
 
 
-def convert_from_go_value(go_value: GoValue):
+def convert_from_go_value(vm: 'ObjectiveLOLVM', go_value: GoValue):
     if not isinstance(go_value, GoValue):
         return go_value
     typ = go_value.Type()
@@ -101,13 +103,114 @@ def convert_from_go_value(go_value: GoValue):
         return go_value.String()
     elif typ == "BOOL":
         return go_value.Bool()
+    elif typ == "NOTHIN":
+        return None
     elif typ == "BUKKIT":
-        return [convert_from_go_value(v) for v in go_value.Slice()]
+        return [convert_from_go_value(vm, v) for v in go_value.Slice()]
     elif typ == "BASKIT":
-        return {k: convert_from_go_value(v) for k, v in go_value.Map().items()}
+        return {k: convert_from_go_value(vm, v) for k, v in go_value.Map().items()}
     else:
         # object handle
-        return go_value
+        if go_value.ID() in object_instances:
+            return object_instances[go_value.ID()]
+
+        proxy_class = create_proxy_class([object], vm, go_value)
+        instance = proxy_class()
+        object_instances[go_value.ID()] = instance
+        return instance
+
+
+def convert_to_simple_mro(mro: list[str]) -> list[str]:
+        simple_mro = []
+        for cls_name in mro:
+            if cls_name.startswith(ForeignModuleNamespace):
+                simple_mro.append(cls_name[len(ForeignModuleNamespace)+1:])
+        return simple_mro
+
+
+class ProxyMeta(type):
+    def __new__(mcs, name, bases, attrs, vm: 'ObjectiveLOLVM' = None, go_value: GoValue = None):
+        cls = super().__new__(mcs, name, bases, attrs)
+        cls._vm = vm
+        cls._go_value = go_value
+        return cls
+
+    def __call__(cls, *args, **kwargs):
+        instance = super().__call__(*args, **kwargs)
+
+        if hasattr(cls, '_vm') and hasattr(cls, '_go_value'):
+            instance._go_value = cls._go_value
+            instance._vm = cls._vm
+
+        return instance
+
+
+def create_proxy_class(mro: list[type], vm: 'ObjectiveLOLVM', obj: str | GoValue) -> type:
+    if isinstance(obj, str):
+        instance_immediate_functions = vm._ObjectiveLOLVM__compat.GetObjectImmediateFunctions(obj)
+        go_value = vm._ObjectiveLOLVM__compat.LookupObject(obj)
+    elif isinstance(obj, GoValue):
+        instance_immediate_functions = vm._ObjectiveLOLVM__compat.GetObjectImmediateFunctions(obj.ID())
+        go_value = obj
+    else:
+        raise TypeError("obj must be a string or GoValue")
+
+    class Proxy(*mro, metaclass=ProxyMeta, vm=vm, go_value=go_value):
+        def __getattr__(self, name):
+            # Check if this method should be proxied to the VM
+            if name in instance_immediate_functions:
+                # This method belongs to the immediate class, proxy to VM
+                return self._create_proxy_method(name)
+
+            # Look through MRO to find the first class that defines this method
+            for cls in mro:
+                if hasattr(cls, name):
+                    method = getattr(cls, name)
+                    if callable(method):
+                        # Found the method in a superclass, call it directly
+                        if inspect.iscoroutinefunction(method):
+                            return self._create_async_wrapper(method)
+                        else:
+                            return self._create_sync_wrapper(method)
+                    else:
+                        # It's an attribute, not a method
+                        return method
+
+            # Method not found in MRO, assume it is a sync proxy method
+            def sync_proxy_method(*args, **kwargs):
+                return vm.call_method(self._go_value, name, *args)
+            return sync_proxy_method
+
+        def _create_proxy_method(self, method_name):
+            # Determine if the VM method is async by checking if any class in MRO has an async version
+            is_async = False
+            for cls in mro:
+                if hasattr(cls, method_name):
+                    method = getattr(cls, method_name)
+                    if inspect.iscoroutinefunction(method):
+                        is_async = True
+                        break
+
+            if is_async:
+                async def async_proxy_method(*args, **kwargs):
+                    return await vm.call_method_async(self._go_value, method_name, *args)
+                return async_proxy_method
+            else:
+                def sync_proxy_method(*args, **kwargs):
+                    return vm.call_method(self._go_value, method_name, *args)
+                return sync_proxy_method
+
+        def _create_async_wrapper(self, method):
+            async def async_wrapper(*args, **kwargs):
+                return await method(self, *args, **kwargs)
+            return async_wrapper
+
+        def _create_sync_wrapper(self, method):
+            def sync_wrapper(*args, **kwargs):
+                return method(self, *args, **kwargs)
+            return sync_wrapper
+
+    return Proxy
 
 
 class ObjectiveLOLVM:
@@ -179,10 +282,12 @@ class ObjectiveLOLVM:
         class_def = builder.get()
         self.__vm.DefineClass(class_def)
 
+        defined_classes[class_name.upper()] = python_class
+
     def call(self, name: str, *args):
         goArgs = convert_to_go_value(self, args)
         result = self.__vm.Call(name, goArgs)
-        return convert_from_go_value(result)
+        return convert_from_go_value(self, result)
 
     async def call_async(self, name: str, *args):
         goArgs = convert_to_go_value(self, args)
@@ -190,7 +295,7 @@ class ObjectiveLOLVM:
         def do():
             try:
                 result = self.__vm.Call(name, goArgs)
-                fut.set_result(convert_from_go_value(result))
+                fut.set_result(convert_from_go_value(self, result))
             except Exception as e:
                 fut.set_exception(e)
         threading.Thread(target=do).start()
@@ -199,7 +304,7 @@ class ObjectiveLOLVM:
     def call_method(self, receiver: GoValue, name: str, *args):
         goArgs = convert_to_go_value(self, args)
         result = self.__vm.CallMethod(receiver, name, goArgs)
-        return convert_from_go_value(result)
+        return convert_from_go_value(self, result)
 
     async def call_method_async(self, receiver: GoValue, name: str, *args):
         goArgs = convert_to_go_value(self, args)
@@ -207,7 +312,7 @@ class ObjectiveLOLVM:
         def do():
             try:
                 result = self.__vm.CallMethod(receiver, name, goArgs)
-                fut.set_result(convert_from_go_value(result))
+                fut.set_result(convert_from_go_value(self, result))
             except Exception as e:
                 fut.set_exception(e)
         threading.Thread(target=do).start()
@@ -264,7 +369,7 @@ class ClassBuilder:
             unique_id = str(uuid.uuid4())
 
             def wrapper(this_id, value):
-                setter(object_instances[this_id], convert_from_go_value(value))
+                setter(object_instances[this_id], convert_from_go_value(self.__vm, value))
 
             defined_functions[unique_id] = (self.__vm, wrapper)
             self.__compat.BuildNewClassVariableWithSetter(class_variable, unique_id, gopy_wrapper)
@@ -300,7 +405,7 @@ class ClassBuilder:
         self.__compat.BuildNewClassMethod(class_method, unique_id, gopy_wrapper)
         return class_method
 
-    def add_constructor(self, typ) -> 'ClassBuilder':
+    def add_constructor(self, typ: type) -> 'ClassBuilder':
         # get init function
         init_function = typ.__init__
         argc = len(inspect.signature(init_function).parameters) - 1
@@ -313,7 +418,14 @@ class ClassBuilder:
         unique_id = str(uuid.uuid4())
 
         def ctor_wrapper(this_id, *args):
-            instance = typ(*args)
+            mro = self.__compat.GetObjectMRO(this_id)
+            simple_mro = convert_to_simple_mro(mro)
+
+            instance_class = typ
+            if len(mro) > 1:
+                instance_class = create_proxy_class([defined_classes[cls_name.upper()] for cls_name in simple_mro if cls_name.upper() in defined_classes], self.__vm, this_id)
+
+            instance = instance_class(*args)
             object_instances[this_id] = instance
 
         defined_functions[unique_id] = (self.__vm, ctor_wrapper)

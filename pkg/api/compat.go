@@ -152,3 +152,34 @@ func (shim *VMCompatibilityShim) IsClassDefined(name string) bool {
 	cls, err := shim.vm.interpreter.GetEnvironment().GetClass(strings.ToUpper(name))
 	return err == nil && cls != nil
 }
+
+func (shim *VMCompatibilityShim) LookupObject(id string) (GoValue, error) {
+	if obj, err := LookupObject(id); err == nil {
+		return WrapObject(obj), nil
+	}
+	return WrapAny(nil), fmt.Errorf("error in LookupObject: no object found with id %s", id)
+}
+
+func (shim *VMCompatibilityShim) GetObjectMRO(id string) ([]string, error) {
+	if obj, err := LookupObject(id); err == nil {
+		return obj.Class.MRO, nil
+	}
+	return nil, fmt.Errorf("error in GetObjectMRO: no object found with id %s", id)
+}
+
+func (shim *VMCompatibilityShim) GetObjectImmediateFunctions(id string) ([]string, error) {
+	if obj, err := LookupObject(id); err == nil {
+		funcs := []string{}
+		for fname := range obj.Class.PublicFunctions {
+			funcs = append(funcs, fname)
+		}
+		for fname := range obj.Class.PrivateFunctions {
+			funcs = append(funcs, fname)
+		}
+		for fname := range obj.Class.SharedFunctions {
+			funcs = append(funcs, fname)
+		}
+		return funcs, nil
+	}
+	return nil, fmt.Errorf("error in GetObjectImmediateFunctions: no object found with id %s", id)
+}
