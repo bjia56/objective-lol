@@ -144,11 +144,11 @@ func TestDOCUMENTFileOperations(t *testing.T) {
 		t.Errorf("FLUSH failed: %v", err)
 	}
 
-	// Test SIZE
-	sizeFunc := docClass.PublicFunctions["SIZE"]
-	sizeResult, err := sizeFunc.NativeImpl(nil, instance, []environment.Value{})
+	// Test SIZ property
+	sizeMember := docClass.PublicVariables["SIZ"]
+	sizeResult, err := sizeMember.NativeGet(instance)
 	if err != nil {
-		t.Errorf("SIZE failed: %v", err)
+		t.Errorf("SIZ property failed: %v", err)
 	}
 
 	if size, ok := sizeResult.(environment.IntegerValue); ok {
@@ -156,7 +156,7 @@ func TestDOCUMENTFileOperations(t *testing.T) {
 			t.Errorf("Expected size %d, got %d", len(testData), int(size))
 		}
 	} else {
-		t.Error("SIZE should return integer")
+		t.Error("SIZ property should return integer")
 	}
 
 	// Test CLOSE

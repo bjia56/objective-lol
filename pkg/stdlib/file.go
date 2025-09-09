@@ -239,24 +239,6 @@ func getFileClasses() map[string]*environment.Class {
 							return environment.IntegerValue(int(pos)), nil
 						},
 					},
-					// SIZE method
-					"SIZE": {
-						Name:       "SIZE",
-						ReturnType: "INTEGR",
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							docData, ok := this.NativeData.(*DocumentData)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("SIZE: invalid context")
-							}
-
-							stat, err := os.Stat(docData.FilePath)
-							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to get file size: %v", err)}
-							}
-
-							return environment.IntegerValue(int(stat.Size())), nil
-						},
-					},
 					// EXISTS method
 					"EXISTS": {
 						Name:       "EXISTS",
@@ -390,6 +372,24 @@ func getFileClasses() map[string]*environment.Class {
 								return environment.NO, nil
 							}
 							return environment.NO, fmt.Errorf("invalid context for IS_OPEN")
+						},
+					},
+					"SIZ": {
+						Variable: environment.Variable{
+							Name:     "SIZ",
+							Type:     "INTEGR",
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if data, ok := this.NativeData.(*DocumentData); ok {
+								stat, err := os.Stat(data.FilePath)
+								if err != nil {
+									return environment.IntegerValue(0), fmt.Errorf("failed to get file size: %v", err)
+								}
+								return environment.IntegerValue(int(stat.Size())), nil
+							}
+							return environment.IntegerValue(0), fmt.Errorf("invalid context for SIZ")
 						},
 					},
 				},

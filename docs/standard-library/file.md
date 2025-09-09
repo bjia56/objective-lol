@@ -42,6 +42,7 @@ I HAS A VARIABLE DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT <path> AN WIT <mode>
 - **PATH**: STRIN (read-only) - The file path
 - **MODE**: STRIN (read-only) - The access mode
 - **IS_OPEN**: BOOL - True if file is currently open
+- **SIZ**: INTEGR (read-only) - File size in bytes
 
 ### Methods
 
@@ -134,15 +135,6 @@ I HAS A VARIABLE POSITION TEH INTEGR ITZ document DO TELL
 
 #### File Information
 
-##### SIZE - Get File Size
-
-Gets the total size of the file in bytes.
-
-```lol
-I HAS A VARIABLE FILE_SIZE TEH INTEGR ITZ document DO SIZE
-```
-
-**Returns:** INTEGR - File size in bytes
 
 ##### EXISTS - Check File Existence
 
@@ -189,7 +181,7 @@ HAI ME TEH FUNCSHUN READ_TEXT_FILE WIT FILENAME TEH STRIN
         DOC DO OPEN
 
         BTW Get file size
-        I HAS A VARIABLE SIZE TEH INTEGR ITZ DOC DO SIZE
+        I HAS A VARIABLE SIZE TEH INTEGR ITZ DOC SIZ
         SAY WIT "File size: "
         SAYZ WIT SIZE
 
@@ -414,7 +406,7 @@ HAI ME TEH FUNCSHUN DEMO_FILE_MANAGEMENT
     SAY WIT "File exists after creation: "
     SAYZ WIT EXISTS_AFTER
 
-    I HAS A VARIABLE SIZE TEH INTEGR ITZ DOC DO SIZE
+    I HAS A VARIABLE SIZE TEH INTEGR ITZ DOC SIZ
     SAY WIT "File size: "
     SAYZ WIT SIZE
 
@@ -584,7 +576,7 @@ HAI ME TEH FUNCSHUN ANALYZE_LOG_FILE WIT LOG_FILE TEH STRIN
         I HAS A VARIABLE WARNING_COUNT TEH INTEGR ITZ 0
 
         BTW Read file content
-        I HAS A VARIABLE SIZE TEH INTEGR ITZ DOC DO SIZE
+        I HAS A VARIABLE SIZE TEH INTEGR ITZ DOC SIZ
         I HAS A VARIABLE CONTENT TEH STRIN ITZ DOC DO READ WIT SIZE
 
         BTW Simple analysis (would need string processing functions)
@@ -642,7 +634,7 @@ HAI ME TEH FUNCSHUN READ_CONFIG_FILE WIT CONFIG_FILE TEH STRIN
     IZ DOC DO EXISTS?
         DOC DO OPEN
 
-        I HAS A VARIABLE SIZE TEH INTEGR ITZ DOC DO SIZE
+        I HAS A VARIABLE SIZE TEH INTEGR ITZ DOC SIZ
         I HAS A VARIABLE CONFIG_CONTENT TEH STRIN ITZ DOC DO READ WIT SIZE
 
         SAYZ WIT "Configuration file contents:"
@@ -704,7 +696,6 @@ KTHXBAI
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `SIZE` | INTEGR | Get file size in bytes |
 | `EXISTS` | BOOL | Check if file exists |
 
 ### File Management
@@ -720,6 +711,7 @@ KTHXBAI
 | `PATH` | STRIN | File path (read-only) |
 | `MODE` | STRIN | Access mode (read-only) |
 | `IS_OPEN` | BOOL | True if file is open |
+| `SIZ` | INTEGR | File size in bytes (read-only) |
 
 ## Related
 
