@@ -1,0 +1,138 @@
+BTW Test file for CACHE module - MEMSTASH and TIMESTASH classes
+BTW Tests LRU cache, TTL cache, and basic cache operations
+
+I CAN HAS CACHE?
+I CAN HAS SAYZ FROM STDIO?
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "Testing CACHE module..."
+    
+    BTW Test 1: MEMSTASH basic operations
+    SAYZ WIT "Test 1: MEMSTASH basic operations"
+    I HAS A VARIABLE LRU_CACHE TEH MEMSTASH ITZ NEW MEMSTASH WIT 3
+    
+    BTW Initial size should be 0
+    SAYZ WIT LRU_CACHE SIZ
+    
+    BTW Add some items
+    LRU_CACHE DO PUT WIT "key1" AN WIT "value1"
+    LRU_CACHE DO PUT WIT "key2" AN WIT "value2"
+    LRU_CACHE DO PUT WIT "key3" AN WIT "value3"
+    
+    BTW Size should now be 3
+    SAYZ WIT LRU_CACHE SIZ
+    
+    BTW Test retrieval
+    SAYZ WIT LRU_CACHE DO GET WIT "key1"
+    SAYZ WIT LRU_CACHE DO GET WIT "key2"
+    SAYZ WIT LRU_CACHE DO GET WIT "key3"
+    
+    BTW Test contains
+    SAYZ WIT LRU_CACHE DO CONTAINS WIT "key1"
+    SAYZ WIT LRU_CACHE DO CONTAINS WIT "nonexistent"
+    
+    BTW Test 2: MEMSTASH LRU eviction
+    SAYZ WIT "Test 2: MEMSTASH LRU eviction"
+    
+    BTW Access key1 to make it most recently used
+    I HAS A VARIABLE TEMP TEH STRIN ITZ LRU_CACHE DO GET WIT "key1"
+    
+    BTW Add 4th item - should evict key2 (oldest unused)
+    LRU_CACHE DO PUT WIT "key4" AN WIT "value4"
+    
+    BTW Size should still be 3
+    SAYZ WIT LRU_CACHE SIZ
+    
+    BTW key1 should still exist (was accessed recently)
+    SAYZ WIT LRU_CACHE DO CONTAINS WIT "key1"
+    
+    BTW key2 should be evicted
+    SAYZ WIT LRU_CACHE DO CONTAINS WIT "key2"
+    
+    BTW key3 and key4 should exist
+    SAYZ WIT LRU_CACHE DO CONTAINS WIT "key3"
+    SAYZ WIT LRU_CACHE DO CONTAINS WIT "key4"
+    
+    BTW Test 3: MEMSTASH delete and clear
+    SAYZ WIT "Test 3: MEMSTASH delete and clear"
+    
+    BTW Delete a key
+    SAYZ WIT LRU_CACHE DO DELETE WIT "key1"
+    SAYZ WIT LRU_CACHE SIZ
+    SAYZ WIT LRU_CACHE DO CONTAINS WIT "key1"
+    
+    BTW Try to delete non-existent key
+    SAYZ WIT LRU_CACHE DO DELETE WIT "nonexistent"
+    
+    BTW Clear all
+    LRU_CACHE DO CLEAR
+    SAYZ WIT LRU_CACHE SIZ
+    
+    BTW Test 4: TIMESTASH basic operations
+    SAYZ WIT "Test 4: TIMESTASH basic operations"
+    I HAS A VARIABLE TTL_CACHE TEH TIMESTASH ITZ NEW TIMESTASH WIT 60
+    
+    BTW Initial size should be 0
+    SAYZ WIT TTL_CACHE SIZ
+    
+    BTW Add items
+    TTL_CACHE DO PUT WIT "temp1" AN WIT "data1"
+    TTL_CACHE DO PUT WIT "temp2" AN WIT "data2"
+    
+    BTW Size should be 2
+    SAYZ WIT TTL_CACHE SIZ
+    
+    BTW Test retrieval
+    SAYZ WIT TTL_CACHE DO GET WIT "temp1"
+    SAYZ WIT TTL_CACHE DO GET WIT "temp2"
+    
+    BTW Test contains
+    SAYZ WIT TTL_CACHE DO CONTAINS WIT "temp1"
+    SAYZ WIT TTL_CACHE DO CONTAINS WIT "nonexistent"
+    
+    BTW Test 5: TIMESTASH delete and clear
+    SAYZ WIT "Test 5: TIMESTASH delete and clear"
+    
+    BTW Delete a key
+    SAYZ WIT TTL_CACHE DO DELETE WIT "temp1"
+    SAYZ WIT TTL_CACHE SIZ
+    SAYZ WIT TTL_CACHE DO CONTAINS WIT "temp1"
+    
+    BTW Clear all
+    TTL_CACHE DO CLEAR
+    SAYZ WIT TTL_CACHE SIZ
+    
+    BTW Test 6: Mixed operations
+    SAYZ WIT "Test 6: Mixed operations"
+    
+    BTW Create new caches for mixed test
+    I HAS A VARIABLE CACHE1 TEH MEMSTASH ITZ NEW MEMSTASH WIT 2
+    I HAS A VARIABLE CACHE2 TEH TIMESTASH ITZ NEW TIMESTASH WIT 30
+    
+    BTW Add data to both
+    CACHE1 DO PUT WIT "shared" AN WIT "lru_value"
+    CACHE2 DO PUT WIT "shared" AN WIT "ttl_value"
+    
+    BTW Different values for same key
+    SAYZ WIT CACHE1 DO GET WIT "shared"
+    SAYZ WIT CACHE2 DO GET WIT "shared"
+    
+    BTW Test 7: Edge cases
+    SAYZ WIT "Test 7: Edge cases"
+    
+    BTW Get non-existent key should return NOTHIN
+    I HAS A VARIABLE MISSING TEH STRIN ITZ CACHE1 DO GET WIT "missing"
+    IZ MISSING SAEM AS NOTHIN?
+        SAYZ WIT "GET missing key returns NOTHIN: YEZ"
+    NOPE
+        SAYZ WIT "GET missing key returns NOTHIN: NO"
+    KTHX
+    
+    BTW Update existing key
+    CACHE1 DO PUT WIT "update_test" AN WIT "original"
+    SAYZ WIT CACHE1 DO GET WIT "update_test"
+    CACHE1 DO PUT WIT "update_test" AN WIT "updated"
+    SAYZ WIT CACHE1 DO GET WIT "update_test"
+    
+    SAYZ WIT "CACHE module tests completed!"
+KTHXBAI

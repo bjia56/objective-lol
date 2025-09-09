@@ -152,6 +152,7 @@ SAYZ WIT MAP DO GET WIT "name"    BTW Alice
 - `IO`
 - `THREAD`
 - `FILE`
+- `CACHE`
 - `HTTP`
 - `SOCKET`
 - `PROCESS`

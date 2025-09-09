@@ -38,6 +38,7 @@ Welcome to the comprehensive documentation for Objective-LOL, a programming lang
 - [**IO**](standard-library/io.md) - Advanced I/O classes (buffered readers/writers)
 - [**THREAD**](standard-library/threading.md) - Concurrency
 - [**FILE**](standard-library/file.md) - File system operations
+- [**CACHE**](standard-library/cache.md) - Caching classes
 - [**HTTP**](standard-library/http.md) - HTTP client operations
 - [**PROCESS**](standard-library/process.md) - Process management operations
 
