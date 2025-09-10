@@ -122,14 +122,22 @@ def download_and_extract_go(toolchain_dir, detected_platform):
     go_dir = os.path.join(toolchain_dir, "go")
 
     # Map platform to Go's naming convention
-    go_platform_map = {
-        "linux-x86_64": "linux-amd64",
-        "linux-aarch64": "linux-arm64",
-        "darwin-universal2": "darwin-amd64",
-        "windows-x86_64": "windows-amd64",
-        "windows-aarch64": "windows-arm64"
-    }
-    go_platform = go_platform_map.get(detected_platform, "linux-amd64")
+    # For macOS, detect the actual architecture since Go doesn't have universal binaries
+    if detected_platform == "darwin-universal2":
+        # Detect actual architecture on macOS
+        arch = platform.machine().lower()
+        if arch in ["aarch64", "arm64"]:
+            go_platform = "darwin-arm64"
+        else:
+            go_platform = "darwin-amd64"
+    else:
+        go_platform_map = {
+            "linux-x86_64": "linux-amd64",
+            "linux-aarch64": "linux-arm64",
+            "windows-x86_64": "windows-amd64",
+            "windows-aarch64": "windows-arm64"
+        }
+        go_platform = go_platform_map.get(detected_platform, "linux-amd64")
 
     # Determine archive format
     if detected_platform.startswith("windows"):
@@ -329,7 +337,7 @@ class CustomBuildExt(build_ext):
 
 setuptools.setup(
     name=PACKAGE_NAME,
-    version="0.1.0",
+    version="0.0.1",
     author="Brett Jia",
     author_email="dev.bjia56@gmail.com",
     description="Python bindings for Objective-LOL",

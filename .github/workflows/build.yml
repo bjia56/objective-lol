@@ -106,6 +106,32 @@ jobs:
         name: vscode-extension
         path: vscode-extension/*.vsix
 
+  build-python-wheels:
+    name: Build Python Wheels
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-24.04-arm, ubuntu-latest, windows-latest, macos-13, macos-14]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v2.20.0
+      env:
+        CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-*
+        CIBW_SKIP: "*-musllinux*"
+        CIBW_BUILD_VERBOSITY: 1
+        CIBW_PROJECT_REQUIRES_PYTHON: ">=3.9"
+      with:
+        package-dir: python
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v4
+      with:
+        name: wheels-${{ matrix.os }}
+        path: wheelhouse/*.whl
+
   test:
     name: Run Tests
     runs-on: ubuntu-latest
