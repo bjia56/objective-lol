@@ -732,35 +732,58 @@ func (i *Interpreter) VisitFunctionCall(node *ast.FunctionCallNode) (environment
 
 // callFunction executes a function with the given arguments
 func (i *Interpreter) callFunction(function *environment.Function, args []environment.Value) (environment.Value, error) {
-	// Check argument count
-	if len(args) != len(function.Parameters) {
+	// Check argument count for non-varargs functions
+	if !function.IsVarargs && len(args) != len(function.Parameters) {
 		return environment.NOTHIN, fmt.Errorf("function '%s' expects %d arguments, got %d",
 			function.Name, len(function.Parameters), len(args))
 	}
 
 	// Handle native functions
 	if function.NativeImpl != nil {
-		argsCasted := make([]environment.Value, len(args))
-		for i, arg := range args {
-			casted, err := arg.Cast(function.Parameters[i].Type)
-			if err != nil {
-				return environment.NOTHIN, fmt.Errorf("cannot cast function argument %s to %s: %v",
-					function.Parameters[i].Name, function.Parameters[i].Type, err)
+		if function.IsVarargs {
+			// For varargs native functions, pass arguments as-is without casting
+			return function.NativeImpl(i, i.currentObject, args)
+		} else {
+			// Regular native function with parameter casting
+			argsCasted := make([]environment.Value, len(args))
+			for i, arg := range args {
+				casted, err := arg.Cast(function.Parameters[i].Type)
+				if err != nil {
+					return environment.NOTHIN, fmt.Errorf("cannot cast function argument %s to %s: %v",
+						function.Parameters[i].Name, function.Parameters[i].Type, err)
+				}
+				argsCasted[i] = casted
 			}
-			argsCasted[i] = casted
-		}
 
-		return function.NativeImpl(i, i.currentObject, argsCasted)
+			return function.NativeImpl(i, i.currentObject, argsCasted)
+		}
 	}
 
 	// Create new environment for function execution
 	funcEnv := environment.NewEnvironment(i.environment)
 
 	// Bind parameters
-	for j, param := range function.Parameters {
-		err := funcEnv.DefineVariable(param.Name, param.Type, args[j], false, nil)
+	if function.IsVarargs {
+		// For varargs functions, bind argc and arg0, arg1, etc.
+		err := funcEnv.DefineVariable("argc", "INTEGR", environment.IntegerValue(int64(len(args))), false, nil)
 		if err != nil {
 			return environment.NOTHIN, err
+		}
+
+		for j, arg := range args {
+			argName := fmt.Sprintf("arg%d", j)
+			err := funcEnv.DefineVariable(argName, "", arg, false, nil)
+			if err != nil {
+				return environment.NOTHIN, err
+			}
+		}
+	} else {
+		// Regular parameter binding for non-varargs functions
+		for j, param := range function.Parameters {
+			err := funcEnv.DefineVariable(param.Name, param.Type, args[j], false, nil)
+			if err != nil {
+				return environment.NOTHIN, err
+			}
 		}
 	}
 

@@ -355,7 +355,6 @@ func TestMathCOS(t *testing.T) {
 	}
 }
 
-
 func TestMathErrorHandling(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 	RegisterMATHInEnv(env)

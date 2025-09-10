@@ -190,7 +190,7 @@ func TestRANDOMCHOICE(t *testing.T) {
 	// Result should be one of the values in the array
 	strResult, ok := result.(environment.StringValue)
 	require.True(t, ok, "RANDOM_CHOICE should return a string from the array")
-	
+
 	found := false
 	for _, val := range testValues {
 		if strVal, ok := val.(environment.StringValue); ok && strVal == strResult {
@@ -273,10 +273,10 @@ func TestUUID(t *testing.T) {
 		require.True(t, ok, "UUID should return StringValue")
 
 		uuid := string(uuidResult)
-		
+
 		// Check UUID format (8-4-4-4-12 hexadecimal digits)
 		assert.Regexp(t, `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`, uuid)
-		
+
 		// UUIDs should be unique
 		assert.False(t, uuids[uuid], "UUIDs should be unique")
 		uuids[uuid] = true

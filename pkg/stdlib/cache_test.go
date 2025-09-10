@@ -193,7 +193,7 @@ func TestMemStashClear(t *testing.T) {
 
 	// Create and populate cache
 	constructor.NativeImpl(nil, instance, []environment.Value{environment.IntegerValue(5)})
-	
+
 	putFunc := memStashClass.PublicFunctions["PUT"]
 	putFunc.NativeImpl(nil, instance, []environment.Value{
 		environment.StringValue("key1"), environment.StringValue("value1"),
@@ -382,7 +382,7 @@ func TestTimeStashClear(t *testing.T) {
 
 	// Create and populate cache
 	constructor.NativeImpl(nil, instance, []environment.Value{environment.IntegerValue(60)})
-	
+
 	putFunc := timeStashClass.PublicFunctions["PUT"]
 	putFunc.NativeImpl(nil, instance, []environment.Value{
 		environment.StringValue("key1"), environment.StringValue("value1"),
@@ -420,7 +420,7 @@ func TestTimeStashClear(t *testing.T) {
 
 func TestCACHEModuleSelectiveImport(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	
+
 	// Test importing only MEMSTASH
 	err := RegisterCACHEInEnv(env, "MEMSTASH")
 	if err != nil {
@@ -448,7 +448,7 @@ func TestCACHEModuleSelectiveImport(t *testing.T) {
 
 func TestCACHEModuleInvalidImport(t *testing.T) {
 	env := environment.NewEnvironment(nil)
-	
+
 	// Test importing non-existent class
 	err := RegisterCACHEInEnv(env, "INVALID_CLASS")
 	if err == nil {

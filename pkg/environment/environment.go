@@ -68,6 +68,7 @@ type Function struct {
 	Parameters    []Parameter
 	Body          interface{} // Will hold AST nodes
 	IsShared      *bool       // nil for global functions, true/false for class methods
+	IsVarargs     bool        // true if function accepts variable number of arguments
 	NativeImpl    func(interpreter Interpreter, this *ObjectInstance, args []Value) (Value, error)
 }
 
