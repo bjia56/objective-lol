@@ -4,6 +4,7 @@ import functools
 import inspect
 import json
 import threading
+from typing import Any, Callable, Dict, Tuple, Type
 import uuid
 
 from .api import (
@@ -27,20 +28,9 @@ from .api import (
 )
 
 
-defined_functions = {}
-defined_classes = {}
-object_instances = {}
-
-
-def serialize_go_value(vm: VM, go_value: GoValue):
-    if isinstance(go_value, GoValue):
-        if go_value.ID() != "":
-            return {GoValueIDKey: go_value.ID()}
-
-        converted = convert_from_go_value(vm, go_value)
-        return converted
-    else:
-        return go_value
+defined_functions: Dict[str, Tuple['ObjectiveLOLVM', Callable]] = {}
+defined_classes: Dict[str, Type] = {}
+object_instances: Dict[str, Any] = {}
 
 
 # gopy does not support passing complex types directly,
@@ -48,76 +38,14 @@ def serialize_go_value(vm: VM, go_value: GoValue):
 # Additionally, using closures seems to result in a segfault
 # at https://github.com/python/cpython/blob/v3.13.5/Python/generated_cases.c.h#L2462
 # so we use a global dictionary to store the actual functions.
-def gopy_wrapper(id: str, json_args: str):
+def gopy_wrapper(id: str, json_args: str) -> bytes:
     args = json.loads(json_args)
     try:
         vm, fn = defined_functions[id]
         result = fn(*args)
-        return json.dumps({"result": convert_to_go_value(vm, result), "error": None}, default=functools.partial(serialize_go_value, vm)).encode('utf-8')
+        return json.dumps({"result": vm.convert_to_go_value(result), "error": None}, default=vm.serialize_go_value).encode('utf-8')
     except Exception as e:
         return json.dumps({"result": None, "error": str(e)}).encode('utf-8')
-
-
-def convert_to_go_value(vm: 'ObjectiveLOLVM', value):
-    if value is None:
-        return GoValue()
-    if isinstance(value, int):
-        return WrapInt(value)
-    elif isinstance(value, float):
-        return WrapFloat(value)
-    elif isinstance(value, str):
-        return WrapString(value)
-    elif isinstance(value, bool):
-        return WrapBool(value)
-    elif isinstance(value, GoValue):
-        # object handle, pass through
-        return value
-    elif isinstance(value, (list, tuple)):
-        slice = Slice_api_GoValue()
-        for v in value:
-            slice.append(convert_to_go_value(vm, v))
-        return slice
-    elif isinstance(value, dict):
-        map = Map_string_api_GoValue()
-        for k, v in value.items():
-            map[k] = convert_to_go_value(vm, v)
-        return map
-    elif isinstance(type(value), ProxyMeta):
-        return value._go_value
-    else:
-        vm.define_class(type(value))
-        instance = vm._ObjectiveLOLVM__vm.NewObjectInstance(type(value).__name__)
-        object_instances[instance.ID()] = value
-        return instance
-
-
-def convert_from_go_value(vm: 'ObjectiveLOLVM', go_value: GoValue):
-    if not isinstance(go_value, GoValue):
-        return go_value
-    typ = go_value.Type()
-    if typ == "INTEGR":
-        return go_value.Int()
-    elif typ == "DUBBLE":
-        return go_value.Float()
-    elif typ == "STRIN":
-        return go_value.String()
-    elif typ == "BOOL":
-        return go_value.Bool()
-    elif typ == "NOTHIN":
-        return None
-    elif typ == "BUKKIT":
-        return [convert_from_go_value(vm, v) for v in go_value.Slice()]
-    elif typ == "BASKIT":
-        return {k: convert_from_go_value(vm, v) for k, v in go_value.Map().items()}
-    else:
-        # object handle
-        if go_value.ID() in object_instances:
-            return object_instances[go_value.ID()]
-
-        proxy_class = create_proxy_class([object], vm, go_value)
-        instance = proxy_class()
-        object_instances[go_value.ID()] = instance
-        return instance
 
 
 def convert_to_simple_mro(mro: list[str]) -> list[str]:
@@ -129,7 +57,7 @@ def convert_to_simple_mro(mro: list[str]) -> list[str]:
 
 
 class ProxyMeta(type):
-    def __new__(mcs, name, bases, attrs, go_value: GoValue = None):
+    def __new__(mcs: Type, name: str, bases: tuple, attrs: dict, go_value: GoValue = None):
         cls = super().__new__(mcs, name, bases, attrs)
         cls._go_value = go_value
         return cls
@@ -141,53 +69,158 @@ class ProxyMeta(type):
         return instance
 
 
-def create_proxy_class(mro: list[type], vm: 'ObjectiveLOLVM', obj: str | GoValue) -> type:
-    if isinstance(obj, str):
-        instance_immediate_functions = vm._ObjectiveLOLVM__compat.GetObjectImmediateFunctions(obj)
-        go_value = vm._ObjectiveLOLVM__compat.LookupObject(obj)
-    elif isinstance(obj, GoValue):
-        instance_immediate_functions = vm._ObjectiveLOLVM__compat.GetObjectImmediateFunctions(obj.ID())
-        go_value = obj
-    else:
-        raise TypeError("obj must be a string or GoValue")
-
-    class Proxy(*mro, metaclass=ProxyMeta, go_value=go_value):
-        def __getattribute__(self, name):
-            # Handles basic object attributes to avoid infinite recursion
-            if name in ('_go_value', '_create_proxy_method', '__class__', '__dict__'):
-                return super().__getattribute__(name)
-
-            # Check if this method should be proxied to the VM
-            if name.upper() in instance_immediate_functions:
-                # This method belongs to the immediate class, proxy to VM
-                return self._create_proxy_method(name)
-
-            # For everything else, get it normally
-            return super().__getattribute__(name)
-
-        def _create_proxy_method(self, method_name):
-            is_async = False
-            try:
-                method = super().__getattribute__(method_name)
-                if callable(method):
-                    if inspect.iscoroutinefunction(method):
-                        is_async = True
-            except:
-                pass
-
-            if is_async:
-                async def async_proxy_method(*args, **kwargs):
-                    return await vm.call_method_async(self._go_value, method_name, *args)
-                return async_proxy_method
-            else:
-                def sync_proxy_method(*args, **kwargs):
-                    return vm.call_method(self._go_value, method_name, *args)
-                return sync_proxy_method
-
-    return Proxy
-
-
 class ObjectiveLOLVM:
+    class ClassBuilder:
+        __vm: 'ObjectiveLOLVM'
+        __compat: VMCompatibilityShim
+        __loop: asyncio.AbstractEventLoop
+        __class: ClassDefinition
+
+        def __init__(self, vm: 'ObjectiveLOLVM'):
+            self.__vm = vm
+            self.__compat = vm._ObjectiveLOLVM__compat
+            self.__loop = vm._ObjectiveLOLVM__loop
+            self.__class = NewClassDefinition()
+
+        def get(self) -> ClassDefinition:
+            return self.__class
+
+        def set_name(self, name: str) -> 'ObjectiveLOLVM.ClassBuilder':
+            self.__class.Name = name
+            return self
+
+        def __build_variable(self, name: str, value, locked: bool, getter=None, setter=None) -> ClassVariable:
+            class_variable = ClassVariable()
+            class_variable.Name = name
+            class_variable.Value = self.__vm.convert_to_go_value(value)
+            class_variable.Locked = locked
+            if getter is not None:
+                unique_id = str(uuid.uuid4())
+
+                def wrapper(this_id):
+                    return self.__vm.convert_to_go_value(getter(object_instances[this_id]))
+
+                defined_functions[unique_id] = (self.__vm, wrapper)
+                self.__compat.BuildNewClassVariableWithGetter(class_variable, unique_id, gopy_wrapper)
+            if setter is not None:
+                unique_id = str(uuid.uuid4())
+
+                def wrapper(this_id, value):
+                    setter(object_instances[this_id], self.__vm.convert_from_go_value(value))
+
+                defined_functions[unique_id] = (self.__vm, wrapper)
+                self.__compat.BuildNewClassVariableWithSetter(class_variable, unique_id, gopy_wrapper)
+            return class_variable
+
+        def add_public_variable(self, name: str, value = None, locked: bool = False, getter=None, setter=None) -> 'ObjectiveLOLVM.ClassBuilder':
+            variable = self.__build_variable(name, value, locked, getter, setter)
+            self.__class.PublicVariables[name] = variable
+            return self
+
+        def add_private_variable(self, name: str, value = None, locked: bool = False, getter=None, setter=None) -> 'ObjectiveLOLVM.ClassBuilder':
+            variable = self.__build_variable(name, value, locked, getter, setter)
+            self.__class.PrivateVariables[name] = variable
+            return self
+
+        def add_shared_variable(self, name: str, value = None, locked: bool = False, getter=None, setter=None) -> 'ObjectiveLOLVM.ClassBuilder':
+            variable = self.__build_variable(name, value, locked, getter, setter)
+            self.__class.SharedVariables[name] = variable
+            return self
+
+        def __build_method(self, name: str, function, argc: int = None) -> ClassMethod:
+            argc = len(inspect.signature(function).parameters) - 1 if argc is None else argc
+            unique_id = str(uuid.uuid4())
+
+            def wrapper(this_id, *args):
+                return self.__vm.convert_to_go_value(function(object_instances[this_id], *args))
+
+            defined_functions[unique_id] = (self.__vm, wrapper)
+            class_method = ClassMethod()
+            class_method.Name = name
+            class_method.Argc = argc
+
+            self.__compat.BuildNewClassMethod(class_method, unique_id, gopy_wrapper)
+            return class_method
+
+        def add_constructor(self, typ: type) -> 'ObjectiveLOLVM.ClassBuilder':
+            # get init function
+            init_function = typ.__init__
+            argc = len(inspect.signature(init_function).parameters) - 1
+
+            # ignore args and kwargs
+            for param in inspect.signature(init_function).parameters.values():
+                if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+                    argc = argc - 1
+
+            unique_id = str(uuid.uuid4())
+
+            def ctor_wrapper(this_id, *args):
+                mro = self.__compat.GetObjectMRO(this_id)
+                simple_mro = convert_to_simple_mro(mro)
+
+                instance_class = typ
+                if len(mro) > 1:
+                    go_value = self.__vm._ObjectiveLOLVM__compat.LookupObject(this_id)
+                    instance_class = self.__vm.create_proxy_class([defined_classes[cls_name.upper()] for cls_name in simple_mro if cls_name.upper() in defined_classes], go_value)
+
+                instance = instance_class(*args)
+                object_instances[this_id] = instance
+
+            defined_functions[unique_id] = (self.__vm, ctor_wrapper)
+            class_method = ClassMethod()
+            class_method.Name = typ.__name__
+            class_method.Argc = argc
+
+            self.__compat.BuildNewClassMethod(class_method, unique_id, gopy_wrapper)
+            self.__class.PublicMethods[typ.__name__] = class_method
+            return self
+
+        def add_public_method(self, name: str, function, argc: int = None) -> 'ObjectiveLOLVM.ClassBuilder':
+            method = self.__build_method(name, function, argc)
+            self.__class.PublicMethods[name] = method
+            return self
+
+        def add_public_coroutine(self, name: str, function) -> 'ObjectiveLOLVM.ClassBuilder':
+            argc = len(inspect.signature(function).parameters) - 1
+
+            def wrapper(this, *args):
+                fut = concurrent.futures.Future()
+                def do():
+                    try:
+                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self.__loop).result()
+                        fut.set_result(result)
+                    except Exception as e:
+                        fut.set_exception(e)
+                threading.Thread(target=do).start()
+                return fut.result()
+
+            method = self.__build_method(name, wrapper, argc)
+            self.__class.PublicMethods[name] = method
+            return self
+
+        def add_private_method(self, name: str, function, argc: int = None) -> 'ObjectiveLOLVM.ClassBuilder':
+            method = self.__build_method(name, function, argc)
+            self.__class.PrivateMethods[name] = method
+            return self
+
+        def add_private_coroutine(self, name: str, function) -> 'ObjectiveLOLVM.ClassBuilder':
+            argc = len(inspect.signature(function).parameters) - 1
+
+            def wrapper(this, *args):
+                fut = concurrent.futures.Future()
+                def do():
+                    try:
+                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self.__loop).result()
+                        fut.set_result(result)
+                    except Exception as e:
+                        fut.set_exception(e)
+                threading.Thread(target=do).start()
+                return fut.result()
+
+            method = self.__build_method(name, wrapper, argc)
+            self.__class.PrivateMethods[name] = method
+            return self
+
     __vm: VM
     __compat: VMCompatibilityShim
     __loop: asyncio.AbstractEventLoop
@@ -198,8 +231,111 @@ class ObjectiveLOLVM:
         self.__compat = self.__vm.GetCompatibilityShim()
         self.__loop = asyncio.get_event_loop()
 
+    def convert_from_go_value(self, go_value: GoValue):
+        if not isinstance(go_value, GoValue):
+            return go_value
+        typ = go_value.Type()
+        if typ == "INTEGR":
+            return go_value.Int()
+        elif typ == "DUBBLE":
+            return go_value.Float()
+        elif typ == "STRIN":
+            return go_value.String()
+        elif typ == "BOOL":
+            return go_value.Bool()
+        elif typ == "NOTHIN":
+            return None
+        elif typ == "BUKKIT":
+            return [self.convert_from_go_value(v) for v in go_value.Slice()]
+        elif typ == "BASKIT":
+            return {k: self.convert_from_go_value(v) for k, v in go_value.Map().items()}
+        else:
+            # object handle
+            if go_value.ID() in object_instances:
+                return object_instances[go_value.ID()]
+
+            proxy_class = self.create_proxy_class([object], go_value)
+            instance = proxy_class()
+            object_instances[go_value.ID()] = instance
+            return instance
+
+    def convert_to_go_value(self, value):
+        if value is None:
+            return GoValue()
+        if isinstance(value, int):
+            return WrapInt(value)
+        elif isinstance(value, float):
+            return WrapFloat(value)
+        elif isinstance(value, str):
+            return WrapString(value)
+        elif isinstance(value, bool):
+            return WrapBool(value)
+        elif isinstance(value, GoValue):
+            # object handle, pass through
+            return value
+        elif isinstance(value, (list, tuple)):
+            slice = Slice_api_GoValue()
+            for v in value:
+                slice.append(self.convert_to_go_value(v))
+            return slice
+        elif isinstance(value, dict):
+            map = Map_string_api_GoValue()
+            for k, v in value.items():
+                map[k] = self.convert_to_go_value(v)
+            return map
+        elif isinstance(type(value), ProxyMeta):
+            return value._go_value
+        else:
+            self.__vm.define_class(type(value))
+            instance = self.__vm.NewObjectInstance(type(value).__name__)
+            object_instances[instance.ID()] = value
+            return instance
+
+    def serialize_go_value(self, go_value: GoValue):
+        if isinstance(go_value, GoValue):
+            if go_value.ID() != "":
+                return {GoValueIDKey: go_value.ID()}
+            return self.convert_from_go_value(go_value)
+        else:
+            return go_value
+
+    def create_proxy_class(self, mro: list[type], go_value: GoValue) -> type:
+        instance_immediate_functions = self.__compat.GetObjectImmediateFunctions(go_value.ID())
+        superself = self
+
+        class Proxy(*mro, metaclass=ProxyMeta, go_value=go_value):
+            def __getattribute__(self, name):
+                # Handles basic object attributes to avoid infinite recursion
+                if name in ('_go_value', '_create_proxy_method', '__class__', '__dict__'):
+                    return super().__getattribute__(name)
+
+                # Check if this method should be proxied to the VM
+                if name.upper() in instance_immediate_functions:
+                    # This method belongs to the immediate class, proxy to VM
+                    return self._create_proxy_method(name)
+
+                # For everything else, get it normally
+                return super().__getattribute__(name)
+
+            def _create_proxy_method(self, method_name):
+                is_async = False
+                try:
+                    method = super().__getattribute__(method_name)
+                    if callable(method):
+                        if inspect.iscoroutinefunction(method):
+                            is_async = True
+                except:
+                    pass
+
+                if is_async:
+                    return functools.partial(superself.call_method_async, self._go_value, method_name)
+                else:
+                    return functools.partial(superself.call_method, self._go_value, method_name)
+
+        return Proxy
+
     def define_variable(self, name: str, value, constant: bool = False) -> None:
-        goValue = convert_to_go_value(self, value)
+        goValue = self.convert_to_go_value(value)
         self.__vm.DefineVariable(name, goValue, constant)
 
     def define_function(self, name: str, function, argc: int = None) -> None:
@@ -230,7 +366,7 @@ class ObjectiveLOLVM:
             pass
 
         # Use class builder to introspect and build the class definition
-        builder = ClassBuilder(self)
+        builder = ObjectiveLOLVM.ClassBuilder(self)
         builder.set_name(class_name)
         builder.add_constructor(python_class)
 
@@ -259,34 +395,34 @@ class ObjectiveLOLVM:
         defined_classes[class_name.upper()] = python_class
 
     def call(self, name: str, *args):
-        goArgs = convert_to_go_value(self, args)
+        goArgs = self.convert_to_go_value(args)
         result = self.__vm.Call(name, goArgs)
-        return convert_from_go_value(self, result)
+        return self.convert_from_go_value(result)
 
     async def call_async(self, name: str, *args):
-        goArgs = convert_to_go_value(self, args)
+        goArgs = self.convert_to_go_value(args)
         fut = concurrent.futures.Future()
         def do():
             try:
                 result = self.__vm.Call(name, goArgs)
-                fut.set_result(convert_from_go_value(self, result))
+                fut.set_result(self.convert_from_go_value(result))
             except Exception as e:
                 fut.set_exception(e)
         threading.Thread(target=do).start()
         return await asyncio.wrap_future(fut)
 
     def call_method(self, receiver: GoValue, name: str, *args):
-        goArgs = convert_to_go_value(self, args)
+        goArgs = self.convert_to_go_value(args)
         result = self.__vm.CallMethod(receiver, name, goArgs)
-        return convert_from_go_value(self, result)
+        return self.convert_from_go_value(result)
 
     async def call_method_async(self, receiver: GoValue, name: str, *args):
-        goArgs = convert_to_go_value(self, args)
+        goArgs = self.convert_to_go_value(args)
         fut = concurrent.futures.Future()
         def do():
             try:
                 result = self.__vm.CallMethod(receiver, name, goArgs)
-                fut.set_result(convert_from_go_value(self, result))
+                fut.set_result(self.convert_from_go_value(result))
             except Exception as e:
                 fut.set_exception(e)
         threading.Thread(target=do).start()
@@ -306,153 +442,3 @@ class ObjectiveLOLVM:
         threading.Thread(target=do).start()
         return await asyncio.wrap_future(fut)
 
-
-class ClassBuilder:
-    __vm: ObjectiveLOLVM
-    __compat: VMCompatibilityShim
-    __loop: asyncio.AbstractEventLoop
-    __class: ClassDefinition
-
-    def __init__(self, vm: ObjectiveLOLVM):
-        self.__vm = vm
-        self.__compat = vm._ObjectiveLOLVM__compat
-        self.__loop = vm._ObjectiveLOLVM__loop
-        self.__class = NewClassDefinition()
-
-    def get(self) -> ClassDefinition:
-        return self.__class
-
-    def set_name(self, name: str) -> 'ClassBuilder':
-        self.__class.Name = name
-        return self
-
-    def __build_variable(self, name: str, value, locked: bool, getter=None, setter=None) -> ClassVariable:
-        class_variable = ClassVariable()
-        class_variable.Name = name
-        class_variable.Value = convert_to_go_value(self.__vm, value)
-        class_variable.Locked = locked
-        if getter is not None:
-            unique_id = str(uuid.uuid4())
-
-            def wrapper(this_id):
-                return convert_to_go_value(self.__vm, getter(object_instances[this_id]))
-
-            defined_functions[unique_id] = (self.__vm, wrapper)
-            self.__compat.BuildNewClassVariableWithGetter(class_variable, unique_id, gopy_wrapper)
-        if setter is not None:
-            unique_id = str(uuid.uuid4())
-
-            def wrapper(this_id, value):
-                setter(object_instances[this_id], convert_from_go_value(self.__vm, value))
-
-            defined_functions[unique_id] = (self.__vm, wrapper)
-            self.__compat.BuildNewClassVariableWithSetter(class_variable, unique_id, gopy_wrapper)
-        return class_variable
-
-    def add_public_variable(self, name: str, value = None, locked: bool = False, getter=None, setter=None) -> 'ClassBuilder':
-        variable = self.__build_variable(name, value, locked, getter, setter)
-        self.__class.PublicVariables[name] = variable
-        return self
-
-    def add_private_variable(self, name: str, value = None, locked: bool = False, getter=None, setter=None) -> 'ClassBuilder':
-        variable = self.__build_variable(name, value, locked, getter, setter)
-        self.__class.PrivateVariables[name] = variable
-        return self
-
-    def add_shared_variable(self, name: str, value = None, locked: bool = False, getter=None, setter=None) -> 'ClassBuilder':
-        variable = self.__build_variable(name, value, locked, getter, setter)
-        self.__class.SharedVariables[name] = variable
-        return self
-
-    def __build_method(self, name: str, function, argc: int = None) -> ClassMethod:
-        argc = len(inspect.signature(function).parameters) - 1 if argc is None else argc
-        unique_id = str(uuid.uuid4())
-
-        def wrapper(this_id, *args):
-            return convert_to_go_value(self.__vm, function(object_instances[this_id], *args))
-
-        defined_functions[unique_id] = (self.__vm, wrapper)
-        class_method = ClassMethod()
-        class_method.Name = name
-        class_method.Argc = argc
-
-        self.__compat.BuildNewClassMethod(class_method, unique_id, gopy_wrapper)
-        return class_method
-
-    def add_constructor(self, typ: type) -> 'ClassBuilder':
-        # get init function
-        init_function = typ.__init__
-        argc = len(inspect.signature(init_function).parameters) - 1
-
-        # ignore args and kwargs
-        for param in inspect.signature(init_function).parameters.values():
-            if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-                argc = argc - 1
-
-        unique_id = str(uuid.uuid4())
-
-        def ctor_wrapper(this_id, *args):
-            mro = self.__compat.GetObjectMRO(this_id)
-            simple_mro = convert_to_simple_mro(mro)
-
-            instance_class = typ
-            if len(mro) > 1:
-                instance_class = create_proxy_class([defined_classes[cls_name.upper()] for cls_name in simple_mro if cls_name.upper() in defined_classes], self.__vm, this_id)
-
-            instance = instance_class(*args)
-            object_instances[this_id] = instance
-
-        defined_functions[unique_id] = (self.__vm, ctor_wrapper)
-        class_method = ClassMethod()
-        class_method.Name = typ.__name__
-        class_method.Argc = argc
-
-        self.__compat.BuildNewClassMethod(class_method, unique_id, gopy_wrapper)
-        self.__class.PublicMethods[typ.__name__] = class_method
-        return self
-
-    def add_public_method(self, name: str, function, argc: int = None) -> 'ClassBuilder':
-        method = self.__build_method(name, function, argc)
-        self.__class.PublicMethods[name] = method
-        return self
-
-    def add_public_coroutine(self, name: str, function) -> 'ClassBuilder':
-        argc = len(inspect.signature(function).parameters) - 1
-
-        def wrapper(this, *args):
-            fut = concurrent.futures.Future()
-            def do():
-                try:
-                    result = asyncio.run_coroutine_threadsafe(function(this, *args), self.__loop).result()
-                    fut.set_result(result)
-                except Exception as e:
-                    fut.set_exception(e)
-            threading.Thread(target=do).start()
-            return fut.result()
-
-        method = self.__build_method(name, wrapper, argc)
-        self.__class.PublicMethods[name] = method
-        return self
-
-    def add_private_method(self, name: str, function, argc: int = None) -> 'ClassBuilder':
-        method = self.__build_method(name, function, argc)
-        self.__class.PrivateMethods[name] = method
-        return self
-
-    def add_private_coroutine(self, name: str, function) -> 'ClassBuilder':
-        argc = len(inspect.signature(function).parameters) - 1
-
-        def wrapper(this, *args):
-            fut = concurrent.futures.Future()
-            def do():
-                try:
-                    result = asyncio.run_coroutine_threadsafe(function(this, *args), self.__loop).result()
-                    fut.set_result(result)
-                except Exception as e:
-                    fut.set_exception(e)
-            threading.Thread(target=do).start()
-            return fut.result()
-
-        method = self.__build_method(name, wrapper, argc)
-        self.__class.PrivateMethods[name] = method
-        return self
