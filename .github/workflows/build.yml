@@ -120,7 +120,7 @@ jobs:
       uses: pypa/cibuildwheel@v2.20.0
       env:
         CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-*
-        CIBW_SKIP: "*-musllinux*"
+        CIBW_SKIP: "*-musllinux* *_i686"
         CIBW_BUILD_VERBOSITY: 1
         CIBW_PROJECT_REQUIRES_PYTHON: ">=3.9"
         CIBW_ENVIRONMENT: >

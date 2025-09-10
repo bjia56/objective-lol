@@ -109,7 +109,7 @@ def detect_platform():
         elif arch in ["aarch64", "arm64"]:
             return "linux-aarch64"
         else:
-            return "linux-x86_64"  # Default fallback
+            raise RuntimeError(f"Unsupported architecture: {arch} on Linux")
     elif os_name == "darwin":
         return "darwin-universal2"
     elif os_name == "windows":
@@ -118,9 +118,9 @@ def detect_platform():
         elif arch in ["aarch64", "arm64"]:
             return "windows-aarch64"
         else:
-            return "windows-x86_64"  # Default fallback
+            raise RuntimeError(f"Unsupported architecture: {arch} on Windows")
     else:
-        return "linux-x86_64"  # Default fallback
+        raise RuntimeError(f"Unsupported OS: {os_name}")
 
 
 def download_and_extract_go(toolchain_dir, detected_platform):
@@ -292,7 +292,7 @@ class CustomBuildExt(build_ext):
         # Use platform-appropriate path separator
         path_sep = ";" if sys.platform == "win32" else ":"
         new_path = f"{gobin_dir}{path_sep}{go_dir}/bin{path_sep}{os.environ.get('PATH', '')}"
-        
+
         env = {
             "PATH": new_path,
             **go_env,
