@@ -123,6 +123,8 @@ jobs:
         CIBW_SKIP: "*-musllinux*"
         CIBW_BUILD_VERBOSITY: 1
         CIBW_PROJECT_REQUIRES_PYTHON: ">=3.9"
+        CIBW_ENVIRONMENT: >
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
       with:
         package-dir: python
 
