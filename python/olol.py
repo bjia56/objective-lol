@@ -129,18 +129,14 @@ def convert_to_simple_mro(mro: list[str]) -> list[str]:
 
 
 class ProxyMeta(type):
-    def __new__(mcs, name, bases, attrs, vm: 'ObjectiveLOLVM' = None, go_value: GoValue = None):
+    def __new__(mcs, name, bases, attrs, go_value: GoValue = None):
         cls = super().__new__(mcs, name, bases, attrs)
-        cls._vm = vm
         cls._go_value = go_value
         return cls
 
     def __call__(cls, *args, **kwargs):
         instance = super().__call__(*args, **kwargs)
-
-        if hasattr(cls, '_vm') and hasattr(cls, '_go_value'):
-            instance._go_value = cls._go_value
-            instance._vm = cls._vm
+        instance._go_value = cls._go_value
 
         return instance
 
@@ -155,41 +151,29 @@ def create_proxy_class(mro: list[type], vm: 'ObjectiveLOLVM', obj: str | GoValue
     else:
         raise TypeError("obj must be a string or GoValue")
 
-    class Proxy(*mro, metaclass=ProxyMeta, vm=vm, go_value=go_value):
-        def __getattr__(self, name):
+    class Proxy(*mro, metaclass=ProxyMeta, go_value=go_value):
+        def __getattribute__(self, name):
+            # Handles basic object attributes to avoid infinite recursion
+            if name in ('_go_value', '_create_proxy_method', '__class__', '__dict__'):
+                return super().__getattribute__(name)
+
             # Check if this method should be proxied to the VM
-            if name in instance_immediate_functions:
+            if name.upper() in instance_immediate_functions:
                 # This method belongs to the immediate class, proxy to VM
                 return self._create_proxy_method(name)
 
-            # Look through MRO to find the first class that defines this method
-            for cls in mro:
-                if hasattr(cls, name):
-                    method = getattr(cls, name)
-                    if callable(method):
-                        # Found the method in a superclass, call it directly
-                        if inspect.iscoroutinefunction(method):
-                            return self._create_async_wrapper(method)
-                        else:
-                            return self._create_sync_wrapper(method)
-                    else:
-                        # It's an attribute, not a method
-                        return method
-
-            # Method not found in MRO, assume it is a sync proxy method
-            def sync_proxy_method(*args, **kwargs):
-                return vm.call_method(self._go_value, name, *args)
-            return sync_proxy_method
+            # For everything else, get it normally
+            return super().__getattribute__(name)
 
         def _create_proxy_method(self, method_name):
-            # Determine if the VM method is async by checking if any class in MRO has an async version
             is_async = False
-            for cls in mro:
-                if hasattr(cls, method_name):
-                    method = getattr(cls, method_name)
+            try:
+                method = super().__getattribute__(method_name)
+                if callable(method):
                     if inspect.iscoroutinefunction(method):
                         is_async = True
-                        break
+            except:
+                pass
 
             if is_async:
                 async def async_proxy_method(*args, **kwargs):
@@ -199,16 +183,6 @@ def create_proxy_class(mro: list[type], vm: 'ObjectiveLOLVM', obj: str | GoValue
                 def sync_proxy_method(*args, **kwargs):
                     return vm.call_method(self._go_value, method_name, *args)
                 return sync_proxy_method
-
-        def _create_async_wrapper(self, method):
-            async def async_wrapper(*args, **kwargs):
-                return await method(self, *args, **kwargs)
-            return async_wrapper
-
-        def _create_sync_wrapper(self, method):
-            def sync_wrapper(*args, **kwargs):
-                return method(self, *args, **kwargs)
-            return sync_wrapper
 
     return Proxy
 
