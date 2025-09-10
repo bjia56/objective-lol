@@ -209,17 +209,19 @@ func (p *Parser) parseVariableDeclaration() *ast.VariableDeclarationNode {
 	// Set position from the identifier token
 	node.Position = p.convertPosition(p.currentToken.Position)
 
-	if !p.expectPeek(TEH) {
-		p.addError(fmt.Sprintf("expected 'TEH' after '%s', got %v at line %d", p.currentToken.Literal, p.peekToken.Type, p.peekToken.Position.Line))
-		return nil
+	// Check for optional type specification (TEH type)
+	if p.peekTokenIs(TEH) {
+		p.nextToken() // consume TEH
+		p.nextToken() // move to type
+		if !p.currentTokenIs(IDENTIFIER) && !p.isTypeToken(p.currentToken.Type) {
+			p.addError(fmt.Sprintf("expected type after 'TEH', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
+			return nil
+		}
+		node.Type = p.currentToken.Literal
+	} else {
+		// No type specified - use empty string for dynamic typing
+		node.Type = ""
 	}
-
-	p.nextToken()
-	if !p.currentTokenIs(IDENTIFIER) && !p.isTypeToken(p.currentToken.Type) {
-		p.addError(fmt.Sprintf("expected type after 'TEH', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
-		return nil
-	}
-	node.Type = p.currentToken.Literal
 
 	// Check for initialization
 	if p.peekTokenIs(ITZ) {
@@ -271,17 +273,19 @@ func (p *Parser) parseIHasAVariableDeclaration() *ast.VariableDeclarationNode {
 	// Set position from the identifier token
 	node.Position = p.convertPosition(p.currentToken.Position)
 
-	if !p.expectPeek(TEH) {
-		p.addError(fmt.Sprintf("expected 'TEH' after '%s', got %v at line %d", p.currentToken.Literal, p.peekToken.Type, p.peekToken.Position.Line))
-		return nil
+	// Check for optional type specification (TEH type)
+	if p.peekTokenIs(TEH) {
+		p.nextToken() // consume TEH
+		p.nextToken() // move to type
+		if !p.currentTokenIs(IDENTIFIER) && !p.isTypeToken(p.currentToken.Type) {
+			p.addError(fmt.Sprintf("expected type after 'TEH', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
+			return nil
+		}
+		node.Type = p.currentToken.Literal
+	} else {
+		// No type specified - use empty string for dynamic typing
+		node.Type = ""
 	}
-
-	p.nextToken()
-	if !p.currentTokenIs(IDENTIFIER) && !p.isTypeToken(p.currentToken.Type) {
-		p.addError(fmt.Sprintf("expected type after 'TEH', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
-		return nil
-	}
-	node.Type = p.currentToken.Literal
 
 	// Check for initialization
 	if p.peekTokenIs(ITZ) {
@@ -667,18 +671,19 @@ func (p *Parser) parseParameterList() []environment.Parameter {
 		Name: p.currentToken.Literal,
 	}
 
-	if !p.expectPeek(TEH) {
-		p.addError(fmt.Sprintf("expected 'TEH' after parameter name, got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
-		return params
+	// Check for optional type specification (TEH type)
+	if p.peekTokenIs(TEH) {
+		p.nextToken() // consume TEH
+		p.nextToken() // move to the type token
+		if !p.currentTokenIs(IDENTIFIER) && !p.isTypeToken(p.currentToken.Type) {
+			p.addError(fmt.Sprintf("expected type after 'TEH', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
+			return params
+		}
+		param.Type = p.currentToken.Literal
+	} else {
+		// No type specified - use empty string for dynamic typing
+		param.Type = ""
 	}
-
-	p.nextToken() // move to the type token
-	if !p.currentTokenIs(IDENTIFIER) && !p.isTypeToken(p.currentToken.Type) {
-		p.addError(fmt.Sprintf("expected type, got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
-		return params
-	}
-
-	param.Type = p.currentToken.Literal
 	params = append(params, param)
 
 	// Parse additional parameters (AN WIT ...)
@@ -697,18 +702,19 @@ func (p *Parser) parseParameterList() []environment.Parameter {
 			Name: p.currentToken.Literal,
 		}
 
-		if !p.expectPeek(TEH) {
-			p.addError(fmt.Sprintf("expected 'TEH' after parameter name, got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
-			break
+		// Check for optional type specification (TEH type)
+		if p.peekTokenIs(TEH) {
+			p.nextToken() // consume TEH
+			p.nextToken() // move to the type token
+			if !p.currentTokenIs(IDENTIFIER) && !p.isTypeToken(p.currentToken.Type) {
+				p.addError(fmt.Sprintf("expected type after 'TEH', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
+				break
+			}
+			param.Type = p.currentToken.Literal
+		} else {
+			// No type specified - use empty string for dynamic typing
+			param.Type = ""
 		}
-
-		p.nextToken()
-		if !p.currentTokenIs(IDENTIFIER) && !p.isTypeToken(p.currentToken.Type) {
-			p.addError(fmt.Sprintf("expected type, got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
-			break
-		}
-
-		param.Type = p.currentToken.Literal
 		params = append(params, param)
 	}
 

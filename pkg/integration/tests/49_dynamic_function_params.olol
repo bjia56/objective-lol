@@ -1,0 +1,84 @@
+BTW Comprehensive test for dynamic function parameters
+I CAN HAS STDIO?
+
+BTW Test function with mixed typed and dynamic parameters
+HAI ME TEH FUNCSHUN MIXED_PARAMS TEH STRIN WIT TYPED_PARAM TEH INTEGR AN WIT DYNAMIC_PARAM
+    SAY WIT "Typed param: "
+    SAY WIT TYPED_PARAM
+    SAY WIT ", Dynamic param: "
+    SAYZ WIT DYNAMIC_PARAM
+    GIVEZ "mixed result"
+KTHXBAI
+
+BTW Test function with all dynamic parameters
+HAI ME TEH FUNCSHUN ALL_DYNAMIC WIT FIRST AN WIT SECOND
+    SAY WIT "First: "
+    SAY WIT FIRST
+    SAY WIT ", Second: "
+    SAYZ WIT SECOND
+    GIVEZ FIRST MOAR SECOND
+KTHXBAI
+
+BTW Test function with no parameters and dynamic return
+HAI ME TEH FUNCSHUN NO_PARAMS
+    GIVEZ 42
+KTHXBAI
+
+BTW Test function that accepts different types in dynamic param
+HAI ME TEH FUNCSHUN TYPE_FLEXIBLE WIT DATA
+    SAY WIT "Received data of type: "
+    SAY WIT DATA
+    SAY WIT " -> "
+    SAYZ WIT DATA
+KTHXBAI
+
+BTW Test recursive function with dynamic parameters
+HAI ME TEH FUNCSHUN COUNTDOWN WIT NUM
+    IZ NUM BIGGR THAN 0?
+        SAYZ WIT NUM
+        COUNTDOWN WIT (NUM LES 1)
+    KTHX
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== Dynamic Function Parameters Test ==="
+
+    BTW Test 1: Mixed typed and dynamic parameters
+    I HAS A VARIABLE RESULT1 ITZ MIXED_PARAMS WIT 100 AN WIT "hello"
+    SAY WIT "Mixed result: "
+    SAYZ WIT RESULT1
+
+    BTW Test 2: All dynamic parameters with integers
+    I HAS A VARIABLE RESULT2 ITZ ALL_DYNAMIC WIT 10 AN WIT 20
+    SAY WIT "All dynamic (integers) result: "
+    SAYZ WIT RESULT2
+
+    BTW Test 3: All dynamic parameters with mixed types
+    I HAS A VARIABLE RESULT3 ITZ ALL_DYNAMIC WIT 5.5 AN WIT 2.2
+    SAY WIT "All dynamic (doubles) result: "
+    SAYZ WIT RESULT3
+
+    BTW Test 4: Function with no parameters
+    I HAS A VARIABLE RESULT4 ITZ NO_PARAMS
+    SAY WIT "No params result: "
+    SAYZ WIT RESULT4
+
+    BTW Test 5: Type flexibility
+    TYPE_FLEXIBLE WIT 123
+    TYPE_FLEXIBLE WIT "string data"
+    TYPE_FLEXIBLE WIT 3.14
+    TYPE_FLEXIBLE WIT YEZ
+
+    BTW Test 6: Recursive function with dynamic parameter
+    SAY WIT "Countdown from 5: "
+    COUNTDOWN WIT 5
+
+    BTW Test 7: Dynamic variables as function arguments
+    I HAS A VARIABLE DYN_VAR ITZ "dynamic value"
+    TYPE_FLEXIBLE WIT DYN_VAR
+    
+    DYN_VAR ITZ 999
+    TYPE_FLEXIBLE WIT DYN_VAR
+
+    SAYZ WIT "=== Dynamic Function Parameters Test Complete ==="
+KTHXBAI

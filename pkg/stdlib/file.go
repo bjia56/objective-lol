@@ -3,6 +3,7 @@ package stdlib
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -16,6 +17,11 @@ type DocumentData struct {
 	FileMode string
 	File     *os.File
 	IsOpen   bool
+}
+
+// CabinetData stores the internal state of a CABINET
+type CabinetData struct {
+	DirPath string
 }
 
 // Global FILE class definitions - created once and reused
@@ -390,6 +396,215 @@ func getFileClasses() map[string]*environment.Class {
 								return environment.IntegerValue(int(stat.Size())), nil
 							}
 							return environment.IntegerValue(0), fmt.Errorf("invalid context for SIZ")
+						},
+					},
+					"RWX": {
+						Variable: environment.Variable{
+							Name:     "RWX",
+							Type:     "INTEGR",
+							IsLocked: false,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if data, ok := this.NativeData.(*DocumentData); ok {
+								stat, err := os.Stat(data.FilePath)
+								if err != nil {
+									return environment.IntegerValue(0), fmt.Errorf("failed to get file permissions: %v", err)
+								}
+								return environment.IntegerValue(int(stat.Mode().Perm())), nil
+							}
+							return environment.IntegerValue(0), fmt.Errorf("invalid context for RWX")
+						},
+						NativeSet: func(this *environment.ObjectInstance, val environment.Value) error {
+							intVal, ok := val.(environment.IntegerValue)
+							if !ok {
+								return fmt.Errorf("RWX expects INTEGR value, got %s", val.Type())
+							}
+							if data, ok := this.NativeData.(*DocumentData); ok {
+								err := os.Chmod(data.FilePath, os.FileMode(int(intVal)))
+								if err != nil {
+									return fmt.Errorf("failed to set file permissions: %v", err)
+								}
+								return nil
+							}
+							return fmt.Errorf("invalid context for RWX")
+						},
+					},
+				},
+				PrivateVariables: make(map[string]*environment.MemberVariable),
+				PrivateFunctions: make(map[string]*environment.Function),
+				SharedVariables:  make(map[string]*environment.MemberVariable),
+				SharedFunctions:  make(map[string]*environment.Function),
+			},
+			"CABINET": {
+				Name:          "CABINET",
+				QualifiedName: "stdlib:FILE.CABINET",
+				ModulePath:    "stdlib:FILE",
+				ParentClasses: []string{},
+				MRO:           []string{"stdlib:FILE.CABINET"},
+				PublicFunctions: map[string]*environment.Function{
+					// Constructor
+					"CABINET": {
+						Name: "CABINET",
+						Parameters: []environment.Parameter{
+							{Name: "path", Type: "STRIN"},
+						},
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							path := args[0]
+
+							pathVal, ok := path.(environment.StringValue)
+							if !ok {
+								return environment.NOTHIN, fmt.Errorf("CABINET constructor expects STRIN path, got %s", path.Type())
+							}
+
+							// Initialize the cabinet data
+							cabinetData := &CabinetData{
+								DirPath: string(pathVal),
+							}
+							this.NativeData = cabinetData
+
+							return environment.NOTHIN, nil
+						},
+					},
+					// EXISTS method
+					"EXISTS": {
+						Name:       "EXISTS",
+						ReturnType: "BOOL",
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							cabinetData, ok := this.NativeData.(*CabinetData)
+							if !ok {
+								return environment.NOTHIN, fmt.Errorf("EXISTS: invalid context")
+							}
+
+							stat, err := os.Stat(cabinetData.DirPath)
+							if err != nil {
+								return environment.NO, nil
+							}
+							exists := stat.IsDir()
+							return environment.BoolValue(exists), nil
+						},
+					},
+					// LIST method
+					"LIST": {
+						Name:       "LIST",
+						ReturnType: "BUKKIT",
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							cabinetData, ok := this.NativeData.(*CabinetData)
+							if !ok {
+								return environment.NOTHIN, fmt.Errorf("LIST: invalid context")
+							}
+
+							entries, err := os.ReadDir(cabinetData.DirPath)
+							if err != nil {
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to read directory: %v", err)}
+							}
+
+							// Create BUKKIT array of filenames
+							bukkitObj := NewBukkitInstance()
+							bukkitSlice := make(BukkitSlice, len(entries))
+
+							for i, entry := range entries {
+								bukkitSlice[i] = environment.StringValue(entry.Name())
+							}
+
+							bukkitObj.NativeData = bukkitSlice
+							return bukkitObj, nil
+						},
+					},
+					// CREATE method
+					"CREATE": {
+						Name: "CREATE",
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							cabinetData, ok := this.NativeData.(*CabinetData)
+							if !ok {
+								return environment.NOTHIN, fmt.Errorf("CREATE: invalid context")
+							}
+
+							err := os.MkdirAll(cabinetData.DirPath, 0755)
+							if err != nil {
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to create directory: %v", err)}
+							}
+
+							return environment.NOTHIN, nil
+						},
+					},
+					// DELETE method
+					"DELETE": {
+						Name: "DELETE",
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							cabinetData, ok := this.NativeData.(*CabinetData)
+							if !ok {
+								return environment.NOTHIN, fmt.Errorf("DELETE: invalid context")
+							}
+
+							// Remove empty directory only
+							err := os.Remove(cabinetData.DirPath)
+							if err != nil {
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to delete directory: %v", err)}
+							}
+
+							return environment.NOTHIN, nil
+						},
+					},
+					// FIND method
+					"FIND": {
+						Name:       "FIND",
+						ReturnType: "BUKKIT",
+						Parameters: []environment.Parameter{
+							{Name: "pattern", Type: "STRIN"},
+						},
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							pattern := args[0]
+
+							patternVal, ok := pattern.(environment.StringValue)
+							if !ok {
+								return environment.NOTHIN, fmt.Errorf("FIND expects STRIN pattern, got %s", pattern.Type())
+							}
+
+							cabinetData, ok := this.NativeData.(*CabinetData)
+							if !ok {
+								return environment.NOTHIN, fmt.Errorf("FIND: invalid context")
+							}
+
+							entries, err := os.ReadDir(cabinetData.DirPath)
+							if err != nil {
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to read directory: %v", err)}
+							}
+
+							var matches []environment.Value
+							patternStr := string(patternVal)
+
+							for _, entry := range entries {
+								matched, err := filepath.Match(patternStr, entry.Name())
+								if err != nil {
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Invalid pattern: %v", err)}
+								}
+								if matched {
+									matches = append(matches, environment.StringValue(entry.Name()))
+								}
+							}
+
+							// Create BUKKIT array of matching filenames
+							bukkitObj := NewBukkitInstance()
+							bukkitObj.NativeData = BukkitSlice(matches)
+
+							return bukkitObj, nil
+						},
+					},
+				},
+				PublicVariables: map[string]*environment.MemberVariable{
+					"PATH": {
+						Variable: environment.Variable{
+							Name:     "PATH",
+							Type:     "STRIN",
+							IsLocked: true,
+							IsPublic: true,
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							if data, ok := this.NativeData.(*CabinetData); ok {
+								return environment.StringValue(data.DirPath), nil
+							}
+							return environment.StringValue(""), fmt.Errorf("invalid context for PATH")
 						},
 					},
 				},

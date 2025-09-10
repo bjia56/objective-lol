@@ -1,0 +1,68 @@
+BTW Comprehensive test for optional variable types
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== Optional Types Test ==="
+
+    BTW Test 1: Dynamic variable with initialization
+    I HAS A VARIABLE DYN1 ITZ 42
+    SAY WIT "DYN1 initially (should be 42): "
+    SAYZ WIT DYN1
+
+    BTW Test 2: Dynamic variable without initialization (should be NOTHIN)
+    I HAS A VARIABLE DYN2
+    SAY WIT "DYN2 uninitialized (should be NOTHIN): "
+    SAYZ WIT DYN2
+
+    BTW Test 3: Type migration - assign different types
+    DYN2 ITZ 123
+    SAY WIT "DYN2 after integer assignment: "
+    SAYZ WIT DYN2
+
+    DYN2 ITZ "hello world"
+    SAY WIT "DYN2 after string assignment: "
+    SAYZ WIT DYN2
+
+    DYN2 ITZ 3.14159
+    SAY WIT "DYN2 after double assignment: "
+    SAYZ WIT DYN2
+
+    DYN2 ITZ YEZ
+    SAY WIT "DYN2 after boolean assignment: "
+    SAYZ WIT DYN2
+
+    BTW Test 4: Mixed static and dynamic variables
+    I HAS A VARIABLE STATIC_INT TEH INTEGR ITZ 99
+    I HAS A VARIABLE DYNAMIC_MIX ITZ "start as string"
+
+    SAY WIT "Static int: "
+    SAYZ WIT STATIC_INT
+    SAY WIT "Dynamic mix: "
+    SAYZ WIT DYNAMIC_MIX
+
+    BTW Test 5: Dynamic variable in expressions
+    I HAS A VARIABLE EXPR_TEST ITZ 10
+    EXPR_TEST ITZ EXPR_TEST MOAR 5
+    SAY WIT "Expression result (should be 15): "
+    SAYZ WIT EXPR_TEST
+
+    BTW Test 6: Multiple dynamic variables
+    I HAS A VARIABLE FIRST ITZ 1
+    I HAS A VARIABLE SECOND ITZ 2  
+    I HAS A VARIABLE RESULT ITZ FIRST MOAR SECOND
+    SAY WIT "FIRST + SECOND = RESULT (should be 3): "
+    SAYZ WIT RESULT
+
+    BTW Test 7: Dynamic variable comparisons
+    I HAS A VARIABLE NUM ITZ 42
+    IZ NUM SAEM AS 42?
+        SAYZ WIT "Dynamic comparison works!"
+    KTHX
+
+    BTW Test 8: LOCKD dynamic variable (should maintain dynamic nature)
+    I HAS A LOCKD VARIABLE CONST_DYN ITZ "locked but dynamic"
+    SAY WIT "Locked dynamic: "
+    SAYZ WIT CONST_DYN
+
+    SAYZ WIT "=== Optional Types Test Complete ==="
+KTHXBAI

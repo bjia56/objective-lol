@@ -65,7 +65,6 @@ class ProxyMeta(type):
     def __call__(cls, *args, **kwargs):
         instance = super().__call__(*args, **kwargs)
         instance._go_value = cls._go_value
-
         return instance
 
 
@@ -284,8 +283,34 @@ class ObjectiveLOLVM:
         elif isinstance(type(value), ProxyMeta):
             return value._go_value
         else:
-            self.define_class(type(value))
-            instance = self._vm.NewObjectInstance(type(value).__name__)
+            self.define_class(type(value), fully_qualified=True)
+            instance = self._vm.NewObjectInstance("{}.{}".format(type(value).__module__, type(value).__name__))
+
+            # for attributes added at runtime (e.g. in __init__),
+            # inject getters and setters for them
+            for a in dir(value):
+                if hasattr(type(value), a):
+                    continue
+
+                class_variable = ClassVariable()
+                class_variable.Name = a.upper()
+
+                getter = lambda obj, attr=a: getattr(obj, attr)
+                unique_id = str(uuid.uuid4())
+                def wrapper(this_id, getter=getter):
+                    return self.convert_to_go_value(getter(object_instances[this_id]))
+                defined_functions[unique_id] = (self, wrapper)
+                self._compat.BuildNewClassVariableWithGetter(class_variable, unique_id, gopy_wrapper)
+
+                setter = lambda obj, val, attr=a: setattr(obj, attr, val)
+                unique_id = str(uuid.uuid4())
+                def wrapper(this_id, value, setter=setter):
+                    setter(object_instances[this_id], self.convert_from_go_value(value))
+                defined_functions[unique_id] = (self, wrapper)
+                self._compat.BuildNewClassVariableWithSetter(class_variable, unique_id, gopy_wrapper)
+
+                self._compat.AddVariableToObject(instance.ID(), class_variable)
+
             object_instances[instance.ID()] = value
             return instance
 
@@ -358,10 +383,10 @@ class ObjectiveLOLVM:
 
         self.define_function(name, wrapper, argc)
 
-    def define_class(self, python_class: type) -> None:
-        class_name = python_class.__name__
+    def define_class(self, python_class: type, fully_qualified: bool = False) -> None:
+        class_name = f"{python_class.__module__}.{python_class.__name__}" if fully_qualified else python_class.__name__
         if self._compat.IsClassDefined(class_name):
-            pass
+            return
 
         # Use class builder to introspect and build the class definition
         builder = ObjectiveLOLVM.ClassBuilder(self)

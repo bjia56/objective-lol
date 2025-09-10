@@ -197,3 +197,15 @@ func (shim *VMCompatibilityShim) GetObjectImmediateVariables(id string) ([]strin
 	}
 	return nil, fmt.Errorf("error in GetObjectImmediateVariables: no object found with id %s", id)
 }
+
+func (shim *VMCompatibilityShim) AddVariableToObject(id string, variable *ClassVariable) error {
+	if obj, err := LookupObject(id); err == nil {
+		memberVariable, err := convertClassVariable(variable.Name, variable, true)
+		if err != nil {
+			return fmt.Errorf("error converting ClassVariable: %v", err)
+		}
+		obj.Variables[variable.Name] = memberVariable
+		return nil
+	}
+	return fmt.Errorf("error in AddVariableToObject: no object found with id %s", id)
+}

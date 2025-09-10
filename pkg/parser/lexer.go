@@ -615,6 +615,19 @@ func ConvertValue(tok Token) (interface{}, error) {
 			}
 			return -val, nil
 		}
+		// Handle octal numbers (0 prefix)
+		if strings.HasPrefix(literal, "0") && len(literal) > 1 {
+			val, err := strconv.ParseInt(literal[1:], 8, 64)
+			return val, err
+		}
+		// Handle negative octal numbers
+		if strings.HasPrefix(literal, "-0") && len(literal) > 2 {
+			val, err := strconv.ParseInt(literal[2:], 8, 64)
+			if err != nil {
+				return nil, err
+			}
+			return -val, nil
+		}
 		val, err := strconv.ParseInt(literal, 10, 64)
 		return val, err
 

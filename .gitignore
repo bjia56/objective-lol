@@ -3,3 +3,4 @@ olol-lsp
 !cmd/olol/
 !cmd/olol-lsp/
 *.out
+*.whl

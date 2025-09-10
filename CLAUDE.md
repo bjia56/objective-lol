@@ -40,11 +40,11 @@ go test ./pkg/integration/
 
 ### Development
 ```bash
+# Always build before running
+go build -o olol cmd/olol/main.go
+
 # Run interpreter on a file
 ./olol program.olol
-
-# Check if binary exists and build if needed
-[ -f olol ] || go build -o olol cmd/olol/main.go
 ```
 
 ## Architecture Overview
@@ -104,7 +104,7 @@ go test ./pkg/integration/
 ## Testing Strategy
 
 **Unit Tests**: Each package has `*_test.go` files for Go unit tests
-**Integration Tests**: `.olol` files in `pkg/integration/tests/` test end-to-end functionality
+**Integration Tests**: Numbered `.olol` files in `pkg/integration/tests/` test end-to-end functionality
 **Test Categories**: Basic syntax, stdlib modules, OOP features, exception handling, threading
 
 ## Language Example

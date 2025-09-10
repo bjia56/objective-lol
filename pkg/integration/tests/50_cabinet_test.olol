@@ -1,0 +1,160 @@
+BTW Comprehensive CABINET (directory) test - demonstrates all functionality
+BTW Expected output:
+BTW === CABINET (Directory) Comprehensive Test ===
+BTW
+BTW --- Basic CABINET Operations ---
+BTW CABINET created successfully
+BTW Directory path: test_dir
+BTW Directory exists: NO
+BTW
+BTW --- Directory Creation Test ---
+BTW Creating directory...
+BTW Directory created successfully
+BTW Directory exists: YEZ
+BTW
+BTW --- Directory Listing Test ---
+BTW Initial directory is empty
+BTW Files in directory: 0
+BTW Creating test files...
+BTW Files after creation: 2
+BTW File list: test1.txt,test2.txt
+BTW
+BTW --- Directory Pattern Finding Test ---
+BTW Finding .txt files...
+BTW TXT files found: 2
+BTW TXT file list: test1.txt,test2.txt
+BTW Finding .log files...
+BTW LOG files found: 0
+BTW
+BTW --- Directory Cleanup Test ---
+BTW Deleting test files...
+BTW test_dir/test1.txt deleted
+BTW test_dir/test2.txt deleted
+BTW Deleting directory...
+BTW test_dir deleted
+BTW
+BTW All CABINET tests completed successfully!
+
+I CAN HAS FILE?
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN TEST_BASIC_CABINET_OPERATIONS
+    SAYZ WIT "--- Basic CABINET Operations ---"
+
+    BTW Test basic CABINET creation
+    I HAS A VARIABLE MY_DIR TEH CABINET ITZ NEW CABINET WIT "test_dir"
+    SAYZ WIT "CABINET created successfully"
+
+    BTW Check initial properties
+    SAY WIT "Directory path: "
+    SAYZ WIT MY_DIR PATH
+    SAY WIT "Directory exists: "
+    SAYZ WIT MY_DIR DO EXISTS
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_DIRECTORY_CREATION
+    SAYZ WIT "--- Directory Creation Test ---"
+
+    I HAS A VARIABLE DIR TEH CABINET ITZ NEW CABINET WIT "test_dir"
+
+    SAYZ WIT "Creating directory..."
+    DIR DO CREATE
+    SAYZ WIT "Directory created successfully"
+    SAY WIT "Directory exists: "
+    SAYZ WIT DIR DO EXISTS
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_DIRECTORY_LISTING
+    SAYZ WIT "--- Directory Listing Test ---"
+
+    I HAS A VARIABLE DIR TEH CABINET ITZ NEW CABINET WIT "test_dir"
+
+    I HAS A VARIABLE FILES TEH BUKKIT ITZ DIR DO LIST
+    SAY WIT "Files in directory: "
+    SAYZ WIT FILES SIZ
+    SAYZ WIT "Initial directory is empty"
+
+    SAYZ WIT "Creating test files..."
+    BTW Create test files using DOCUMENT
+    I HAS A VARIABLE FILE1 TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_dir/test1.txt" AN WIT "W"
+    FILE1 DO OPEN
+    FILE1 DO WRITE WIT "Test content 1"
+    FILE1 DO CLOSE
+
+    I HAS A VARIABLE FILE2 TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_dir/test2.txt" AN WIT "W"
+    FILE2 DO OPEN
+    FILE2 DO WRITE WIT "Test content 2"
+    FILE2 DO CLOSE
+
+    BTW List files again
+    I HAS A VARIABLE FILES2 TEH BUKKIT ITZ DIR DO LIST
+    SAY WIT "Files after creation: "
+    SAYZ WIT FILES2 SIZ
+
+    BTW Print file names
+    I HAS A VARIABLE FILE_LIST TEH STRIN ITZ FILES2 DO JOIN WIT ","
+    SAY WIT "File list: "
+    SAYZ WIT FILE_LIST
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_DIRECTORY_FIND
+    SAYZ WIT "--- Directory Pattern Finding Test ---"
+
+    I HAS A VARIABLE DIR TEH CABINET ITZ NEW CABINET WIT "test_dir"
+
+    SAYZ WIT "Finding .txt files..."
+    I HAS A VARIABLE TXT_FILES TEH BUKKIT ITZ DIR DO FIND WIT "*.txt"
+    SAY WIT "TXT files found: "
+    SAYZ WIT TXT_FILES SIZ
+    I HAS A VARIABLE TXT_LIST TEH STRIN ITZ TXT_FILES DO JOIN WIT ","
+    SAY WIT "TXT file list: "
+    SAYZ WIT TXT_LIST
+
+    SAYZ WIT "Finding .log files..."
+    I HAS A VARIABLE LOG_FILES TEH BUKKIT ITZ DIR DO FIND WIT "*.log"
+    SAY WIT "LOG files found: "
+    SAYZ WIT LOG_FILES SIZ
+KTHXBAI
+
+HAI ME TEH FUNCSHUN TEST_CLEANUP
+    SAYZ WIT "--- Directory Cleanup Test ---"
+
+    SAYZ WIT "Deleting test files..."
+
+    BTW Delete the test files
+    I HAS A VARIABLE CLEANUP_FILE1 TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_dir/test1.txt" AN WIT "R"
+    CLEANUP_FILE1 DO DELETE
+    SAYZ WIT "test_dir/test1.txt deleted"
+
+    I HAS A VARIABLE CLEANUP_FILE2 TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_dir/test2.txt" AN WIT "R"
+    CLEANUP_FILE2 DO DELETE
+    SAYZ WIT "test_dir/test2.txt deleted"
+
+    SAYZ WIT "Deleting directory..."
+    BTW Delete the directory
+    I HAS A VARIABLE DIR TEH CABINET ITZ NEW CABINET WIT "test_dir"
+    DIR DO DELETE
+    SAYZ WIT "test_dir deleted"
+KTHXBAI
+
+HAI ME TEH FUNCSHUN MAIN
+    SAYZ WIT "=== CABINET (Directory) Comprehensive Test ==="
+    SAYZ WIT ""
+
+    TEST_BASIC_CABINET_OPERATIONS
+    SAYZ WIT ""
+
+    TEST_DIRECTORY_CREATION
+    SAYZ WIT ""
+
+    TEST_DIRECTORY_LISTING
+    SAYZ WIT ""
+
+    TEST_DIRECTORY_FIND
+    SAYZ WIT ""
+
+    TEST_CLEANUP
+    SAYZ WIT ""
+
+    SAYZ WIT "All CABINET tests completed successfully!"
+KTHXBAI

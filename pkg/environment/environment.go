@@ -94,16 +94,31 @@ func (e *Environment) DefineVariable(name, varType string, value Value, isLocked
 		return fmt.Errorf("variable '%s' already defined in current scope", name)
 	}
 
-	// Cast value to the specified type
-	castedValue, err := value.Cast(varType)
-	if err != nil {
-		return fmt.Errorf("cannot initialize variable '%s': %v", name, err)
+	var castedValue Value
+	var actualType string
+
+	// Handle dynamic typing for empty type specification
+	if varType == "" {
+		// Dynamic variable - infer type from value if provided, otherwise use NOTHIN
+		if value == nil || value.IsNothing() {
+			castedValue = NOTHIN
+		} else {
+			castedValue = value
+		}
+	} else {
+		// Static typed variable - cast value to the specified type
+		var err error
+		castedValue, err = value.Cast(varType)
+		if err != nil {
+			return fmt.Errorf("cannot initialize variable '%s': %v", name, err)
+		}
+		actualType = varType
 	}
 
 	e.variables[name] = &Variable{
 		Documentation: docs,
 		Name:          name,
-		Type:          varType,
+		Type:          actualType,
 		Value:         castedValue,
 		IsLocked:      isLocked,
 		IsPublic:      true, // Regular variables are public by default
@@ -136,13 +151,12 @@ func (e *Environment) SetVariable(name string, value Value) error {
 		return fmt.Errorf("cannot assign to locked variable '%s'", name)
 	}
 
-	// Cast value to the variable's type
 	castedValue, err := value.Cast(variable.Type)
 	if err != nil {
 		return fmt.Errorf("cannot assign to variable '%s': %v", name, err)
 	}
-
 	variable.Value = castedValue
+
 	return nil
 }
 
