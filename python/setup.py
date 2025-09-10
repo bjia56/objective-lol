@@ -282,8 +282,12 @@ class CustomBuildExt(build_ext):
             shutil.rmtree(destination)
 
         # Setup environment variables
+        # Use platform-appropriate path separator
+        path_sep = ";" if sys.platform == "win32" else ":"
+        new_path = f"{gobin_dir}{path_sep}{go_dir}/bin{path_sep}{os.environ.get('PATH', '')}"
+        
         env = {
-            "PATH": f"{gobin_dir}:{go_dir}/bin:{os.environ.get('PATH', '')}",
+            "PATH": new_path,
             **go_env,
             "CGO_LDFLAGS_ALLOW": ".*",
             "GOWORK": "off",
@@ -296,11 +300,13 @@ class CustomBuildExt(build_ext):
             # Use downloaded Python paths
             python_include = os.path.join(python_dir, "include")
             python_lib = os.path.join(python_dir, "libs")
+            # Use running Python version for lib name
+            python_lib_name = f"python{sys.version_info.major}{sys.version_info.minor}.lib"
             env["CGO_CFLAGS"] = f"-I{python_include}"
-            env["CGO_LDFLAGS"] = f"-L{python_lib} -l:python313.lib"
+            env["CGO_LDFLAGS"] = f"-L{python_lib} -l:{python_lib_name}"
             env["GOPY_INCLUDE"] = python_include
             env["GOPY_LIBDIR"] = python_lib
-            env["GOPY_PYLIB"] = ":python313.lib"
+            env["GOPY_PYLIB"] = f":{python_lib_name}"
         elif sys.platform == "darwin":
             min_ver = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "10.15")
             env["MACOSX_DEPLOYMENT_TARGET"] = min_ver
