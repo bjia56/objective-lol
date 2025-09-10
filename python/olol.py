@@ -71,60 +71,56 @@ class ProxyMeta(type):
 
 class ObjectiveLOLVM:
     class ClassBuilder:
-        __vm: 'ObjectiveLOLVM'
-        __compat: VMCompatibilityShim
-        __loop: asyncio.AbstractEventLoop
-        __class: ClassDefinition
+        _vm: 'ObjectiveLOLVM'
+        _class: ClassDefinition
 
         def __init__(self, vm: 'ObjectiveLOLVM'):
-            self.__vm = vm
-            self.__compat = vm._ObjectiveLOLVM__compat
-            self.__loop = vm._ObjectiveLOLVM__loop
-            self.__class = NewClassDefinition()
+            self._vm = vm
+            self._class = NewClassDefinition()
 
         def get(self) -> ClassDefinition:
-            return self.__class
+            return self._class
 
         def set_name(self, name: str) -> 'ObjectiveLOLVM.ClassBuilder':
-            self.__class.Name = name
+            self._class.Name = name
             return self
 
         def __build_variable(self, name: str, value, locked: bool, getter=None, setter=None) -> ClassVariable:
             class_variable = ClassVariable()
             class_variable.Name = name
-            class_variable.Value = self.__vm.convert_to_go_value(value)
+            class_variable.Value = self._vm.convert_to_go_value(value)
             class_variable.Locked = locked
             if getter is not None:
                 unique_id = str(uuid.uuid4())
 
                 def wrapper(this_id):
-                    return self.__vm.convert_to_go_value(getter(object_instances[this_id]))
+                    return self._vm.convert_to_go_value(getter(object_instances[this_id]))
 
-                defined_functions[unique_id] = (self.__vm, wrapper)
-                self.__compat.BuildNewClassVariableWithGetter(class_variable, unique_id, gopy_wrapper)
+                defined_functions[unique_id] = (self._vm, wrapper)
+                self._vm._compat.BuildNewClassVariableWithGetter(class_variable, unique_id, gopy_wrapper)
             if setter is not None:
                 unique_id = str(uuid.uuid4())
 
                 def wrapper(this_id, value):
-                    setter(object_instances[this_id], self.__vm.convert_from_go_value(value))
+                    setter(object_instances[this_id], self._vm.convert_from_go_value(value))
 
-                defined_functions[unique_id] = (self.__vm, wrapper)
-                self.__compat.BuildNewClassVariableWithSetter(class_variable, unique_id, gopy_wrapper)
+                defined_functions[unique_id] = (self._vm, wrapper)
+                self._vm._compat.BuildNewClassVariableWithSetter(class_variable, unique_id, gopy_wrapper)
             return class_variable
 
         def add_public_variable(self, name: str, value = None, locked: bool = False, getter=None, setter=None) -> 'ObjectiveLOLVM.ClassBuilder':
             variable = self.__build_variable(name, value, locked, getter, setter)
-            self.__class.PublicVariables[name] = variable
+            self._class.PublicVariables[name] = variable
             return self
 
         def add_private_variable(self, name: str, value = None, locked: bool = False, getter=None, setter=None) -> 'ObjectiveLOLVM.ClassBuilder':
             variable = self.__build_variable(name, value, locked, getter, setter)
-            self.__class.PrivateVariables[name] = variable
+            self._class.PrivateVariables[name] = variable
             return self
 
         def add_shared_variable(self, name: str, value = None, locked: bool = False, getter=None, setter=None) -> 'ObjectiveLOLVM.ClassBuilder':
             variable = self.__build_variable(name, value, locked, getter, setter)
-            self.__class.SharedVariables[name] = variable
+            self._class.SharedVariables[name] = variable
             return self
 
         def __build_method(self, name: str, function, argc: int = None) -> ClassMethod:
@@ -132,14 +128,14 @@ class ObjectiveLOLVM:
             unique_id = str(uuid.uuid4())
 
             def wrapper(this_id, *args):
-                return self.__vm.convert_to_go_value(function(object_instances[this_id], *args))
+                return self._vm.convert_to_go_value(function(object_instances[this_id], *args))
 
-            defined_functions[unique_id] = (self.__vm, wrapper)
+            defined_functions[unique_id] = (self._vm, wrapper)
             class_method = ClassMethod()
             class_method.Name = name
             class_method.Argc = argc
 
-            self.__compat.BuildNewClassMethod(class_method, unique_id, gopy_wrapper)
+            self._vm._compat.BuildNewClassMethod(class_method, unique_id, gopy_wrapper)
             return class_method
 
         def add_constructor(self, typ: type) -> 'ObjectiveLOLVM.ClassBuilder':
@@ -155,29 +151,29 @@ class ObjectiveLOLVM:
             unique_id = str(uuid.uuid4())
 
             def ctor_wrapper(this_id, *args):
-                mro = self.__compat.GetObjectMRO(this_id)
+                mro = self._vm._compat.GetObjectMRO(this_id)
                 simple_mro = convert_to_simple_mro(mro)
 
                 instance_class = typ
                 if len(mro) > 1:
-                    go_value = self.__vm._ObjectiveLOLVM__compat.LookupObject(this_id)
-                    instance_class = self.__vm.create_proxy_class([defined_classes[cls_name.upper()] for cls_name in simple_mro if cls_name.upper() in defined_classes], go_value)
+                    go_value = self._vm._compat.LookupObject(this_id)
+                    instance_class = self._vm.create_proxy_class([defined_classes[cls_name.upper()] for cls_name in simple_mro if cls_name.upper() in defined_classes], go_value)
 
                 instance = instance_class(*args)
                 object_instances[this_id] = instance
 
-            defined_functions[unique_id] = (self.__vm, ctor_wrapper)
+            defined_functions[unique_id] = (self._vm, ctor_wrapper)
             class_method = ClassMethod()
             class_method.Name = typ.__name__
             class_method.Argc = argc
 
-            self.__compat.BuildNewClassMethod(class_method, unique_id, gopy_wrapper)
-            self.__class.PublicMethods[typ.__name__] = class_method
+            self._vm._compat.BuildNewClassMethod(class_method, unique_id, gopy_wrapper)
+            self._class.PublicMethods[typ.__name__] = class_method
             return self
 
         def add_public_method(self, name: str, function, argc: int = None) -> 'ObjectiveLOLVM.ClassBuilder':
             method = self.__build_method(name, function, argc)
-            self.__class.PublicMethods[name] = method
+            self._class.PublicMethods[name] = method
             return self
 
         def add_public_coroutine(self, name: str, function) -> 'ObjectiveLOLVM.ClassBuilder':
@@ -187,7 +183,7 @@ class ObjectiveLOLVM:
                 fut = concurrent.futures.Future()
                 def do():
                     try:
-                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self.__loop).result()
+                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self._vm._loop).result()
                         fut.set_result(result)
                     except Exception as e:
                         fut.set_exception(e)
@@ -195,12 +191,12 @@ class ObjectiveLOLVM:
                 return fut.result()
 
             method = self.__build_method(name, wrapper, argc)
-            self.__class.PublicMethods[name] = method
+            self._class.PublicMethods[name] = method
             return self
 
         def add_private_method(self, name: str, function, argc: int = None) -> 'ObjectiveLOLVM.ClassBuilder':
             method = self.__build_method(name, function, argc)
-            self.__class.PrivateMethods[name] = method
+            self._class.PrivateMethods[name] = method
             return self
 
         def add_private_coroutine(self, name: str, function) -> 'ObjectiveLOLVM.ClassBuilder':
@@ -210,7 +206,7 @@ class ObjectiveLOLVM:
                 fut = concurrent.futures.Future()
                 def do():
                     try:
-                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self.__loop).result()
+                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self._vm._loop).result()
                         fut.set_result(result)
                     except Exception as e:
                         fut.set_exception(e)
@@ -218,18 +214,18 @@ class ObjectiveLOLVM:
                 return fut.result()
 
             method = self.__build_method(name, wrapper, argc)
-            self.__class.PrivateMethods[name] = method
+            self._class.PrivateMethods[name] = method
             return self
 
-    __vm: VM
-    __compat: VMCompatibilityShim
-    __loop: asyncio.AbstractEventLoop
+    _vm: VM
+    _compat: VMCompatibilityShim
+    _loop: asyncio.AbstractEventLoop
 
     def __init__(self):
         # todo: figure out how to bridge stdout/stdin
-        self.__vm = NewVM(DefaultConfig())
-        self.__compat = self.__vm.GetCompatibilityShim()
-        self.__loop = asyncio.get_event_loop()
+        self._vm = NewVM(DefaultConfig())
+        self._compat = self._vm.GetCompatibilityShim()
+        self._loop = asyncio.get_event_loop()
 
     def convert_from_go_value(self, go_value: GoValue):
         if not isinstance(go_value, GoValue):
@@ -286,8 +282,8 @@ class ObjectiveLOLVM:
         elif isinstance(type(value), ProxyMeta):
             return value._go_value
         else:
-            self.__vm.define_class(type(value))
-            instance = self.__vm.NewObjectInstance(type(value).__name__)
+            self._vm.define_class(type(value))
+            instance = self._vm.NewObjectInstance(type(value).__name__)
             object_instances[instance.ID()] = value
             return instance
 
@@ -300,7 +296,7 @@ class ObjectiveLOLVM:
             return go_value
 
     def create_proxy_class(self, mro: list[type], go_value: GoValue) -> type:
-        instance_immediate_functions = self.__compat.GetObjectImmediateFunctions(go_value.ID())
+        instance_immediate_functions = self._compat.GetObjectImmediateFunctions(go_value.ID())
         superself = self
 
         class Proxy(*mro, metaclass=ProxyMeta, go_value=go_value):
@@ -336,13 +332,13 @@ class ObjectiveLOLVM:
 
     def define_variable(self, name: str, value, constant: bool = False) -> None:
         goValue = self.convert_to_go_value(value)
-        self.__vm.DefineVariable(name, goValue, constant)
+        self._vm.DefineVariable(name, goValue, constant)
 
     def define_function(self, name: str, function, argc: int = None) -> None:
         argc = len(inspect.signature(function).parameters) if argc is None else argc
         unique_id = str(uuid.uuid4())
         defined_functions[unique_id] = (self, function)
-        self.__compat.DefineFunction(unique_id, name, argc, gopy_wrapper)
+        self._compat.DefineFunction(unique_id, name, argc, gopy_wrapper)
 
     def define_coroutine(self, name: str, function) -> None:
         argc = len(inspect.signature(function).parameters)
@@ -351,7 +347,7 @@ class ObjectiveLOLVM:
             fut = concurrent.futures.Future()
             def do():
                 try:
-                    result = asyncio.run_coroutine_threadsafe(function(*args), self.__loop).result()
+                    result = asyncio.run_coroutine_threadsafe(function(*args), self._loop).result()
                     fut.set_result(result)
                 except Exception as e:
                     fut.set_exception(e)
@@ -362,7 +358,7 @@ class ObjectiveLOLVM:
 
     def define_class(self, python_class: type) -> None:
         class_name = python_class.__name__
-        if self.__compat.IsClassDefined(class_name):
+        if self._compat.IsClassDefined(class_name):
             pass
 
         # Use class builder to introspect and build the class definition
@@ -390,13 +386,13 @@ class ObjectiveLOLVM:
                         builder.add_public_method(method_name, method)
 
         class_def = builder.get()
-        self.__vm.DefineClass(class_def)
+        self._vm.DefineClass(class_def)
 
         defined_classes[class_name.upper()] = python_class
 
     def call(self, name: str, *args):
         goArgs = self.convert_to_go_value(args)
-        result = self.__vm.Call(name, goArgs)
+        result = self._vm.Call(name, goArgs)
         return self.convert_from_go_value(result)
 
     async def call_async(self, name: str, *args):
@@ -404,7 +400,7 @@ class ObjectiveLOLVM:
         fut = concurrent.futures.Future()
         def do():
             try:
-                result = self.__vm.Call(name, goArgs)
+                result = self._vm.Call(name, goArgs)
                 fut.set_result(self.convert_from_go_value(result))
             except Exception as e:
                 fut.set_exception(e)
@@ -413,7 +409,7 @@ class ObjectiveLOLVM:
 
     def call_method(self, receiver: GoValue, name: str, *args):
         goArgs = self.convert_to_go_value(args)
-        result = self.__vm.CallMethod(receiver, name, goArgs)
+        result = self._vm.CallMethod(receiver, name, goArgs)
         return self.convert_from_go_value(result)
 
     async def call_method_async(self, receiver: GoValue, name: str, *args):
@@ -421,7 +417,7 @@ class ObjectiveLOLVM:
         fut = concurrent.futures.Future()
         def do():
             try:
-                result = self.__vm.CallMethod(receiver, name, goArgs)
+                result = self._vm.CallMethod(receiver, name, goArgs)
                 fut.set_result(self.convert_from_go_value(result))
             except Exception as e:
                 fut.set_exception(e)
@@ -429,13 +425,13 @@ class ObjectiveLOLVM:
         return await asyncio.wrap_future(fut)
 
     def execute(self, code: str) -> None:
-        return self.__vm.Execute(code)
+        return self._vm.Execute(code)
 
     async def execute_async(self, code: str) -> None:
         fut = concurrent.futures.Future()
         def do():
             try:
-                result = self.__vm.Execute(code)
+                result = self._vm.Execute(code)
                 fut.set_result(result)
             except Exception as e:
                 fut.set_exception(e)
