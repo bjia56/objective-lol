@@ -6,7 +6,7 @@ import subprocess
 import sys
 import tarfile
 import zipfile
-from urllib.request import urlopen, urlretrieve
+from urllib.request import urlopen, urlretrieve, Request
 from urllib.error import URLError
 try:
     from distutils.core import Extension
@@ -42,7 +42,14 @@ def find_matching_python_release(target_version, detected_platform):
         while True:
             api_url = f"{base_api_url}?per_page={per_page}&page={page}"
 
-            with urlopen(api_url) as response:
+            # Create request with GitHub Actions token if available
+            request = Request(api_url)
+            github_token = os.environ.get('GITHUB_TOKEN')
+            if github_token:
+                request.add_header('Authorization', f'Bearer {github_token}')
+                request.add_header('X-GitHub-Api-Version', '2022-11-28')
+
+            with urlopen(request) as response:
                 releases = json.loads(response.read())
 
             # If no releases returned, we've reached the end
