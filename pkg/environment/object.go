@@ -3,6 +3,8 @@ package environment
 import (
 	"fmt"
 	"slices"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 // ObjectInstance represents a native Objective-LOL instance of a class
@@ -12,6 +14,11 @@ type ObjectInstance struct {
 	Variables       map[string]*MemberVariable
 	SharedVariables map[string]*MemberVariable // Reference to class shared variables
 	NativeData      any                        // For native classes, stores internal data
+}
+
+func (obj *ObjectInstance) DebugString() string {
+	type x ObjectInstance
+	return spew.Sdump((*x)(obj))
 }
 
 func (obj *ObjectInstance) ID() string {

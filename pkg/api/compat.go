@@ -183,3 +183,17 @@ func (shim *VMCompatibilityShim) GetObjectImmediateFunctions(id string) ([]strin
 	}
 	return nil, fmt.Errorf("error in GetObjectImmediateFunctions: no object found with id %s", id)
 }
+
+func (shim *VMCompatibilityShim) GetObjectImmediateVariables(id string) ([]string, error) {
+	if obj, err := LookupObject(id); err == nil {
+		vars := []string{}
+		for vname := range obj.Variables {
+			vars = append(vars, vname)
+		}
+		for vname := range obj.SharedVariables {
+			vars = append(vars, vname)
+		}
+		return vars, nil
+	}
+	return nil, fmt.Errorf("error in GetObjectImmediateVariables: no object found with id %s", id)
+}

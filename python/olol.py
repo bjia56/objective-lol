@@ -250,8 +250,10 @@ class ObjectiveLOLVM:
             if go_value.ID() in object_instances:
                 return object_instances[go_value.ID()]
 
-            proxy_class = self.create_proxy_class([object], go_value)
-            instance = proxy_class()
+            mro = self._compat.GetObjectMRO(go_value.ID())
+            simple_mro = convert_to_simple_mro(mro)
+            instance_class = self.create_proxy_class([defined_classes[cls_name.upper()] for cls_name in simple_mro if cls_name.upper() in defined_classes], go_value)
+            instance = instance_class()
             object_instances[go_value.ID()] = instance
             return instance
 
@@ -282,7 +284,7 @@ class ObjectiveLOLVM:
         elif isinstance(type(value), ProxyMeta):
             return value._go_value
         else:
-            self._vm.define_class(type(value))
+            self.define_class(type(value))
             instance = self._vm.NewObjectInstance(type(value).__name__)
             object_instances[instance.ID()] = value
             return instance
@@ -371,8 +373,8 @@ class ObjectiveLOLVM:
             if not attr_name.startswith('_') and not callable(getattr(python_class, attr_name)):
                 builder.add_public_variable(
                     attr_name,
-                    getter=lambda self: getattr(self, attr_name),
-                    setter=lambda self, value: setattr(self, attr_name, value)
+                    getter=lambda self, attr=attr_name: getattr(self, attr),
+                    setter=lambda self, value, attr=attr_name: setattr(self, attr, value)
                 )
 
         # Add methods
