@@ -22,6 +22,9 @@ func (obj *ObjectInstance) DebugString() string {
 }
 
 func (obj *ObjectInstance) ID() string {
+	if obj == nil {
+		return "<nil>"
+	}
 	return fmt.Sprintf("%p", obj)
 }
 
@@ -75,7 +78,7 @@ func (obj *ObjectInstance) SetMemberVariable(name string, value Value, callingCo
 }
 
 func (o *ObjectInstance) Type() string      { return o.Class.Name }
-func (o *ObjectInstance) String() string    { return fmt.Sprintf("<%s object>", o.Class.Name) }
+func (o *ObjectInstance) String() string    { return fmt.Sprintf("[%s @ %s]", o.Class.Name, o.ID()) }
 func (o *ObjectInstance) Copy() Value       { return o }   // Objects are reference types
 func (o *ObjectInstance) ToBool() BoolValue { return YEZ } // Objects are always truthy
 func (o *ObjectInstance) IsNothing() bool   { return o == nil }

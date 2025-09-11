@@ -5,6 +5,7 @@ import inspect
 import json
 import threading
 from typing import Any, Callable, Dict, Tuple, Type
+from unittest import result
 import uuid
 
 from .api import (
@@ -42,7 +43,8 @@ def gopy_wrapper(id: str, json_args: str) -> bytes:
     args = json.loads(json_args)
     try:
         vm, fn = defined_functions[id]
-        result = fn(*args)
+        converted_args = [vm.convert_from_go_value(arg) for arg in args]
+        result = fn(*converted_args)
         return json.dumps({"result": vm.convert_to_go_value(result), "error": None}, default=vm.serialize_go_value).encode('utf-8')
     except Exception as e:
         return json.dumps({"result": None, "error": str(e)}).encode('utf-8')
@@ -275,6 +277,9 @@ class ObjectiveLOLVM:
 
     def convert_from_go_value(self, go_value: GoValue):
         if not isinstance(go_value, GoValue):
+            if go_value and GoValueIDKey in go_value:
+                go_value = self._compat.LookupObject(go_value[GoValueIDKey])
+                return self.convert_from_go_value(go_value)
             return go_value
         typ = go_value.Type()
         if typ == "INTEGR":
@@ -482,11 +487,14 @@ class ObjectiveLOLVM:
 
                 # Try all case permutations
                 for candidate in generate_case_permutations(fname):
-                    if hasattr(this, candidate):
-                        method = getattr(this, candidate)
-                        if callable(method):
-                            _method_name_cache[cache_key] = candidate
-                            return await method(*args)
+                    try:
+                        if hasattr(this, candidate):
+                            method = getattr(this, candidate)
+                            if callable(method):
+                                _method_name_cache[cache_key] = candidate
+                                return await method(*args)
+                    except Exception as e:
+                        continue
 
                 # Cache as not found
                 _method_name_cache[cache_key] = None
@@ -555,7 +563,8 @@ class ObjectiveLOLVM:
             except Exception as e:
                 fut.set_exception(e)
         threading.Thread(target=do).start()
-        return await asyncio.wrap_future(fut)
+        result = await asyncio.wrap_future(fut)
+        return result
 
     def execute(self, code: str) -> None:
         return self._vm.Execute(code)
