@@ -1,6 +1,7 @@
 package environment
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -252,7 +253,7 @@ func TestObjectInstance(t *testing.T) {
 
 	// Value interface
 	assert.Equal(t, "TestClass", instance.Type())
-	assert.Equal(t, "<TestClass object>", instance.String())
+	assert.Equal(t, fmt.Sprintf("[TestClass @ %p]", instance), instance.String())
 	assert.Equal(t, YEZ, instance.ToBool()) // Objects are always truthy
 	assert.False(t, instance.IsNothing())
 	assert.Equal(t, instance, instance.Copy()) // Objects are reference types
@@ -284,6 +285,7 @@ func TestObjectInstanceMemberAccess(t *testing.T) {
 	}
 
 	err := env.DefineClass(class)
+	assert.NoError(t, err)
 
 	instance, err := env.NewObjectInstance("TestClass")
 	assert.NoError(t, err)

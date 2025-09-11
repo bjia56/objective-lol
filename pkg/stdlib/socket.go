@@ -77,19 +77,20 @@ func getSocketClasses() map[string]*environment.Class {
 							socketData.Protocol = protocol
 							address := fmt.Sprintf("%s:%d", host, port)
 
-							if protocol == "TCP" {
+							switch protocol {
+							case "TCP":
 								listener, err := net.Listen("tcp", address)
 								if err != nil {
 									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("BIND failed: %v", err)}
 								}
 								socketData.Listener = listener
-							} else if protocol == "UDP" {
+							case "UDP":
 								conn, err := net.ListenPacket("udp", address)
 								if err != nil {
 									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("BIND failed: %v", err)}
 								}
 								socketData.PacketConn = conn
-							} else {
+							default:
 								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Unsupported protocol: %s", protocol)}
 							}
 
@@ -163,7 +164,7 @@ func getSocketClasses() map[string]*environment.Class {
 								return environment.NOTHIN, runtime.Exception{Message: "CONNECT: only supported for TCP sockets"}
 							}
 
-							address := fmt.Sprintf("%s:%d", host, port)
+							address := net.JoinHostPort(host, fmt.Sprintf("%d", port))
 							conn, err := net.DialTimeout("tcp", address, timeout)
 							if err != nil {
 								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("CONNECT failed: %v", err)}
