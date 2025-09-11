@@ -11,9 +11,26 @@ I CAN HAS FILE?
 BTW Selective import
 I CAN HAS DOCUMENT FROM FILE?
 I CAN HAS CABINET FROM FILE?
+I CAN HAS SEP FROM FILE?
 ```
 
 **Note:** The FILE module automatically imports the IO module since DOCUMENT inherits from READWRITER.
+
+## Path Constants
+
+### SEP - Path Separator
+
+The platform-specific path separator character.
+
+**Type:** STRIN
+**Value:** `"/"` on Unix/Linux/macOS, `"\"` on Windows
+
+```lol
+I CAN HAS SEP FROM FILE?
+
+I HAS A VARIABLE PATH TEH STRIN ITZ "home" SMOOSH SEP SMOOSH "user" SMOOSH SEP SMOOSH "documents"
+I HAS A VARIABLE DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT PATH AN WIT "R"
+```
 
 ## DOCUMENT Class
 
@@ -816,6 +833,12 @@ KTHXBAI
 ```
 
 ## Quick Reference
+
+### Constants
+
+| Constant | Type | Description |
+|----------|------|-------------|
+| `SEP` | STRIN | Platform-specific path separator (`/` or `\`) |
 
 ### DOCUMENT Constructor
 

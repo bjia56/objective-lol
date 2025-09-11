@@ -51,16 +51,15 @@ SAYZ WIT LEN WIT SPECIAL          BTW Output: 19
 
 ### CONCAT - String Concatenation
 
-Combines two strings into a single string.
+Combines multiple strings into a single string.
 
 **Syntax:**
 ```lol
-CONCAT WIT <string1> AN WIT <string2>
+CONCAT WIT <string1> [AN WIT <string2> ...]
 ```
 
 **Parameters:**
-- **string1**: STRIN - The first string
-- **string2**: STRIN - The second string
+All parameters must be convertible to STRIN.
 
 **Returns:** STRIN - The concatenated string
 
@@ -77,14 +76,8 @@ SAYZ WIT RESULT                   BTW Output: Hello World
 
 BTW Building longer strings
 I HAS A VARIABLE NAME TEH STRIN ITZ "Alice"
-I HAS A VARIABLE GREETING TEH STRIN ITZ CONCAT WIT "Hello, " AN WIT NAME
-I HAS A VARIABLE FULL_MSG TEH STRIN ITZ CONCAT WIT GREETING AN WIT "!"
-SAYZ WIT FULL_MSG                 BTW Output: Hello, Alice!
-
-BTW Concatenating with empty strings
-I HAS A VARIABLE TEXT TEH STRIN ITZ "Important"
-I HAS A VARIABLE WITH_EMPTY TEH STRIN ITZ CONCAT WIT TEXT AN WIT ""
-SAYZ WIT WITH_EMPTY               BTW Output: Important
+I HAS A VARIABLE GREETING TEH STRIN ITZ CONCAT WIT "Hello, " AN WIT NAME AN WIT "!"
+SAYZ WIT GRETTING                 BTW Output: Hello, Alice!
 ```
 
 ### TRIM - Remove Whitespace

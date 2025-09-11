@@ -546,6 +546,24 @@ func getFileClasses() map[string]*environment.Class {
 							return environment.NOTHIN, nil
 						},
 					},
+					// DELETE_ALL method
+					"DELETE_ALL": {
+						Name: "DELETE_ALL",
+						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							cabinetData, ok := this.NativeData.(*CabinetData)
+							if !ok {
+								return environment.NOTHIN, fmt.Errorf("DELETE_ALL: invalid context")
+							}
+
+							// Remove directory and all its contents
+							err := os.RemoveAll(cabinetData.DirPath)
+							if err != nil {
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to delete directory and its contents: %v", err)}
+							}
+
+							return environment.NOTHIN, nil
+						},
+					},
 					// FIND method
 					"FIND": {
 						Name:       "FIND",
@@ -618,8 +636,27 @@ func getFileClasses() map[string]*environment.Class {
 	return fileClasses
 }
 
-// RegisterFILEInEnv registers FILE classes in the given environment
-// declarations: empty slice means import all, otherwise import only specified classes
+// Global FILE variable definitions - created once and reused
+var fileVarsOnce = sync.Once{}
+var fileVariables map[string]*environment.Variable
+
+func getFileVariables() map[string]*environment.Variable {
+	fileVarsOnce.Do(func() {
+		fileVariables = map[string]*environment.Variable{
+			"SEP": {
+				Name:     "SEP",
+				Type:     "STRIN",
+				Value:    environment.StringValue(string(filepath.Separator)),
+				IsLocked: true,
+				IsPublic: true,
+			},
+		}
+	})
+	return fileVariables
+}
+
+// RegisterFILEInEnv registers FILE classes and variables in the given environment
+// declarations: empty slice means import all, otherwise import only specified classes/variables
 func RegisterFILEInEnv(env *environment.Environment, declarations ...string) error {
 	// First ensure IO classes are available since DOCUMENT inherits from IO.READWRITER
 	err := RegisterIOInEnv(env, "READWRITER", "READER", "WRITER")
@@ -628,22 +665,34 @@ func RegisterFILEInEnv(env *environment.Environment, declarations ...string) err
 	}
 
 	fileClasses := getFileClasses()
+	fileVariables := getFileVariables()
 
-	// If declarations is empty, import all classes
+	// If declarations is empty, import all classes and variables
 	if len(declarations) == 0 {
 		for _, class := range fileClasses {
 			env.DefineClass(class)
 		}
+		for _, variable := range fileVariables {
+			err := env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, nil)
+			if err != nil {
+				return fmt.Errorf("failed to define FILE variable %s: %v", variable.Name, err)
+			}
+		}
 		return nil
 	}
 
-	// Otherwise, import only specified classes
+	// Otherwise, import only specified classes and variables
 	for _, decl := range declarations {
 		declUpper := strings.ToUpper(decl)
 		if class, exists := fileClasses[declUpper]; exists {
 			env.DefineClass(class)
+		} else if variable, exists := fileVariables[declUpper]; exists {
+			err := env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, nil)
+			if err != nil {
+				return fmt.Errorf("failed to define FILE variable %s: %v", variable.Name, err)
+			}
 		} else {
-			return fmt.Errorf("unknown FILE class: %s", decl)
+			return fmt.Errorf("unknown FILE declaration: %s", decl)
 		}
 	}
 

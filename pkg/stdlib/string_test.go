@@ -159,65 +159,6 @@ func TestStringCONCAT(t *testing.T) {
 	}
 }
 
-func TestStringCONCATErrorHandling(t *testing.T) {
-	env := environment.NewEnvironment(nil)
-	RegisterSTRINGInEnv(env)
-
-	concatFunc, err := env.GetFunction("CONCAT")
-	require.NoError(t, err)
-
-	tests := []struct {
-		name  string
-		args  []environment.Value
-		error string
-	}{
-		{
-			"First argument not string",
-			[]environment.Value{environment.IntegerValue(42), environment.StringValue("world")},
-			"CONCAT: first argument is not a string",
-		},
-		{
-			"Second argument not string",
-			[]environment.Value{environment.StringValue("hello"), environment.IntegerValue(42)},
-			"CONCAT: second argument is not a string",
-		},
-		{
-			"Both arguments not string",
-			[]environment.Value{environment.IntegerValue(1), environment.IntegerValue(2)},
-			"CONCAT: first argument is not a string",
-		},
-		{
-			"First argument boolean",
-			[]environment.Value{environment.YEZ, environment.StringValue("test")},
-			"CONCAT: first argument is not a string",
-		},
-		{
-			"Second argument boolean",
-			[]environment.Value{environment.StringValue("test"), environment.NO},
-			"CONCAT: second argument is not a string",
-		},
-		{
-			"First argument nothing",
-			[]environment.Value{environment.NOTHIN, environment.StringValue("test")},
-			"CONCAT: first argument is not a string",
-		},
-		{
-			"Second argument nothing",
-			[]environment.Value{environment.StringValue("test"), environment.NOTHIN},
-			"CONCAT: second argument is not a string",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := concatFunc.NativeImpl(nil, nil, tt.args)
-			require.Error(t, err)
-			assert.Contains(t, err.Error(), tt.error)
-			assert.Equal(t, environment.NOTHIN, result)
-		})
-	}
-}
-
 func TestSTRINGSelectiveImport(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 

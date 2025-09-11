@@ -32,22 +32,17 @@ func getStringFunctions() map[string]*environment.Function {
 			"CONCAT": {
 				Name:       "CONCAT",
 				ReturnType: "STRIN",
-				Parameters: []environment.Parameter{
-					{Name: "STR1", Type: "STRIN"},
-					{Name: "STR2", Type: "STRIN"},
-				},
+				IsVarargs:  true,
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-					str1, ok1 := args[0].(environment.StringValue)
-					str2, ok2 := args[1].(environment.StringValue)
-
-					if !ok1 {
-						return environment.NOTHIN, fmt.Errorf("CONCAT: first argument is not a string")
+					var strBuilder strings.Builder
+					for _, arg := range args {
+						arg, err := arg.Cast("STRIN")
+						if err != nil {
+							return environment.NOTHIN, fmt.Errorf("CONCAT: all arguments must be strings")
+						}
+						strBuilder.WriteString(string(arg.(environment.StringValue)))
 					}
-					if !ok2 {
-						return environment.NOTHIN, fmt.Errorf("CONCAT: second argument is not a string")
-					}
-
-					return environment.StringValue(string(str1) + string(str2)), nil
+					return environment.StringValue(strBuilder.String()), nil
 				},
 			},
 			"SUBSTR": {
