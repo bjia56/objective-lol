@@ -21,6 +21,7 @@ The Objective-LOL standard library provides essential functionality through a co
 | [HTTP](http.md) | HTTP client operations | `INTERWEB` client class, `RESPONSE` class |
 | [SOCKET](socket.md) | Network socket operations | `SOKKIT` socket class, `WIRE` connection class |
 | [PROCESS](process.md) | Process management operations | `MINION` process class, `PIPE` I/O class |
+| [SYSTEM](system.md) | Environment variable operations | `ENVBASKIT` class, `ENV` global variable |
 
 ### Collection Types
 

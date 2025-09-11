@@ -194,6 +194,7 @@ Error: circular import detected during execution: circular_module_a
 | `FILE` | File utilities | `DOCUMENT` class |
 | `HTTP` | HTTP client | `INTERWEB`, `RESPONSE` classes |
 | `PROCESS` | Process management | `MINION`, `PIPE` classes |
+| `SYSTEM` | Environment variables | `ENVBASKIT` class, `ENV` global |
 
 ### Standard Library Examples
 
