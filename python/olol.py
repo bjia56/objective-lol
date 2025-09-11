@@ -5,7 +5,6 @@ import inspect
 import json
 import threading
 from typing import Any, Callable, Dict, Tuple, Type
-from unittest import result
 import uuid
 
 from .api import (
