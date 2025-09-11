@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -698,7 +699,21 @@ func (i *Interpreter) VisitFunctionCall(node *ast.FunctionCallNode) (environment
 		// If we're in a method call and the identifier might be a member function, check current object first
 		if i.currentObject != nil {
 			if function, err := i.currentObject.GetMemberFunction(functionName, i.currentClass); err == nil {
+				// Got a member function
 				return i.callMemberFunction(function, i.currentObject, args)
+			} else {
+				var notFound *environment.NotFound
+				if errors.As(err, &notFound) {
+					// Not an immediate member function, check for unknown function handler
+					function, err = i.currentObject.Class.CheckUnknownFunctionHandler(functionName, i.currentClass)
+					if err == nil {
+						// Got a handler function
+						return i.callMemberFunction(function, i.currentObject, args)
+					} else if !errors.As(err, &notFound) {
+						// Some error other than not found, e.g. private access
+						return environment.NOTHIN, err
+					}
+				}
 			}
 		}
 
@@ -719,7 +734,14 @@ func (i *Interpreter) VisitFunctionCall(node *ast.FunctionCallNode) (environment
 		if obj, ok := objectValue.(*environment.ObjectInstance); ok {
 			function, err := obj.GetMemberFunction(strings.ToUpper(funcNode.Member), i.currentClass)
 			if err != nil {
-				return environment.NOTHIN, err
+				var notFound *environment.NotFound
+				if !errors.As(err, &notFound) {
+					return environment.NOTHIN, err
+				}
+				function, err = obj.Class.CheckUnknownFunctionHandler(strings.ToUpper(funcNode.Member), i.currentClass)
+				if err != nil {
+					return environment.NOTHIN, err
+				}
 			}
 			return i.callMemberFunction(function, obj, args)
 		}
@@ -980,6 +1002,19 @@ func (i *Interpreter) VisitIdentifier(node *ast.IdentifierNode) (environment.Val
 	if i.currentObject != nil {
 		if function, err := i.currentObject.GetMemberFunction(name, i.currentClass); err == nil {
 			return i.callMemberFunction(function, i.currentObject, []environment.Value{})
+		} else {
+			var notFound *environment.NotFound
+			if errors.As(err, &notFound) {
+				// Not an immediate member function, check for unknown function handler
+				function, err = i.currentObject.Class.CheckUnknownFunctionHandler(name, i.currentClass)
+				if err == nil {
+					// Got a handler function
+					return i.callMemberFunction(function, i.currentObject, []environment.Value{})
+				} else if !errors.As(err, &notFound) {
+					// Some error other than not found, e.g. private access
+					return environment.NOTHIN, err
+				}
+			}
 		}
 	}
 
@@ -1152,7 +1187,17 @@ func (i *Interpreter) CallFunction(function string, args []environment.Value) (e
 func (i *Interpreter) CallMemberFunction(object *environment.ObjectInstance, function string, args []environment.Value) (environment.Value, error) {
 	fn, err := object.GetMemberFunction(strings.ToUpper(function), i.currentClass)
 	if err != nil {
-		return environment.NOTHIN, err
+		var notFound *environment.NotFound
+		if errors.As(err, &notFound) {
+			// Not an immediate member function, check for unknown function handler
+			fn, err = object.Class.CheckUnknownFunctionHandler(strings.ToUpper(function), i.currentClass)
+			if err != nil {
+				return environment.NOTHIN, err
+			}
+		} else {
+			// Some error other than not found, e.g. private access
+			return environment.NOTHIN, err
+		}
 	}
 	return i.callMemberFunction(fn, object, args)
 }

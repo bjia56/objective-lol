@@ -331,13 +331,18 @@ type ClassMethod struct {
 	Function func(this GoValue, args []GoValue) (GoValue, error)
 }
 
+type UnknownFunctionHandler struct {
+	Handler func(this GoValue, functionName string, fromContext string, args []GoValue) (GoValue, error)
+}
+
 type ClassDefinition struct {
-	Name             string
-	PublicVariables  map[string]*ClassVariable
-	PrivateVariables map[string]*ClassVariable
-	SharedVariables  map[string]*ClassVariable
-	PublicMethods    map[string]*ClassMethod
-	PrivateMethods   map[string]*ClassMethod
+	Name                   string
+	PublicVariables        map[string]*ClassVariable
+	PrivateVariables       map[string]*ClassVariable
+	SharedVariables        map[string]*ClassVariable
+	PublicMethods          map[string]*ClassMethod
+	PrivateMethods         map[string]*ClassMethod
+	UnknownFunctionHandler *UnknownFunctionHandler
 }
 
 func NewClassDefinition() *ClassDefinition {
@@ -482,6 +487,43 @@ func (vm *VM) DefineClass(classDef *ClassDefinition) error {
 	for name, method := range classDef.PrivateMethods {
 		function := convertClassMethod(name, method)
 		class.PrivateFunctions[strings.ToUpper(name)] = function
+	}
+
+	// Set unknown function handler if provided
+	if classDef.UnknownFunctionHandler != nil {
+		handler := classDef.UnknownFunctionHandler.Handler
+		class.UnknownFunctionHandler = func(fnName string, fromContext string) (*environment.Function, error) {
+			return &environment.Function{
+				Name:       strings.ToUpper(fnName),
+				Parameters: []environment.Parameter{}, // Variadic parameters can be handled in the native impl
+				IsVarargs:  true,
+				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+					// Convert 'this' and args to Go values
+					thisGoValue, err := ToGoValue(this)
+					if err != nil {
+						return nil, fmt.Errorf("error converting 'this' object: %v", err)
+					}
+
+					goArgs := make([]GoValue, len(args))
+					for i, arg := range args {
+						goVal, err := ToGoValue(arg)
+						if err != nil {
+							return nil, fmt.Errorf("error converting argument %d: %v", i, err)
+						}
+						goArgs[i] = goVal
+					}
+
+					// Call the unknown function handler
+					result, err := handler(thisGoValue, fnName, fromContext, goArgs)
+					if err != nil {
+						return nil, err
+					}
+
+					// Convert result back to environment.Value
+					return FromGoValue(result)
+				},
+			}, nil
+		}
 	}
 
 	// Define the class in the environment

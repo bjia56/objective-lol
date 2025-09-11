@@ -17,7 +17,7 @@ type Class struct {
 	SharedVariables  map[string]*MemberVariable
 	SharedFunctions  map[string]*Function
 
-	UnknownFunctionHandler *Function // Handler for undefined function calls
+	UnknownFunctionHandler func(fnName string, fromContext string) (*Function, error) // Handler for unknown functions (if any)
 }
 
 // NewClass creates a new class definition with support for multiple inheritance
@@ -70,11 +70,14 @@ func (c *Class) GetMemberFunction(name string, fromContext string, env *Environm
 		}
 	}
 
-	if c.UnknownFunctionHandler != nil {
-		return c.UnknownFunctionHandler, nil
-	}
+	return nil, &NotFound{Message: fmt.Sprintf("undefined member function '%s'", name)}
+}
 
-	return nil, fmt.Errorf("undefined member function '%s'", name)
+func (c *Class) CheckUnknownFunctionHandler(fnName, fromContext string) (*Function, error) {
+	if c.UnknownFunctionHandler != nil {
+		return c.UnknownFunctionHandler(fnName, fromContext)
+	}
+	return nil, &NotFound{Message: fmt.Sprintf("undefined member function '%s'", fnName)}
 }
 
 // NewObject creates a new instance of the specified class

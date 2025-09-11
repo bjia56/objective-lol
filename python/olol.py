@@ -49,11 +49,30 @@ def gopy_wrapper(id: str, json_args: str) -> bytes:
 
 
 def convert_to_simple_mro(mro: list[str]) -> list[str]:
-        simple_mro = []
-        for cls_name in mro:
-            if cls_name.startswith(ForeignModuleNamespace):
-                simple_mro.append(cls_name[len(ForeignModuleNamespace)+1:])
-        return simple_mro
+    simple_mro = []
+    for cls_name in mro:
+        if cls_name.startswith(ForeignModuleNamespace):
+            simple_mro.append(cls_name[len(ForeignModuleNamespace)+1:])
+    return simple_mro
+
+
+def generate_case_permutations(fname):
+    """Generate all possible case combinations of fname"""
+    if not fname:
+        return ['']
+
+    result = []
+    first_char = fname[0]
+    rest_permutations = generate_case_permutations(fname[1:])
+
+    for rest in rest_permutations:
+        if first_char.isalpha():
+            result.append(first_char.lower() + rest)
+            result.append(first_char.upper() + rest)
+        else:
+            result.append(first_char + rest)
+
+    return result
 
 
 class ProxyMeta(type):
@@ -216,15 +235,43 @@ class ObjectiveLOLVM:
             self._class.PrivateMethods[name] = method
             return self
 
+        def add_unknown_function_handler(self, function) -> 'ObjectiveLOLVM.ClassBuilder':
+            def handler(this_id: str, fname: str, from_context: str, *args):
+                return function(object_instances[this_id], fname, from_context, *args)
+
+            unique_id = str(uuid.uuid4())
+            defined_functions[unique_id] = (self._vm, handler)
+            self._class.UnknownFunctionHandler = self._vm._compat.BuildNewUnknownFunctionHandler(unique_id, gopy_wrapper)
+            return self
+
+        def add_unknown_coroutine_handler(self, function) -> 'ObjectiveLOLVM.ClassBuilder':
+            def handler(this_id: str, fname: str, from_context: str, *args):
+                fut = concurrent.futures.Future()
+                def do():
+                    try:
+                        result = asyncio.run_coroutine_threadsafe(function(object_instances[this_id], fname, from_context, *args), self._vm._loop).result()
+                        fut.set_result(result)
+                    except Exception as e:
+                        fut.set_exception(e)
+                threading.Thread(target=do).start()
+                return fut.result()
+
+            unique_id = str(uuid.uuid4())
+            defined_functions[unique_id] = (self._vm, handler)
+            self._class.UnknownFunctionHandler = self._vm._compat.BuildNewUnknownFunctionHandler(unique_id, gopy_wrapper)
+            return self
+
     _vm: VM
     _compat: VMCompatibilityShim
     _loop: asyncio.AbstractEventLoop
+    _prefer_async_loop: bool
 
-    def __init__(self):
+    def __init__(self, prefer_async_loop: bool = True):
         # todo: figure out how to bridge stdout/stdin
         self._vm = NewVM(DefaultConfig())
         self._compat = self._vm.GetCompatibilityShim()
         self._loop = asyncio.get_event_loop()
+        self._prefer_async_loop = prefer_async_loop
 
     def convert_from_go_value(self, go_value: GoValue):
         if not isinstance(go_value, GoValue):
@@ -411,6 +458,65 @@ class ObjectiveLOLVM:
                         builder.add_public_coroutine(method_name, method)
                     else:
                         builder.add_public_method(method_name, method)
+
+        # Dynamic handler for unknown function calls
+        # We assume all unknown functions are publicly available, so
+        # no context checking is needed. However, since Objective-LOL
+        # is case-insensitive for method names, we need to try all
+        # case permutations to find a match.
+
+        # Cache for case-insensitive method name lookups
+        _method_name_cache = {}
+        if self._prefer_async_loop:
+            async def async_handler(this, fname: str, from_context: str, *args):
+                # Check cache first
+                cache_key = (id(this), fname.upper())
+                if cache_key in _method_name_cache:
+                    actual_method_name = _method_name_cache[cache_key]
+                    if actual_method_name:
+                        method = getattr(this, actual_method_name)
+                        return await method(*args)
+                    else:
+                        # Cached as not found
+                        raise AttributeError(f"'{type(this).__name__}' object has no attribute '{fname}'")
+
+                # Try all case permutations
+                for candidate in generate_case_permutations(fname):
+                    if hasattr(this, candidate):
+                        method = getattr(this, candidate)
+                        if callable(method):
+                            _method_name_cache[cache_key] = candidate
+                            return await method(*args)
+
+                # Cache as not found
+                _method_name_cache[cache_key] = None
+                raise AttributeError(f"'{type(this).__name__}' object has no attribute '{fname}'")
+            builder.add_unknown_coroutine_handler(async_handler)
+        else:
+            def handler(this, fname: str, from_context: str, *args):
+                # Check cache first
+                cache_key = (id(this), fname.upper())
+                if cache_key in _method_name_cache:
+                    actual_method_name = _method_name_cache[cache_key]
+                    if actual_method_name:
+                        method = getattr(this, actual_method_name)
+                        return method(*args)
+                    else:
+                        # Cached as not found
+                        raise AttributeError(f"'{type(this).__name__}' object has no attribute '{fname}'")
+
+                # Try all case permutations
+                for candidate in generate_case_permutations(fname):
+                    if hasattr(this, candidate):
+                        method = getattr(this, candidate)
+                        if callable(method):
+                            _method_name_cache[cache_key] = candidate
+                            return method(*args)
+
+                # Cache as not found
+                _method_name_cache[cache_key] = None
+                raise AttributeError(f"'{type(this).__name__}' object has no attribute '{fname}'")
+            builder.add_unknown_function_handler(handler)
 
         class_def = builder.get()
         self._vm.DefineClass(class_def)

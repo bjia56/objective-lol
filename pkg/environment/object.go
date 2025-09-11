@@ -41,7 +41,7 @@ func (obj *ObjectInstance) getMemberVariable(name string, callingContext string)
 		return variable, nil
 	}
 
-	return nil, fmt.Errorf("undefined member variable '%s'", name)
+	return nil, &NotFound{Message: fmt.Sprintf("undefined member variable '%s'", name)}
 }
 
 // GetMemberVariable retrieves the value of a member variable from the object instance

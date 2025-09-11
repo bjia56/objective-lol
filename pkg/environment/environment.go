@@ -10,7 +10,7 @@ func LookupObject(id string) (*ObjectInstance, error) {
 	if obj, ok := constructedObjects[id]; ok {
 		return obj, nil
 	}
-	return nil, fmt.Errorf("no object found with id %s", id)
+	return nil, &NotFound{Message: fmt.Sprintf("no object found with id %s", id)}
 }
 
 type Interpreter interface {
@@ -92,7 +92,7 @@ func NewEnvironment(parent *Environment) *Environment {
 func (e *Environment) DefineVariable(name, varType string, value Value, isLocked bool, docs []string) error {
 	// Check if variable already exists in current scope
 	if _, exists := e.variables[name]; exists {
-		return fmt.Errorf("variable '%s' already defined in current scope", name)
+		return &AlreadyExists{Message: fmt.Sprintf("variable '%s' already defined in current scope", name)}
 	}
 
 	var castedValue Value
@@ -138,7 +138,7 @@ func (e *Environment) GetVariable(name string) (*Variable, error) {
 		return e.parent.GetVariable(name)
 	}
 
-	return nil, fmt.Errorf("undefined variable '%s'", name)
+	return nil, &NotFound{Message: fmt.Sprintf("undefined variable '%s'", name)}
 }
 
 // SetVariable sets the value of an existing variable
@@ -165,7 +165,7 @@ func (e *Environment) SetVariable(name string, value Value) error {
 func (e *Environment) DefineFunction(function *Function) error {
 	// Check if function already exists in current scope
 	if _, exists := e.functions[function.Name]; exists {
-		return fmt.Errorf("function '%s' already defined in current scope", function.Name)
+		return &AlreadyExists{Message: fmt.Sprintf("function '%s' already defined in current scope", function.Name)}
 	}
 
 	e.functions[function.Name] = function
@@ -182,21 +182,21 @@ func (e *Environment) GetFunction(name string) (*Function, error) {
 		return e.parent.GetFunction(name)
 	}
 
-	return nil, fmt.Errorf("undefined function '%s'", name)
+	return nil, &NotFound{Message: fmt.Sprintf("undefined function '%s'", name)}
 }
 
 // DefineClass defines a new class in the current scope
 func (e *Environment) DefineClass(class *Class) error {
 	// Store by qualified name (primary key for type safety)
 	if _, exists := e.classes[class.QualifiedName]; exists {
-		return fmt.Errorf("class '%s' already defined in current scope", class.QualifiedName)
+		return &AlreadyExists{Message: fmt.Sprintf("class '%s' already defined in current scope", class.QualifiedName)}
 	}
 	e.classes[class.QualifiedName] = class
 
 	// Also store by simple name for user code compatibility
 	// This allows lookup by simple names like "READER" while maintaining qualified internal storage
 	if existing, exists := e.classes[class.Name]; exists && existing.QualifiedName != class.QualifiedName {
-		return fmt.Errorf("class %s (%s) redeclared as %s (%s) in current scope", existing.Name, existing.QualifiedName, class.Name, class.QualifiedName)
+		return &AlreadyExists{Message: fmt.Sprintf("class %s (%s) redeclared as %s (%s) in current scope", existing.Name, existing.QualifiedName, class.Name, class.QualifiedName)}
 	}
 	e.classes[class.Name] = class
 
@@ -214,7 +214,7 @@ func (e *Environment) GetClass(name string) (*Class, error) {
 		return e.parent.GetClass(name)
 	}
 
-	return nil, fmt.Errorf("undefined class '%s'", name)
+	return nil, &NotFound{Message: fmt.Sprintf("undefined class '%s'", name)}
 }
 
 func (e *Environment) NewObjectInstance(className string) (*ObjectInstance, error) {
