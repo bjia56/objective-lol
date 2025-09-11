@@ -126,6 +126,7 @@ Complete reference of all Objective-LOL keywords organized by category.
 | `(` `)` | Expression grouping | `(2 MOAR 3) TIEMZ 4` |
 | `"` `"` | String literals | `"Hello, World!"` |
 | `0x` | Hexadecimal prefix | `0xFF` (255 in decimal) |
+| `0` | Octal prefix | `0777` (511 in decimal) |
 
 ## Reserved for Future Use
 

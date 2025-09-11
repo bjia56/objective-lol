@@ -1,6 +1,6 @@
 # FILE Module - File System Operations
 
-The FILE module provides file system operations through the DOCUMENT class for reading from and writing to files on disk.
+The FILE module provides file system operations through the DOCUMENT class for file I/O and the CABINET class for directory operations.
 
 ## Importing FILE Module
 
@@ -10,6 +10,7 @@ I CAN HAS FILE?
 
 BTW Selective import
 I CAN HAS DOCUMENT FROM FILE?
+I CAN HAS CABINET FROM FILE?
 ```
 
 **Note:** The FILE module automatically imports the IO module since DOCUMENT inherits from READWRITER.
@@ -43,6 +44,7 @@ I HAS A VARIABLE DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT <path> AN WIT <mode>
 - **MODE**: STRIN (read-only) - The access mode
 - **IS_OPEN**: BOOL - True if file is currently open
 - **SIZ**: INTEGR (read-only) - File size in bytes
+- **RWX**: INTEGR - File permissions (read/write/execute bits)
 
 ### Methods
 
@@ -159,6 +161,80 @@ document DO DELETE
 - Automatically closes file if open
 - Throws exception if deletion fails
 - Sets IS_OPEN to NO
+
+## CABINET Class
+
+The CABINET class provides directory operations for working with directories and their contents.
+
+### Constructor
+
+```lol
+I HAS A VARIABLE DIR TEH CABINET ITZ NEW CABINET WIT <path>
+```
+
+**Parameters:**
+- **path**: STRIN - The directory path
+
+### Properties
+
+- **PATH**: STRIN (read-only) - The directory path
+
+### Methods
+
+#### EXISTS - Check Directory Existence
+
+Checks if the directory exists.
+
+```lol
+I HAS A VARIABLE DIR_EXISTS TEH BOOL ITZ cabinet DO EXISTS
+```
+
+**Returns:** BOOL - YEZ if directory exists, NO otherwise
+
+#### LIST - List Directory Contents
+
+Returns all files and subdirectories in the directory.
+
+```lol
+I HAS A VARIABLE FILES TEH BUKKIT ITZ cabinet DO LIST
+```
+
+**Returns:** BUKKIT - Array of filenames and directory names
+
+#### CREATE - Create Directory
+
+Creates the directory (including parent directories if needed).
+
+```lol
+cabinet DO CREATE
+```
+
+- Creates all necessary parent directories
+- Throws exception if creation fails
+
+#### DELETE - Delete Directory
+
+Deletes an empty directory.
+
+```lol
+cabinet DO DELETE
+```
+
+- Only deletes empty directories
+- Throws exception if directory is not empty or deletion fails
+
+#### FIND - Find Files by Pattern
+
+Searches for files matching a glob pattern.
+
+```lol
+I HAS A VARIABLE MATCHES TEH BUKKIT ITZ cabinet DO FIND WIT <pattern>
+```
+
+**Parameters:**
+- **pattern**: STRIN - Glob pattern (e.g., "*.txt", "test*")
+
+**Returns:** BUKKIT - Array of matching filenames
 
 ## Basic File Operations
 
@@ -659,9 +735,89 @@ HAI ME TEH FUNCSHUN DEMO_CONFIG_MANAGER
 KTHXBAI
 ```
 
+## Directory Operations Examples
+
+### Basic Directory Operations
+
+```lol
+I CAN HAS FILE?
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN DEMO_DIRECTORY_OPERATIONS
+    SAYZ WIT "=== Directory Operations Demo ==="
+
+    BTW Create a cabinet for a directory
+    I HAS A VARIABLE DIR TEH CABINET ITZ NEW CABINET WIT "test_directory"
+
+    BTW Check if directory exists
+    I HAS A VARIABLE EXISTS_BEFORE TEH BOOL ITZ DIR DO EXISTS
+    SAY WIT "Directory exists before creation: "
+    SAYZ WIT EXISTS_BEFORE
+
+    BTW Create the directory
+    DIR DO CREATE
+    SAYZ WIT "Directory created"
+
+    BTW Check existence after creation
+    I HAS A VARIABLE EXISTS_AFTER TEH BOOL ITZ DIR DO EXISTS
+    SAY WIT "Directory exists after creation: "
+    SAYZ WIT EXISTS_AFTER
+
+    BTW List contents (should be empty)
+    I HAS A VARIABLE CONTENTS TEH BUKKIT ITZ DIR DO LIST
+    SAY WIT "Directory contents count: "
+    SAYZ WIT CONTENTS SIZ
+
+    BTW Find files matching a pattern
+    I HAS A VARIABLE TXT_FILES TEH BUKKIT ITZ DIR DO FIND WIT "*.txt"
+    SAY WIT "Text files found: "
+    SAYZ WIT TXT_FILES SIZ
+
+    BTW Clean up - delete the directory
+    DIR DO DELETE
+    SAYZ WIT "Directory deleted"
+KTHXBAI
+```
+
+### Working with File Permissions
+
+```lol
+I CAN HAS FILE?
+I CAN HAS STDIO?
+
+HAI ME TEH FUNCSHUN DEMO_FILE_PERMISSIONS WIT FILENAME TEH STRIN
+    SAYZ WIT "=== File Permissions Demo ==="
+
+    BTW Create a file
+    I HAS A VARIABLE DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT FILENAME AN WIT "W"
+    DOC DO OPEN
+    DOC DO WRITE WIT "Test file for permissions"
+    DOC DO CLOSE
+
+    BTW Check current permissions
+    I HAS A VARIABLE CURRENT_PERMS TEH INTEGR ITZ DOC RWX
+    SAY WIT "Current permissions: "
+    SAYZ WIT CURRENT_PERMS
+
+    BTW Change permissions (make read-only: 0644 octal)
+    DOC RWX ITZ 0644
+    SAYZ WIT "Permissions changed to read-only"
+
+    BTW Verify new permissions
+    I HAS A VARIABLE NEW_PERMS TEH INTEGR ITZ DOC RWX
+    SAY WIT "New permissions: "
+    SAYZ WIT NEW_PERMS
+
+    BTW Clean up
+    DOC RWX ITZ 0666  BTW Allow deletion
+    DOC DO DELETE
+    SAYZ WIT "File deleted"
+KTHXBAI
+```
+
 ## Quick Reference
 
-### Constructor
+### DOCUMENT Constructor
 
 | Usage | Description |
 |-------|-------------|
@@ -712,6 +868,7 @@ KTHXBAI
 | `MODE` | STRIN | Access mode (read-only) |
 | `IS_OPEN` | BOOL | True if file is open |
 | `SIZ` | INTEGR | File size in bytes (read-only) |
+| `RWX` | INTEGR | File permissions (read/write/execute bits) |
 
 ## Related
 

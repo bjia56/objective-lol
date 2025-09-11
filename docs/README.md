@@ -104,24 +104,6 @@ OOPSIE ERROR_MSG
 KTHX
 ```
 
-## Learning Path
-
-### Beginner Path
-1. **Getting Started** → **Syntax Basics** → **Control Flow**
-2. Practice with **STDIO** and **MATH** modules
-3. Try the **Calculator Example**
-
-### Intermediate Path
-1. **Functions** → **Classes** → **Modules**
-2. Explore **Collections** and **STRING** modules
-3. Work through **RPG Character** and **Data Processing** examples
-
-### Advanced Path
-1. **Advanced I/O** and **Threading** modules
-2. **Exception Handling** patterns
-3. **Concurrent Programs** examples
-4. Use **Reference** section for quick lookup
-
 ## Quick Reference
 
 ### Common Patterns
