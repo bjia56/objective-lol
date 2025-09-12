@@ -15,8 +15,8 @@
   ],
   "folding": {
     "markers": {
-      "start": "^\\s*(HAI|FUNCSHUN|CLAS|IZ|WHILE|MAYB)\\b",
-      "end": "^\\s*(KTHXBAI|KTHX|KITTEH|NOPE|ALWAYZ)\\b"
+      "start": "^\\s*(HAI\\s+ME\\s+TEH\\s+CLAS|HAI\\s+ME\\s+TEH\\s+FUNCSHUN|DIS\\s+TEH\\s+FUNCSHUN|IZ|WHILE)\\b",
+      "end": "^\\s*(KTHXBAI|KTHX)\\b"
     }
   },
   "wordPattern": "\\b[A-Z_][A-Z0-9_]*\\b"

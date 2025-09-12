@@ -44,11 +44,11 @@
       "patterns": [
         {
           "name": "keyword.control.objective-lol",
-          "match": "\\b(HAI|KTHXBAI|IZ|NOPE|WHILE|GIVEZ|UP|MAYB|OOPS|OOPSIE|ALWAYZ)\\b"
+          "match": "\\b(HAI\\s+ME\\s+TEH|DIS\\s+TEH|KTHXBAI|KTHX|IZ|NOPE|WHILE|GIVEZ|GIVEZ\\s+UP|MEBBE|OOPS|OOPSIE|ALWAYZ)\\b"
         },
         {
           "name": "keyword.declaration.objective-lol",
-          "match": "\\b(TEH|VARIABLE|FUNCSHUN|CLAS|KITTEH|ME|NEW)\\b"
+          "match": "\\b(VARIABLE|FUNCSHUN|CLAS|KITTEH\\s+OF|AN\\s+OF|NEW)\\b"
         },
         {
           "name": "keyword.modifier.objective-lol",
@@ -56,7 +56,7 @@
         },
         {
           "name": "keyword.other.objective-lol",
-          "match": "\\b(ITZ|WIT|AN|DIS|OF|AS|KTHX|I|CAN|HAS|A|DO|FROM)\\b"
+          "match": "\\b(ITZ|WIT|AN|OF|AS|I|CAN|HAS|A|DO|FROM|TEH)\\b"
         },
         {
           "name": "keyword.control.import.objective-lol",
@@ -83,19 +83,15 @@
       "patterns": [
         {
           "name": "constant.numeric.hex.objective-lol",
-          "match": "\\b0[Xx][0-9A-Fa-f]+\\b"
+          "match": "\\b-?0[Xx][0-9A-Fa-f]+\\b"
+        },
+        {
+          "name": "constant.numeric.octal.objective-lol",
+          "match": "\\b-?0[0-7]+\\b"
         },
         {
           "name": "constant.numeric.decimal.objective-lol",
           "match": "\\b-?\\d+(\\.\\d+)?\\b"
-        }
-      ]
-    },
-    "types": {
-      "patterns": [
-        {
-          "name": "storage.type.objective-lol",
-          "match": "\\b(INTEGR|DUBBLE|STRIN|BOOL|NOTHIN|BUKKIT|BASKIT)\\b"
         }
       ]
     },
@@ -107,7 +103,7 @@
         },
         {
           "name": "keyword.operator.comparison.objective-lol",
-          "match": "\\b(BIGGR|SMALLR|THAN|SAEM)\\b"
+          "match": "\\b(BIGGR\\s+THAN|SMALLR\\s+THAN|SAEM\\s+AS)\\b"
         },
         {
           "name": "keyword.operator.logical.objective-lol",
@@ -122,8 +118,8 @@
           "match": "\\b(YEZ|NO|NOTHIN)\\b"
         },
         {
-          "name": "support.function.objective-lol",
-          "match": "\\b(SAYZ|SAY|GIMME|ASSERT)\\b"
+          "name": "support.type.objective-lol",
+          "match": "\\b(INTEGR|DUBBLE|STRIN|BOOL|BUKKIT|BASKIT)\\b"
         },
         {
           "name": "variable.other.objective-lol",
