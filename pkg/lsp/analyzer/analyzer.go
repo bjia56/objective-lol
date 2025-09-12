@@ -2,9 +2,12 @@ package analyzer
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"sync"
 
+	lru "github.com/hashicorp/golang-lru"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
@@ -12,8 +15,8 @@ import (
 
 // Analyzer provides semantic analysis for LSP features
 type Analyzer struct {
-	semanticCache     map[string]*SemanticAnalyzer // Cache for enhanced semantic analyzers
-	semanticCacheLock sync.Mutex                   // Mutex for thread-safe access to semanticCache
+	semanticCache     map[string]*lru.Cache // Cache for enhanced semantic analyzers
+	semanticCacheLock sync.Mutex            // Mutex for thread-safe access to semanticCache
 }
 
 // SymbolTable represents symbols in a document
@@ -43,10 +46,15 @@ const (
 	SymbolKindImport
 )
 
+func hashContent(content string) string {
+	sum := sha256.Sum256([]byte(content))
+	return hex.EncodeToString(sum[:])
+}
+
 // NewAnalyzer creates a new analyzer
 func NewAnalyzer() *Analyzer {
 	return &Analyzer{
-		semanticCache: make(map[string]*SemanticAnalyzer),
+		semanticCache: make(map[string]*lru.Cache),
 	}
 }
 
@@ -54,19 +62,30 @@ func (a *Analyzer) getOrCreateSemanticAnalyzer(uri, content string) (*SemanticAn
 	a.semanticCacheLock.Lock()
 	defer a.semanticCacheLock.Unlock()
 
-	if analyzer, exists := a.semanticCache[uri]; exists {
-		return analyzer, nil
+	contentKey := hashContent(content)
+
+	// Get or create LRU cache for this URI
+	lruCache, exists := a.semanticCache[uri]
+	if !exists {
+		var err error
+		lruCache, err = lru.New(5) // e.g., cache up to 5 content versions per URI
+		if err != nil {
+			return nil, err
+		}
+		a.semanticCache[uri] = lruCache
+	}
+
+	if analyzer, ok := lruCache.Get(contentKey); ok {
+		return analyzer.(*SemanticAnalyzer), nil
 	}
 
 	semanticAnalyzer := NewSemanticAnalyzer(uri, content)
-
-	// Perform semantic analysis
 	ctx := context.Background()
 	if err := semanticAnalyzer.AnalyzeDocument(ctx); err != nil {
 		return nil, fmt.Errorf("semantic analysis failed: %v", err)
 	}
 
-	a.semanticCache[uri] = semanticAnalyzer
+	lruCache.Add(contentKey, semanticAnalyzer)
 	return semanticAnalyzer, nil
 }
 

@@ -1,7 +1,10 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
@@ -15,13 +18,39 @@ import (
 type OlolLSPServer struct {
 	analyzer  *analyzer.Analyzer
 	workspace *workspace.Manager
+	logFile   *os.File
 }
 
 // NewServer creates a new Objective-LOL LSP server
-func NewServer() *OlolLSPServer {
+func NewServer(logFileName string) (*OlolLSPServer, error) {
+	var logFile *os.File
+	var err error
+	if logFileName != "" {
+		logFile, err = os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open log file: %w", err)
+		}
+	}
 	return &OlolLSPServer{
 		analyzer:  analyzer.NewAnalyzer(),
 		workspace: workspace.NewManager(),
+		logFile:   logFile,
+	}, nil
+}
+
+// log logs a request with timestamp
+func (s *OlolLSPServer) log(method string, args ...interface{}) {
+	if s.logFile != nil {
+		timestamp := time.Now().Format(time.RFC3339)
+		if len(args) > 0 {
+			if jsonData, err := json.Marshal(args); err == nil {
+				fmt.Fprintf(s.logFile, "%s: %s %s\n", timestamp, method, string(jsonData))
+			} else {
+				fmt.Fprintf(s.logFile, "%s: %s\n", timestamp, method)
+			}
+		} else {
+			fmt.Fprintf(s.logFile, "%s: %s\n", timestamp, method)
+		}
 	}
 }
 
@@ -48,6 +77,8 @@ func (s *OlolLSPServer) Start() error {
 
 // Initialize handles the initialize request
 func (s *OlolLSPServer) initialize(context *glsp.Context, params *protocol.InitializeParams) (interface{}, error) {
+	s.log("initialize", params)
+
 	// Define server capabilities
 	capabilities := s.getServerCapabilities()
 
@@ -62,16 +93,22 @@ func (s *OlolLSPServer) initialize(context *glsp.Context, params *protocol.Initi
 
 // Initialized handles the initialized notification
 func (s *OlolLSPServer) initialized(context *glsp.Context, params *protocol.InitializedParams) error {
+	s.log("initialized", params)
+
 	return nil
 }
 
 // Shutdown handles the shutdown request
 func (s *OlolLSPServer) shutdown(context *glsp.Context) error {
+	s.log("shutdown")
+
 	return nil
 }
 
 // SetTrace handles the setTrace notification
 func (s *OlolLSPServer) setTrace(context *glsp.Context, params *protocol.SetTraceParams) error {
+	s.log("setTrace", params)
+
 	return nil
 }
 
@@ -105,6 +142,8 @@ func (s *OlolLSPServer) getServerCapabilities() protocol.ServerCapabilities {
 // Text Document handlers
 
 func (s *OlolLSPServer) textDocumentDidOpen(context *glsp.Context, params *protocol.DidOpenTextDocumentParams) error {
+	s.log("textDocumentDidOpen", params)
+
 	uri := params.TextDocument.URI
 	content := params.TextDocument.Text
 
@@ -129,7 +168,9 @@ func (s *OlolLSPServer) textDocumentDidOpen(context *glsp.Context, params *proto
 	return nil
 }
 
-func (s *OlolLSPServer) textDocumentDidChange(context *glsp.Context, params *protocol.DidChangeTextDocumentParams) error {
+func (s *OlolLSPServer) textDocumentDidChange(context *glsp.Context, params *protocol.DidChangeTextDocumentParams) (err error) {
+	s.log("textDocumentDidChange", params)
+
 	uri := params.TextDocument.URI
 
 	if len(params.ContentChanges) == 0 {
@@ -139,16 +180,16 @@ func (s *OlolLSPServer) textDocumentDidChange(context *glsp.Context, params *pro
 	// For full document sync, we take the last change
 	change := params.ContentChanges[len(params.ContentChanges)-1]
 
-	// Cast to TextDocumentContentChangeEvent to access Text field
+	// Cast to access Text field
 	var content string
-	if changeEvent, ok := change.(protocol.TextDocumentContentChangeEvent); ok {
+	if changeEvent, ok := change.(protocol.TextDocumentContentChangeEventWhole); ok {
 		content = changeEvent.Text
 	} else {
 		return fmt.Errorf("unexpected change event type")
 	}
 
 	// Update document in workspace
-	err := s.workspace.UpdateDocument(uri, content)
+	err = s.workspace.UpdateDocument(uri, content)
 	if err != nil {
 		return fmt.Errorf("failed to update document: %w", err)
 	}
@@ -169,11 +210,15 @@ func (s *OlolLSPServer) textDocumentDidChange(context *glsp.Context, params *pro
 }
 
 func (s *OlolLSPServer) textDocumentDidClose(context *glsp.Context, params *protocol.DidCloseTextDocumentParams) error {
+	s.log("textDocumentDidClose", params)
+
 	uri := params.TextDocument.URI
 	return s.workspace.CloseDocument(uri)
 }
 
 func (s *OlolLSPServer) textDocumentHover(context *glsp.Context, params *protocol.HoverParams) (*protocol.Hover, error) {
+	s.log("textDocumentHover", params)
+
 	uri := params.TextDocument.URI
 	position := params.Position
 
@@ -193,6 +238,8 @@ func (s *OlolLSPServer) textDocumentHover(context *glsp.Context, params *protoco
 }
 
 func (s *OlolLSPServer) textDocumentCompletion(context *glsp.Context, params *protocol.CompletionParams) (interface{}, error) {
+	s.log("textDocumentCompletion", params)
+
 	uri := params.TextDocument.URI
 	position := params.Position
 
@@ -215,6 +262,8 @@ func (s *OlolLSPServer) textDocumentCompletion(context *glsp.Context, params *pr
 }
 
 func (s *OlolLSPServer) textDocumentDefinition(context *glsp.Context, params *protocol.DefinitionParams) (interface{}, error) {
+	s.log("textDocumentDefinition", params)
+
 	uri := params.TextDocument.URI
 	position := params.Position
 

@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-python/gopy v0.4.10
+	github.com/hashicorp/golang-lru v0.5.1
 	github.com/stretchr/testify v1.9.0
 	github.com/tliron/glsp v0.2.2
 )

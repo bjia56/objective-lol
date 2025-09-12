@@ -9,7 +9,10 @@ import (
 
 func main() {
 	// Create and start the LSP server
-	lspServer := server.NewServer()
+	lspServer, err := server.NewServer("")
+	if err != nil {
+		log.Fatalf("Failed to create LSP server: %v", err)
+	}
 
 	// Log to stderr since stdout is used for LSP communication
 	log.SetOutput(os.Stderr)

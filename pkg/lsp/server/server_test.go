@@ -7,7 +7,7 @@ import (
 )
 
 func TestOlolLSPServer_NewServer(t *testing.T) {
-	server := NewServer()
+	server, _ := NewServer("")
 
 	if server == nil {
 		t.Fatal("Expected server to be created")
@@ -23,7 +23,7 @@ func TestOlolLSPServer_NewServer(t *testing.T) {
 }
 
 func TestOlolLSPServer_Initialize(t *testing.T) {
-	server := NewServer()
+	server, _ := NewServer("")
 
 	// Create initialize params - use appropriate types for GLSP
 	processID := protocol.Integer(12345)
@@ -60,7 +60,7 @@ func TestOlolLSPServer_Initialize(t *testing.T) {
 }
 
 func TestOlolLSPServer_GetServerCapabilities(t *testing.T) {
-	server := NewServer()
+	server, _ := NewServer("")
 
 	caps := server.getServerCapabilities()
 
@@ -83,7 +83,7 @@ func TestOlolLSPServer_GetServerCapabilities(t *testing.T) {
 }
 
 func TestOlolLSPServer_Shutdown(t *testing.T) {
-	server := NewServer()
+	server, _ := NewServer("")
 
 	err := server.shutdown(nil)
 	if err != nil {
@@ -92,7 +92,7 @@ func TestOlolLSPServer_Shutdown(t *testing.T) {
 }
 
 func TestOlolLSPServer_Initialized(t *testing.T) {
-	server := NewServer()
+	server, _ := NewServer("")
 
 	err := server.initialized(nil, &protocol.InitializedParams{})
 	if err != nil {
@@ -101,7 +101,7 @@ func TestOlolLSPServer_Initialized(t *testing.T) {
 }
 
 func TestOlolLSPServer_SetTrace(t *testing.T) {
-	server := NewServer()
+	server, _ := NewServer("")
 
 	params := &protocol.SetTraceParams{
 		Value: protocol.TraceValueOff,
@@ -115,7 +115,7 @@ func TestOlolLSPServer_SetTrace(t *testing.T) {
 
 // Integration test that exercises the workspace and analyzer components
 func TestOlolLSPServer_DocumentWorkflow(t *testing.T) {
-	server := NewServer()
+	server, _ := NewServer("")
 	uri := "test://test.olol"
 	content := "HAI ME TEH FUNCSHUN MAIN\nTEH VARIABLE x ITZ INTEGR WIT 42\nSAYZ x\nKTHXBAI"
 

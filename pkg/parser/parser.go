@@ -586,6 +586,9 @@ func (p *Parser) parseClassMemberWithDocs(memberDocs []string) *ast.ClassMemberN
 			return nil
 		}
 		name := p.currentToken.Literal
+		identifierPosition := p.currentToken.Position
+		// Set position to the variable identifier
+		member.Position = p.convertPosition(identifierPosition)
 
 		if !p.expectPeek(TEH) {
 			p.addError(fmt.Sprintf("expected 'TEH', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
@@ -604,6 +607,7 @@ func (p *Parser) parseClassMemberWithDocs(memberDocs []string) *ast.ClassMemberN
 			Type:          varType,
 			IsLocked:      isLocked,
 			Documentation: memberDocs,
+			Position:      p.convertPosition(identifierPosition),
 		}
 
 		// Check for initialization
@@ -625,11 +629,14 @@ func (p *Parser) parseClassMemberWithDocs(memberDocs []string) *ast.ClassMemberN
 			return nil
 		}
 		name := p.currentToken.Literal
+		// Set position to the function identifier
+		member.Position = p.convertPosition(p.currentToken.Position)
 
 		funcDecl := &ast.FunctionDeclarationNode{
 			Name:          name,
 			IsShared:      &member.IsShared,
 			Documentation: memberDocs,
+			Position:      p.convertPosition(p.currentToken.Position),
 		}
 
 		// Check for return type

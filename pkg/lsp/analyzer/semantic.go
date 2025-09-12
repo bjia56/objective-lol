@@ -26,9 +26,13 @@ type SemanticAnalyzer struct {
 	// Analysis state
 	environment      *environment.Environment
 	environmentStack []*environment.Environment
+	scopeStack       []string // Track current scope IDs for proper nesting
 	currentClass     string
 	currentFile      string
 	analysisErrors   []AnalysisError
+
+	// Position tracking for enhanced IDE features
+	positionToSymbol map[PositionKey]*EnhancedSymbol // Fast position-based lookup
 }
 
 // EnhancedSymbolTable represents symbols with enhanced metadata
@@ -37,7 +41,6 @@ type EnhancedSymbolTable struct {
 	Symbols          []EnhancedSymbol
 	Scopes           []ScopeInfo
 	ImportedModules  []ModuleImport
-	FunctionCalls    []FunctionCall
 	DiagnosticsCache []protocol.Diagnostic
 }
 
@@ -99,24 +102,6 @@ const (
 	VisibilityShared
 )
 
-// FunctionCall represents a function call site with resolution info
-type FunctionCall struct {
-	CallSite     ast.PositionInfo   // Position of the function call
-	FunctionName string             // Name of the called function
-	CallType     FunctionCallType   // Type of call (global, method, etc.)
-	Arguments    []ast.PositionInfo // Positions of arguments
-	ResolvedTo   *EnhancedSymbol    // Resolved function symbol (if found)
-	ObjectType   string             // For method calls, type of the object
-	Range        protocol.Range     // LSP range for the call
-}
-
-// FunctionCallType represents different types of function calls
-type FunctionCallType int
-
-const (
-	FunctionCallGlobal FunctionCallType = iota
-	FunctionCallMethod
-)
 
 // AnalysisError represents semantic analysis errors
 type AnalysisError struct {
@@ -138,6 +123,12 @@ const (
 	ErrorTypeCircularImport
 	ErrorTypeDuplicateDeclaration
 )
+
+// PositionKey represents a unique key for position-based lookups
+type PositionKey struct {
+	Line   int
+	Column int
+}
 
 func joinDocs(docs []string) string {
 	return strings.Join(docs, "\n")
@@ -167,8 +158,203 @@ func NewSemanticAnalyzer(uri, content string) *SemanticAnalyzer {
 		stdlibInitializer: stdlibInit,
 		environment:       environment.NewEnvironment(nil),
 		environmentStack:  []*environment.Environment{},
+		scopeStack:        []string{},
 		analysisErrors:    []AnalysisError{},
+		positionToSymbol:  make(map[PositionKey]*EnhancedSymbol),
 	}
+}
+
+// Scope management methods for proper environment tracking
+
+// pushScope creates a new scope and pushes it onto the scope stack
+func (sa *SemanticAnalyzer) pushScope(scopeInfo ScopeInfo) {
+	// Add scope to symbol table
+	sa.symbolTable.Scopes = append(sa.symbolTable.Scopes, scopeInfo)
+
+	// Push scope ID onto stack
+	sa.scopeStack = append(sa.scopeStack, scopeInfo.ID)
+
+	// Create new environment and push onto environment stack
+	newEnv := environment.NewEnvironment(sa.environment)
+	sa.environmentStack = append(sa.environmentStack, sa.environment)
+	sa.environment = newEnv
+}
+
+// popScope removes the current scope from the scope stack
+func (sa *SemanticAnalyzer) popScope() {
+	if len(sa.scopeStack) > 0 {
+		// Pop scope ID from stack
+		sa.scopeStack = sa.scopeStack[:len(sa.scopeStack)-1]
+	}
+
+	// Restore previous environment
+	if len(sa.environmentStack) > 0 {
+		sa.environment = sa.environmentStack[len(sa.environmentStack)-1]
+		sa.environmentStack = sa.environmentStack[:len(sa.environmentStack)-1]
+	}
+}
+
+// getCurrentScopeID returns the current scope ID with proper nesting
+func (sa *SemanticAnalyzer) getCurrentScopeID() string {
+	if len(sa.scopeStack) == 0 {
+		return "global"
+	}
+	return sa.scopeStack[len(sa.scopeStack)-1]
+}
+
+// getCurrentScopeType returns the current scope type
+func (sa *SemanticAnalyzer) getCurrentScopeType() ScopeType {
+	currentScopeID := sa.getCurrentScopeID()
+	for _, scope := range sa.symbolTable.Scopes {
+		if scope.ID == currentScopeID {
+			return scope.Type
+		}
+	}
+	return ScopeTypeGlobal
+}
+
+// addSymbolWithPosition adds a symbol and tracks its position for IDE features
+func (sa *SemanticAnalyzer) addSymbolWithPosition(symbol EnhancedSymbol) {
+	// Add to symbol table
+	sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, symbol)
+
+	// Track position for fast lookup
+	if symbol.Position.Line > 0 && symbol.Position.Column > 0 {
+		key := PositionKey{Line: symbol.Position.Line, Column: symbol.Position.Column}
+		// Get reference to the symbol we just added
+		lastIndex := len(sa.symbolTable.Symbols) - 1
+		sa.positionToSymbol[key] = &sa.symbolTable.Symbols[lastIndex]
+	}
+}
+
+// Type inference methods
+
+// inferExpressionType attempts to infer the type of an expression
+func (sa *SemanticAnalyzer) inferExpressionType(expr ast.Node) string {
+	if expr == nil {
+		return "NOTHIN"
+	}
+
+	switch node := expr.(type) {
+	case *ast.LiteralNode:
+		// Literal values have known types
+		return node.Value.Type()
+
+	case *ast.IdentifierNode:
+		// Look up the identifier's declared type
+		name := strings.ToUpper(node.Name)
+		currentScope := sa.findScopeByID(sa.getCurrentScopeID())
+		symbol := sa.findSymbolByNameInScope(name, currentScope)
+		if symbol != nil {
+			return symbol.Type
+		}
+		return "unknown"
+
+	case *ast.BinaryOpNode:
+		// Infer type based on operation
+		return sa.inferBinaryOpType(node)
+
+	case *ast.UnaryOpNode:
+		// Unary operations usually preserve operand type or return BOOL
+		switch strings.ToUpper(node.Operator) {
+		case "NOT":
+			return "BOOL"
+		default:
+			return sa.inferExpressionType(node.Operand)
+		}
+
+	case *ast.CastNode:
+		// Cast operations explicitly specify the target type
+		return strings.ToUpper(node.TargetType)
+
+	case *ast.FunctionCallNode:
+		// Infer type from function return type
+		return sa.inferFunctionCallType(node)
+
+	case *ast.MemberAccessNode:
+		// Infer type from member variable type
+		return sa.inferMemberAccessType(node)
+
+	case *ast.ObjectInstantiationNode:
+		// Object instantiation returns the class type
+		return strings.ToUpper(node.ClassName)
+
+	default:
+		return "unknown"
+	}
+}
+
+// inferBinaryOpType infers the result type of binary operations
+func (sa *SemanticAnalyzer) inferBinaryOpType(node *ast.BinaryOpNode) string {
+	leftType := sa.inferExpressionType(node.Left)
+	rightType := sa.inferExpressionType(node.Right)
+
+	switch strings.ToUpper(node.Operator) {
+	case "MOAR", "LES", "TIEMZ", "DIVIDEZ":
+		// Arithmetic operations: promote to higher precision type
+		if leftType == "DUBBLE" || rightType == "DUBBLE" {
+			return "DUBBLE"
+		}
+		if leftType == "INTEGR" || rightType == "INTEGR" {
+			return "INTEGR"
+		}
+		return "INTEGR" // Default for arithmetic
+
+	case "BIGGR THAN", "SMALLR THAN", "SAEM AS", "AN", "OR", "NOT":
+		// Comparison and logical operations return BOOL
+		return "BOOL"
+
+	default:
+		// For unknown operations, return the left operand type
+		return leftType
+	}
+}
+
+// inferFunctionCallType infers the return type of a function call
+func (sa *SemanticAnalyzer) inferFunctionCallType(node *ast.FunctionCallNode) string {
+	switch funcNode := node.Function.(type) {
+	case *ast.IdentifierNode:
+		// Global function call
+		functionName := strings.ToUpper(funcNode.Name)
+		currentScope := sa.findScopeByID(sa.getCurrentScopeID())
+		symbol := sa.findSymbolByNameInScope(functionName, currentScope)
+		if symbol != nil && symbol.Kind == SymbolKindFunction {
+			return symbol.Type
+		}
+
+	case *ast.MemberAccessNode:
+		// Method call - look up in class
+		objectType := sa.inferExpressionType(funcNode.Object)
+		methodName := strings.ToUpper(funcNode.Member)
+
+		// Find the class and method
+		for _, symbol := range sa.symbolTable.Symbols {
+			if symbol.Kind == SymbolKindFunction &&
+				symbol.ParentClass == objectType &&
+				strings.EqualFold(symbol.Name, methodName) {
+				return symbol.Type
+			}
+		}
+	}
+
+	return "unknown"
+}
+
+// inferMemberAccessType infers the type of member access
+func (sa *SemanticAnalyzer) inferMemberAccessType(node *ast.MemberAccessNode) string {
+	objectType := sa.inferExpressionType(node.Object)
+	memberName := strings.ToUpper(node.Member)
+
+	// Find the member variable in the class
+	for _, symbol := range sa.symbolTable.Symbols {
+		if symbol.Kind == SymbolKindVariable &&
+			symbol.ParentClass == objectType &&
+			strings.EqualFold(symbol.Name, memberName) {
+			return symbol.Type
+		}
+	}
+
+	return "unknown"
 }
 
 // AnalyzeDocument performs comprehensive semantic analysis
@@ -178,6 +364,9 @@ func (sa *SemanticAnalyzer) AnalyzeDocument(ctx context.Context) error {
 	sa.symbolTable.Scopes = []ScopeInfo{}
 	sa.symbolTable.ImportedModules = []ModuleImport{}
 	sa.analysisErrors = []AnalysisError{}
+	sa.positionToSymbol = make(map[PositionKey]*EnhancedSymbol)
+	sa.scopeStack = []string{}
+	sa.environmentStack = []*environment.Environment{}
 
 	// Parse the document
 	lexer := parser.NewLexer(sa.content)
@@ -219,7 +408,7 @@ func (sa *SemanticAnalyzer) AnalyzeDocument(ctx context.Context) error {
 	// Initialize stdlib symbols
 	sa.initializeStdlibSymbols()
 
-	// Add global scope
+	// Initialize global scope using new scope management
 	globalScope := ScopeInfo{
 		ID:       "global",
 		Type:     ScopeTypeGlobal,
@@ -227,7 +416,7 @@ func (sa *SemanticAnalyzer) AnalyzeDocument(ctx context.Context) error {
 		StartPos: ast.PositionInfo{Line: 1, Column: 1},
 		EndPos:   ast.PositionInfo{Line: 999999, Column: 999999}, // Will be updated
 	}
-	sa.symbolTable.Scopes = append(sa.symbolTable.Scopes, globalScope)
+	sa.pushScope(globalScope)
 
 	// Perform multi-pass analysis similar to interpreter
 	if err := sa.analyzeProgram(program); err != nil {
@@ -254,7 +443,7 @@ func (sa *SemanticAnalyzer) initializeStdlibSymbols() {
 				QualifiedName: decl.Name,
 				SourceModule:  "stdlib",
 			}
-			sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, symbol)
+			sa.addSymbolWithPosition(symbol)
 		}
 	}
 }
@@ -515,19 +704,7 @@ func (sa *SemanticAnalyzer) extractSymbolsFromEnvironment(env *environment.Envir
 func (sa *SemanticAnalyzer) analyzeFunctionDeclaration(node *ast.FunctionDeclarationNode) {
 	functionName := strings.ToUpper(node.Name)
 
-	// Create function scope
-	scopeID := fmt.Sprintf("func_%s_%d_%d", functionName, node.GetPosition().Line, node.GetPosition().Column)
-	funcScope := ScopeInfo{
-		ID:           scopeID,
-		Type:         ScopeTypeFunction,
-		Parent:       sa.getCurrentScopeID(),
-		StartPos:     node.GetPosition(),
-		EndPos:       ast.PositionInfo{}, // TODO: Calculate end position
-		FunctionName: functionName,
-	}
-	sa.symbolTable.Scopes = append(sa.symbolTable.Scopes, funcScope)
-
-	// Add function symbol
+	// Add function symbol to current scope first
 	visibility := VisibilityPublic
 	if strings.HasPrefix(functionName, "_") {
 		visibility = VisibilityPrivate
@@ -547,9 +724,21 @@ func (sa *SemanticAnalyzer) analyzeFunctionDeclaration(node *ast.FunctionDeclara
 		QualifiedName: sa.getQualifiedName(functionName),
 		IsShared:      node.IsShared != nil && *node.IsShared,
 	}
-	sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, funcSymbol)
+	sa.addSymbolWithPosition(funcSymbol)
 
-	// Analyze function parameters
+	// Create function scope for analyzing function body
+	scopeID := fmt.Sprintf("func_%s_%d_%d", functionName, node.GetPosition().Line, node.GetPosition().Column)
+	funcScope := ScopeInfo{
+		ID:           scopeID,
+		Type:         ScopeTypeFunction,
+		Parent:       sa.getCurrentScopeID(),
+		StartPos:     node.GetPosition(),
+		EndPos:       ast.PositionInfo{}, // TODO: Calculate end position
+		FunctionName: functionName,
+	}
+	sa.pushScope(funcScope)
+
+	// Analyze function parameters in the new function scope
 	for _, param := range node.Parameters {
 		paramSymbol := EnhancedSymbol{
 			Name:          strings.ToUpper(param.Name),
@@ -562,32 +751,23 @@ func (sa *SemanticAnalyzer) analyzeFunctionDeclaration(node *ast.FunctionDeclara
 			Visibility:    VisibilityPrivate,
 			QualifiedName: strings.ToUpper(param.Name),
 		}
-		sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, paramSymbol)
+		sa.addSymbolWithPosition(paramSymbol)
 	}
 
 	// Analyze function body for local variables and nested symbols
 	if node.Body != nil {
-		sa.analyzeStatementBlock(node.Body, scopeID)
+		sa.analyzeStatementBlock(node.Body)
 	}
+
+	// Pop function scope when done
+	sa.popScope()
 }
 
 // analyzeClassDeclaration analyzes class declarations
 func (sa *SemanticAnalyzer) analyzeClassDeclaration(node *ast.ClassDeclarationNode) {
 	className := strings.ToUpper(node.Name)
 
-	// Create class scope
-	scopeID := fmt.Sprintf("class_%s_%d_%d", className, node.GetPosition().Line, node.GetPosition().Column)
-	classScope := ScopeInfo{
-		ID:        scopeID,
-		Type:      ScopeTypeClass,
-		Parent:    sa.getCurrentScopeID(),
-		StartPos:  node.GetPosition(),
-		EndPos:    ast.PositionInfo{}, // TODO: Calculate end position
-		ClassName: className,
-	}
-	sa.symbolTable.Scopes = append(sa.symbolTable.Scopes, classScope)
-
-	// Add class symbol
+	// Add class symbol to current scope first
 	visibility := VisibilityPublic
 	if strings.HasPrefix(className, "_") {
 		visibility = VisibilityPrivate
@@ -605,7 +785,19 @@ func (sa *SemanticAnalyzer) analyzeClassDeclaration(node *ast.ClassDeclarationNo
 		Visibility:    visibility,
 		QualifiedName: sa.getQualifiedName(className),
 	}
-	sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, classSymbol)
+	sa.addSymbolWithPosition(classSymbol)
+
+	// Create class scope for analyzing class members
+	scopeID := fmt.Sprintf("class_%s_%d_%d", className, node.GetPosition().Line, node.GetPosition().Column)
+	classScope := ScopeInfo{
+		ID:        scopeID,
+		Type:      ScopeTypeClass,
+		Parent:    sa.getCurrentScopeID(),
+		StartPos:  node.GetPosition(),
+		EndPos:    ast.PositionInfo{}, // TODO: Calculate end position
+		ClassName: className,
+	}
+	sa.pushScope(classScope)
 
 	// Save current context and analyze class members
 	oldClass := sa.currentClass
@@ -613,17 +805,18 @@ func (sa *SemanticAnalyzer) analyzeClassDeclaration(node *ast.ClassDeclarationNo
 
 	for _, member := range node.Members {
 		if member.IsVariable {
-			sa.analyzeClassMemberVariable(member, scopeID)
+			sa.analyzeClassMemberVariable(member)
 		} else {
-			sa.analyzeClassMemberFunction(member, scopeID)
+			sa.analyzeClassMemberFunction(member)
 		}
 	}
 
 	sa.currentClass = oldClass
+	sa.popScope()
 }
 
 // analyzeClassMemberVariable analyzes class member variables
-func (sa *SemanticAnalyzer) analyzeClassMemberVariable(member *ast.ClassMemberNode, classScopeID string) {
+func (sa *SemanticAnalyzer) analyzeClassMemberVariable(member *ast.ClassMemberNode) {
 	if member.Variable == nil {
 		return
 	}
@@ -645,17 +838,22 @@ func (sa *SemanticAnalyzer) analyzeClassMemberVariable(member *ast.ClassMemberNo
 		Position:      member.Variable.GetPosition(),
 		Range:         sa.positionToRange(member.Variable.GetPosition(), len(member.Variable.Name)),
 		Scope:         ScopeTypeClass,
-		ScopeID:       classScopeID,
+		ScopeID:       sa.getCurrentScopeID(),
 		Visibility:    visibility,
 		ParentClass:   sa.currentClass,
 		QualifiedName: sa.getQualifiedName(varName),
 		IsShared:      member.IsShared,
 	}
-	sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, memberSymbol)
+	sa.addSymbolWithPosition(memberSymbol)
+
+	// Analyze member variable initialization if present
+	if member.Variable.Value != nil {
+		sa.analyzeExpression(member.Variable.Value)
+	}
 }
 
 // analyzeClassMemberFunction analyzes class member functions
-func (sa *SemanticAnalyzer) analyzeClassMemberFunction(member *ast.ClassMemberNode, classScopeID string) {
+func (sa *SemanticAnalyzer) analyzeClassMemberFunction(member *ast.ClassMemberNode) {
 	if member.Function == nil {
 		return
 	}
@@ -677,22 +875,20 @@ func (sa *SemanticAnalyzer) analyzeClassMemberFunction(member *ast.ClassMemberNo
 		Position:      member.Function.GetPosition(),
 		Range:         sa.positionToRange(member.Function.GetPosition(), len(member.Function.Name)),
 		Scope:         ScopeTypeClass,
-		ScopeID:       classScopeID,
+		ScopeID:       sa.getCurrentScopeID(),
 		Visibility:    visibility,
 		ParentClass:   sa.currentClass,
 		QualifiedName: sa.getQualifiedName(funcName),
 		IsShared:      member.IsShared,
 	}
-	sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, memberSymbol)
+	sa.addSymbolWithPosition(memberSymbol)
+
+	// Analyze the member function body like a regular function
+	sa.analyzeFunctionDeclaration(member.Function)
 }
 
 // analyzeVariableDeclaration analyzes variable declarations
 func (sa *SemanticAnalyzer) analyzeVariableDeclaration(node *ast.VariableDeclarationNode) {
-	sa.analyzeVariableDeclarationWithScope(node, sa.getCurrentScopeType(), sa.getCurrentScopeID())
-}
-
-// analyzeVariableDeclarationWithScope analyzes variable declarations with explicit scope
-func (sa *SemanticAnalyzer) analyzeVariableDeclarationWithScope(node *ast.VariableDeclarationNode, scopeType ScopeType, scopeID string) {
 	varName := strings.ToUpper(node.Name)
 
 	visibility := VisibilityPublic
@@ -700,121 +896,217 @@ func (sa *SemanticAnalyzer) analyzeVariableDeclarationWithScope(node *ast.Variab
 		visibility = VisibilityPrivate
 	}
 
+	// Determine variable type - use declared type or infer from initialization
+	varType := strings.ToUpper(node.Type)
+	if node.Value != nil {
+		// Analyze initialization expression first
+		sa.analyzeExpression(node.Value)
+
+		// If no explicit type was declared, infer it from the initialization
+		if varType == "" {
+			inferredType := sa.inferExpressionType(node.Value)
+			if inferredType != "unknown" {
+				varType = inferredType
+			} else {
+				varType = "NOTHIN" // Default for unresolved types
+			}
+		}
+	} else if varType == "" {
+		// No initialization and no explicit type - default to NOTHIN
+		varType = "NOTHIN"
+	}
+
 	varSymbol := EnhancedSymbol{
 		Documentation: joinDocs(node.Documentation),
 		Name:          varName,
 		Kind:          SymbolKindVariable,
-		Type:          strings.ToUpper(node.Type),
+		Type:          varType,
 		Position:      node.GetPosition(),
 		Range:         sa.positionToRange(node.GetPosition(), len(node.Name)),
-		Scope:         scopeType,
-		ScopeID:       scopeID,
+		Scope:         sa.getCurrentScopeType(),
+		ScopeID:       sa.getCurrentScopeID(),
 		Visibility:    visibility,
 		ParentClass:   sa.currentClass,
 		QualifiedName: sa.getQualifiedName(varName),
 	}
-	sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, varSymbol)
+	sa.addSymbolWithPosition(varSymbol)
 }
 
 // analyzeStatementBlock analyzes statements within a block (function body, etc.)
-func (sa *SemanticAnalyzer) analyzeStatementBlock(block *ast.StatementBlockNode, parentScopeID string) {
+func (sa *SemanticAnalyzer) analyzeStatementBlock(block *ast.StatementBlockNode) {
 	if block == nil || block.Statements == nil {
 		return
 	}
 
-	// Create a block scope
-	blockScopeID := fmt.Sprintf("block_%s_%p", parentScopeID, block)
-	blockScope := ScopeInfo{
-		ID:       blockScopeID,
-		Type:     ScopeTypeBlock,
-		Parent:   parentScopeID,
-		StartPos: ast.PositionInfo{}, // TODO: Get actual position from block
-		EndPos:   ast.PositionInfo{}, // TODO: Get actual end position
+	// For function and class bodies, we don't need an additional block scope
+	// since they already have their own scopes. For control structure blocks,
+	// we do need a block scope.
+	currentScopeType := sa.getCurrentScopeType()
+	needsBlockScope := currentScopeType == ScopeTypeBlock || currentScopeType == ScopeTypeGlobal
+
+	if needsBlockScope {
+		// Create a block scope
+		blockScopeID := fmt.Sprintf("block_%s_%p", sa.getCurrentScopeID(), block)
+		blockScope := ScopeInfo{
+			ID:       blockScopeID,
+			Type:     ScopeTypeBlock,
+			Parent:   sa.getCurrentScopeID(),
+			StartPos: ast.PositionInfo{}, // TODO: Get actual position from block
+			EndPos:   ast.PositionInfo{}, // TODO: Get actual end position
+		}
+		sa.pushScope(blockScope)
 	}
-	sa.symbolTable.Scopes = append(sa.symbolTable.Scopes, blockScope)
 
 	// Analyze each statement in the block
 	for _, stmt := range block.Statements {
-		sa.analyzeStatement(stmt, blockScopeID)
+		sa.analyzeStatement(stmt)
+	}
+
+	if needsBlockScope {
+		sa.popScope()
 	}
 }
 
 // analyzeStatement analyzes individual statements
-func (sa *SemanticAnalyzer) analyzeStatement(stmt ast.Node, scopeID string) {
+func (sa *SemanticAnalyzer) analyzeStatement(stmt ast.Node) {
 	if stmt == nil {
 		return
 	}
 
 	switch node := stmt.(type) {
 	case *ast.VariableDeclarationNode:
-		// Analyze the variable with the current block scope
-		sa.analyzeVariableDeclarationWithScope(node, ScopeTypeBlock, scopeID)
+		// Analyze the variable declaration
+		sa.analyzeVariableDeclaration(node)
 
 	case *ast.AssignmentNode:
 		// Analyze assignment target and value expressions
-		sa.analyzeExpression(node.Target, scopeID)
-		sa.analyzeExpression(node.Value, scopeID)
+		sa.analyzeExpression(node.Target)
+		sa.analyzeExpression(node.Value)
 
 	case *ast.IfStatementNode:
 		// Analyze condition expression
-		sa.analyzeExpression(node.Condition, scopeID)
-		// Analyze nested blocks
-		if node.ThenBlock != nil {
-			sa.analyzeStatementBlock(node.ThenBlock, scopeID)
-		}
-		if node.ElseBlock != nil {
-			sa.analyzeStatementBlock(node.ElseBlock, scopeID)
-		}
+		sa.analyzeExpression(node.Condition)
+		// Analyze nested blocks with proper scope management
+		sa.analyzeIfStatement(node)
 
 	case *ast.WhileStatementNode:
-		// Analyze condition expression
-		sa.analyzeExpression(node.Condition, scopeID)
-		// Analyze loop body
-		if node.Body != nil {
-			sa.analyzeStatementBlock(node.Body, scopeID)
-		}
+		// Analyze while statement with proper scope management
+		sa.analyzeWhileStatement(node)
 
 	case *ast.TryStatementNode:
-		// Analyze try/catch/finally blocks
-		if node.TryBody != nil {
-			sa.analyzeStatementBlock(node.TryBody, scopeID)
-		}
-		if node.CatchBody != nil {
-			sa.analyzeStatementBlock(node.CatchBody, scopeID)
-		}
-		if node.FinallyBody != nil {
-			sa.analyzeStatementBlock(node.FinallyBody, scopeID)
-		}
+		// Analyze try statement with proper scope management
+		sa.analyzeTryStatement(node)
 
 	case *ast.StatementBlockNode:
 		// Nested statement block
-		sa.analyzeStatementBlock(node, scopeID)
+		sa.analyzeStatementBlock(node)
 
 	case *ast.FunctionCallNode:
 		// Track function call
-		sa.analyzeFunctionCall(node, scopeID)
+		sa.analyzeFunctionCall(node)
 
 	case *ast.ReturnStatementNode:
 		// Analyze return value expression
 		if node.Value != nil {
-			sa.analyzeExpression(node.Value, scopeID)
+			sa.analyzeExpression(node.Value)
 		}
 
 	case *ast.ThrowStatementNode:
 		// Analyze throw expression
 		if node.Expression != nil {
-			sa.analyzeExpression(node.Expression, scopeID)
+			sa.analyzeExpression(node.Expression)
 		}
 
 	// Add more statement types as needed
 	default:
 		// For expressions and other nodes, recursively analyze expressions
-		sa.analyzeExpression(stmt, scopeID)
+		sa.analyzeExpression(stmt)
+	}
+}
+
+// analyzeIfStatement analyzes if statements with proper scope management
+func (sa *SemanticAnalyzer) analyzeIfStatement(node *ast.IfStatementNode) {
+	// Analyze condition expression
+	sa.analyzeExpression(node.Condition)
+
+	// Analyze then block with its own scope
+	if node.ThenBlock != nil {
+		sa.analyzeStatementBlock(node.ThenBlock)
+	}
+
+	// Analyze else-if branches
+	for _, elseIfBranch := range node.ElseIfBranches {
+		sa.analyzeExpression(elseIfBranch.Condition)
+		if elseIfBranch.Block != nil {
+			sa.analyzeStatementBlock(elseIfBranch.Block)
+		}
+	}
+
+	// Analyze else block
+	if node.ElseBlock != nil {
+		sa.analyzeStatementBlock(node.ElseBlock)
+	}
+}
+
+// analyzeWhileStatement analyzes while statements with proper scope management
+func (sa *SemanticAnalyzer) analyzeWhileStatement(node *ast.WhileStatementNode) {
+	// Analyze condition expression
+	sa.analyzeExpression(node.Condition)
+
+	// Analyze loop body with its own scope
+	if node.Body != nil {
+		sa.analyzeStatementBlock(node.Body)
+	}
+}
+
+// analyzeTryStatement analyzes try-catch-finally statements with proper scope management
+func (sa *SemanticAnalyzer) analyzeTryStatement(node *ast.TryStatementNode) {
+	// Analyze try block with its own scope
+	if node.TryBody != nil {
+		sa.analyzeStatementBlock(node.TryBody)
+	}
+
+	// Analyze catch block with its own scope and exception variable
+	if node.CatchBody != nil {
+		// Create scope for catch block
+		catchScopeID := fmt.Sprintf("catch_%p", node)
+		catchScope := ScopeInfo{
+			ID:       catchScopeID,
+			Type:     ScopeTypeBlock,
+			Parent:   sa.getCurrentScopeID(),
+			StartPos: ast.PositionInfo{}, // TODO: Get actual position
+			EndPos:   ast.PositionInfo{}, // TODO: Get actual end position
+		}
+		sa.pushScope(catchScope)
+
+		// Add catch variable if present
+		if node.CatchVar != "" {
+			catchVarSymbol := EnhancedSymbol{
+				Name:          strings.ToUpper(node.CatchVar),
+				Kind:          SymbolKindVariable,
+				Type:          "STRIN",            // Exception message is always a string
+				Position:      ast.PositionInfo{}, // TODO: Get position from parser
+				Range:         protocol.Range{},
+				Scope:         ScopeTypeBlock,
+				ScopeID:       catchScopeID,
+				Visibility:    VisibilityPrivate,
+				QualifiedName: strings.ToUpper(node.CatchVar),
+			}
+			sa.addSymbolWithPosition(catchVarSymbol)
+		}
+
+		sa.analyzeStatementBlock(node.CatchBody)
+		sa.popScope()
+	}
+
+	// Analyze finally block with its own scope
+	if node.FinallyBody != nil {
+		sa.analyzeStatementBlock(node.FinallyBody)
 	}
 }
 
 // analyzeExpression recursively analyzes expressions to track identifier references
-func (sa *SemanticAnalyzer) analyzeExpression(expr ast.Node, scopeID string) {
+func (sa *SemanticAnalyzer) analyzeExpression(expr ast.Node) {
 	if expr == nil {
 		return
 	}
@@ -822,41 +1114,41 @@ func (sa *SemanticAnalyzer) analyzeExpression(expr ast.Node, scopeID string) {
 	switch node := expr.(type) {
 	case *ast.IdentifierNode:
 		// This is a variable reference - track it
-		sa.trackIdentifierReference(node, scopeID)
+		sa.trackIdentifierReference(node)
 
 	case *ast.AssignmentNode:
 		// Analyze assignment target and value
-		sa.analyzeExpression(node.Target, scopeID)
-		sa.analyzeExpression(node.Value, scopeID)
+		sa.analyzeExpression(node.Target)
+		sa.analyzeExpression(node.Value)
 
 	case *ast.BinaryOpNode:
 		// Analyze left and right operands
-		sa.analyzeExpression(node.Left, scopeID)
-		sa.analyzeExpression(node.Right, scopeID)
+		sa.analyzeExpression(node.Left)
+		sa.analyzeExpression(node.Right)
 
 	case *ast.UnaryOpNode:
 		// Analyze operand
-		sa.analyzeExpression(node.Operand, scopeID)
+		sa.analyzeExpression(node.Operand)
 
 	case *ast.CastNode:
 		// Analyze cast expression
-		sa.analyzeExpression(node.Expression, scopeID)
+		sa.analyzeExpression(node.Expression)
 
 	case *ast.FunctionCallNode:
 		// Track function call and analyze arguments
-		sa.analyzeFunctionCall(node, scopeID)
+		sa.analyzeFunctionCall(node)
 		for _, arg := range node.Arguments {
-			sa.analyzeExpression(arg, scopeID)
+			sa.analyzeExpression(arg)
 		}
 
 	case *ast.MemberAccessNode:
 		// Analyze object expression
-		sa.analyzeExpression(node.Object, scopeID)
+		sa.analyzeExpression(node.Object)
 
 	case *ast.ObjectInstantiationNode:
 		// Analyze constructor arguments
 		for _, arg := range node.ConstructorArgs {
-			sa.analyzeExpression(arg, scopeID)
+			sa.analyzeExpression(arg)
 		}
 
 	case *ast.LiteralNode:
@@ -865,17 +1157,16 @@ func (sa *SemanticAnalyzer) analyzeExpression(expr ast.Node, scopeID string) {
 
 	case *ast.StatementBlockNode:
 		// Handle statement blocks that appear in expressions
-		sa.analyzeStatementBlock(node, scopeID)
+		sa.analyzeStatementBlock(node)
 
 	// Add more expression types as needed
 	default:
-		// For other node types, try to analyze any child expressions
-		sa.analyzeNodeForFunctionCalls(expr, scopeID)
+		// For other node types, no specific analysis needed
 	}
 }
 
 // trackIdentifierReference tracks an identifier reference and adds it to symbol references
-func (sa *SemanticAnalyzer) trackIdentifierReference(node *ast.IdentifierNode, scopeID string) {
+func (sa *SemanticAnalyzer) trackIdentifierReference(node *ast.IdentifierNode) {
 	if node == nil {
 		return
 	}
@@ -884,63 +1175,141 @@ func (sa *SemanticAnalyzer) trackIdentifierReference(node *ast.IdentifierNode, s
 	position := node.GetPosition()
 
 	// Find the symbol this identifier refers to
-	scope := sa.findScopeByID(scopeID)
+	currentScopeID := sa.getCurrentScopeID()
+	scope := sa.findScopeByID(currentScopeID)
 	symbol := sa.findSymbolByNameInScope(identifierName, scope)
 
+	// Always create a reference symbol for each usage location
+	// This ensures each position has the correct range for hover functionality
+	var refSymbol EnhancedSymbol
 	if symbol != nil {
 		// Add this position as a reference to the existing symbol
 		symbol.References = append(symbol.References, position)
+
+		// Create a reference symbol with the resolved symbol's type and properties
+		refSymbol = EnhancedSymbol{
+			Name:          identifierName,
+			Kind:          symbol.Kind,
+			Type:          symbol.Type,
+			Position:      position,
+			Range:         sa.positionToRange(position, len(node.Name)),
+			Scope:         sa.getCurrentScopeType(),
+			ScopeID:       currentScopeID,
+			Visibility:    symbol.Visibility,
+			ParentClass:   symbol.ParentClass,
+			QualifiedName: symbol.QualifiedName,
+			References:    []ast.PositionInfo{position},
+		}
 	} else {
 		// Create a "reference-only" symbol for unresolved identifiers
 		// This allows hover to work even if we can't find the declaration
-		refSymbol := EnhancedSymbol{
+		refSymbol = EnhancedSymbol{
 			Name:          identifierName,
 			Kind:          SymbolKindVariable, // Assume variable for now
 			Type:          "unknown",
 			Position:      position,
 			Range:         sa.positionToRange(position, len(node.Name)),
-			Scope:         ScopeTypeGlobal, // Default to global for unresolved
-			ScopeID:       scopeID,
+			Scope:         sa.getCurrentScopeType(),
+			ScopeID:       currentScopeID,
 			Visibility:    VisibilityPublic,
 			QualifiedName: identifierName,
 			References:    []ast.PositionInfo{position},
 		}
-		sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, refSymbol)
 	}
+	sa.addSymbolWithPosition(refSymbol)
 }
 
 // findSymbolByNameInScope finds a symbol by name considering scope hierarchy
+// This follows the same lookup rules as the interpreter
 func (sa *SemanticAnalyzer) findSymbolByNameInScope(name string, currentScope *ScopeInfo) *EnhancedSymbol {
 	if currentScope == nil {
 		currentScope = &ScopeInfo{ID: "global", Type: ScopeTypeGlobal}
 	}
 
-	// Search through all accessible symbols from current scope
-	for i := range sa.symbolTable.Symbols {
-		symbol := &sa.symbolTable.Symbols[i]
-		if strings.EqualFold(symbol.Name, name) && sa.isSymbolAccessible(*symbol, currentScope) {
-			return symbol
+	// Create a list of scopes to search, ordered from most specific to most general
+	scopesToSearch := sa.buildScopeHierarchy(currentScope)
+
+	// Search in each scope, starting from the most specific
+	for _, scopeID := range scopesToSearch {
+		// Find symbols in this specific scope
+		for i := range sa.symbolTable.Symbols {
+			symbol := &sa.symbolTable.Symbols[i]
+			if strings.EqualFold(symbol.Name, name) && symbol.ScopeID == scopeID {
+				// Check visibility rules
+				if sa.isSymbolAccessibleFromScope(*symbol, currentScope) {
+					return symbol
+				}
+			}
 		}
 	}
 
 	return nil
 }
 
+// buildScopeHierarchy builds a list of scope IDs to search, ordered from most specific to most general
+func (sa *SemanticAnalyzer) buildScopeHierarchy(currentScope *ScopeInfo) []string {
+	var hierarchy []string
+
+	// Start with current scope
+	if currentScope != nil {
+		hierarchy = append(hierarchy, currentScope.ID)
+
+		// Walk up the parent chain
+		parentID := currentScope.Parent
+		for parentID != "" {
+			hierarchy = append(hierarchy, parentID)
+
+			// Find the parent scope
+			parentScope := sa.findScopeByID(parentID)
+			if parentScope == nil {
+				break
+			}
+			parentID = parentScope.Parent
+		}
+	}
+
+	// Always include global scope as the last resort
+	if len(hierarchy) == 0 || hierarchy[len(hierarchy)-1] != "global" {
+		hierarchy = append(hierarchy, "global")
+	}
+
+	return hierarchy
+}
+
+// isSymbolAccessibleFromScope checks if a symbol is accessible from a given scope
+// This is an enhanced version that considers the interpreter's visibility rules
+func (sa *SemanticAnalyzer) isSymbolAccessibleFromScope(symbol EnhancedSymbol, fromScope *ScopeInfo) bool {
+	// Public symbols are always accessible
+	if symbol.Visibility == VisibilityPublic {
+		return true
+	}
+
+	// Private symbols - check scope rules
+	if symbol.Visibility == VisibilityPrivate {
+		// If it's a class member, check if we're in the same class
+		if symbol.ParentClass != "" {
+			return sa.isInSameClass(fromScope, symbol.ParentClass)
+		}
+
+		// For non-class members, check if we're in the same scope or a nested scope
+		symbolScope := sa.findScopeByID(symbol.ScopeID)
+		if symbolScope == nil {
+			return false
+		}
+
+		// Check if fromScope is the same as or nested within symbolScope
+		return fromScope.ID == symbolScope.ID || sa.isScopeNestedIn(fromScope, symbolScope)
+	}
+
+	// Shared symbols (class members) - accessible if we can access the class
+	if symbol.Visibility == VisibilityShared {
+		return symbol.ParentClass != ""
+	}
+
+	return true
+}
+
 // Helper methods
-
-func (sa *SemanticAnalyzer) getCurrentScopeID() string {
-	if len(sa.symbolTable.Scopes) == 0 {
-		return "global"
-	}
-	return sa.symbolTable.Scopes[len(sa.symbolTable.Scopes)-1].ID
-}
-
-func (sa *SemanticAnalyzer) getCurrentScopeType() ScopeType {
-	if len(sa.symbolTable.Scopes) == 0 {
-		return ScopeTypeGlobal
-	}
-	return sa.symbolTable.Scopes[len(sa.symbolTable.Scopes)-1].Type
-}
 
 func (sa *SemanticAnalyzer) getQualifiedName(name string) string {
 	if sa.currentClass != "" {
@@ -966,7 +1335,13 @@ func (sa *SemanticAnalyzer) positionToRange(pos ast.PositionInfo, length int) pr
 
 // ResolveSymbolAtPosition resolves a symbol at a given position with scope awareness
 func (sa *SemanticAnalyzer) ResolveSymbolAtPosition(position protocol.Position) *EnhancedSymbol {
-	// Find the scope at the given position
+	// First, try fast lookup via position map
+	key := PositionKey{Line: int(position.Line) + 1, Column: int(position.Character) + 1} // Convert from 0-based to 1-based
+	if symbol, exists := sa.positionToSymbol[key]; exists {
+		return symbol
+	}
+
+	// Fallback to range-based search
 	scope := sa.findScopeAtPosition(position)
 	if scope == nil {
 		scope = &ScopeInfo{ID: "global", Type: ScopeTypeGlobal}
@@ -983,6 +1358,45 @@ func (sa *SemanticAnalyzer) ResolveSymbolAtPosition(position protocol.Position) 
 	}
 
 	return nil
+}
+
+// GetAllSymbolsAtPosition returns all symbols that exist at the given position
+func (sa *SemanticAnalyzer) GetAllSymbolsAtPosition(position protocol.Position) []*EnhancedSymbol {
+	var results []*EnhancedSymbol
+
+	// First, try fast lookup via position map
+	key := PositionKey{Line: int(position.Line) + 1, Column: int(position.Character) + 1}
+	if symbol, exists := sa.positionToSymbol[key]; exists {
+		results = append(results, symbol)
+	}
+
+	// Also check for symbols in range (for broader matches)
+	scope := sa.findScopeAtPosition(position)
+	if scope == nil {
+		scope = &ScopeInfo{ID: "global", Type: ScopeTypeGlobal}
+	}
+
+	for i := range sa.symbolTable.Symbols {
+		symbol := &sa.symbolTable.Symbols[i]
+		if sa.positionInRange(position, symbol.Range) {
+			// Check if symbol is accessible from current scope
+			if sa.isSymbolAccessible(*symbol, scope) {
+				// Avoid duplicates
+				found := false
+				for _, existing := range results {
+					if existing == symbol {
+						found = true
+						break
+					}
+				}
+				if !found {
+					results = append(results, symbol)
+				}
+			}
+		}
+	}
+
+	return results
 }
 
 // FindSymbolsByName finds all symbols with the given name, respecting scope visibility
@@ -1092,28 +1506,9 @@ func (sa *SemanticAnalyzer) findScopeByID(id string) *ScopeInfo {
 }
 
 // isSymbolAccessible checks if a symbol is accessible from a given scope
+// This is a wrapper around the enhanced isSymbolAccessibleFromScope method
 func (sa *SemanticAnalyzer) isSymbolAccessible(symbol EnhancedSymbol, currentScope *ScopeInfo) bool {
-	symbolScope := sa.findScopeByID(symbol.ScopeID)
-	if symbolScope == nil {
-		// If we can't find the symbol's scope, assume it's global and accessible
-		return true
-	}
-
-	switch symbol.Visibility {
-	case VisibilityPublic:
-		return true // Public symbols are always accessible
-	case VisibilityPrivate:
-		// Private symbols are only accessible within the same scope or class
-		if symbol.ParentClass != "" {
-			return sa.isInSameClass(currentScope, symbol.ParentClass)
-		}
-		return currentScope.ID == symbolScope.ID || sa.isScopeNestedIn(currentScope, symbolScope)
-	case VisibilityShared:
-		// Shared class members are accessible through the class
-		return symbol.ParentClass != ""
-	default:
-		return true
-	}
+	return sa.isSymbolAccessibleFromScope(symbol, currentScope)
 }
 
 // isClassMemberAccessible checks if a class member is accessible from the current context
@@ -1235,12 +1630,7 @@ func (sa *SemanticAnalyzer) GetCompletionItems(position protocol.Position) []pro
 
 // GetHoverInfo provides enhanced hover information with context
 func (sa *SemanticAnalyzer) GetHoverInfo(position protocol.Position) *protocol.Hover {
-	// First, check if this is a function call
-	if functionCall := sa.findFunctionCallAtPosition(position); functionCall != nil {
-		return sa.buildFunctionCallHover(functionCall)
-	}
-
-	// Otherwise, look for symbol definitions
+	// Look for symbol definitions at position
 	symbol := sa.ResolveSymbolAtPosition(position)
 	if symbol == nil {
 		return nil
@@ -1457,268 +1847,34 @@ func (sa *SemanticAnalyzer) symbolKindToString(kind SymbolKind) string {
 
 // Function call analysis methods
 
-// analyzeFunctionCall analyzes a function call and tracks it
-func (sa *SemanticAnalyzer) analyzeFunctionCall(node *ast.FunctionCallNode, scopeID string) {
+// analyzeFunctionCall analyzes a function call and creates identifier reference symbols
+func (sa *SemanticAnalyzer) analyzeFunctionCall(node *ast.FunctionCallNode) {
 	if node == nil {
 		return
 	}
 
-	var functionName string
-	var callType FunctionCallType
-	var objectType string
-
-	// Determine the type of function call and extract function name
+	// Extract function identifier and create reference symbol
 	switch funcNode := node.Function.(type) {
 	case *ast.IdentifierNode:
-		// Global function call
-		functionName = strings.ToUpper(funcNode.Name)
-		callType = FunctionCallGlobal
+		// Global function call - track the identifier
+		sa.trackIdentifierReference(funcNode)
 
 	case *ast.MemberAccessNode:
-		// Method call (obj DO method)
-		functionName = strings.ToUpper(funcNode.Member)
-		callType = FunctionCallMethod
-
-		// Try to determine object type if possible
-		switch obj := funcNode.Object.(type) {
-		case *ast.IdentifierNode:
-			// If the object is a variable, try to find its type
-			varSymbol := sa.findSymbolByNameInScope(strings.ToUpper(obj.Name), sa.findScopeByID(scopeID))
-			if varSymbol != nil {
-				objectType = varSymbol.Type
-			} else {
-				objectType = "unknown"
-			}
+		// Method call - track the object identifier and analyze the member access
+		sa.analyzeExpression(funcNode.Object)
+		
+		// Create a synthetic identifier node for the method name to track it
+		memberIdentifier := &ast.IdentifierNode{
+			Name:     funcNode.Member,
+			Position: funcNode.GetPosition(),
 		}
-
-	default:
-		return // Unsupported function call type
+		sa.trackIdentifierReference(memberIdentifier)
 	}
 
-	// Create function call record
-	functionCall := FunctionCall{
-		CallSite:     node.GetPosition(),
-		FunctionName: functionName,
-		CallType:     callType,
-		ObjectType:   objectType,
-		Range:        sa.positionToRange(node.GetPosition(), len(functionName)),
-	}
-
-	// Collect argument positions
+	// Analyze function arguments
 	for _, arg := range node.Arguments {
-		if arg != nil {
-			functionCall.Arguments = append(functionCall.Arguments, arg.GetPosition())
-		}
-	}
-
-	// Try to resolve the function
-	functionCall.ResolvedTo = sa.resolveFunctionSymbol(functionName, callType)
-
-	// Add to function calls list
-	sa.symbolTable.FunctionCalls = append(sa.symbolTable.FunctionCalls, functionCall)
-}
-
-// analyzeNodeForFunctionCalls recursively searches for function calls in expressions
-func (sa *SemanticAnalyzer) analyzeNodeForFunctionCalls(node ast.Node, scopeID string) {
-	if node == nil {
-		return
-	}
-
-	switch n := node.(type) {
-	case *ast.FunctionCallNode:
-		// Direct function call
-		sa.analyzeFunctionCall(n, scopeID)
-
-	case *ast.BinaryOpNode:
-		// Check left and right operands
-		sa.analyzeNodeForFunctionCalls(n.Left, scopeID)
-		sa.analyzeNodeForFunctionCalls(n.Right, scopeID)
-
-	case *ast.UnaryOpNode:
-		// Check operand
-		sa.analyzeNodeForFunctionCalls(n.Operand, scopeID)
-
-	case *ast.AssignmentNode:
-		// Check value expression
-		sa.analyzeNodeForFunctionCalls(n.Value, scopeID)
-
-	case *ast.IfStatementNode:
-		// Check condition
-		sa.analyzeNodeForFunctionCalls(n.Condition, scopeID)
-
-	case *ast.WhileStatementNode:
-		// Check condition
-		sa.analyzeNodeForFunctionCalls(n.Condition, scopeID)
-
-	case *ast.ReturnStatementNode:
-		// Check return value
-		sa.analyzeNodeForFunctionCalls(n.Value, scopeID)
-
-		// Add more node types as needed for comprehensive coverage
+		sa.analyzeExpression(arg)
 	}
 }
 
-// resolveFunctionSymbol attempts to resolve a function call to its symbol definition
-func (sa *SemanticAnalyzer) resolveFunctionSymbol(functionName string, callType FunctionCallType) *EnhancedSymbol {
-	// Search through all symbols for a matching function
-	for i := range sa.symbolTable.Symbols {
-		symbol := &sa.symbolTable.Symbols[i]
 
-		if symbol.Kind == SymbolKindFunction &&
-			strings.ToUpper(symbol.Name) == functionName {
-
-			// For global calls, prefer functions in current module or global scope
-			if callType == FunctionCallGlobal {
-				if symbol.Scope == ScopeTypeGlobal || symbol.SourceModule == sa.uri {
-					return symbol
-				}
-			}
-
-			// For method calls, we'd need more sophisticated resolution
-			// based on the object type, but for now return any match
-			if callType == FunctionCallMethod {
-				return symbol
-			}
-		}
-	}
-
-	return nil // Function not found
-}
-
-// findFunctionCallAtPosition finds a function call at the given position
-func (sa *SemanticAnalyzer) findFunctionCallAtPosition(position protocol.Position) *FunctionCall {
-	for i := range sa.symbolTable.FunctionCalls {
-		call := &sa.symbolTable.FunctionCalls[i]
-		if sa.positionInRange(position, call.Range) {
-			return call
-		}
-	}
-	return nil
-}
-
-// buildFunctionCallHover builds hover information for a function call
-func (sa *SemanticAnalyzer) buildFunctionCallHover(call *FunctionCall) *protocol.Hover {
-	var contents []string
-
-	// Function call header
-	callTypeStr := sa.functionCallTypeToString(call.CallType)
-	contents = append(contents, fmt.Sprintf("**%s Call**", callTypeStr))
-
-	// Function signature
-	resolvedSymbol := call.ResolvedTo
-	if resolvedSymbol == nil {
-		// Try a more comprehensive lookup in outer scopes
-		resolvedSymbol = sa.lookupFunctionInOuterScopes(call.FunctionName, call.CallType)
-	}
-
-	if resolvedSymbol != nil {
-		signature := sa.buildSymbolSignature(*resolvedSymbol)
-		contents = append(contents, fmt.Sprintf("```olol\n%s\n```", signature))
-	} else {
-		// Still unresolved function call
-		contents = append(contents, fmt.Sprintf("```olol\n%s(?)\n```", call.FunctionName))
-		contents = append(contents, "*⚠️ Function not found*")
-	}
-
-	// Call details
-	if call.CallType == FunctionCallMethod && call.ObjectType != "unknown" {
-		contents = append(contents, fmt.Sprintf("**Object Type:** `%s`", call.ObjectType))
-	}
-
-	if len(call.Arguments) > 0 {
-		contents = append(contents, fmt.Sprintf("**Arguments:** %d", len(call.Arguments)))
-	}
-
-	// Function documentation (if resolved)
-	if resolvedSymbol != nil && resolvedSymbol.Documentation != "" {
-		contents = append(contents, "---")
-		contents = append(contents, resolvedSymbol.Documentation)
-	}
-
-	return &protocol.Hover{
-		Contents: protocol.MarkupContent{
-			Kind:  protocol.MarkupKindMarkdown,
-			Value: strings.Join(contents, "\n\n"),
-		},
-		Range: &call.Range,
-	}
-}
-
-// functionCallTypeToString converts function call type to string
-func (sa *SemanticAnalyzer) functionCallTypeToString(callType FunctionCallType) string {
-	switch callType {
-	case FunctionCallGlobal:
-		return "Global Function"
-	case FunctionCallMethod:
-		return "Method"
-	default:
-		return "Function"
-	}
-}
-
-// lookupFunctionInOuterScopes performs a comprehensive function lookup in outer scopes
-func (sa *SemanticAnalyzer) lookupFunctionInOuterScopes(functionName string, callType FunctionCallType) *EnhancedSymbol {
-	// First, try case-insensitive matching for all function symbols
-	for i := range sa.symbolTable.Symbols {
-		symbol := &sa.symbolTable.Symbols[i]
-
-		if symbol.Kind == SymbolKindFunction &&
-			strings.EqualFold(symbol.Name, functionName) {
-			return symbol
-		}
-	}
-
-	// Try looking in imported modules
-	for _, moduleImport := range sa.symbolTable.ImportedModules {
-		if moduleSymbol := sa.lookupInImportedModule(functionName, moduleImport); moduleSymbol != nil {
-			return moduleSymbol
-		}
-	}
-
-	// Try looking in the runtime environment if available
-	if sa.environment != nil {
-		if environmentSymbol := sa.lookupInEnvironment(functionName, callType); environmentSymbol != nil {
-			return environmentSymbol
-		}
-	}
-
-	return nil // not found
-}
-
-// lookupInImportedModule looks up a function in imported modules
-func (sa *SemanticAnalyzer) lookupInImportedModule(functionName string, moduleImport ModuleImport) *EnhancedSymbol {
-	// Look for functions from this specific module
-	for i := range sa.symbolTable.Symbols {
-		symbol := &sa.symbolTable.Symbols[i]
-
-		if symbol.Kind == SymbolKindFunction &&
-			strings.EqualFold(symbol.Name, functionName) &&
-			symbol.SourceModule == moduleImport.FilePath {
-			return symbol
-		}
-	}
-	return nil
-}
-
-// lookupInEnvironment looks up a function in the runtime environment
-func (sa *SemanticAnalyzer) lookupInEnvironment(functionName string, _ FunctionCallType) *EnhancedSymbol {
-	if sa.environment == nil {
-		return nil
-	}
-
-	// Try to get the function from the environment
-	upperFunctionName := strings.ToUpper(functionName)
-	if function, err := sa.environment.GetFunction(upperFunctionName); err == nil {
-		// Create a symbol from the environment function
-		return &EnhancedSymbol{
-			Documentation: joinDocs(function.Documentation),
-			Name:          upperFunctionName,
-			Kind:          SymbolKindFunction,
-			Type:          "function", // Could inspect function.Type for more details
-			Scope:         ScopeTypeGlobal,
-			Visibility:    VisibilityPublic,
-		}
-	}
-
-	return nil
-}

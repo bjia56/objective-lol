@@ -15,7 +15,7 @@ func TestLSPIntegration(t *testing.T) {
 	t.Run("ComponentCreation", func(t *testing.T) {
 		analyzer := analyzer.NewAnalyzer()
 		workspace := workspace.NewManager()
-		lspServer := server.NewServer()
+		lspServer, _ := server.NewServer("")
 
 		if analyzer == nil {
 			t.Fatal("Failed to create analyzer")
@@ -95,7 +95,7 @@ KTHXBAI`
 
 	// Test LSP server capabilities
 	t.Run("ServerCapabilities", func(t *testing.T) {
-		lspServer := server.NewServer()
+		lspServer, _ := server.NewServer("")
 
 		// Test server capabilities (this is a private method, so we access it through a test helper)
 		// We can't directly test GetServerCapabilities since it's not exported,
@@ -151,7 +151,7 @@ KTHXBAI`
 func TestLSPServerBinary(t *testing.T) {
 	// This is more of a documentation test - the fact that we can import
 	// and create the server components means the binary should build successfully
-	lspServer := server.NewServer()
+	lspServer, _ := server.NewServer("")
 	if lspServer == nil {
 		t.Fatal("LSP server creation failed")
 	}

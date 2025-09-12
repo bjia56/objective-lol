@@ -195,38 +195,38 @@ KTHXBAI`
 
 	symbolTable := analyzer.GetSymbolTable()
 
-	// Should have tracked function calls
-	if len(symbolTable.FunctionCalls) == 0 {
-		t.Error("Expected function calls to be tracked")
-	} else {
-		t.Logf("Found %d function calls", len(symbolTable.FunctionCalls))
-
-		for i, call := range symbolTable.FunctionCalls {
-			t.Logf("Call %d: %s (type: %d)", i, call.FunctionName, call.CallType)
-			if call.ResolvedTo != nil {
-				t.Logf("  Resolved to: %s", call.ResolvedTo.Name)
-			} else {
-				t.Logf("  Not resolved")
+	// Should have tracked function calls as reference symbols
+	referenceSymbols := []EnhancedSymbol{}
+	for _, symbol := range symbolTable.Symbols {
+		if len(symbol.References) > 0 {
+			// Check if this symbol's position matches one of its references (indicating it's a reference symbol)
+			for _, ref := range symbol.References {
+				if ref.Line == symbol.Position.Line && ref.Column == symbol.Position.Column {
+					referenceSymbols = append(referenceSymbols, symbol)
+					break
+				}
 			}
 		}
+	}
+
+	if len(referenceSymbols) == 0 {
+		t.Error("Expected function calls to be tracked as references")
+	} else {
+		t.Logf("Found %d reference symbols", len(referenceSymbols))
 	}
 
 	// Test specific function calls
 	foundSAYZ := false
 	foundMAX := false
 
-	for _, call := range symbolTable.FunctionCalls {
-		if call.FunctionName == "SAYZ" {
+	for _, symbol := range referenceSymbols {
+		if symbol.Name == "SAYZ" {
 			foundSAYZ = true
-			if call.CallType != FunctionCallGlobal {
-				t.Errorf("Expected SAYZ to be global call, got %d", call.CallType)
-			}
+			t.Logf("Found SAYZ reference at line %d, column %d", symbol.Position.Line, symbol.Position.Column)
 		}
-		if call.FunctionName == "MAX" {
+		if symbol.Name == "MAX" {
 			foundMAX = true
-			if call.CallType != FunctionCallGlobal {
-				t.Errorf("Expected MAX to be global call, got %d", call.CallType)
-			}
+			t.Logf("Found MAX reference at line %d, column %d", symbol.Position.Line, symbol.Position.Column)
 		}
 	}
 
