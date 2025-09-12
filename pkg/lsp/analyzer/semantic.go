@@ -1248,17 +1248,17 @@ func (sa *SemanticAnalyzer) trackMemberReference(node *ast.MemberAccessNode) {
 	// First analyze the object to understand its type
 	sa.analyzeExpression(node.Object)
 	objectType := sa.inferExpressionType(node.Object)
-	
+
 	memberName := strings.ToUpper(node.Member.Name)
 	position := node.Member.GetPosition()
-	
+
 	// Look for the member in the object's class scope
 	classScope := sa.findClassScope(objectType)
 	var symbol *EnhancedSymbol
 	if classScope != nil {
 		symbol = sa.findSymbolByNameInScope(memberName, classScope)
 	}
-	
+
 	// Create a reference symbol for the member
 	var refSymbol EnhancedSymbol
 	if symbol != nil {
@@ -1303,7 +1303,7 @@ func (sa *SemanticAnalyzer) findClassScope(className string) *ScopeInfo {
 	if className == "" || className == "unknown" {
 		return nil
 	}
-	
+
 	// Look for a class scope with the given class name
 	for i := range sa.symbolTable.Scopes {
 		scope := &sa.symbolTable.Scopes[i]
@@ -1729,6 +1729,50 @@ func (sa *SemanticAnalyzer) GetHoverInfo(position protocol.Position) *protocol.H
 	symbol := sa.ResolveSymbolAtPosition(position)
 	if symbol == nil {
 		return nil
+	}
+
+	// Builtin types
+	switch symbol.Name {
+	case "STRIN":
+		return &protocol.Hover{
+			Contents: protocol.MarkupContent{
+				Kind:  protocol.MarkupKindMarkdown,
+				Value: "**STRIN**: Represents text strings.",
+			},
+			Range: &symbol.Range,
+		}
+	case "INTEGR":
+		return &protocol.Hover{
+			Contents: protocol.MarkupContent{
+				Kind:  protocol.MarkupKindMarkdown,
+				Value: "**INTEGR**: Represents integer numbers.",
+			},
+			Range: &symbol.Range,
+		}
+	case "DUBBLE":
+		return &protocol.Hover{
+			Contents: protocol.MarkupContent{
+				Kind:  protocol.MarkupKindMarkdown,
+				Value: "**DUBBLE**: Represents double-precision floating-point numbers.",
+			},
+			Range: &symbol.Range,
+		}
+	case "BOOL":
+		return &protocol.Hover{
+			Contents: protocol.MarkupContent{
+				Kind:  protocol.MarkupKindMarkdown,
+				Value: "**BOOL**: Represents boolean values (`YEZ` or `NO`).",
+			},
+			Range: &symbol.Range,
+		}
+	case "NOTHIN":
+		return &protocol.Hover{
+			Contents: protocol.MarkupContent{
+				Kind:  protocol.MarkupKindMarkdown,
+				Value: "**NOTHIN**: Represents the absence of a value.",
+			},
+			Range: &symbol.Range,
+		}
 	}
 
 	// Build comprehensive hover content
