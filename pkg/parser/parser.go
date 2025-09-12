@@ -217,10 +217,14 @@ func (p *Parser) parseVariableDeclaration() *ast.VariableDeclarationNode {
 			p.addError(fmt.Sprintf("expected type after 'TEH', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
 			return nil
 		}
-		node.Type = p.currentToken.Literal
+		// Create an IdentifierNode for the type with position information
+		node.Type = &ast.IdentifierNode{
+			Name:     p.currentToken.Literal,
+			Position: p.convertPosition(p.currentToken.Position),
+		}
 	} else {
-		// No type specified - use empty string for dynamic typing
-		node.Type = ""
+		// No type specified - set Type to nil for dynamic typing
+		node.Type = nil
 	}
 
 	// Check for initialization
@@ -281,10 +285,14 @@ func (p *Parser) parseIHasAVariableDeclaration() *ast.VariableDeclarationNode {
 			p.addError(fmt.Sprintf("expected type after 'TEH', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
 			return nil
 		}
-		node.Type = p.currentToken.Literal
+		// Create an IdentifierNode for the type with position information
+		node.Type = &ast.IdentifierNode{
+			Name:     p.currentToken.Literal,
+			Position: p.convertPosition(p.currentToken.Position),
+		}
 	} else {
-		// No type specified - use empty string for dynamic typing
-		node.Type = ""
+		// No type specified - set Type to nil for dynamic typing
+		node.Type = nil
 	}
 
 	// Check for initialization
@@ -600,11 +608,12 @@ func (p *Parser) parseClassMemberWithDocs(memberDocs []string) *ast.ClassMemberN
 			p.addError(fmt.Sprintf("expected type after 'TEH', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
 			return nil
 		}
-		varType := p.currentToken.Literal
-
 		varDecl := &ast.VariableDeclarationNode{
-			Name:          name,
-			Type:          varType,
+			Name: name,
+			Type: &ast.IdentifierNode{
+				Name:     p.currentToken.Literal,
+				Position: p.convertPosition(p.currentToken.Position),
+			},
 			IsLocked:      isLocked,
 			Documentation: memberDocs,
 			Position:      p.convertPosition(identifierPosition),
@@ -797,7 +806,7 @@ func (p *Parser) parseStatement() ast.Node {
 				return &ast.AssignmentNode{
 					Target: &ast.MemberAccessNode{
 						Object:   &ast.IdentifierNode{Name: objName, Position: p.convertPosition(objPos)},
-						Member:   memberName,
+						Member:   &ast.IdentifierNode{Name: memberName, Position: p.convertPosition(memberPos)},
 						Position: p.convertPosition(memberPos),
 					},
 					Value:    p.parseExpression(),
@@ -807,7 +816,7 @@ func (p *Parser) parseStatement() ast.Node {
 				// Member variable access in statement context
 				return &ast.MemberAccessNode{
 					Object:   &ast.IdentifierNode{Name: objName, Position: p.convertPosition(objPos)},
-					Member:   memberName,
+					Member:   &ast.IdentifierNode{Name: memberName, Position: p.convertPosition(memberPos)},
 					Position: p.convertPosition(memberPos),
 				}
 			}
@@ -830,7 +839,7 @@ func (p *Parser) parseStatement() ast.Node {
 				return &ast.FunctionCallNode{
 					Function: &ast.MemberAccessNode{
 						Object:   &ast.IdentifierNode{Name: objName, Position: p.convertPosition(objPos)},
-						Member:   methodName,
+						Member:   &ast.IdentifierNode{Name: methodName, Position: p.convertPosition(fnPos)},
 						Position: p.convertPosition(objPos),
 					},
 					Arguments: args,
@@ -841,7 +850,7 @@ func (p *Parser) parseStatement() ast.Node {
 				return &ast.FunctionCallNode{
 					Function: &ast.MemberAccessNode{
 						Object:   &ast.IdentifierNode{Name: objName, Position: p.convertPosition(objPos)},
-						Member:   methodName,
+						Member:   &ast.IdentifierNode{Name: methodName, Position: p.convertPosition(fnPos)},
 						Position: p.convertPosition(objPos),
 					},
 					Arguments: []ast.Node{},
@@ -962,10 +971,11 @@ func (p *Parser) parseAssignment() *ast.AssignmentNode {
 		objPos := p.currentToken.Position
 		p.nextToken() // consume first IDENTIFIER
 		memberName := p.currentToken.Literal
+		memberPos := p.currentToken.Position
 
 		node.Target = &ast.MemberAccessNode{
 			Object:   &ast.IdentifierNode{Name: objName, Position: p.convertPosition(objPos)},
-			Member:   memberName,
+			Member:   &ast.IdentifierNode{Name: memberName, Position: p.convertPosition(memberPos)},
 			Position: p.convertPosition(objPos),
 		}
 
@@ -1159,9 +1169,10 @@ func (p *Parser) parsePrimaryExpression() ast.Node {
 			objPos := p.currentToken.Position
 			p.nextToken() // move to member name
 			memberName := p.currentToken.Literal
+			memberPos := p.currentToken.Position
 			return &ast.MemberAccessNode{
 				Object:   &ast.IdentifierNode{Name: objName, Position: p.convertPosition(objPos)},
-				Member:   memberName,
+				Member:   &ast.IdentifierNode{Name: memberName, Position: p.convertPosition(memberPos)},
 				Position: p.convertPosition(objPos),
 			}
 		} else if p.peekTokenIs(DO) {
@@ -1175,6 +1186,7 @@ func (p *Parser) parsePrimaryExpression() ast.Node {
 				return nil
 			}
 			methodName := p.currentToken.Literal
+			methodPos := p.currentToken.Position
 
 			if p.peekTokenIs(WIT) {
 				// Member function call with arguments: OBJECT DO METHOD WIT args
@@ -1183,7 +1195,7 @@ func (p *Parser) parsePrimaryExpression() ast.Node {
 				return &ast.FunctionCallNode{
 					Function: &ast.MemberAccessNode{
 						Object:   &ast.IdentifierNode{Name: objName, Position: p.convertPosition(objPos)},
-						Member:   methodName,
+						Member:   &ast.IdentifierNode{Name: methodName, Position: p.convertPosition(methodPos)},
 						Position: p.convertPosition(objPos),
 					},
 					Arguments: args,
@@ -1194,7 +1206,7 @@ func (p *Parser) parsePrimaryExpression() ast.Node {
 				return &ast.FunctionCallNode{
 					Function: &ast.MemberAccessNode{
 						Object:   &ast.IdentifierNode{Name: objName, Position: p.convertPosition(objPos)},
-						Member:   methodName,
+						Member:   &ast.IdentifierNode{Name: methodName, Position: p.convertPosition(methodPos)},
 						Position: p.convertPosition(objPos),
 					},
 					Arguments: []ast.Node{},
@@ -1271,7 +1283,10 @@ func (p *Parser) parseObjectInstantiation() *ast.ObjectInstantiationNode {
 		return nil
 	}
 
-	node.ClassName = p.currentToken.Literal
+	node.Class = &ast.IdentifierNode{
+		Name:     p.currentToken.Literal,
+		Position: p.convertPosition(p.currentToken.Position),
+	}
 
 	// Check for constructor arguments (WIT ...)
 	if p.peekTokenIs(WIT) {

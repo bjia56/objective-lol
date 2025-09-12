@@ -393,9 +393,15 @@ func (i *Interpreter) VisitVariableDeclaration(node *ast.VariableDeclarationNode
 		}
 	}
 
+	// Extract type name from IdentifierNode, or use empty string if nil
+	typeName := ""
+	if node.Type != nil {
+		typeName = node.Type.Name
+	}
+
 	err = i.environment.DefineVariable(
 		strings.ToUpper(node.Name),
-		strings.ToUpper(node.Type),
+		strings.ToUpper(typeName),
 		value,
 		node.IsLocked,
 		node.Documentation,
@@ -468,11 +474,17 @@ func (i *Interpreter) VisitClassDeclaration(node *ast.ClassDeclarationNode) (env
 				}
 			}
 
+			// Extract type name from IdentifierNode, or use empty string if nil
+			memberTypeName := ""
+			if member.Variable.Type != nil {
+				memberTypeName = member.Variable.Type.Name
+			}
+
 			variable := &environment.MemberVariable{
 				Variable: environment.Variable{
 					Documentation: member.Variable.Documentation,
 					Name:          strings.ToUpper(member.Variable.Name),
-					Type:          strings.ToUpper(member.Variable.Type),
+					Type:          strings.ToUpper(memberTypeName),
 					Value:         value,
 					IsLocked:      member.Variable.IsLocked,
 					IsPublic:      member.IsPublic, // Use visibility from member declaration
@@ -553,7 +565,7 @@ func (i *Interpreter) VisitAssignment(node *ast.AssignmentNode) (environment.Val
 		}
 
 		if obj, ok := objectValue.(*environment.ObjectInstance); ok {
-			return value, obj.SetMemberVariable(strings.ToUpper(target.Member), value, i.currentClass)
+			return value, obj.SetMemberVariable(strings.ToUpper(target.Member.Name), value, i.currentClass)
 		}
 		return environment.NOTHIN, fmt.Errorf("cannot assign to member of non-object")
 
@@ -732,13 +744,13 @@ func (i *Interpreter) VisitFunctionCall(node *ast.FunctionCallNode) (environment
 		}
 
 		if obj, ok := objectValue.(*environment.ObjectInstance); ok {
-			function, err := obj.GetMemberFunction(strings.ToUpper(funcNode.Member), i.currentClass)
+			function, err := obj.GetMemberFunction(strings.ToUpper(funcNode.Member.Name), i.currentClass)
 			if err != nil {
 				var notFound *environment.NotFound
 				if !errors.As(err, &notFound) {
 					return environment.NOTHIN, err
 				}
-				function, err = obj.Class.CheckUnknownFunctionHandler(strings.ToUpper(funcNode.Member), i.currentClass)
+				function, err = obj.Class.CheckUnknownFunctionHandler(strings.ToUpper(funcNode.Member.Name), i.currentClass)
 				if err != nil {
 					return environment.NOTHIN, err
 				}
@@ -858,7 +870,7 @@ func (i *Interpreter) VisitMemberAccess(node *ast.MemberAccessNode) (environment
 	}
 
 	if obj, ok := objectValue.(*environment.ObjectInstance); ok {
-		val, err := obj.GetMemberVariable(strings.ToUpper(node.Member), i.currentClass)
+		val, err := obj.GetMemberVariable(strings.ToUpper(node.Member.Name), i.currentClass)
 		if err != nil {
 			return environment.NOTHIN, err
 		}
@@ -1030,13 +1042,13 @@ func (i *Interpreter) VisitIdentifier(node *ast.IdentifierNode) (environment.Val
 func (i *Interpreter) VisitObjectInstantiation(node *ast.ObjectInstantiationNode) (environment.Value, error) {
 	var env *environment.Environment = i.environment
 
-	instance, err := env.NewObjectInstance(strings.ToUpper(node.ClassName))
+	instance, err := env.NewObjectInstance(strings.ToUpper(node.Class.Name))
 	if err != nil {
 		return environment.NOTHIN, err
 	}
 
 	// Look for a constructor method with the same name as the class
-	constructorName := strings.ToUpper(node.ClassName)
+	constructorName := strings.ToUpper(node.Class.Name)
 	function, err := instance.GetMemberFunction(constructorName, i.currentClass)
 
 	// Only proceed if constructor exists

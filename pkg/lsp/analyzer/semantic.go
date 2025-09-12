@@ -102,7 +102,6 @@ const (
 	VisibilityShared
 )
 
-
 // AnalysisError represents semantic analysis errors
 type AnalysisError struct {
 	Type     ErrorType
@@ -277,7 +276,7 @@ func (sa *SemanticAnalyzer) inferExpressionType(expr ast.Node) string {
 
 	case *ast.ObjectInstantiationNode:
 		// Object instantiation returns the class type
-		return strings.ToUpper(node.ClassName)
+		return strings.ToUpper(node.Class.Name)
 
 	default:
 		return "unknown"
@@ -325,7 +324,7 @@ func (sa *SemanticAnalyzer) inferFunctionCallType(node *ast.FunctionCallNode) st
 	case *ast.MemberAccessNode:
 		// Method call - look up in class
 		objectType := sa.inferExpressionType(funcNode.Object)
-		methodName := strings.ToUpper(funcNode.Member)
+		methodName := strings.ToUpper(funcNode.Member.Name)
 
 		// Find the class and method
 		for _, symbol := range sa.symbolTable.Symbols {
@@ -343,7 +342,7 @@ func (sa *SemanticAnalyzer) inferFunctionCallType(node *ast.FunctionCallNode) st
 // inferMemberAccessType infers the type of member access
 func (sa *SemanticAnalyzer) inferMemberAccessType(node *ast.MemberAccessNode) string {
 	objectType := sa.inferExpressionType(node.Object)
-	memberName := strings.ToUpper(node.Member)
+	memberName := strings.ToUpper(node.Member.Name)
 
 	// Find the member variable in the class
 	for _, symbol := range sa.symbolTable.Symbols {
@@ -788,7 +787,7 @@ func (sa *SemanticAnalyzer) analyzeClassDeclaration(node *ast.ClassDeclarationNo
 	sa.addSymbolWithPosition(classSymbol)
 
 	// Create class scope for analyzing class members
-	scopeID := fmt.Sprintf("class_%s_%d_%d", className, node.GetPosition().Line, node.GetPosition().Column)
+	scopeID := fmt.Sprintf("class_%s", className)
 	classScope := ScopeInfo{
 		ID:        scopeID,
 		Type:      ScopeTypeClass,
@@ -830,11 +829,17 @@ func (sa *SemanticAnalyzer) analyzeClassMemberVariable(member *ast.ClassMemberNo
 		visibility = VisibilityShared
 	}
 
+	// Extract type name from IdentifierNode, or use empty string if nil
+	memberVarType := ""
+	if member.Variable.Type != nil {
+		memberVarType = strings.ToUpper(member.Variable.Type.Name)
+	}
+
 	memberSymbol := EnhancedSymbol{
 		Documentation: joinDocs(member.Variable.Documentation),
 		Name:          varName,
 		Kind:          SymbolKindVariable,
-		Type:          strings.ToUpper(member.Variable.Type),
+		Type:          memberVarType,
 		Position:      member.Variable.GetPosition(),
 		Range:         sa.positionToRange(member.Variable.GetPosition(), len(member.Variable.Name)),
 		Scope:         ScopeTypeClass,
@@ -845,6 +850,11 @@ func (sa *SemanticAnalyzer) analyzeClassMemberVariable(member *ast.ClassMemberNo
 		IsShared:      member.IsShared,
 	}
 	sa.addSymbolWithPosition(memberSymbol)
+
+	// If there's an explicit type, track it as an identifier reference for hover support
+	if member.Variable.Type != nil {
+		sa.trackIdentifierReference(member.Variable.Type)
+	}
 
 	// Analyze member variable initialization if present
 	if member.Variable.Value != nil {
@@ -897,7 +907,10 @@ func (sa *SemanticAnalyzer) analyzeVariableDeclaration(node *ast.VariableDeclara
 	}
 
 	// Determine variable type - use declared type or infer from initialization
-	varType := strings.ToUpper(node.Type)
+	varType := ""
+	if node.Type != nil {
+		varType = strings.ToUpper(node.Type.Name)
+	}
 	if node.Value != nil {
 		// Analyze initialization expression first
 		sa.analyzeExpression(node.Value)
@@ -930,6 +943,11 @@ func (sa *SemanticAnalyzer) analyzeVariableDeclaration(node *ast.VariableDeclara
 		QualifiedName: sa.getQualifiedName(varName),
 	}
 	sa.addSymbolWithPosition(varSymbol)
+
+	// If there's an explicit type, track it as an identifier reference for hover support
+	if node.Type != nil {
+		sa.trackIdentifierReference(node.Type)
+	}
 }
 
 // analyzeStatementBlock analyzes statements within a block (function body, etc.)
@@ -1142,14 +1160,16 @@ func (sa *SemanticAnalyzer) analyzeExpression(expr ast.Node) {
 		}
 
 	case *ast.MemberAccessNode:
-		// Analyze object expression
-		sa.analyzeExpression(node.Object)
+		// Use type-aware member reference tracking
+		sa.trackMemberReference(node)
 
 	case *ast.ObjectInstantiationNode:
 		// Analyze constructor arguments
 		for _, arg := range node.ConstructorArgs {
 			sa.analyzeExpression(arg)
 		}
+
+		sa.trackIdentifierReference(node.Class)
 
 	case *ast.LiteralNode:
 		// Literals don't need analysis
@@ -1217,6 +1237,81 @@ func (sa *SemanticAnalyzer) trackIdentifierReference(node *ast.IdentifierNode) {
 		}
 	}
 	sa.addSymbolWithPosition(refSymbol)
+}
+
+// trackMemberReference tracks a member access reference with type-aware resolution
+func (sa *SemanticAnalyzer) trackMemberReference(node *ast.MemberAccessNode) {
+	if node == nil || node.Member == nil {
+		return
+	}
+
+	// First analyze the object to understand its type
+	sa.analyzeExpression(node.Object)
+	objectType := sa.inferExpressionType(node.Object)
+	
+	memberName := strings.ToUpper(node.Member.Name)
+	position := node.Member.GetPosition()
+	
+	// Look for the member in the object's class scope
+	classScope := sa.findClassScope(objectType)
+	var symbol *EnhancedSymbol
+	if classScope != nil {
+		symbol = sa.findSymbolByNameInScope(memberName, classScope)
+	}
+	
+	// Create a reference symbol for the member
+	var refSymbol EnhancedSymbol
+	if symbol != nil {
+		// Add this position as a reference to the existing symbol
+		symbol.References = append(symbol.References, position)
+
+		// Create a reference symbol with the resolved symbol's type and properties
+		refSymbol = EnhancedSymbol{
+			Name:          memberName,
+			Kind:          symbol.Kind,
+			Type:          symbol.Type,
+			Position:      position,
+			Range:         sa.positionToRange(position, len(node.Member.Name)),
+			Scope:         sa.getCurrentScopeType(),
+			ScopeID:       sa.getCurrentScopeID(),
+			Visibility:    symbol.Visibility,
+			ParentClass:   symbol.ParentClass,
+			QualifiedName: symbol.QualifiedName,
+			References:    []ast.PositionInfo{position},
+		}
+	} else {
+		// Create a "reference-only" symbol for unresolved members
+		refSymbol = EnhancedSymbol{
+			Name:          memberName,
+			Kind:          SymbolKindVariable, // Default assumption
+			Type:          "unknown",
+			Position:      position,
+			Range:         sa.positionToRange(position, len(node.Member.Name)),
+			Scope:         sa.getCurrentScopeType(),
+			ScopeID:       sa.getCurrentScopeID(),
+			Visibility:    VisibilityPublic,
+			ParentClass:   objectType,
+			QualifiedName: fmt.Sprintf("%s.%s", objectType, memberName),
+			References:    []ast.PositionInfo{position},
+		}
+	}
+	sa.addSymbolWithPosition(refSymbol)
+}
+
+// findClassScope finds the scope for a given class name
+func (sa *SemanticAnalyzer) findClassScope(className string) *ScopeInfo {
+	if className == "" || className == "unknown" {
+		return nil
+	}
+	
+	// Look for a class scope with the given class name
+	for i := range sa.symbolTable.Scopes {
+		scope := &sa.symbolTable.Scopes[i]
+		if scope.Type == ScopeTypeClass && strings.EqualFold(scope.ClassName, className) {
+			return scope
+		}
+	}
+	return nil
 }
 
 // findSymbolByNameInScope finds a symbol by name considering scope hierarchy
@@ -1860,15 +1955,8 @@ func (sa *SemanticAnalyzer) analyzeFunctionCall(node *ast.FunctionCallNode) {
 		sa.trackIdentifierReference(funcNode)
 
 	case *ast.MemberAccessNode:
-		// Method call - track the object identifier and analyze the member access
-		sa.analyzeExpression(funcNode.Object)
-		
-		// Create a synthetic identifier node for the method name to track it
-		memberIdentifier := &ast.IdentifierNode{
-			Name:     funcNode.Member,
-			Position: funcNode.GetPosition(),
-		}
-		sa.trackIdentifierReference(memberIdentifier)
+		// Method call - use type-aware member reference tracking
+		sa.trackMemberReference(funcNode)
 	}
 
 	// Analyze function arguments
@@ -1876,5 +1964,3 @@ func (sa *SemanticAnalyzer) analyzeFunctionCall(node *ast.FunctionCallNode) {
 		sa.analyzeExpression(arg)
 	}
 }
-
-

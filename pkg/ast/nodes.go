@@ -82,7 +82,7 @@ func (n *ImportStatementNode) SetPosition(pos PositionInfo) {
 // VariableDeclarationNode represents variable declarations
 type VariableDeclarationNode struct {
 	Name          string
-	Type          string
+	Type          *IdentifierNode // Type identifier with position info (nil if no type specified)
 	Value         Node
 	IsLocked      bool
 	Documentation []string // Documentation comments preceding the variable
@@ -269,7 +269,7 @@ func (n *FunctionCallNode) SetPosition(pos PositionInfo) {
 // MemberAccessNode represents member access (obj IN member)
 type MemberAccessNode struct {
 	Object   Node
-	Member   string
+	Member   *IdentifierNode // Member name with position info
 	Position PositionInfo
 }
 
@@ -381,8 +381,8 @@ func (n *IdentifierNode) SetPosition(pos PositionInfo) {
 
 // ObjectInstantiationNode represents object creation
 type ObjectInstantiationNode struct {
-	ClassName       string
-	ConstructorArgs []Node // arguments for constructor call
+	Class           *IdentifierNode // Class name with position info
+	ConstructorArgs []Node          // arguments for constructor call
 	Position        PositionInfo
 }
 

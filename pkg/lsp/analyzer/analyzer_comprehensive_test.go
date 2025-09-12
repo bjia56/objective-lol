@@ -106,7 +106,7 @@ HAI ME TEH FUNCSHUN MAIN
     COUNTER DO INCREMENT
 
     SAY WIT "After 3 increments: "
-    SAYZ WIT COUNTER DO GET_COUNT
+    SAYZ WIT COUNTER COUNT
 
     BTW Test undocumented class
     I HAS A VARIABLE UNDOC TEH UNDOCUMENTED_CLASS ITZ NEW UNDOCUMENTED_CLASS
@@ -369,7 +369,7 @@ func TestComprehensiveAnalysis_FunctionCallReferences(t *testing.T) {
 	// Test specific function calls that we know should be present as references
 	expectedReferences := []string{
 		"SAYZ", // SAYZ WIT - should definitely be present
-		"SAY",  // SAY WIT - should be present  
+		"SAY",  // SAY WIT - should be present
 	}
 
 	for _, expectedRef := range expectedReferences {
@@ -474,6 +474,38 @@ func TestComprehensiveAnalysis_HoverInfo(t *testing.T) {
 		assert.Contains(t, markup.Value, "RESULT", "Hover should contain member variable name")
 		assert.Contains(t, markup.Value, "DUBBLE", "Hover should contain member variable type")
 		t.Logf("Member access hover content: %s", markup.Value)
+	}
+
+	// Test hover on local variable type
+	localVarPosition := protocol.Position{Line: 70, Character: 30} // Around "CALCULATOR" type in "VARIABLE CALC TEH CALCULATOR"
+	hover = analyzer.GetHoverInfo(localVarPosition)
+
+	require.NotNil(t, hover, "Expected hover info for local variable type")
+	if markup, ok := hover.Contents.(protocol.MarkupContent); ok {
+		assert.Contains(t, markup.Value, "CALCULATOR", "Hover should contain variable type")
+		t.Logf("Local variable type hover content: %s", markup.Value)
+	}
+
+	// Test hover on member function call
+	memberFuncCallPosition := protocol.Position{Line: 89, Character: 24} // Around "GET_COUNT" in "SAYZ WIT COUNTER DO GET_COUNT"
+	hover = analyzer.GetHoverInfo(memberFuncCallPosition)
+
+	require.NotNil(t, hover, "Expected hover info for member function call")
+	if markup, ok := hover.Contents.(protocol.MarkupContent); ok {
+		assert.Contains(t, markup.Value, "GET_COUNT", "Hover should contain function name")
+		assert.Contains(t, markup.Value, "INTEGR", "Hover should contain return type")
+		t.Logf("Member function call hover content: %s", markup.Value)
+	}
+
+	// Test hover on member property access
+	memberPropAccessPosition := protocol.Position{Line: 96, Character: 21} // Around "COUNT" in "SAYZ WIT COUNTER COUNT"
+	hover = analyzer.GetHoverInfo(memberPropAccessPosition)
+
+	require.NotNil(t, hover, "Expected hover info for member property access")
+	if markup, ok := hover.Contents.(protocol.MarkupContent); ok {
+		assert.Contains(t, markup.Value, "COUNT", "Hover should contain property name")
+		assert.Contains(t, markup.Value, "INTEGR", "Hover should contain property type")
+		t.Logf("Member property access hover content: %s", markup.Value)
 	}
 }
 

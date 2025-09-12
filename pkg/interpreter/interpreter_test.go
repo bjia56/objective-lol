@@ -135,7 +135,7 @@ func TestInterpreterVariableOperations(t *testing.T) {
 	// Define a variable
 	varDecl := &ast.VariableDeclarationNode{
 		Name:  "x",
-		Type:  "INTEGR",
+		Type:  &ast.IdentifierNode{Name: "INTEGR"},
 		Value: &ast.LiteralNode{Value: environment.IntegerValue(42)},
 	}
 
@@ -289,12 +289,12 @@ func TestInterpreterStatementBlock(t *testing.T) {
 		Statements: []ast.Node{
 			&ast.VariableDeclarationNode{
 				Name:  "a",
-				Type:  "INTEGR",
+				Type:  &ast.IdentifierNode{Name: "INTEGR"},
 				Value: &ast.LiteralNode{Value: environment.IntegerValue(1)},
 			},
 			&ast.VariableDeclarationNode{
 				Name:  "b",
-				Type:  "INTEGR",
+				Type:  &ast.IdentifierNode{Name: "INTEGR"},
 				Value: &ast.LiteralNode{Value: environment.IntegerValue(2)},
 			},
 		},
