@@ -49,71 +49,96 @@ func getCacheClasses() map[string]*environment.Class {
 	cacheClassesOnce.Do(func() {
 		cacheClasses = map[string]*environment.Class{
 			"STASH": {
-				Name:          "STASH",
+				Name: "STASH",
+				Documentation: []string{
+					"Abstract base class for all cache implementations.",
+					"Provides common interface for cache operations.",
+				},
 				QualifiedName: "stdlib:CACHE.STASH",
 				ModulePath:    "stdlib:CACHE",
 				ParentClasses: []string{},
 				MRO:           []string{"stdlib:CACHE.STASH"},
 				PublicFunctions: map[string]*environment.Function{
 					"PUT": {
-						Name:       "PUT",
+						Name: "PUT",
+						Documentation: []string{
+							"Stores a key-value pair in the cache.",
+							"Overwrites existing keys.",
+						},
 						ReturnType: "NOTHIN",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
 							{Name: "value", Type: "STRIN"},
 						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							return environment.NOTHIN, runtime.Exception{Message: "Not implemented"}
+							return environment.NOTHIN, runtime.Exception{Message: "PUT not implemented"}
 						},
 					},
 					"GET": {
-						Name:       "GET",
+						Name: "GET",
+						Documentation: []string{
+							"Retrieves a value by key.",
+							"Returns NOTHIN if key not found.",
+						},
 						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
 						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							return environment.NOTHIN, runtime.Exception{Message: "Not implemented"}
+							return environment.NOTHIN, runtime.Exception{Message: "GET not implemented"}
 						},
 					},
 					"CONTAINS": {
-						Name:       "CONTAINS",
+						Name: "CONTAINS",
+						Documentation: []string{
+							"Checks if a key exists in the cache.",
+							"Returns YEZ if exists, NO otherwise.",
+						},
 						ReturnType: "BOOL",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
 						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							return environment.NO, runtime.Exception{Message: "Not implemented"}
+							return environment.NO, runtime.Exception{Message: "CONTAINS not implemented"}
 						},
 					},
 					"DELETE": {
-						Name:       "DELETE",
+						Name: "DELETE",
+						Documentation: []string{
+							"Removes a key-value pair from the cache.",
+							"Returns YEZ if deleted, NO if key not found.",
+						},
 						ReturnType: "BOOL",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
 						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							return environment.NO, runtime.Exception{Message: "Not implemented"}
+							return environment.NO, runtime.Exception{Message: "DELETE not implemented"}
 						},
 					},
 					"CLEAR": {
-						Name:       "CLEAR",
+						Name: "CLEAR",
+						Documentation: []string{
+							"Removes all items from the cache.",
+						},
 						ReturnType: "NOTHIN",
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							return environment.NOTHIN, runtime.Exception{Message: "Not implemented"}
+							return environment.NOTHIN, runtime.Exception{Message: "CLEAR not implemented"}
 						},
 					},
 				},
 				PublicVariables: map[string]*environment.MemberVariable{
 					"SIZ": {
 						Variable: environment.Variable{
-							Name:     "SIZ",
-							Type:     "INTEGR",
+							Name: "SIZ",
+							Type: "INTEGR",
+							Documentation: []string{
+								"Read-only property that returns the current number of items in the cache.",
+							},
+							// Default to 0, overridden in subclasses
+							Value:    environment.IntegerValue(0),
 							IsLocked: true,
 							IsPublic: true,
-						},
-						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
-							return environment.IntegerValue(0), runtime.Exception{Message: "Not implemented"}
 						},
 					},
 				},
@@ -123,7 +148,12 @@ func getCacheClasses() map[string]*environment.Class {
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 			"MEMSTASH": {
-				Name:          "MEMSTASH",
+				Name: "MEMSTASH",
+				Documentation: []string{
+					"An LRU (Least Recently Used) cache with fixed capacity.",
+					"When the cache reaches capacity, the least recently used item is evicted.",
+					"Thread-safe implementation with proper concurrency support.",
+				},
 				QualifiedName: "stdlib:CACHE.MEMSTASH",
 				ModulePath:    "stdlib:CACHE",
 				ParentClasses: []string{"stdlib:CACHE.STASH"},
@@ -132,6 +162,10 @@ func getCacheClasses() map[string]*environment.Class {
 					// Constructor
 					"MEMSTASH": {
 						Name: "MEMSTASH",
+						Documentation: []string{
+							"Initializes a MEMSTASH LRU cache with the specified capacity.",
+							"Capacity must be positive.",
+						},
 						Parameters: []environment.Parameter{
 							{Name: "capacity", Type: "INTEGR"},
 						},
@@ -139,7 +173,7 @@ func getCacheClasses() map[string]*environment.Class {
 							capacity := args[0]
 							capacityVal, ok := capacity.(environment.IntegerValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("MEMSTASH constructor expects INTEGR capacity, got %s", capacity.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("MEMSTASH constructor expects INTEGR capacity, got %s", capacity.Type())}
 							}
 
 							if int(capacityVal) <= 0 {
@@ -164,7 +198,11 @@ func getCacheClasses() map[string]*environment.Class {
 						},
 					},
 					"PUT": {
-						Name:       "PUT",
+						Name: "PUT",
+						Documentation: []string{
+							"Stores a key-value pair in the MEMSTASH. Updates existing keys and moves them to most recently used position.",
+							"If at capacity, removes the least recently used item.",
+						},
 						ReturnType: "NOTHIN",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
@@ -173,7 +211,7 @@ func getCacheClasses() map[string]*environment.Class {
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							memData, ok := this.NativeData.(*MemStashData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("PUT: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("PUT: invalid context")}
 							}
 
 							key := args[0]
@@ -181,12 +219,12 @@ func getCacheClasses() map[string]*environment.Class {
 
 							keyVal, ok := key.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("PUT expects STRIN key, got %s", key.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("PUT expects STRIN key, got %s", key.Type())}
 							}
 
 							valueVal, ok := value.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("PUT expects STRIN value, got %s", value.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("PUT expects STRIN value, got %s", value.Type())}
 							}
 
 							memData.mutex.Lock()
@@ -220,7 +258,11 @@ func getCacheClasses() map[string]*environment.Class {
 						},
 					},
 					"GET": {
-						Name:       "GET",
+						Name: "GET",
+						Documentation: []string{
+							"Retrieves a value by key and marks it as recently used.",
+							"Returns NOTHIN if key not found.",
+						},
 						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
@@ -228,13 +270,13 @@ func getCacheClasses() map[string]*environment.Class {
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							memData, ok := this.NativeData.(*MemStashData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("GET: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "GET: invalid context"}
 							}
 
 							key := args[0]
 							keyVal, ok := key.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("GET expects STRIN key, got %s", key.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("GET expects STRIN key, got %s", key.Type())}
 							}
 
 							memData.mutex.Lock()
@@ -250,7 +292,11 @@ func getCacheClasses() map[string]*environment.Class {
 						},
 					},
 					"CONTAINS": {
-						Name:       "CONTAINS",
+						Name: "CONTAINS",
+						Documentation: []string{
+							"Checks if a key exists in the MEMSTASH without affecting its position.",
+							"Returns YEZ if exists, NO otherwise.",
+						},
 						ReturnType: "BOOL",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
@@ -258,13 +304,13 @@ func getCacheClasses() map[string]*environment.Class {
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							memData, ok := this.NativeData.(*MemStashData)
 							if !ok {
-								return environment.NO, fmt.Errorf("CONTAINS: invalid context")
+								return environment.NO, runtime.Exception{Message: "CONTAINS: invalid context"}
 							}
 
 							key := args[0]
 							keyVal, ok := key.(environment.StringValue)
 							if !ok {
-								return environment.NO, fmt.Errorf("CONTAINS expects STRIN key, got %s", key.Type())
+								return environment.NO, runtime.Exception{Message: fmt.Sprintf("CONTAINS expects STRIN key, got %s", key.Type())}
 							}
 
 							memData.mutex.RLock()
@@ -279,7 +325,11 @@ func getCacheClasses() map[string]*environment.Class {
 						},
 					},
 					"DELETE": {
-						Name:       "DELETE",
+						Name: "DELETE",
+						Documentation: []string{
+							"Removes a key-value pair from the MEMSTASH.",
+							"Returns YEZ if deleted, NO if key not found.",
+						},
 						ReturnType: "BOOL",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
@@ -287,13 +337,13 @@ func getCacheClasses() map[string]*environment.Class {
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							memData, ok := this.NativeData.(*MemStashData)
 							if !ok {
-								return environment.NO, fmt.Errorf("DELETE: invalid context")
+								return environment.NO, runtime.Exception{Message: "DELETE: invalid context"}
 							}
 
 							key := args[0]
 							keyVal, ok := key.(environment.StringValue)
 							if !ok {
-								return environment.NO, fmt.Errorf("DELETE expects STRIN key, got %s", key.Type())
+								return environment.NO, runtime.Exception{Message: fmt.Sprintf("DELETE expects STRIN key, got %s", key.Type())}
 							}
 
 							memData.mutex.Lock()
@@ -310,12 +360,15 @@ func getCacheClasses() map[string]*environment.Class {
 						},
 					},
 					"CLEAR": {
-						Name:       "CLEAR",
+						Name: "CLEAR",
+						Documentation: []string{
+							"Removes all items from the MEMSTASH.",
+						},
 						ReturnType: "NOTHIN",
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							memData, ok := this.NativeData.(*MemStashData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("CLEAR: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "CLEAR: invalid context"}
 							}
 
 							memData.mutex.Lock()
@@ -337,6 +390,9 @@ func getCacheClasses() map[string]*environment.Class {
 							Type:     "INTEGR",
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Read-only property that returns the current number of items in the MEMSTASH.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							if memData, ok := this.NativeData.(*MemStashData); ok {
@@ -344,7 +400,7 @@ func getCacheClasses() map[string]*environment.Class {
 								defer memData.mutex.RUnlock()
 								return environment.IntegerValue(memData.size), nil
 							}
-							return environment.IntegerValue(0), fmt.Errorf("invalid context for SIZ")
+							return environment.IntegerValue(0), runtime.Exception{Message: "SIZ: invalid context"}
 						},
 					},
 				},
@@ -354,7 +410,11 @@ func getCacheClasses() map[string]*environment.Class {
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 			"TIMESTASH": {
-				Name:          "TIMESTASH",
+				Name: "TIMESTASH",
+				Documentation: []string{
+					"A TTL (Time To Live) cache where items expire after a specified duration.",
+					"Thread-safe implementation with automatic cleanup of expired entries.",
+				},
 				QualifiedName: "stdlib:CACHE.TIMESTASH",
 				ModulePath:    "stdlib:CACHE",
 				ParentClasses: []string{"stdlib:CACHE.STASH"},
@@ -363,6 +423,10 @@ func getCacheClasses() map[string]*environment.Class {
 					// Constructor
 					"TIMESTASH": {
 						Name: "TIMESTASH",
+						Documentation: []string{
+							"Initializes a TIMESTASH TTL cache with the specified expiration time.",
+							"TTL must be positive (in seconds).",
+						},
 						Parameters: []environment.Parameter{
 							{Name: "ttl_seconds", Type: "INTEGR"},
 						},
@@ -370,7 +434,7 @@ func getCacheClasses() map[string]*environment.Class {
 							ttlSeconds := args[0]
 							ttlVal, ok := ttlSeconds.(environment.IntegerValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("TIMESTASH constructor expects INTEGR ttl_seconds, got %s", ttlSeconds.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("TIMESTASH constructor expects INTEGR ttl_seconds, got %s", ttlSeconds.Type())}
 							}
 
 							if int(ttlVal) <= 0 {
@@ -387,7 +451,11 @@ func getCacheClasses() map[string]*environment.Class {
 						},
 					},
 					"PUT": {
-						Name:       "PUT",
+						Name: "PUT",
+						Documentation: []string{
+							"Stores a key-value pair in the TIMESTASH with TTL expiration.",
+							"Overwrites existing keys with new expiration time.",
+						},
 						ReturnType: "NOTHIN",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
@@ -396,7 +464,7 @@ func getCacheClasses() map[string]*environment.Class {
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							timeData, ok := this.NativeData.(*TimeStashData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("PUT: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "PUT: invalid context"}
 							}
 
 							key := args[0]
@@ -404,12 +472,12 @@ func getCacheClasses() map[string]*environment.Class {
 
 							keyVal, ok := key.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("PUT expects STRIN key, got %s", key.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("PUT expects STRIN key, got %s", key.Type())}
 							}
 
 							valueVal, ok := value.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("PUT expects STRIN value, got %s", value.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("PUT expects STRIN value, got %s", value.Type())}
 							}
 
 							timeData.mutex.Lock()
@@ -428,7 +496,11 @@ func getCacheClasses() map[string]*environment.Class {
 						},
 					},
 					"GET": {
-						Name:       "GET",
+						Name: "GET",
+						Documentation: []string{
+							"Retrieves a non-expired value by key.",
+							"Returns NOTHIN if key not found or expired. Automatically removes expired entries.",
+						},
 						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
@@ -436,13 +508,13 @@ func getCacheClasses() map[string]*environment.Class {
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							timeData, ok := this.NativeData.(*TimeStashData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("GET: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "GET: invalid context"}
 							}
 
 							key := args[0]
 							keyVal, ok := key.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("GET expects STRIN key, got %s", key.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("GET expects STRIN key, got %s", key.Type())}
 							}
 
 							timeData.mutex.Lock()
@@ -462,7 +534,11 @@ func getCacheClasses() map[string]*environment.Class {
 						},
 					},
 					"CONTAINS": {
-						Name:       "CONTAINS",
+						Name: "CONTAINS",
+						Documentation: []string{
+							"Checks if a non-expired key exists in the TIMESTASH.",
+							"Returns YEZ if exists and not expired, NO otherwise. Automatically removes expired entries.",
+						},
 						ReturnType: "BOOL",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
@@ -470,13 +546,13 @@ func getCacheClasses() map[string]*environment.Class {
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							timeData, ok := this.NativeData.(*TimeStashData)
 							if !ok {
-								return environment.NO, fmt.Errorf("CONTAINS: invalid context")
+								return environment.NO, runtime.Exception{Message: "CONTAINS: invalid context"}
 							}
 
 							key := args[0]
 							keyVal, ok := key.(environment.StringValue)
 							if !ok {
-								return environment.NO, fmt.Errorf("CONTAINS expects STRIN key, got %s", key.Type())
+								return environment.NO, runtime.Exception{Message: fmt.Sprintf("CONTAINS expects STRIN key, got %s", key.Type())}
 							}
 
 							timeData.mutex.Lock()
@@ -496,7 +572,11 @@ func getCacheClasses() map[string]*environment.Class {
 						},
 					},
 					"DELETE": {
-						Name:       "DELETE",
+						Name: "DELETE",
+						Documentation: []string{
+							"Removes a key-value pair from the TIMESTASH regardless of expiration.",
+							"Returns YEZ if deleted, NO if key not found.",
+						},
 						ReturnType: "BOOL",
 						Parameters: []environment.Parameter{
 							{Name: "key", Type: "STRIN"},
@@ -504,13 +584,13 @@ func getCacheClasses() map[string]*environment.Class {
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							timeData, ok := this.NativeData.(*TimeStashData)
 							if !ok {
-								return environment.NO, fmt.Errorf("DELETE: invalid context")
+								return environment.NO, runtime.Exception{Message: "DELETE: invalid context"}
 							}
 
 							key := args[0]
 							keyVal, ok := key.(environment.StringValue)
 							if !ok {
-								return environment.NO, fmt.Errorf("DELETE expects STRIN key, got %s", key.Type())
+								return environment.NO, runtime.Exception{Message: fmt.Sprintf("DELETE expects STRIN key, got %s", key.Type())}
 							}
 
 							timeData.mutex.Lock()
@@ -525,12 +605,15 @@ func getCacheClasses() map[string]*environment.Class {
 						},
 					},
 					"CLEAR": {
-						Name:       "CLEAR",
+						Name: "CLEAR",
+						Documentation: []string{
+							"Removes all items from the TIMESTASH regardless of expiration.",
+						},
 						ReturnType: "NOTHIN",
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							timeData, ok := this.NativeData.(*TimeStashData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("CLEAR: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "CLEAR: invalid context"}
 							}
 
 							timeData.mutex.Lock()
@@ -548,6 +631,10 @@ func getCacheClasses() map[string]*environment.Class {
 							Type:     "INTEGR",
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Read-only property that returns the current number of non-expired items in the TIMESTASH.",
+								"Automatically cleans up expired entries before returning the count.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							if timeData, ok := this.NativeData.(*TimeStashData); ok {
@@ -564,7 +651,7 @@ func getCacheClasses() map[string]*environment.Class {
 
 								return environment.IntegerValue(len(timeData.cache)), nil
 							}
-							return environment.IntegerValue(0), fmt.Errorf("invalid context for SIZ")
+							return environment.IntegerValue(0), runtime.Exception{Message: "SIZ: invalid context"}
 						},
 					},
 				},
@@ -622,7 +709,7 @@ func RegisterCACHEInEnv(env *environment.Environment, declarations ...string) er
 		if class, exists := cacheClasses[declUpper]; exists {
 			env.DefineClass(class)
 		} else {
-			return fmt.Errorf("unknown CACHE class: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown CACHE declaration: %s", decl)}
 		}
 	}
 

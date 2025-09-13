@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	goRuntime "runtime"
 	"strings"
 	"sync"
 	"syscall"
@@ -24,9 +25,9 @@ type PipeData struct {
 
 // MinionData stores the internal state of a MINION
 type MinionData struct {
-	CmdLine    []string                    // Command and arguments
+	CmdLine    *environment.ObjectInstance // Command and arguments (BUKKIT)
 	WorkDir    string                      // Working directory
-	Env        []string                    // Environment variables
+	Env        *environment.ObjectInstance // Environment variables (BASKIT)
 	Process    *exec.Cmd                   // The actual process
 	Running    bool                        // Whether process is running
 	Finished   bool                        // Whether process has completed
@@ -72,6 +73,9 @@ func getProcessClasses() map[string]*environment.Class {
 				ModulePath:    "stdlib:PROCESS",
 				ParentClasses: []string{"stdlib:IO.READER", "stdlib:IO.WRITER"}, // Can act as both
 				MRO:           []string{"stdlib:PROCESS.PIPE", "stdlib:IO.READWRITER", "stdlib:IO.READER", "stdlib:IO.WRITER"},
+				Documentation: []string{
+					"A communication pipe connected to a process's stdin, stdout, or stderr.",
+				},
 				PublicFunctions: map[string]*environment.Function{
 					// READ method (for stdout/stderr pipes)
 					"READ": {
@@ -80,25 +84,29 @@ func getProcessClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "size", Type: "INTEGR"},
 						},
+						Documentation: []string{
+							"Reads data from stdout or stderr pipes.",
+							"Cannot be used on stdin pipes.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							size := args[0]
 
 							sizeVal, ok := size.(environment.IntegerValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("READ expects INTEGR size, got %s", size.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Errorf("READ expects INTEGR size, got %s", size.Type()).Error()}
 							}
 
 							pipeData, ok := this.NativeData.(*PipeData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("READ: invalid pipe context")
+								return environment.NOTHIN, runtime.Exception{Message: "READ: invalid context"}
 							}
 
 							if !pipeData.IsOpen {
-								return environment.NOTHIN, runtime.Exception{Message: "Pipe is not open"}
+								return environment.NOTHIN, runtime.Exception{Message: "READ: pipe is not open"}
 							}
 
 							if pipeData.FDType == "STDIN" {
-								return environment.NOTHIN, runtime.Exception{Message: "Cannot read from stdin pipe"}
+								return environment.NOTHIN, runtime.Exception{Message: "READ: cannot read from stdin pipe"}
 							}
 
 							if pipeData.IsEOF {
@@ -113,7 +121,7 @@ func getProcessClasses() map[string]*environment.Class {
 							buffer := make([]byte, readSize)
 							reader, ok := pipeData.Pipe.(io.Reader)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("READ: pipe is not readable")
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Errorf("READ: pipe is not readable").Error()}
 							}
 
 							n, err := reader.Read(buffer)
@@ -121,7 +129,7 @@ func getProcessClasses() map[string]*environment.Class {
 								if err == io.EOF {
 									pipeData.IsEOF = true
 								} else {
-									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Read error: %v", err)}
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("READ: %v", err)}
 								}
 							}
 
@@ -135,36 +143,40 @@ func getProcessClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
 						},
+						Documentation: []string{
+							"Writes data to stdin pipe.",
+							"Returns number of bytes written, cannot be used on stdout/stderr pipes.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							data := args[0]
 
 							dataVal, ok := data.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("WRITE expects STRIN data, got %s", data.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Errorf("WRITE expects STRIN data, got %s", data.Type()).Error()}
 							}
 
 							pipeData, ok := this.NativeData.(*PipeData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("WRITE: invalid pipe context")
+								return environment.NOTHIN, runtime.Exception{Message: "WRITE: invalid context"}
 							}
 
 							if !pipeData.IsOpen {
-								return environment.NOTHIN, runtime.Exception{Message: "Pipe is not open"}
+								return environment.NOTHIN, runtime.Exception{Message: "WRITE: pipe is not open"}
 							}
 
 							if pipeData.FDType != "STDIN" {
-								return environment.NOTHIN, runtime.Exception{Message: "Cannot write to stdout/stderr pipe"}
+								return environment.NOTHIN, runtime.Exception{Message: "WRITE: cannot write to stdout/stderr pipe"}
 							}
 
 							writer, ok := pipeData.Pipe.(io.Writer)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("WRITE: pipe is not writable")
+								return environment.NOTHIN, runtime.Exception{Message: "WRITE: pipe is not writable"}
 							}
 
 							dataStr := string(dataVal)
 							n, err := writer.Write([]byte(dataStr))
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Write error: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("WRITE: %v", err)}
 							}
 
 							return environment.IntegerValue(n), nil
@@ -173,10 +185,14 @@ func getProcessClasses() map[string]*environment.Class {
 					// CLOSE method
 					"CLOSE": {
 						Name: "CLOSE",
+						Documentation: []string{
+							"Closes the pipe connection.",
+							"Automatically closes when process terminates.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							pipeData, ok := this.NativeData.(*PipeData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid pipe context")
+								return environment.NOTHIN, runtime.Exception{Message: "CLOSE: invalid context"}
 							}
 
 							if !pipeData.IsOpen {
@@ -186,7 +202,7 @@ func getProcessClasses() map[string]*environment.Class {
 							if pipeData.Pipe != nil {
 								err := pipeData.Pipe.Close()
 								if err != nil {
-									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Close error: %v", err)}
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("CLOSE: %v", err)}
 								}
 							}
 
@@ -204,11 +220,14 @@ func getProcessClasses() map[string]*environment.Class {
 							Value:    environment.StringValue(""),
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Pipe type. STDIN, STDOUT, or STDERR.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							pipeData, ok := this.NativeData.(*PipeData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("FD_TYPE: invalid pipe context")
+								return environment.NOTHIN, runtime.Exception{Message: "FD_TYPE: invalid context"}
 							}
 							return environment.StringValue(pipeData.FDType), nil
 						},
@@ -221,11 +240,14 @@ func getProcessClasses() map[string]*environment.Class {
 							Value:    environment.NO,
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Whether pipe is open for operations.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							pipeData, ok := this.NativeData.(*PipeData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("IS_OPEN: invalid pipe context")
+								return environment.NOTHIN, runtime.Exception{Message: "IS_OPEN: invalid context"}
 							}
 							return environment.BoolValue(pipeData.IsOpen), nil
 						},
@@ -238,11 +260,14 @@ func getProcessClasses() map[string]*environment.Class {
 							Value:    environment.NO,
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Whether end-of-file reached (read pipes only).",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							pipeData, ok := this.NativeData.(*PipeData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("IS_EOF: invalid pipe context")
+								return environment.NOTHIN, runtime.Exception{Message: "IS_EOF: invalid context"}
 							}
 							return environment.BoolValue(pipeData.IsEOF), nil
 						},
@@ -260,6 +285,9 @@ func getProcessClasses() map[string]*environment.Class {
 				ModulePath:    "stdlib:PROCESS",
 				ParentClasses: []string{},
 				MRO:           []string{"stdlib:PROCESS.MINION"},
+				Documentation: []string{
+					"A child process that can be launched, monitored, and controlled.",
+				},
 				PublicFunctions: map[string]*environment.Function{
 					// Constructor
 					"MINION": {
@@ -267,17 +295,17 @@ func getProcessClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "cmdline", Type: "BUKKIT"},
 						},
+						Documentation: []string{
+							"Creates a process definition with command and arguments as BUKKIT.",
+							"Sets working directory to current directory and environment to current environment by default.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							cmdline := args[0]
 
 							// Validate that the argument is a BUKKIT
 							cmdlineInstance, ok := cmdline.(*environment.ObjectInstance)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("MINION constructor expects BUKKIT cmdline, got %s", cmdline.Type())
-							}
-
-							if cmdlineInstance.Class.Name != "BUKKIT" {
-								return environment.NOTHIN, fmt.Errorf("MINION constructor expects BUKKIT cmdline, got %s", cmdlineInstance.Class.Name)
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("MINION constructor expects BUKKIT cmdline, got %s", cmdline.Type())}
 							}
 
 							// Extract command line from BUKKIT
@@ -287,22 +315,44 @@ func getProcessClasses() map[string]*environment.Class {
 									if strVal, ok := val.(environment.StringValue); ok {
 										cmdLineSlice = append(cmdLineSlice, string(strVal))
 									} else {
-										return environment.NOTHIN, fmt.Errorf("MINION constructor: all cmdline elements must be STRIN, got %s", val.Type())
+										return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("MINION constructor: all cmdline elements must be STRING, got %s", val.Type())}
 									}
 								}
 							} else {
-								return environment.NOTHIN, fmt.Errorf("MINION constructor: invalid BUKKIT data")
+								return environment.NOTHIN, runtime.Exception{Message: "MINION constructor: invalid BUKKIT data"}
 							}
 
 							if len(cmdLineSlice) == 0 {
-								return environment.NOTHIN, runtime.Exception{Message: "Command line cannot be empty"}
+								return environment.NOTHIN, runtime.Exception{Message: "MINION: command line cannot be empty"}
 							}
+
+							// Convert command line to BUKKIT object for storage
+							cmdlineObj := NewBukkitInstance()
+							cmdlineObjSlice := cmdlineObj.NativeData.(BukkitSlice)
+							for _, arg := range cmdLineSlice {
+								cmdlineObjSlice = append(cmdlineObjSlice, environment.StringValue(arg))
+							}
+							cmdlineObj.NativeData = cmdlineObjSlice
+
+							// Initialize environment variable (BASKIT)
+							baskitEnv := NewBaskitInstance()
+							baskitMap := baskitEnv.NativeData.(BaskitMap)
+							environ := os.Environ()
+							for _, envVar := range environ {
+								parts := strings.SplitN(envVar, "=", 2)
+								if len(parts) == 2 {
+									key := parts[0]
+									value := parts[1]
+									baskitMap[key] = environment.StringValue(value)
+								}
+							}
+							baskitEnv.NativeData = baskitMap
 
 							// Initialize the minion data
 							minionData := &MinionData{
-								CmdLine:  cmdLineSlice,
-								WorkDir:  "",           // Use current directory by default
-								Env:      os.Environ(), // Use current environment by default
+								CmdLine:  cmdlineObj,
+								Env:      baskitEnv,
+								WorkDir:  "", // Use current directory by default
 								Running:  false,
 								Finished: false,
 								ExitCode: 0,
@@ -310,157 +360,62 @@ func getProcessClasses() map[string]*environment.Class {
 							}
 							this.NativeData = minionData
 
-							// Set CMDLINE variable
-							this.Variables["CMDLINE"].Value = cmdline
-
-							return environment.NOTHIN, nil
-						},
-					},
-					// SET_WORKDIR method
-					"SET_WORKDIR": {
-						Name: "SET_WORKDIR",
-						Parameters: []environment.Parameter{
-							{Name: "dir", Type: "STRIN"},
-						},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							dir := args[0]
-
-							dirVal, ok := dir.(environment.StringValue)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("SET_WORKDIR expects STRIN dir, got %s", dir.Type())
-							}
-
-							minionData, ok := this.NativeData.(*MinionData)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("SET_WORKDIR: invalid minion context")
-							}
-
-							if minionData.Running {
-								return environment.NOTHIN, runtime.Exception{Message: "Cannot change working directory after process started"}
-							}
-
-							minionData.WorkDir = string(dirVal)
-							return environment.NOTHIN, nil
-						},
-					},
-					// SET_ENV method
-					"SET_ENV": {
-						Name: "SET_ENV",
-						Parameters: []environment.Parameter{
-							{Name: "env", Type: "BASKIT"},
-						},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							env := args[0]
-
-							// Validate that the argument is a BASKIT
-							envInstance, ok := env.(*environment.ObjectInstance)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("SET_ENV expects BASKIT env, got %s", env.Type())
-							}
-
-							if envInstance.Class.Name != "BASKIT" {
-								return environment.NOTHIN, fmt.Errorf("SET_ENV expects BASKIT env, got %s", envInstance.Class.Name)
-							}
-
-							minionData, ok := this.NativeData.(*MinionData)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("SET_ENV: invalid minion context")
-							}
-
-							if minionData.Running {
-								return environment.NOTHIN, runtime.Exception{Message: "Cannot change environment after process started"}
-							}
-
-							// Extract environment variables from BASKIT
-							envSlice := []string{}
-							if nativeData, ok := envInstance.NativeData.(BaskitMap); ok {
-								for key, val := range nativeData {
-									if strVal, ok := val.(environment.StringValue); ok {
-										envSlice = append(envSlice, key+"="+string(strVal))
-									} else {
-										return environment.NOTHIN, fmt.Errorf("SET_ENV: all environment values must be STRIN, got %s for key %s", val.Type(), key)
-									}
-								}
-							} else {
-								return environment.NOTHIN, fmt.Errorf("SET_ENV: invalid BASKIT data")
-							}
-
-							minionData.Env = envSlice
-							return environment.NOTHIN, nil
-						},
-					},
-					// ADD_ENV method
-					"ADD_ENV": {
-						Name: "ADD_ENV",
-						Parameters: []environment.Parameter{
-							{Name: "key", Type: "STRIN"},
-							{Name: "value", Type: "STRIN"},
-						},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							key := args[0]
-							value := args[1]
-
-							keyVal, ok := key.(environment.StringValue)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("ADD_ENV expects STRIN key, got %s", key.Type())
-							}
-
-							valueVal, ok := value.(environment.StringValue)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("ADD_ENV expects STRIN value, got %s", value.Type())
-							}
-
-							minionData, ok := this.NativeData.(*MinionData)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("ADD_ENV: invalid minion context")
-							}
-
-							if minionData.Running {
-								return environment.NOTHIN, runtime.Exception{Message: "Cannot change environment after process started"}
-							}
-
-							// Add or update the environment variable
-							envVar := string(keyVal) + "=" + string(valueVal)
-
-							// Remove existing entry with same key
-							keyPrefix := string(keyVal) + "="
-							newEnv := []string{}
-							for _, env := range minionData.Env {
-								if !strings.HasPrefix(env, keyPrefix) {
-									newEnv = append(newEnv, env)
-								}
-							}
-
-							// Add the new entry
-							newEnv = append(newEnv, envVar)
-							minionData.Env = newEnv
-
 							return environment.NOTHIN, nil
 						},
 					},
 					// START method
 					"START": {
 						Name: "START",
+						Documentation: []string{
+							"Launches the process and creates stdin, stdout, and stderr pipes.",
+							"Throws exception if process fails to start or is already running.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("START: invalid minion context")
+								return environment.NOTHIN, runtime.Exception{Message: "START: invalid minion context"}
 							}
 
 							if minionData.Running {
-								return environment.NOTHIN, runtime.Exception{Message: "Process is already running"}
+								return environment.NOTHIN, runtime.Exception{Message: "START: process is already running"}
 							}
 
 							if minionData.Finished {
-								return environment.NOTHIN, runtime.Exception{Message: "Process has already finished"}
+								return environment.NOTHIN, runtime.Exception{Message: "START: process has already finished"}
 							}
 
 							// Create the command
-							cmd := exec.Command(minionData.CmdLine[0], minionData.CmdLine[1:]...)
+							cmdline := minionData.CmdLine.NativeData.(BukkitSlice)
+							if len(cmdline) == 0 {
+								return environment.NOTHIN, runtime.Exception{Message: "START: command line cannot be empty"}
+							}
+
+							// Convert BUKKIT to []string
+							cmdArgs := []string{}
+							for _, arg := range cmdline {
+								if strArg, err := arg.Cast("STRIN"); err == nil {
+									cmdArgs = append(cmdArgs, string(strArg.(environment.StringValue)))
+								} else {
+									return environment.NOTHIN, runtime.Exception{Message: "START: all command line arguments must be convertible to STRIN"}
+								}
+							}
+
+							// Convert BASKIT to []string for environment
+							envMap := minionData.Env.NativeData.(BaskitMap)
+							envVars := []string{}
+							for key, value := range envMap {
+								if strVal, err := value.Cast("STRIN"); err == nil {
+									envVars = append(envVars, fmt.Sprintf("%s=%s", key, strVal.(environment.StringValue)))
+								} else {
+									return environment.NOTHIN, runtime.Exception{Message: "START: all environment variable values must be convertible to STRIN"}
+								}
+							}
+
+							cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 							if minionData.WorkDir != "" {
 								cmd.Dir = minionData.WorkDir
 							}
-							cmd.Env = minionData.Env
+							cmd.Env = envVars
 
 							// Create pipes
 							stdin, err := cmd.StdinPipe()
@@ -506,11 +461,6 @@ func getProcessClasses() map[string]*environment.Class {
 							minionData.StdoutPipe = stdoutPipe
 							minionData.StderrPipe = stderrPipe
 
-							// Set PIPE variables
-							this.Variables["STDIN"].Value = stdinPipe
-							this.Variables["STDOUT"].Value = stdoutPipe
-							this.Variables["STDERR"].Value = stderrPipe
-
 							return environment.NOTHIN, nil
 						},
 					},
@@ -518,14 +468,18 @@ func getProcessClasses() map[string]*environment.Class {
 					"WAIT": {
 						Name:       "WAIT",
 						ReturnType: "INTEGR",
+						Documentation: []string{
+							"Waits for the process to complete and returns the exit code.",
+							"Throws exception if process has not been started.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("WAIT: invalid minion context")
+								return environment.NOTHIN, runtime.Exception{Message: "WAIT: invalid minion context"}
 							}
 
 							if !minionData.Running && !minionData.Finished {
-								return environment.NOTHIN, runtime.Exception{Message: "Process has not been started"}
+								return environment.NOTHIN, runtime.Exception{Message: "WAIT: process has not been started"}
 							}
 
 							if minionData.Finished {
@@ -541,7 +495,7 @@ func getProcessClasses() map[string]*environment.Class {
 								if exitError, ok := err.(*exec.ExitError); ok {
 									minionData.ExitCode = exitError.ExitCode()
 								} else {
-									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Process wait error: %v", err)}
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("WAIT: %v", err)}
 								}
 							} else {
 								minionData.ExitCode = 0
@@ -553,19 +507,23 @@ func getProcessClasses() map[string]*environment.Class {
 					// KILL method
 					"KILL": {
 						Name: "KILL",
+						Documentation: []string{
+							"Forcefully terminates the running process,",
+							"Throws exception if process is not running",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("KILL: invalid minion context")
+								return environment.NOTHIN, runtime.Exception{Message: "KILL: invalid minion context"}
 							}
 
 							if !minionData.Running {
-								return environment.NOTHIN, runtime.Exception{Message: "Process is not running"}
+								return environment.NOTHIN, runtime.Exception{Message: "KILL: process is not running"}
 							}
 
 							err := minionData.Process.Process.Kill()
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to kill process: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("KILL: %v", err)}
 							}
 
 							// Wait for process to finish after killing
@@ -583,43 +541,39 @@ func getProcessClasses() map[string]*environment.Class {
 						Parameters: []environment.Parameter{
 							{Name: "code", Type: "INTEGR"},
 						},
+						Documentation: []string{
+							"Sends a signal to the running process (Unix/Linux systems).",
+							"Throws exception if process is not running.",
+							"Not supported on Windows.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							code := args[0]
 
+							if goRuntime.GOOS == "windows" {
+								return environment.NOTHIN, runtime.Exception{Message: "SIGNAL: not supported on Windows"}
+							}
+
 							codeVal, ok := code.(environment.IntegerValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("SIGNAL expects INTEGR code, got %s", code.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("SIGNAL expects INTEGR code, got %s", code.Type())}
 							}
 
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("SIGNAL: invalid minion context")
+								return environment.NOTHIN, runtime.Exception{Message: "SIGNAL: invalid minion context"}
 							}
 
 							if !minionData.Running {
-								return environment.NOTHIN, runtime.Exception{Message: "Process is not running"}
+								return environment.NOTHIN, runtime.Exception{Message: "SIGNAL: process is not running"}
 							}
 
 							signal := syscall.Signal(int(codeVal))
 							err := minionData.Process.Process.Signal(signal)
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to send signal: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("SIGNAL: %v", err)}
 							}
 
 							return environment.NOTHIN, nil
-						},
-					},
-					// IS_ALIVE method
-					"IS_ALIVE": {
-						Name:       "IS_ALIVE",
-						ReturnType: "BOOL",
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							minionData, ok := this.NativeData.(*MinionData)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("IS_ALIVE: invalid minion context")
-							}
-
-							return environment.BoolValue(minionData.Running), nil
 						},
 					},
 				},
@@ -628,9 +582,85 @@ func getProcessClasses() map[string]*environment.Class {
 						Variable: environment.Variable{
 							Name:     "CMDLINE",
 							Type:     "BUKKIT",
-							Value:    environment.NOTHIN, // Set in constructor
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Command line arguments.",
+							},
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							minionData, ok := this.NativeData.(*MinionData)
+							if !ok {
+								return environment.NOTHIN, runtime.Exception{Message: "CMDLINE: invalid minion context"}
+							}
+							return minionData.CmdLine, nil
+						},
+						NativeSet: nil, // Read-only
+					},
+					"WORKDIR": {
+						Variable: environment.Variable{
+							Name:     "WORKDIR",
+							Type:     "STRIN",
+							IsLocked: false,
+							IsPublic: true,
+							Documentation: []string{
+								"Working directory.",
+							},
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							minionData, ok := this.NativeData.(*MinionData)
+							if !ok {
+								return environment.NOTHIN, runtime.Exception{Message: "WORKDIR: invalid minion context"}
+							}
+							return environment.StringValue(minionData.WorkDir), nil
+						},
+						NativeSet: func(this *environment.ObjectInstance, newValue environment.Value) error {
+							minionData, ok := this.NativeData.(*MinionData)
+							if !ok {
+								return runtime.Exception{Message: "WORKDIR: invalid minion context"}
+							}
+							if minionData.Running {
+								return runtime.Exception{Message: "WORKDIR: cannot change working directory while process is running"}
+							}
+							strVal, err := newValue.Cast("STRIN")
+							if err != nil {
+								return runtime.Exception{Message: fmt.Sprintf("WORKDIR expects STRIN value, got %s", newValue.Type())}
+							}
+							minionData.WorkDir = string(strVal.(environment.StringValue))
+							return nil
+						},
+					},
+					"ENV": {
+						Variable: environment.Variable{
+							Name:     "ENV",
+							Type:     "BASKIT",
+							IsLocked: false,
+							IsPublic: true,
+							Documentation: []string{
+								"Environment variables.",
+							},
+						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							minionData, ok := this.NativeData.(*MinionData)
+							if !ok {
+								return environment.NOTHIN, runtime.Exception{Message: "ENV: invalid minion context"}
+							}
+							return minionData.Env, nil
+						},
+						NativeSet: func(this *environment.ObjectInstance, newValue environment.Value) error {
+							minionData, ok := this.NativeData.(*MinionData)
+							if !ok {
+								return runtime.Exception{Message: "ENV: invalid minion context"}
+							}
+							if minionData.Running {
+								return runtime.Exception{Message: "ENV: cannot change environment while process is running"}
+							}
+							envInstance, err := newValue.Cast("BASKIT")
+							if err != nil {
+								return runtime.Exception{Message: fmt.Sprintf("ENV expects BASKIT value, got %s", newValue.Type())}
+							}
+							minionData.Env = envInstance.(*environment.ObjectInstance)
+							return nil
 						},
 					},
 					"RUNNING": {
@@ -639,11 +669,14 @@ func getProcessClasses() map[string]*environment.Class {
 							Type:     "BOOL",
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Whether process is currently running.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("RUNNING: invalid minion context")
+								return environment.NOTHIN, runtime.Exception{Message: "RUNNING: invalid context"}
 							}
 							return environment.BoolValue(minionData.Running), nil
 						},
@@ -653,14 +686,16 @@ func getProcessClasses() map[string]*environment.Class {
 						Variable: environment.Variable{
 							Name:     "FINISHED",
 							Type:     "BOOL",
-							Value:    environment.NO,
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Process completion status.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("FINISHED: invalid minion context")
+								return environment.NOTHIN, runtime.Exception{Message: "FINISHED: invalid minion context"}
 							}
 							return environment.BoolValue(minionData.Finished), nil
 						},
@@ -670,14 +705,16 @@ func getProcessClasses() map[string]*environment.Class {
 						Variable: environment.Variable{
 							Name:     "EXIT_CODE",
 							Type:     "INTEGR",
-							Value:    environment.IntegerValue(0),
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Process exit code.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("EXIT_CODE: invalid minion context")
+								return environment.NOTHIN, runtime.Exception{Message: "EXIT_CODE: invalid minion context"}
 							}
 							if !minionData.Finished {
 								return environment.IntegerValue(0), nil // Not finished yet
@@ -690,14 +727,16 @@ func getProcessClasses() map[string]*environment.Class {
 						Variable: environment.Variable{
 							Name:     "PID",
 							Type:     "INTEGR",
-							Value:    environment.IntegerValue(-1),
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Process ID (-1 if not started).",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							minionData, ok := this.NativeData.(*MinionData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("PID: invalid minion context")
+								return environment.NOTHIN, runtime.Exception{Message: "PID: invalid minion context"}
 							}
 							return environment.IntegerValue(minionData.PID), nil
 						},
@@ -707,19 +746,39 @@ func getProcessClasses() map[string]*environment.Class {
 						Variable: environment.Variable{
 							Name:     "STDIN",
 							Type:     "PIPE",
-							Value:    environment.NOTHIN, // Set when process starts
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Stdin pipe (available after START).",
+							},
 						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							minionData, ok := this.NativeData.(*MinionData)
+							if !ok {
+								return environment.NOTHIN, runtime.Exception{Message: "STDIN: invalid minion context"}
+							}
+							return minionData.StdinPipe, nil
+						},
+						NativeSet: nil, // Read-only
 					},
 					"STDOUT": {
 						Variable: environment.Variable{
 							Name:     "STDOUT",
 							Type:     "PIPE",
-							Value:    environment.NOTHIN, // Set when process starts
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Stdout pipe (available after START).",
+							},
 						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							minionData, ok := this.NativeData.(*MinionData)
+							if !ok {
+								return environment.NOTHIN, runtime.Exception{Message: "STDOUT: invalid minion context"}
+							}
+							return minionData.StdoutPipe, nil
+						},
+						NativeSet: nil, // Read-only
 					},
 					"STDERR": {
 						Variable: environment.Variable{
@@ -728,7 +787,18 @@ func getProcessClasses() map[string]*environment.Class {
 							Value:    environment.NOTHIN, // Set when process starts
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Stderr pipe (available after START).",
+							},
 						},
+						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
+							minionData, ok := this.NativeData.(*MinionData)
+							if !ok {
+								return environment.NOTHIN, runtime.Exception{Message: "STDERR: invalid minion context"}
+							}
+							return minionData.StderrPipe, nil
+						},
+						NativeSet: nil, // Read-only
 					},
 				},
 				PrivateVariables: make(map[string]*environment.MemberVariable),
@@ -747,7 +817,7 @@ func RegisterPROCESSInEnv(env *environment.Environment, declarations ...string) 
 	// First ensure IO classes are available since PIPE uses IO interfaces
 	err := RegisterIOInEnv(env, "READER", "WRITER")
 	if err != nil {
-		return fmt.Errorf("failed to register IO classes: %v", err)
+		return runtime.Exception{Message: fmt.Sprintf("failed to register IO classes for PROCESS: %v", err)}
 	}
 
 	processClasses := getProcessClasses()
@@ -766,7 +836,7 @@ func RegisterPROCESSInEnv(env *environment.Environment, declarations ...string) 
 		if class, exists := processClasses[declUpper]; exists {
 			env.DefineClass(class)
 		} else {
-			return fmt.Errorf("unknown PROCESS class: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown PROCESS declaration: %s", decl)}
 		}
 	}
 

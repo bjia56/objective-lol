@@ -44,11 +44,18 @@ func getSystemClasses() map[string]*environment.Class {
 			"ENVBASKIT": {
 				Name:          "ENVBASKIT",
 				ParentClasses: []string{"stdlib:MAPS.BASKIT"}, // Inherit from BASKIT
+				Documentation: []string{
+					"Special BASKIT type to provide integration with system environment variables.",
+					"Automatically syncs with the actual process environment.",
+				},
 				PublicFunctions: map[string]*environment.Function{
 					// Override PUT to also set environment variable
 					"PUT": {
 						Name:       "PUT",
-						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}, {Name: "VALUE", Type: ""}},
+						Parameters: []environment.Parameter{{Name: "KEY", Type: "STRIN"}, {Name: "VALUE", Type: ""}},
+						Documentation: []string{
+							"Sets an environment variable both in the internal map and the actual process environment.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key, value := args[0], args[1]
 
@@ -62,18 +69,22 @@ func getSystemClasses() map[string]*environment.Class {
 
 								// Also set as actual environment variable
 								if err := os.Setenv(keyStr, valueStr); err != nil {
-									return environment.NOTHIN, fmt.Errorf("failed to set environment variable %s: %v", keyStr, err)
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("PUT: failed to set environment variable %s: %v", keyStr, err)}
 								}
 
 								return environment.NOTHIN, nil
 							}
-							return environment.NOTHIN, fmt.Errorf("PUT: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "PUT: invalid context"}
 						},
 					},
 					// Override GET to also check environment variables
 					"GET": {
 						Name:       "GET",
-						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}},
+						Parameters: []environment.Parameter{{Name: "KEY", Type: "STRIN"}},
+						Documentation: []string{
+							"Gets the value of an environment variable.",
+							"Checks the internal map first, then the actual environment, throws exception if not found.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key := args[0]
 
@@ -92,16 +103,19 @@ func getSystemClasses() map[string]*environment.Class {
 									return environment.StringValue(envValue), nil
 								}
 
-								return nil, runtime.Exception{Message: fmt.Sprintf("Key '%s' not found in environment", keyStr)}
+								return nil, runtime.Exception{Message: fmt.Sprintf("GET: key %q not found in environment", keyStr)}
 							}
-							return environment.NOTHIN, fmt.Errorf("GET: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "GET: invalid context"}
 						},
 					},
 					// Override CONTAINS to also check environment variables
 					"CONTAINS": {
 						Name:       "CONTAINS",
 						ReturnType: "BOOL",
-						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}},
+						Parameters: []environment.Parameter{{Name: "KEY", Type: "STRIN"}},
+						Documentation: []string{
+							"Checks if an environment variable exists in either the internal map or actual environment.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key := args[0]
 
@@ -124,13 +138,17 @@ func getSystemClasses() map[string]*environment.Class {
 
 								return environment.NO, nil
 							}
-							return environment.NOTHIN, fmt.Errorf("CONTAINS: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "CONTAINS: invalid context"}
 						},
 					},
 					// Override REMOVE to also unset environment variable
 					"REMOVE": {
 						Name:       "REMOVE",
-						Parameters: []environment.Parameter{{Name: "KEY", Type: ""}},
+						Parameters: []environment.Parameter{{Name: "KEY", Type: "STRIN"}},
+						Documentation: []string{
+							"Removes an environment variable from both the internal map and actual process environment.",
+							"Returns the previous value, throws exception if not found.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							key := args[0]
 
@@ -144,7 +162,7 @@ func getSystemClasses() map[string]*environment.Class {
 								} else if envValue, exists := os.LookupEnv(keyStr); exists {
 									value = environment.StringValue(envValue)
 								} else {
-									return nil, runtime.Exception{Message: fmt.Sprintf("Key '%s' not found in environment", keyStr)}
+									return nil, runtime.Exception{Message: fmt.Sprintf("REMOVE: key %q not found in environment", keyStr)}
 								}
 
 								// Remove from BASKIT
@@ -152,18 +170,22 @@ func getSystemClasses() map[string]*environment.Class {
 
 								// Also unset environment variable
 								if err := os.Unsetenv(keyStr); err != nil {
-									return environment.NOTHIN, fmt.Errorf("failed to unset environment variable %s: %v", keyStr, err)
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("REMOVE: failed to unset environment variable %s: %v", keyStr, err)}
 								}
 
 								return value, nil
 							}
-							return environment.NOTHIN, fmt.Errorf("REMOVE: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "REMOVE: invalid context"}
 						},
 					},
 					// Override CLEAR to also clear environment variables managed by this instance
 					"CLEAR": {
 						Name:       "CLEAR",
 						Parameters: []environment.Parameter{},
+						Documentation: []string{
+							"Clears all environment variables that are tracked in the internal map and unsets them from the actual environment.",
+							"Only removes variables that were previously accessed or set through this ENVBASKIT instance.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Clear all environment variables that are in this BASKIT
@@ -176,13 +198,17 @@ func getSystemClasses() map[string]*environment.Class {
 								this.NativeData = newMap
 								return environment.NOTHIN, nil
 							}
-							return environment.NOTHIN, fmt.Errorf("CLEAR: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "CLEAR: invalid context"}
 						},
 					},
 					// REFRESH method to sync with current environment variables
 					"REFRESH": {
 						Name:       "REFRESH",
 						Parameters: []environment.Parameter{},
+						Documentation: []string{
+							"Refreshes the internal map with all current environment variables.",
+							"Discards any previous state and reloads from actual environment.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Clear current data
@@ -204,7 +230,7 @@ func getSystemClasses() map[string]*environment.Class {
 
 								return environment.NOTHIN, nil
 							}
-							return environment.NOTHIN, fmt.Errorf("REFRESH: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "REFRESH: invalid context"}
 						},
 					},
 					// Inherit other methods from BASKIT by delegating to parent implementation
@@ -217,6 +243,10 @@ func getSystemClasses() map[string]*environment.Class {
 						Name:       "COPY",
 						ReturnType: "ENVBASKIT",
 						Parameters: []environment.Parameter{},
+						Documentation: []string{
+							"Creates a new ENVBASKIT instance with the same data as the current instance.",
+							"The copy is independent and does not sync changes back to the original.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								// Create new ENVBASKIT with copied data
@@ -228,7 +258,7 @@ func getSystemClasses() map[string]*environment.Class {
 								newEnvbaskitObj.NativeData = newBaskitMap
 								return newEnvbaskitObj, nil
 							}
-							return environment.NOTHIN, fmt.Errorf("COPY: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "COPY: invalid context"}
 						},
 					},
 				},
@@ -261,16 +291,17 @@ func getSystemClasses() map[string]*environment.Class {
 				PublicVariables: map[string]*environment.MemberVariable{
 					"SIZ": {
 						Variable: environment.Variable{
-							Name:     "SIZ",
-							Type:     "INTEGR",
-							IsLocked: true,
-							IsPublic: true,
+							Name:          "SIZ",
+							Type:          "INTEGR",
+							IsLocked:      true,
+							IsPublic:      true,
+							Documentation: []string{"Number of environment variables."},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							if baskitMap, ok := this.NativeData.(BaskitMap); ok {
 								return environment.IntegerValue(len(baskitMap)), nil
 							}
-							return environment.NOTHIN, fmt.Errorf("SIZ: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "SIZ: invalid context"}
 						},
 						NativeSet: nil, // Read-only
 					},
@@ -310,25 +341,28 @@ func getSystemVariables() map[string]*environment.Variable {
 	systemVariablesOnce.Do(func() {
 		systemVariables = map[string]*environment.Variable{
 			"ENV": {
-				Name:     "ENV",
-				Type:     "ENVBASKIT",
-				Value:    getGlobalENV(),
-				IsLocked: true,
-				IsPublic: true,
+				Name:          "ENV",
+				Type:          "ENVBASKIT",
+				Value:         getGlobalENV(),
+				IsLocked:      true,
+				IsPublic:      true,
+				Documentation: []string{"Global environment variable manager.", "Pre-initialized ENVBASKIT instance containing all current environment variables."},
 			},
 			"OS": {
-				Name:     "OS",
-				Type:     "STRIN",
-				Value:    environment.StringValue(goRuntime.GOOS),
-				IsLocked: true,
-				IsPublic: true,
+				Name:          "OS",
+				Type:          "STRIN",
+				Value:         environment.StringValue(goRuntime.GOOS),
+				IsLocked:      true,
+				IsPublic:      true,
+				Documentation: []string{"Operating system name (e.g. windows, linux, darwin)."},
 			},
 			"ARCH": {
-				Name:     "ARCH",
-				Type:     "STRIN",
-				Value:    environment.StringValue(goRuntime.GOARCH),
-				IsLocked: true,
-				IsPublic: true,
+				Name:          "ARCH",
+				Type:          "STRIN",
+				Value:         environment.StringValue(goRuntime.GOARCH),
+				IsLocked:      true,
+				IsPublic:      true,
+				Documentation: []string{"System architecture (e.g. amd64, 386, arm64)."},
 			},
 		}
 	})
@@ -340,7 +374,7 @@ func getSystemVariables() map[string]*environment.Variable {
 func RegisterSYSTEMInEnv(env *environment.Environment, declarations ...string) error {
 	// First ensure MAPS module is registered (for BASKIT parent class)
 	if err := RegisterMapsInEnv(env); err != nil {
-		return fmt.Errorf("failed to register MAPS module dependency: %v", err)
+		return runtime.Exception{Message: fmt.Sprintf("failed to register MAPS module dependency: %v", err)}
 	}
 
 	systemClasses := getSystemClasses()
@@ -352,10 +386,7 @@ func RegisterSYSTEMInEnv(env *environment.Environment, declarations ...string) e
 			env.DefineClass(class)
 		}
 		for _, variable := range systemVariables {
-			err := env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, nil)
-			if err != nil {
-				return fmt.Errorf("failed to define SYSTEM variable %s: %v", variable.Name, err)
-			}
+			env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, variable.Documentation)
 		}
 		return nil
 	}
@@ -381,12 +412,9 @@ func RegisterSYSTEMInEnv(env *environment.Environment, declarations ...string) e
 				}
 			}
 
-			err := env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, nil)
-			if err != nil {
-				return fmt.Errorf("failed to define SYSTEM variable %s: %v", variable.Name, err)
-			}
+			env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, variable.Documentation)
 		} else {
-			return fmt.Errorf("unknown SYSTEM declaration: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown SYSTEM declaration: %s", decl)}
 		}
 	}
 

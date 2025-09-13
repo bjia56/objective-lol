@@ -130,7 +130,7 @@ func TestBUKKITPOP(t *testing.T) {
 	// Now should error
 	_, err = popFunc.NativeImpl(nil, instance, BukkitSlice{})
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "cannot pop from empty array")
+	assert.Contains(t, err.Error(), "cannot pop from empty BUKKIT")
 }
 
 func TestBUKKITAT(t *testing.T) {
@@ -255,7 +255,7 @@ func TestBUKKITSHIFTUNSHIFT(t *testing.T) {
 
 	_, err = shiftFunc.NativeImpl(nil, instance, BukkitSlice{})
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "cannot shift from empty array")
+	assert.Contains(t, err.Error(), "cannot shift from empty BUKKIT")
 }
 
 func TestBUKKITCLEAR(t *testing.T) {

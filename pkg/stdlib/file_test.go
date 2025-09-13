@@ -31,7 +31,6 @@ func TestDOCUMENTConstructor(t *testing.T) {
 	constructor := docClass.PublicFunctions["DOCUMENT"]
 	args := []environment.Value{
 		environment.StringValue("test.txt"),
-		environment.StringValue("W"),
 	}
 
 	_, err = constructor.NativeImpl(nil, instance, args)
@@ -49,29 +48,12 @@ func TestDOCUMENTConstructor(t *testing.T) {
 		t.Errorf("Expected FilePath 'test.txt', got '%s'", docData.FilePath)
 	}
 
-	if docData.FileMode != "W" {
-		t.Errorf("Expected FileMode 'W', got '%s'", docData.FileMode)
+	if docData.FileMode != "" {
+		t.Errorf("Expected FileMode '', got '%s'", docData.FileMode)
 	}
 
 	if docData.IsOpen {
 		t.Error("Expected IsOpen to be false initially")
-	}
-
-	// Test invalid mode
-	instance2 := &environment.ObjectInstance{
-		Class:     docClass,
-		Variables: make(map[string]*environment.MemberVariable),
-	}
-	env.InitializeInstanceVariablesWithMRO(instance2)
-
-	invalidArgs := []environment.Value{
-		environment.StringValue("test.txt"),
-		environment.StringValue("INVALID"),
-	}
-
-	_, err = constructor.NativeImpl(nil, instance2, invalidArgs)
-	if err == nil {
-		t.Error("Expected constructor to fail with invalid mode")
 	}
 }
 
@@ -103,7 +85,6 @@ func TestDOCUMENTFileOperations(t *testing.T) {
 	constructor := docClass.PublicFunctions["DOCUMENT"]
 	args := []environment.Value{
 		environment.StringValue(testFile),
-		environment.StringValue("W"),
 	}
 
 	_, err = constructor.NativeImpl(nil, instance, args)
@@ -113,7 +94,7 @@ func TestDOCUMENTFileOperations(t *testing.T) {
 
 	// Test OPEN
 	openFunc := docClass.PublicFunctions["OPEN"]
-	_, err = openFunc.NativeImpl(nil, instance, []environment.Value{})
+	_, err = openFunc.NativeImpl(nil, instance, []environment.Value{environment.StringValue("W")})
 	if err != nil {
 		t.Errorf("OPEN failed: %v", err)
 	}
@@ -212,7 +193,6 @@ func TestDOCUMENTReadOperations(t *testing.T) {
 	constructor := docClass.PublicFunctions["DOCUMENT"]
 	args := []environment.Value{
 		environment.StringValue(testFile),
-		environment.StringValue("R"),
 	}
 
 	_, err = constructor.NativeImpl(nil, instance, args)
@@ -222,7 +202,7 @@ func TestDOCUMENTReadOperations(t *testing.T) {
 
 	// Open file for reading
 	openFunc := docClass.PublicFunctions["OPEN"]
-	_, err = openFunc.NativeImpl(nil, instance, []environment.Value{})
+	_, err = openFunc.NativeImpl(nil, instance, []environment.Value{environment.StringValue("R")})
 	if err != nil {
 		t.Errorf("OPEN failed: %v", err)
 	}
@@ -324,7 +304,6 @@ func TestDOCUMENTErrorHandling(t *testing.T) {
 	constructor := docClass.PublicFunctions["DOCUMENT"]
 	args := []environment.Value{
 		environment.StringValue("nonexistent.txt"),
-		environment.StringValue("R"),
 	}
 
 	_, err = constructor.NativeImpl(nil, instance, args)
@@ -351,7 +330,7 @@ func TestDOCUMENTErrorHandling(t *testing.T) {
 
 	// Test opening nonexistent file for reading should fail
 	openFunc := docClass.PublicFunctions["OPEN"]
-	_, err = openFunc.NativeImpl(nil, instance, []environment.Value{})
+	_, err = openFunc.NativeImpl(nil, instance, []environment.Value{environment.StringValue("R")})
 	if err == nil {
 		t.Error("OPEN nonexistent file for reading should fail")
 	}
@@ -391,7 +370,6 @@ func TestDOCUMENTDeleteOperation(t *testing.T) {
 	constructor := docClass.PublicFunctions["DOCUMENT"]
 	args := []environment.Value{
 		environment.StringValue(testFile),
-		environment.StringValue("R"),
 	}
 
 	_, err = constructor.NativeImpl(nil, instance, args)

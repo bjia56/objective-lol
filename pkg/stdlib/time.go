@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 )
 
 // Global TIME class definitions - created once and reused
@@ -18,9 +19,16 @@ func getTimeClasses() map[string]*environment.Class {
 		timeClasses = map[string]*environment.Class{
 			"DATE": {
 				Name: "DATE",
+				Documentation: []string{
+					"Represents a date and time with methods for accessing components.",
+					"Provides year, month, day, hour, minute, second, and formatting capabilities.",
+				},
 				PublicFunctions: map[string]*environment.Function{
 					"DATE": {
-						Name:       "DATE",
+						Name: "DATE",
+						Documentation: []string{
+							"Initializes a DATE object with the current date and time.",
+						},
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							this.NativeData = time.Now()
@@ -28,95 +36,130 @@ func getTimeClasses() map[string]*environment.Class {
 						},
 					},
 					"YEAR": {
-						Name:       "YEAR",
+						Name: "YEAR",
+						Documentation: []string{
+							"Returns the year component of the date.",
+						},
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Year()), nil
 							}
-							return environment.NOTHIN, fmt.Errorf("YEAR: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "YEAR: invalid context"}
 						},
 					},
 					"MONTH": {
-						Name:       "MONTH",
+						Name: "MONTH",
+						Documentation: []string{
+							"Returns the month component of the date (1-12).",
+							"January = 1, February = 2, ..., December = 12.",
+						},
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Month()), nil
 							}
-							return environment.NOTHIN, fmt.Errorf("MONTH: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "MONTH: invalid context"}
 						},
 					},
 					"DAY": {
-						Name:       "DAY",
+						Name: "DAY",
+						Documentation: []string{
+							"Returns the day of the month component (1-31).",
+							"Range depends on the specific month and year.",
+						},
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Day()), nil
 							}
-							return environment.NOTHIN, fmt.Errorf("DAY: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "DAY: invalid context"}
 						},
 					},
 					"HOUR": {
-						Name:       "HOUR",
+						Name: "HOUR",
+						Documentation: []string{
+							"Returns the hour component in 24-hour format (0-23).",
+							"0 = midnight, 12 = noon, 23 = 11 PM.",
+						},
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Hour()), nil
 							}
-							return environment.NOTHIN, fmt.Errorf("HOUR: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "HOUR: invalid context"}
 						},
 					},
 					"MINUTE": {
-						Name:       "MINUTE",
+						Name: "MINUTE",
+						Documentation: []string{
+							"Returns the minute component (0-59).",
+							"Minutes past the hour.",
+						},
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Minute()), nil
 							}
-							return environment.NOTHIN, fmt.Errorf("MINUTE: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "MINUTE: invalid context"}
 						},
 					},
 					"SECOND": {
-						Name:       "SECOND",
+						Name: "SECOND",
+						Documentation: []string{
+							"Returns the second component (0-59).",
+							"Seconds past the minute.",
+						},
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Second()), nil
 							}
-							return environment.NOTHIN, fmt.Errorf("SECOND: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "SECOND: invalid context"}
 						},
 					},
 					"MILLISECOND": {
-						Name:       "MILLISECOND",
+						Name: "MILLISECOND",
+						Documentation: []string{
+							"Returns the millisecond component (0-999).",
+							"Milliseconds within the current second.",
+						},
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Nanosecond() / 1e6), nil
 							}
-							return environment.NOTHIN, fmt.Errorf("MILLISECOND: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "MILLISECOND: invalid context"}
 						},
 					},
 					"NANOSECOND": {
-						Name:       "NANOSECOND",
+						Name: "NANOSECOND",
+						Documentation: []string{
+							"Returns the nanosecond component (0-999999999).",
+							"Nanoseconds within the current second for high precision timing.",
+						},
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							if date, ok := this.NativeData.(time.Time); ok {
 								return environment.IntegerValue(date.Nanosecond()), nil
 							}
-							return environment.NOTHIN, fmt.Errorf("NANOSECOND: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "NANOSECOND: invalid context"}
 						},
 					},
 					"FORMAT": {
-						Name:       "FORMAT",
+						Name: "FORMAT",
+						Documentation: []string{
+							"Formats the date according to the specified layout string.",
+							"Uses Go's time formatting with reference time 'Mon Jan 2 15:04:05 MST 2006'.",
+						},
 						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{
 							{Name: "layout", Type: "STRIN"},
@@ -128,7 +171,7 @@ func getTimeClasses() map[string]*environment.Class {
 									return environment.StringValue(date.Format(string(stringVal))), nil
 								}
 							}
-							return environment.NOTHIN, fmt.Errorf("FORMAT: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "FORMAT: invalid context"}
 						},
 					},
 				},
@@ -157,6 +200,10 @@ func getTimeFunctions() map[string]*environment.Function {
 		timeFunctions = map[string]*environment.Function{
 			"SLEEP": {
 				Name: "SLEEP",
+				Documentation: []string{
+					"Pauses execution for the specified number of seconds.",
+					"Blocks the current thread until the sleep duration expires.",
+				},
 				Parameters: []environment.Parameter{
 					{Name: "seconds", Type: "INTEGR"},
 				},
@@ -168,7 +215,7 @@ func getTimeFunctions() map[string]*environment.Function {
 						return environment.NOTHIN, nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("SLEEP: invalid argument type")
+					return environment.NOTHIN, runtime.Exception{Message: "SLEEP: invalid argument type"}
 				},
 			},
 		}
@@ -204,7 +251,7 @@ func RegisterTIMEInEnv(env *environment.Environment, declarations ...string) err
 			// Check if it's a function
 			env.DefineFunction(fn)
 		} else {
-			return fmt.Errorf("unknown TIME declaration: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown TIME declaration: %s", decl)}
 		}
 	}
 

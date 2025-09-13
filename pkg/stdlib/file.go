@@ -32,7 +32,11 @@ func getFileClasses() map[string]*environment.Class {
 	fileClassesOnce.Do(func() {
 		fileClasses = map[string]*environment.Class{
 			"DOCUMENT": {
-				Name:          "DOCUMENT",
+				Name: "DOCUMENT",
+				Documentation: []string{
+					"A file on the file system. Provides methods for file I/O operations.",
+					"Supports multiple access modes: R (read-only), W (write-only), RW (read-write), A (append).",
+				},
 				QualifiedName: "stdlib:FILE.DOCUMENT",
 				ModulePath:    "stdlib:FILE",
 				ParentClasses: []string{"stdlib:IO.READWRITER"},
@@ -41,34 +45,24 @@ func getFileClasses() map[string]*environment.Class {
 					// Constructor
 					"DOCUMENT": {
 						Name: "DOCUMENT",
+						Documentation: []string{
+							"Initializes a DOCUMENT instance with a file path.",
+						},
 						Parameters: []environment.Parameter{
 							{Name: "path", Type: "STRIN"},
-							{Name: "mode", Type: "STRIN"},
 						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							path := args[0]
-							mode := args[1]
 
 							pathVal, ok := path.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("DOCUMENT constructor expects STRIN path, got %s", path.Type())
-							}
-
-							modeVal, ok := mode.(environment.StringValue)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("DOCUMENT constructor expects STRIN mode, got %s", mode.Type())
-							}
-
-							// Validate mode
-							modeStr := strings.ToUpper(string(modeVal))
-							if modeStr != "R" && modeStr != "W" && modeStr != "RW" && modeStr != "A" {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Invalid file mode: %s. Valid modes: R, W, RW, A", modeStr)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("DOCUMENT constructor expects STRIN path, got %s", path.Type())}
 							}
 
 							// Initialize the document data
 							docData := &DocumentData{
 								FilePath: string(pathVal),
-								FileMode: modeStr,
+								FileMode: "",
 								File:     nil,
 								IsOpen:   false,
 							}
@@ -80,14 +74,35 @@ func getFileClasses() map[string]*environment.Class {
 					// OPEN method
 					"OPEN": {
 						Name: "OPEN",
+						Documentation: []string{
+							"Opens the file for I/O operations according to the specified mode.",
+							"Creates the file if it doesn't exist (for write/append modes).",
+							"Sets IS_OPEN to YEZ.",
+							"",
+							"Modes: R (read-only), W (write-only, overwrites), RW (read-write, creates if needed), A (append).",
+						},
+						Parameters: []environment.Parameter{
+							{Name: "mode", Type: "STRIN"},
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
+							mode := args[0]
+							modeVal, ok := mode.(environment.StringValue)
+							if !ok {
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("OPEN expects STRIN mode, got %s", mode.Type())}
+							}
+
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("OPEN: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "OPEN: invalid context"}
 							}
 
 							if docData.IsOpen {
-								return environment.NOTHIN, runtime.Exception{Message: "File is already open"}
+								return environment.NOTHIN, runtime.Exception{Message: "OPEN: file is already open"}
+							}
+
+							docData.FileMode = strings.ToUpper(string(modeVal))
+							if docData.FileMode != "R" && docData.FileMode != "W" && docData.FileMode != "RW" && docData.FileMode != "A" {
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("OPEN: invalid file mode %s", modeVal)}
 							}
 
 							var flag int
@@ -104,7 +119,7 @@ func getFileClasses() map[string]*environment.Class {
 
 							file, err := os.OpenFile(docData.FilePath, flag, 0644)
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to open file: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("OPEN: %v", err)}
 							}
 
 							docData.File = file
@@ -115,7 +130,11 @@ func getFileClasses() map[string]*environment.Class {
 					},
 					// READ method (implements READER interface)
 					"READ": {
-						Name:       "READ",
+						Name: "READ",
+						Documentation: []string{
+							"Reads up to the specified number of characters from the file.",
+							"Returns the data read (may be shorter than requested at end of file).",
+						},
 						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{
 							{Name: "size", Type: "INTEGR"},
@@ -125,20 +144,20 @@ func getFileClasses() map[string]*environment.Class {
 
 							sizeVal, ok := size.(environment.IntegerValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("READ expects INTEGR size, got %s", size.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("READ expects INTEGR size, got %s", size.Type())}
 							}
 
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("READ: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("READ: invalid context")}
 							}
 
 							if !docData.IsOpen {
-								return environment.NOTHIN, runtime.Exception{Message: "File is not open"}
+								return environment.NOTHIN, runtime.Exception{Message: "READ: file is not open"}
 							}
 
 							if docData.FileMode != "R" && docData.FileMode != "RW" {
-								return environment.NOTHIN, runtime.Exception{Message: "File is not open for reading"}
+								return environment.NOTHIN, runtime.Exception{Message: "READ: file is not open for reading"}
 							}
 
 							readSize := int(sizeVal)
@@ -149,7 +168,7 @@ func getFileClasses() map[string]*environment.Class {
 							buffer := make([]byte, readSize)
 							n, err := docData.File.Read(buffer)
 							if err != nil && err.Error() != "EOF" {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Read error: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("READ: %v", err)}
 							}
 
 							return environment.StringValue(string(buffer[:n])), nil
@@ -157,7 +176,11 @@ func getFileClasses() map[string]*environment.Class {
 					},
 					// WRITE method (implements WRITER interface)
 					"WRITE": {
-						Name:       "WRITE",
+						Name: "WRITE",
+						Documentation: []string{
+							"Writes string data to the file.",
+							"Returns the number of characters written.",
+						},
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
@@ -167,26 +190,26 @@ func getFileClasses() map[string]*environment.Class {
 
 							dataVal, ok := data.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("WRITE expects STRIN data, got %s", data.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("WRITE expects STRIN data, got %s", data.Type())}
 							}
 
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("WRITE: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "WRITE: invalid context"}
 							}
 
 							if !docData.IsOpen {
-								return environment.NOTHIN, runtime.Exception{Message: "File is not open"}
+								return environment.NOTHIN, runtime.Exception{Message: "WRITE: file is not open"}
 							}
 
 							if docData.FileMode != "W" && docData.FileMode != "RW" && docData.FileMode != "A" {
-								return environment.NOTHIN, runtime.Exception{Message: "File is not open for writing"}
+								return environment.NOTHIN, runtime.Exception{Message: "WRITE: file is not open for writing"}
 							}
 
 							dataStr := string(dataVal)
 							n, err := docData.File.WriteString(dataStr)
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Write error: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("WRITE: %v", err)}
 							}
 
 							return environment.IntegerValue(n), nil
@@ -195,6 +218,10 @@ func getFileClasses() map[string]*environment.Class {
 					// SEEK method
 					"SEEK": {
 						Name: "SEEK",
+						Documentation: []string{
+							"Sets the file position for next read/write operation.",
+							"Position is byte offset from start of file (0-based).",
+						},
 						Parameters: []environment.Parameter{
 							{Name: "position", Type: "INTEGR"},
 						},
@@ -203,21 +230,21 @@ func getFileClasses() map[string]*environment.Class {
 
 							posVal, ok := position.(environment.IntegerValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("SEEK expects INTEGR position, got %s", position.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("SEEK expects INTEGR position, got %s", position.Type())}
 							}
 
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("SEEK: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "SEEK: invalid context"}
 							}
 
 							if !docData.IsOpen {
-								return environment.NOTHIN, runtime.Exception{Message: "File is not open"}
+								return environment.NOTHIN, runtime.Exception{Message: "SEEK: file is not open"}
 							}
 
 							_, err := docData.File.Seek(int64(posVal), 0)
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Seek error: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("SEEK: %v", err)}
 							}
 
 							return environment.NOTHIN, nil
@@ -225,7 +252,11 @@ func getFileClasses() map[string]*environment.Class {
 					},
 					// TELL method
 					"TELL": {
-						Name:       "TELL",
+						Name: "TELL",
+						Documentation: []string{
+							"Gets the current file position.",
+							"Returns current byte position in file.",
+						},
 						ReturnType: "INTEGR",
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
@@ -234,12 +265,12 @@ func getFileClasses() map[string]*environment.Class {
 							}
 
 							if !docData.IsOpen {
-								return environment.NOTHIN, runtime.Exception{Message: "File is not open"}
+								return environment.NOTHIN, runtime.Exception{Message: "TELL: file is not open"}
 							}
 
 							pos, err := docData.File.Seek(0, 1) // Get current position
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Tell error: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("TELL: %v", err)}
 							}
 
 							return environment.IntegerValue(int(pos)), nil
@@ -247,12 +278,16 @@ func getFileClasses() map[string]*environment.Class {
 					},
 					// EXISTS method
 					"EXISTS": {
-						Name:       "EXISTS",
+						Name: "EXISTS",
+						Documentation: []string{
+							"Checks if the file exists on disk.",
+							"Returns YEZ if file exists, NO otherwise.",
+						},
 						ReturnType: "BOOL",
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("EXISTS: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "EXISTS: invalid context"}
 							}
 
 							_, err := os.Stat(docData.FilePath)
@@ -263,19 +298,23 @@ func getFileClasses() map[string]*environment.Class {
 					// FLUSH method
 					"FLUSH": {
 						Name: "FLUSH",
+						Documentation: []string{
+							"Flushes the file's contents to disk.",
+							"Ensures all buffered data is written.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("FLUSH: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "FLUSH: invalid context"}
 							}
 
 							if !docData.IsOpen {
-								return environment.NOTHIN, runtime.Exception{Message: "File is not open"}
+								return environment.NOTHIN, runtime.Exception{Message: "FLUSH: file is not open"}
 							}
 
 							err := docData.File.Sync()
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Flush error: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("FLUSH: %v", err)}
 							}
 
 							return environment.NOTHIN, nil
@@ -284,10 +323,14 @@ func getFileClasses() map[string]*environment.Class {
 					// CLOSE method (implements both READER and WRITER interfaces)
 					"CLOSE": {
 						Name: "CLOSE",
+						Documentation: []string{
+							"Closes the file.",
+							"Releases any resources associated with the file.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "CLOSE: invalid context"}
 							}
 
 							if !docData.IsOpen {
@@ -296,11 +339,12 @@ func getFileClasses() map[string]*environment.Class {
 
 							err := docData.File.Close()
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Close error: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("CLOSE: %v", err)}
 							}
 
 							docData.IsOpen = false
 							docData.File = nil
+							docData.FileMode = ""
 
 							return environment.NOTHIN, nil
 						},
@@ -308,10 +352,14 @@ func getFileClasses() map[string]*environment.Class {
 					// DELETE method
 					"DELETE": {
 						Name: "DELETE",
+						Documentation: []string{
+							"Deletes the file from disk.",
+							"Automatically closes file if open and sets IS_OPEN to NO.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("DELETE: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "DELETE: invalid context"}
 							}
 
 							// Close file if it's open before deleting
@@ -322,6 +370,7 @@ func getFileClasses() map[string]*environment.Class {
 								}
 								docData.IsOpen = false
 								docData.File = nil
+								docData.FileMode = ""
 							}
 
 							// Delete the file
@@ -341,12 +390,15 @@ func getFileClasses() map[string]*environment.Class {
 							Type:     "STRIN",
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Read-only property containing the file path.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							if data, ok := this.NativeData.(*DocumentData); ok {
 								return environment.StringValue(data.FilePath), nil
 							}
-							return environment.StringValue(""), fmt.Errorf("invalid context for PATH")
+							return environment.StringValue(""), runtime.Exception{Message: "PATH: invalid context"}
 						},
 					},
 					"MODE": {
@@ -355,12 +407,15 @@ func getFileClasses() map[string]*environment.Class {
 							Type:     "STRIN",
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Read-only property containing the access mode (R, W, RW, or A).",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							if data, ok := this.NativeData.(*DocumentData); ok {
 								return environment.StringValue(data.FileMode), nil
 							}
-							return environment.StringValue(""), fmt.Errorf("invalid context for MODE")
+							return environment.StringValue(""), runtime.Exception{Message: "MODE: invalid context"}
 						},
 					},
 					"IS_OPEN": {
@@ -369,6 +424,9 @@ func getFileClasses() map[string]*environment.Class {
 							Type:     "BOOL",
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Read-only property that returns YEZ if file is currently open, NO otherwise.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							if data, ok := this.NativeData.(*DocumentData); ok {
@@ -377,7 +435,7 @@ func getFileClasses() map[string]*environment.Class {
 								}
 								return environment.NO, nil
 							}
-							return environment.NO, fmt.Errorf("invalid context for IS_OPEN")
+							return environment.NO, runtime.Exception{Message: "IS_OPEN: invalid context"}
 						},
 					},
 					"SIZ": {
@@ -386,16 +444,19 @@ func getFileClasses() map[string]*environment.Class {
 							Type:     "INTEGR",
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Read-only property that returns the file size in bytes.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							if data, ok := this.NativeData.(*DocumentData); ok {
 								stat, err := os.Stat(data.FilePath)
 								if err != nil {
-									return environment.IntegerValue(0), fmt.Errorf("failed to get file size: %v", err)
+									return environment.IntegerValue(0), runtime.Exception{Message: fmt.Sprintf("SIZ: failed to get file size: %v", err)}
 								}
 								return environment.IntegerValue(int(stat.Size())), nil
 							}
-							return environment.IntegerValue(0), fmt.Errorf("invalid context for SIZ")
+							return environment.IntegerValue(0), runtime.Exception{Message: "SIZ: invalid context"}
 						},
 					},
 					"RWX": {
@@ -404,30 +465,35 @@ func getFileClasses() map[string]*environment.Class {
 							Type:     "INTEGR",
 							IsLocked: false,
 							IsPublic: true,
+							Documentation: []string{
+								"File permissions (read/write/execute bits).",
+								"Can be read to get current permissions or written to change them.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							if data, ok := this.NativeData.(*DocumentData); ok {
 								stat, err := os.Stat(data.FilePath)
 								if err != nil {
-									return environment.IntegerValue(0), fmt.Errorf("failed to get file permissions: %v", err)
+									return environment.IntegerValue(0), runtime.Exception{Message: fmt.Sprintf("RWX: failed to get file permissions: %v", err)}
 								}
 								return environment.IntegerValue(int(stat.Mode().Perm())), nil
 							}
-							return environment.IntegerValue(0), fmt.Errorf("invalid context for RWX")
+							return environment.IntegerValue(0), runtime.Exception{Message: "RWX: invalid context"}
 						},
 						NativeSet: func(this *environment.ObjectInstance, val environment.Value) error {
-							intVal, ok := val.(environment.IntegerValue)
-							if !ok {
-								return fmt.Errorf("RWX expects INTEGR value, got %s", val.Type())
+							intValue, err := val.Cast("INTEGR")
+							if err != nil {
+								return runtime.Exception{Message: fmt.Sprintf("RWX: value must be castable to INTEGR, got %s", val.Type())}
 							}
+							intVal := intValue.(environment.IntegerValue)
 							if data, ok := this.NativeData.(*DocumentData); ok {
 								err := os.Chmod(data.FilePath, os.FileMode(int(intVal)))
 								if err != nil {
-									return fmt.Errorf("failed to set file permissions: %v", err)
+									return runtime.Exception{Message: fmt.Sprintf("RWX: failed to set file permissions: %v", err)}
 								}
 								return nil
 							}
-							return fmt.Errorf("invalid context for RWX")
+							return fmt.Errorf("RWX: invalid context")
 						},
 					},
 				},
@@ -437,7 +503,10 @@ func getFileClasses() map[string]*environment.Class {
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 			"CABINET": {
-				Name:          "CABINET",
+				Name: "CABINET",
+				Documentation: []string{
+					"A directory on the filesystem. Provides directory operations for working with directories and their contents.",
+				},
 				QualifiedName: "stdlib:FILE.CABINET",
 				ModulePath:    "stdlib:FILE",
 				ParentClasses: []string{},
@@ -446,6 +515,9 @@ func getFileClasses() map[string]*environment.Class {
 					// Constructor
 					"CABINET": {
 						Name: "CABINET",
+						Documentation: []string{
+							"Initializes a CABINET instance with the specified path.",
+						},
 						Parameters: []environment.Parameter{
 							{Name: "path", Type: "STRIN"},
 						},
@@ -454,7 +526,7 @@ func getFileClasses() map[string]*environment.Class {
 
 							pathVal, ok := path.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("CABINET constructor expects STRIN path, got %s", path.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("CABINET constructor expects STRIN path, got %s", path.Type())}
 							}
 
 							// Initialize the cabinet data
@@ -468,12 +540,15 @@ func getFileClasses() map[string]*environment.Class {
 					},
 					// EXISTS method
 					"EXISTS": {
-						Name:       "EXISTS",
+						Name: "EXISTS",
+						Documentation: []string{
+							"Checks if the directory exists, returns YEZ if directory exists, NO otherwise.",
+						},
 						ReturnType: "BOOL",
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							cabinetData, ok := this.NativeData.(*CabinetData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("EXISTS: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "EXISTS: invalid context"}
 							}
 
 							stat, err := os.Stat(cabinetData.DirPath)
@@ -486,17 +561,20 @@ func getFileClasses() map[string]*environment.Class {
 					},
 					// LIST method
 					"LIST": {
-						Name:       "LIST",
+						Name: "LIST",
+						Documentation: []string{
+							"Returns all files and subdirectories in the directory as a BUKKIT.",
+						},
 						ReturnType: "BUKKIT",
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							cabinetData, ok := this.NativeData.(*CabinetData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("LIST: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "LIST: invalid context"}
 							}
 
 							entries, err := os.ReadDir(cabinetData.DirPath)
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to read directory: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("LIST: %v", err)}
 							}
 
 							// Create BUKKIT array of filenames
@@ -514,15 +592,18 @@ func getFileClasses() map[string]*environment.Class {
 					// CREATE method
 					"CREATE": {
 						Name: "CREATE",
+						Documentation: []string{
+							"Creates the directory (including parent directories if needed).",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							cabinetData, ok := this.NativeData.(*CabinetData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("CREATE: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "CREATE: invalid context"}
 							}
 
 							err := os.MkdirAll(cabinetData.DirPath, 0755)
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to create directory: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("CREATE: %v", err)}
 							}
 
 							return environment.NOTHIN, nil
@@ -531,16 +612,19 @@ func getFileClasses() map[string]*environment.Class {
 					// DELETE method
 					"DELETE": {
 						Name: "DELETE",
+						Documentation: []string{
+							"Deletes an empty directory, throws exception if directory is not empty.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							cabinetData, ok := this.NativeData.(*CabinetData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("DELETE: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "DELETE: invalid context"}
 							}
 
 							// Remove empty directory only
 							err := os.Remove(cabinetData.DirPath)
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to delete directory: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("DELETE: %v", err)}
 							}
 
 							return environment.NOTHIN, nil
@@ -549,16 +633,19 @@ func getFileClasses() map[string]*environment.Class {
 					// DELETE_ALL method
 					"DELETE_ALL": {
 						Name: "DELETE_ALL",
+						Documentation: []string{
+							"Removes directory and all its contents recursively.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							cabinetData, ok := this.NativeData.(*CabinetData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("DELETE_ALL: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "DELETE_ALL: invalid context"}
 							}
 
 							// Remove directory and all its contents
 							err := os.RemoveAll(cabinetData.DirPath)
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to delete directory and its contents: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("DELETE_ALL: %v", err)}
 							}
 
 							return environment.NOTHIN, nil
@@ -566,7 +653,10 @@ func getFileClasses() map[string]*environment.Class {
 					},
 					// FIND method
 					"FIND": {
-						Name:       "FIND",
+						Name: "FIND",
+						Documentation: []string{
+							"Searches for files matching a glob pattern, returns BUKKIT of matching filenames.",
+						},
 						ReturnType: "BUKKIT",
 						Parameters: []environment.Parameter{
 							{Name: "pattern", Type: "STRIN"},
@@ -576,17 +666,17 @@ func getFileClasses() map[string]*environment.Class {
 
 							patternVal, ok := pattern.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("FIND expects STRIN pattern, got %s", pattern.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("FIND expects STRIN pattern, got %s", pattern.Type())}
 							}
 
 							cabinetData, ok := this.NativeData.(*CabinetData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("FIND: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "FIND: invalid context"}
 							}
 
 							entries, err := os.ReadDir(cabinetData.DirPath)
 							if err != nil {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to read directory: %v", err)}
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("FIND: failed to read directory: %v", err)}
 							}
 
 							var matches []environment.Value
@@ -595,7 +685,7 @@ func getFileClasses() map[string]*environment.Class {
 							for _, entry := range entries {
 								matched, err := filepath.Match(patternStr, entry.Name())
 								if err != nil {
-									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Invalid pattern: %v", err)}
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("FIND: invalid pattern: %v", err)}
 								}
 								if matched {
 									matches = append(matches, environment.StringValue(entry.Name()))
@@ -617,12 +707,15 @@ func getFileClasses() map[string]*environment.Class {
 							Type:     "STRIN",
 							IsLocked: true,
 							IsPublic: true,
+							Documentation: []string{
+								"Read-only property containing the directory path.",
+							},
 						},
 						NativeGet: func(this *environment.ObjectInstance) (environment.Value, error) {
 							if data, ok := this.NativeData.(*CabinetData); ok {
 								return environment.StringValue(data.DirPath), nil
 							}
-							return environment.StringValue(""), fmt.Errorf("invalid context for PATH")
+							return environment.StringValue(""), runtime.Exception{Message: "PATH: invalid context"}
 						},
 					},
 				},
@@ -649,6 +742,9 @@ func getFileVariables() map[string]*environment.Variable {
 				Value:    environment.StringValue(string(filepath.Separator)),
 				IsLocked: true,
 				IsPublic: true,
+				Documentation: []string{
+					"The platform-specific path separator character (/ on Unix, \\ on Windows).",
+				},
 			},
 		}
 	})
@@ -673,10 +769,7 @@ func RegisterFILEInEnv(env *environment.Environment, declarations ...string) err
 			env.DefineClass(class)
 		}
 		for _, variable := range fileVariables {
-			err := env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, nil)
-			if err != nil {
-				return fmt.Errorf("failed to define FILE variable %s: %v", variable.Name, err)
-			}
+			env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, variable.Documentation)
 		}
 		return nil
 	}
@@ -687,12 +780,9 @@ func RegisterFILEInEnv(env *environment.Environment, declarations ...string) err
 		if class, exists := fileClasses[declUpper]; exists {
 			env.DefineClass(class)
 		} else if variable, exists := fileVariables[declUpper]; exists {
-			err := env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, nil)
-			if err != nil {
-				return fmt.Errorf("failed to define FILE variable %s: %v", variable.Name, err)
-			}
+			env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, variable.Documentation)
 		} else {
-			return fmt.Errorf("unknown FILE declaration: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown FILE declaration: %s", decl)}
 		}
 	}
 

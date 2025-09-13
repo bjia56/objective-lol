@@ -96,7 +96,7 @@ func TestBaskitGetNonexistentKey(t *testing.T) {
 	// Check it's the right type of exception
 	exception, ok := err.(runtime.Exception)
 	require.True(t, ok, "Should be an runtime.Exception")
-	assert.Contains(t, exception.Message, "Key 'nonexistent' not found in BASKIT")
+	assert.Contains(t, exception.Message, "key \"nonexistent\" not found")
 }
 
 func TestBaskitContains(t *testing.T) {
@@ -172,7 +172,7 @@ func TestBaskitRemove(t *testing.T) {
 	// Check it's the right type of exception
 	exception, ok := err.(runtime.Exception)
 	require.True(t, ok, "Should be an runtime.Exception")
-	assert.Contains(t, exception.Message, "Key 'nonexistent' not found in BASKIT")
+	assert.Contains(t, exception.Message, "key \"nonexistent\" not found")
 }
 
 func TestBaskitClear(t *testing.T) {

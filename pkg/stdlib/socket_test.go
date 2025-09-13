@@ -69,7 +69,7 @@ func TestRegisterSOCKETInEnvInvalidClass(t *testing.T) {
 		t.Fatal("Expected error when registering invalid class")
 	}
 
-	expectedError := "unknown SOCKET class: INVALID_CLASS"
+	expectedError := "unknown SOCKET declaration: INVALID_CLASS"
 	if err.Error() != expectedError {
 		t.Errorf("Expected error '%s', got '%s'", expectedError, err.Error())
 	}

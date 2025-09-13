@@ -81,7 +81,7 @@ HAI ME TEH FUNCSHUN MAIN
 
     BTW Test 4: Buffer size modification
     SAYZ WIT "Test 4: Changing buffer size"
-    buffered DO SET_SIZ WIT 512
+    buffered SIZ ITZ 512
     SAY WIT "New buffer size: "
     SAYZ WIT buffered SIZ
 

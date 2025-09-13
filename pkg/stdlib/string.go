@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 )
 
 // Global STRING function definitions - created once and reused
@@ -16,7 +17,11 @@ func getStringFunctions() map[string]*environment.Function {
 	stringFunctionsOnce.Do(func() {
 		stringFunctions = map[string]*environment.Function{
 			"LEN": {
-				Name:       "LEN",
+				Name: "LEN",
+				Documentation: []string{
+					"Returns the length of a STRIN in characters.",
+					"Counts the number of UTF-8 characters in the STRIN.",
+				},
 				ReturnType: "INTEGR",
 				Parameters: []environment.Parameter{{Name: "STR", Type: "STRIN"}},
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
@@ -26,11 +31,14 @@ func getStringFunctions() map[string]*environment.Function {
 						return environment.IntegerValue(len(string(strVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("LEN: argument is not a string")
+					return environment.NOTHIN, runtime.Exception{Message: "LEN: argument is not a string"}
 				},
 			},
 			"CONCAT": {
-				Name:       "CONCAT",
+				Name: "CONCAT",
+				Documentation: []string{
+					"Concatenates multiple values into a single STRIN.",
+				},
 				ReturnType: "STRIN",
 				IsVarargs:  true,
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
@@ -38,7 +46,7 @@ func getStringFunctions() map[string]*environment.Function {
 					for _, arg := range args {
 						arg, err := arg.Cast("STRIN")
 						if err != nil {
-							return environment.NOTHIN, fmt.Errorf("CONCAT: all arguments must be strings")
+							return environment.NOTHIN, runtime.Exception{Message: "CONCAT: all arguments must be strings"}
 						}
 						strBuilder.WriteString(string(arg.(environment.StringValue)))
 					}
@@ -46,7 +54,11 @@ func getStringFunctions() map[string]*environment.Function {
 				},
 			},
 			"SUBSTR": {
-				Name:       "SUBSTR",
+				Name: "SUBSTR",
+				Documentation: []string{
+					"Extracts a substring from a STRIN starting at the given position.",
+					"Returns substring from START index for LENGTH characters. Bounds are checked.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -56,17 +68,17 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("SUBSTR: first argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "SUBSTR: first argument is not a string"}
 					}
 
 					start, ok := args[1].(environment.IntegerValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("SUBSTR: second argument is not an integer")
+						return environment.NOTHIN, runtime.Exception{Message: "SUBSTR: second argument is not an integer"}
 					}
 
 					length, ok := args[2].(environment.IntegerValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("SUBSTR: third argument is not an integer")
+						return environment.NOTHIN, runtime.Exception{Message: "SUBSTR: third argument is not an integer"}
 					}
 
 					s := string(str)
@@ -77,16 +89,17 @@ func getStringFunctions() map[string]*environment.Function {
 						return environment.StringValue(""), nil
 					}
 
-					endIdx := startIdx + lengthVal
-					if endIdx > len(s) {
-						endIdx = len(s)
-					}
+					endIdx := min(startIdx+lengthVal, len(s))
 
 					return environment.StringValue(s[startIdx:endIdx]), nil
 				},
 			},
 			"TRIM": {
-				Name:       "TRIM",
+				Name: "TRIM",
+				Documentation: []string{
+					"Removes whitespace from both ends of a STRIN.",
+					"Trims spaces, tabs, newlines, and carriage returns.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -94,14 +107,18 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("TRIM: argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "TRIM: argument is not a string"}
 					}
 
 					return environment.StringValue(strings.TrimSpace(string(str))), nil
 				},
 			},
 			"LTRIM": {
-				Name:       "LTRIM",
+				Name: "LTRIM",
+				Documentation: []string{
+					"Removes whitespace from the left end of a STRIN.",
+					"Trims spaces, tabs, newlines, and carriage returns.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -109,7 +126,7 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("LTRIM: argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "LTRIM: argument is not a string"}
 					}
 
 					return environment.StringValue(strings.TrimLeftFunc(string(str), func(r rune) bool {
@@ -118,7 +135,11 @@ func getStringFunctions() map[string]*environment.Function {
 				},
 			},
 			"RTRIM": {
-				Name:       "RTRIM",
+				Name: "RTRIM",
+				Documentation: []string{
+					"Removes whitespace from the right end of a STRIN.",
+					"Trims spaces, tabs, newlines, and carriage returns.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -126,7 +147,7 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("RTRIM: argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "RTRIM: argument is not a string"}
 					}
 
 					return environment.StringValue(strings.TrimRightFunc(string(str), func(r rune) bool {
@@ -135,7 +156,11 @@ func getStringFunctions() map[string]*environment.Function {
 				},
 			},
 			"REPEAT": {
-				Name:       "REPEAT",
+				Name: "REPEAT",
+				Documentation: []string{
+					"Repeats a STRIN a specified number of times.",
+					"Returns a new STRIN consisting of the original STRIN repeated COUNT times.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -144,23 +169,27 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("REPEAT: first argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "REPEAT: first argument is not a string"}
 					}
 
 					count, ok := args[1].(environment.IntegerValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("REPEAT: second argument is not an integer")
+						return environment.NOTHIN, runtime.Exception{Message: "REPEAT: second argument is not an integer"}
 					}
 
 					if count < 0 {
-						return environment.NOTHIN, fmt.Errorf("REPEAT: count must be non-negative")
+						return environment.NOTHIN, runtime.Exception{Message: "REPEAT: count must be non-negative"}
 					}
 
 					return environment.StringValue(strings.Repeat(string(str), int(count))), nil
 				},
 			},
 			"UPPER": {
-				Name:       "UPPER",
+				Name: "UPPER",
+				Documentation: []string{
+					"Converts all characters in a STRIN to uppercase.",
+					"Returns a new STRIN with all letters converted to upper case.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -168,14 +197,18 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("UPPER: argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "UPPER: argument is not a string"}
 					}
 
 					return environment.StringValue(strings.ToUpper(string(str))), nil
 				},
 			},
 			"LOWER": {
-				Name:       "LOWER",
+				Name: "LOWER",
+				Documentation: []string{
+					"Converts all characters in a STRIN to lowercase.",
+					"Returns a new STRIN with all letters converted to lower case.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -183,14 +216,18 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("LOWER: argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "LOWER: argument is not a string"}
 					}
 
 					return environment.StringValue(strings.ToLower(string(str))), nil
 				},
 			},
 			"TITLE": {
-				Name:       "TITLE",
+				Name: "TITLE",
+				Documentation: []string{
+					"Converts the first character of each word to uppercase.",
+					"Returns a new STRIN with the first letter of each word capitalized.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -198,14 +235,18 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("TITLE: argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "TITLE: argument is not a string"}
 					}
 
 					return environment.StringValue(strings.Title(string(str))), nil
 				},
 			},
 			"CAPITALIZE": {
-				Name:       "CAPITALIZE",
+				Name: "CAPITALIZE",
+				Documentation: []string{
+					"Capitalizes the first character of a STRIN and makes the rest lowercase.",
+					"Returns a new STRIN with the first letter capitalized and the rest in lower case.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -213,7 +254,7 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("CAPITALIZE: argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "CAPITALIZE: argument is not a string"}
 					}
 
 					s := string(str)
@@ -225,7 +266,11 @@ func getStringFunctions() map[string]*environment.Function {
 				},
 			},
 			"SPLIT": {
-				Name:       "SPLIT",
+				Name: "SPLIT",
+				Documentation: []string{
+					"Splits a STRIN into a BUKKIT array using the specified separator.",
+					"Returns array of substrings divided by the separator string.",
+				},
 				ReturnType: "BUKKIT",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -234,12 +279,12 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("SPLIT: first argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "SPLIT: first argument is not a string"}
 					}
 
 					separator, ok := args[1].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("SPLIT: second argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "SPLIT: second argument is not a string"}
 					}
 
 					parts := strings.Split(string(str), string(separator))
@@ -256,7 +301,11 @@ func getStringFunctions() map[string]*environment.Function {
 				},
 			},
 			"REPLACE": {
-				Name:       "REPLACE",
+				Name: "REPLACE",
+				Documentation: []string{
+					"Replaces the first occurrence of OLD substring with NEW substring in STR.",
+					"Returns a new STRIN with the first occurrence of OLD replaced by NEW.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -266,17 +315,17 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("REPLACE: first argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "REPLACE: first argument is not a string"}
 					}
 
 					old, ok := args[1].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("REPLACE: second argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "REPLACE: second argument is not a string"}
 					}
 
 					new, ok := args[2].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("REPLACE: third argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "REPLACE: third argument is not a string"}
 					}
 
 					result := strings.Replace(string(str), string(old), string(new), 1)
@@ -284,7 +333,11 @@ func getStringFunctions() map[string]*environment.Function {
 				},
 			},
 			"REPLACE_ALL": {
-				Name:       "REPLACE_ALL",
+				Name: "REPLACE_ALL",
+				Documentation: []string{
+					"Replaces all occurrences of OLD substring with NEW substring in STR.",
+					"Returns a new STRIN with all occurrences of OLD replaced by NEW.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -294,17 +347,17 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("REPLACE_ALL: first argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "REPLACE_ALL: first argument is not a string"}
 					}
 
 					old, ok := args[1].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("REPLACE_ALL: second argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "REPLACE_ALL: second argument is not a string"}
 					}
 
 					new, ok := args[2].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("REPLACE_ALL: third argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "REPLACE_ALL: third argument is not a string"}
 					}
 
 					result := strings.ReplaceAll(string(str), string(old), string(new))
@@ -312,7 +365,11 @@ func getStringFunctions() map[string]*environment.Function {
 				},
 			},
 			"CONTAINS": {
-				Name:       "CONTAINS",
+				Name: "CONTAINS",
+				Documentation: []string{
+					"Checks if STR contains the substring SUBSTR.",
+					"Returns TRUE if SUBSTR is found within STR, otherwise FALSE.",
+				},
 				ReturnType: "BOOL",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -321,12 +378,12 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("CONTAINS: first argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "CONTAINS: first argument is not a string"}
 					}
 
 					substr, ok := args[1].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("CONTAINS: second argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "CONTAINS: second argument is not a string"}
 					}
 
 					result := strings.Contains(string(str), string(substr))
@@ -334,7 +391,11 @@ func getStringFunctions() map[string]*environment.Function {
 				},
 			},
 			"INDEX_OF": {
-				Name:       "INDEX_OF",
+				Name: "INDEX_OF",
+				Documentation: []string{
+					"Finds the index of the first occurrence of SUBSTR in STR.",
+					"Returns the zero-based index of SUBSTR in STR, or -1 if not found.",
+				},
 				ReturnType: "INTEGR",
 				Parameters: []environment.Parameter{
 					{Name: "STR", Type: "STRIN"},
@@ -343,12 +404,12 @@ func getStringFunctions() map[string]*environment.Function {
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					str, ok := args[0].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("INDEX_OF: first argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "INDEX_OF: first argument is not a string"}
 					}
 
 					substr, ok := args[1].(environment.StringValue)
 					if !ok {
-						return environment.NOTHIN, fmt.Errorf("INDEX_OF: second argument is not a string")
+						return environment.NOTHIN, runtime.Exception{Message: "INDEX_OF: second argument is not a string"}
 					}
 
 					index := strings.Index(string(str), string(substr))
@@ -379,7 +440,7 @@ func RegisterSTRINGInEnv(env *environment.Environment, declarations ...string) e
 		if fn, exists := stringFunctions[declUpper]; exists {
 			env.DefineFunction(fn)
 		} else {
-			return fmt.Errorf("unknown STRING function: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown STRING declaration: %s", decl)}
 		}
 	}
 

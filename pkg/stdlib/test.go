@@ -17,13 +17,17 @@ func getTestFunctions() map[string]*environment.Function {
 	testFunctionsOnce.Do(func() {
 		testFunctions = map[string]*environment.Function{
 			"ASSERT": {
-				Name:       "ASSERT",
+				Name: "ASSERT",
+				Documentation: []string{
+					"Asserts that a condition is truthy, throwing an exception if NO.",
+					"Accepts any type and evaluates truthiness according to Objective-LOL rules.",
+				},
 				Parameters: []environment.Parameter{{Name: "CONDITION", Type: ""}}, // Accept any type
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					condition := args[0]
 
 					// Check if condition is truthy
-					if !isTruthy(condition) {
+					if !condition.ToBool() {
 						return environment.NOTHIN, runtime.Exception{Message: "Assertion failed"}
 					}
 
@@ -33,24 +37,6 @@ func getTestFunctions() map[string]*environment.Function {
 		}
 	})
 	return testFunctions
-}
-
-// isTruthy determines if a value is considered truthy in Objective-LOL
-func isTruthy(value environment.Value) bool {
-	switch v := value.(type) {
-	case environment.BoolValue:
-		return bool(v)
-	case environment.IntegerValue:
-		return int64(v) != 0
-	case environment.DoubleValue:
-		return float64(v) != 0.0
-	case environment.StringValue:
-		return string(v) != ""
-	case environment.NothingValue:
-		return false
-	default:
-		return true // Objects and other environment are considered truthy
-	}
 }
 
 // RegisterTESTInEnv registers TEST functions in the given environment
@@ -72,7 +58,7 @@ func RegisterTESTInEnv(env *environment.Environment, declarations ...string) err
 		if fn, exists := testFunctions[declUpper]; exists {
 			env.DefineFunction(fn)
 		} else {
-			return fmt.Errorf("unknown TEST function: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown TEST declaration: %s", decl)}
 		}
 	}
 

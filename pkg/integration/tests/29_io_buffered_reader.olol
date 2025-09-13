@@ -15,7 +15,7 @@ HAI ME TEH CLAS TestReader KITTEH OF READER
         SAY WIT " requesting "
         SAY WIT SIZE
         SAYZ WIT " chars"
-        
+
         BTW Return the entire data string each time (simulating a simple file reader)
         GIVEZ data
     KTHX
@@ -23,7 +23,7 @@ HAI ME TEH CLAS TestReader KITTEH OF READER
     DIS TEH FUNCSHUN CLOSE
         SAYZ WIT "TestReader closed"
     KTHX
-    
+
     DIS TEH FUNCSHUN get_read_count TEH INTEGR
         GIVEZ read_count
     KTHX
@@ -31,7 +31,7 @@ KTHXBAI
 
 HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT "=== IO BUFFERED_READER Test ==="
-    
+
     BTW Test 1: Basic functionality
     SAYZ WIT "Test 1: Creating BUFFERED_READER"
     I HAS A VARIABLE reader TEH TestReader ITZ NEW TestReader
@@ -40,34 +40,34 @@ HAI ME TEH FUNCSHUN MAIN
     SAY WIT "Default buffer size: "
     SAYZ WIT buffered SIZ
 
-    BTW Test 2: Reading small chunks should buffer efficiently  
+    BTW Test 2: Reading small chunks should buffer efficiently
     SAYZ WIT "Test 2: Reading small chunks"
     I HAS A VARIABLE result1 TEH STRIN ITZ buffered DO READ WIT 5
     SAY WIT "First 5 chars: '"
     SAY WIT result1
     SAYZ WIT "'"
-    
+
     I HAS A VARIABLE result2 TEH STRIN ITZ buffered DO READ WIT 7
     SAY WIT "Next 7 chars: '"
     SAY WIT result2
     SAYZ WIT "'"
-    
+
     SAY WIT "Read count after 2 small reads: "
     SAYZ WIT reader DO get_read_count
 
     BTW Test 3: Buffer size modification
     SAYZ WIT "Test 3: Changing buffer size"
-    buffered DO SET_SIZ WIT 512
+    buffered SIZ ITZ 512
     SAY WIT "New buffer size: "
     SAYZ WIT buffered SIZ
-    
+
     BTW Test 4: Reading after buffer size change (should clear buffer)
     SAYZ WIT "Test 4: Reading after buffer size change"
     I HAS A VARIABLE result3 TEH STRIN ITZ buffered DO READ WIT 10
     SAY WIT "10 chars after buffer resize: '"
-    SAY WIT result3  
+    SAY WIT result3
     SAYZ WIT "'"
-    
+
     SAY WIT "Read count after buffer resize: "
     SAYZ WIT reader DO get_read_count
 
@@ -77,7 +77,7 @@ HAI ME TEH FUNCSHUN MAIN
     SAY WIT "50 chars: '"
     SAY WIT result4
     SAYZ WIT "'"
-    
+
     SAY WIT "Final read count: "
     SAYZ WIT reader DO get_read_count
 

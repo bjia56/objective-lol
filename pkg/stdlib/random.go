@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 )
 
 // Global RANDOM function definitions - created once and reused
@@ -19,6 +20,10 @@ func getRandomFunctions() map[string]*environment.Function {
 		randomFunctions = map[string]*environment.Function{
 			"SEED": {
 				Name: "SEED",
+				Documentation: []string{
+					"Sets the random number generator seed for reproducible results.",
+					"Using the same seed will produce the same sequence of random numbers.",
+				},
 				Parameters: []environment.Parameter{
 					{Name: "seed", Type: "INTEGR"},
 				},
@@ -30,11 +35,15 @@ func getRandomFunctions() map[string]*environment.Function {
 						return environment.NOTHIN, nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("SEED: invalid seed type")
+					return environment.NOTHIN, runtime.Exception{Message: "SEED: invalid seed type"}
 				},
 			},
 			"SEED_TIME": {
-				Name:       "SEED_TIME",
+				Name: "SEED_TIME",
+				Documentation: []string{
+					"Seeds the random number generator with the current time.",
+					"Provides different random sequences on each program run.",
+				},
 				Parameters: []environment.Parameter{},
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					rand.Seed(time.Now().UnixNano())
@@ -42,7 +51,11 @@ func getRandomFunctions() map[string]*environment.Function {
 				},
 			},
 			"RANDOM_FLOAT": {
-				Name:       "RANDOM_FLOAT",
+				Name: "RANDOM_FLOAT",
+				Documentation: []string{
+					"Returns a random floating-point number between 0.0 (inclusive) and 1.0 (exclusive).",
+					"Useful for probability calculations and random selection.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{},
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
@@ -50,7 +63,11 @@ func getRandomFunctions() map[string]*environment.Function {
 				},
 			},
 			"RANDOM_RANGE": {
-				Name:       "RANDOM_RANGE",
+				Name: "RANDOM_RANGE",
+				Documentation: []string{
+					"Returns a random floating-point number within the specified range.",
+					"Range is [min, max) - includes min but excludes max. Min must be less than max.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "min", Type: "DUBBLE"},
@@ -62,18 +79,22 @@ func getRandomFunctions() map[string]*environment.Function {
 					if minVal, ok := min.(environment.DoubleValue); ok {
 						if maxVal, ok := max.(environment.DoubleValue); ok {
 							if minVal >= maxVal {
-								return environment.NOTHIN, fmt.Errorf("RANDOM_RANGE: min must be less than max")
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("RANDOM_RANGE: min must be less than max")}
 							}
 							result := float64(minVal) + rand.Float64()*(float64(maxVal)-float64(minVal))
 							return environment.DoubleValue(result), nil
 						}
 					}
 
-					return environment.NOTHIN, fmt.Errorf("RANDOM_RANGE: invalid numeric arguments")
+					return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("RANDOM_RANGE: invalid numeric arguments")}
 				},
 			},
 			"RANDOM_INT": {
-				Name:       "RANDOM_INT",
+				Name: "RANDOM_INT",
+				Documentation: []string{
+					"Returns a random integer within the specified range.",
+					"Range is [min, max) - includes min but excludes max. Min must be less than max.",
+				},
 				ReturnType: "INTEGR",
 				Parameters: []environment.Parameter{
 					{Name: "min", Type: "INTEGR"},
@@ -85,18 +106,22 @@ func getRandomFunctions() map[string]*environment.Function {
 					if minVal, ok := min.(environment.IntegerValue); ok {
 						if maxVal, ok := max.(environment.IntegerValue); ok {
 							if minVal >= maxVal {
-								return environment.NOTHIN, fmt.Errorf("RANDOM_INT: min must be less than max")
+								return environment.NOTHIN, runtime.Exception{Message: "RANDOM_INT: min must be less than max"}
 							}
 							result := rand.Int63n(int64(maxVal-minVal)) + int64(minVal)
 							return environment.IntegerValue(result), nil
 						}
 					}
 
-					return environment.NOTHIN, fmt.Errorf("RANDOM_INT: invalid integer arguments")
+					return environment.NOTHIN, runtime.Exception{Message: "RANDOM_INT: invalid integer arguments"}
 				},
 			},
 			"RANDOM_BOOL": {
-				Name:       "RANDOM_BOOL",
+				Name: "RANDOM_BOOL",
+				Documentation: []string{
+					"Returns a random boolean value (YEZ or NO).",
+					"Each value has a 50% probability of being returned.",
+				},
 				ReturnType: "BOOL",
 				Parameters: []environment.Parameter{},
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
@@ -108,6 +133,10 @@ func getRandomFunctions() map[string]*environment.Function {
 			},
 			"RANDOM_CHOICE": {
 				Name: "RANDOM_CHOICE",
+				Documentation: []string{
+					"Returns a randomly selected element from a BUKKIT array.",
+					"Array must not be empty. Each element has equal probability of selection.",
+				},
 				Parameters: []environment.Parameter{
 					{Name: "array", Type: "BUKKIT"},
 				},
@@ -117,18 +146,22 @@ func getRandomFunctions() map[string]*environment.Function {
 					if arrayObj, ok := array.(*environment.ObjectInstance); ok {
 						if slice, ok := arrayObj.NativeData.(BukkitSlice); ok {
 							if len(slice) == 0 {
-								return environment.NOTHIN, fmt.Errorf("RANDOM_CHOICE: empty array")
+								return environment.NOTHIN, runtime.Exception{Message: "RANDOM_CHOICE: empty array"}
 							}
 							index := rand.Intn(len(slice))
 							return slice[index], nil
 						}
 					}
 
-					return environment.NOTHIN, fmt.Errorf("RANDOM_CHOICE: invalid array argument")
+					return environment.NOTHIN, runtime.Exception{Message: "RANDOM_CHOICE: invalid array argument"}
 				},
 			},
 			"SHUFFLE": {
-				Name:       "SHUFFLE",
+				Name: "SHUFFLE",
+				Documentation: []string{
+					"Returns a new BUKKIT with elements randomly shuffled.",
+					"Uses Fisher-Yates algorithm. Original array is not modified.",
+				},
 				ReturnType: "BUKKIT",
 				Parameters: []environment.Parameter{
 					{Name: "array", Type: "BUKKIT"},
@@ -155,11 +188,15 @@ func getRandomFunctions() map[string]*environment.Function {
 						}
 					}
 
-					return environment.NOTHIN, fmt.Errorf("SHUFFLE: invalid array argument")
+					return environment.NOTHIN, runtime.Exception{Message: "SHUFFLE: invalid array argument"}
 				},
 			},
 			"RANDOM_STRING": {
-				Name:       "RANDOM_STRING",
+				Name: "RANDOM_STRING",
+				Documentation: []string{
+					"Generates a random string of specified length using given character set.",
+					"Each character is randomly selected from the charset. Charset must not be empty.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{
 					{Name: "length", Type: "INTEGR"},
@@ -177,7 +214,7 @@ func getRandomFunctions() map[string]*environment.Function {
 
 							charsetStr := string(charsetVal)
 							if len(charsetStr) == 0 {
-								return environment.NOTHIN, fmt.Errorf("RANDOM_STRING: empty charset")
+								return environment.NOTHIN, runtime.Exception{Message: "RANDOM_STRING: empty charset"}
 							}
 
 							result := make([]byte, lengthVal)
@@ -189,11 +226,15 @@ func getRandomFunctions() map[string]*environment.Function {
 						}
 					}
 
-					return environment.NOTHIN, fmt.Errorf("RANDOM_STRING: invalid arguments")
+					return environment.NOTHIN, runtime.Exception{Message: "RANDOM_STRING: invalid arguments"}
 				},
 			},
 			"UUID": {
-				Name:       "UUID",
+				Name: "UUID",
+				Documentation: []string{
+					"Generates a random UUID (Universally Unique Identifier) version 4.",
+					"Returns a string in format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{},
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
@@ -235,7 +276,7 @@ func RegisterRANDOMInEnv(env *environment.Environment, declarations ...string) e
 		if fn, exists := randomFunctions[declUpper]; exists {
 			env.DefineFunction(fn)
 		} else {
-			return fmt.Errorf("unknown RANDOM function: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown RANDOM declaration: %s", decl)}
 		}
 	}
 

@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 )
 
 // Global MATH function definitions - created once and reused
@@ -21,14 +22,20 @@ func getMathVariables() map[string]*environment.Variable {
 	mathVarsOnce.Do(func() {
 		mathVariables = map[string]*environment.Variable{
 			"PI": {
-				Name:     "PI",
+				Name: "PI",
+				Documentation: []string{
+					"The mathematical constant π (pi).",
+				},
 				Type:     "DUBBLE",
 				Value:    environment.DoubleValue(math.Pi),
 				IsLocked: true,
 				IsPublic: true,
 			},
 			"E": {
-				Name:     "E",
+				Name: "E",
+				Documentation: []string{
+					"Euler's number e.",
+				},
 				Type:     "DUBBLE",
 				Value:    environment.DoubleValue(math.E),
 				IsLocked: true,
@@ -43,7 +50,11 @@ func getMathFunctions() map[string]*environment.Function {
 	mathFuncOnce.Do(func() {
 		mathFunctions = map[string]*environment.Function{
 			"ABS": {
-				Name:       "ABS",
+				Name: "ABS",
+				Documentation: []string{
+					"Returns the absolute value of a number.",
+					"Removes the sign and returns the positive magnitude.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -55,11 +66,15 @@ func getMathFunctions() map[string]*environment.Function {
 						return environment.DoubleValue(math.Abs(float64(doubleVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("ABS: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "ABS: invalid numeric type"}
 				},
 			},
 			"MAX": {
-				Name:       "MAX",
+				Name: "MAX",
+				Documentation: []string{
+					"Returns the larger of two numbers.",
+					"Compares two values and returns the maximum.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "a", Type: "DUBBLE"},
@@ -74,11 +89,15 @@ func getMathFunctions() map[string]*environment.Function {
 						}
 					}
 
-					return environment.NOTHIN, fmt.Errorf("MAX: invalid numeric environment")
+					return environment.NOTHIN, runtime.Exception{Message: "MAX: invalid numeric environment"}
 				},
 			},
 			"MIN": {
-				Name:       "MIN",
+				Name: "MIN",
+				Documentation: []string{
+					"Returns the smaller of two numbers.",
+					"Compares two values and returns the minimum.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "a", Type: "DUBBLE"},
@@ -93,11 +112,15 @@ func getMathFunctions() map[string]*environment.Function {
 						}
 					}
 
-					return environment.NOTHIN, fmt.Errorf("MIN: invalid numeric environment")
+					return environment.NOTHIN, runtime.Exception{Message: "MIN: invalid numeric environment"}
 				},
 			},
 			"SQRT": {
-				Name:       "SQRT",
+				Name: "SQRT",
+				Documentation: []string{
+					"Returns the square root of a number.",
+					"Input must be non-negative. Throws error for negative values.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -107,16 +130,20 @@ func getMathFunctions() map[string]*environment.Function {
 
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
 						if float64(doubleVal) < 0 {
-							return environment.NOTHIN, fmt.Errorf("SQRT: negative argument")
+							return environment.NOTHIN, runtime.Exception{Message: "SQRT: negative argument"}
 						}
 						return environment.DoubleValue(math.Sqrt(float64(doubleVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("SQRT: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "SQRT: invalid numeric type"}
 				},
 			},
 			"POW": {
-				Name:       "POW",
+				Name: "POW",
+				Documentation: []string{
+					"Returns base raised to the power of exponent (base^exponent).",
+					"Performs exponentiation using floating-point arithmetic.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "base", Type: "DUBBLE"},
@@ -132,11 +159,15 @@ func getMathFunctions() map[string]*environment.Function {
 						}
 					}
 
-					return environment.NOTHIN, fmt.Errorf("POW: invalid numeric environment")
+					return environment.NOTHIN, runtime.Exception{Message: "POW: invalid numeric environment"}
 				},
 			},
 			"SIN": {
-				Name:       "SIN",
+				Name: "SIN",
+				Documentation: []string{
+					"Returns the sine of an angle in radians.",
+					"Input angle should be in radians, not degrees.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -148,11 +179,15 @@ func getMathFunctions() map[string]*environment.Function {
 						return environment.DoubleValue(math.Sin(float64(doubleVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("SIN: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "SIN: invalid numeric type"}
 				},
 			},
 			"COS": {
-				Name:       "COS",
+				Name: "COS",
+				Documentation: []string{
+					"Returns the cosine of an angle in radians.",
+					"Input angle should be in radians, not degrees.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -164,11 +199,15 @@ func getMathFunctions() map[string]*environment.Function {
 						return environment.DoubleValue(math.Cos(float64(doubleVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("COS: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "COS: invalid numeric type"}
 				},
 			},
 			"TAN": {
-				Name:       "TAN",
+				Name: "TAN",
+				Documentation: []string{
+					"Returns the tangent of an angle in radians.",
+					"Input angle should be in radians. Undefined at π/2 + nπ.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -180,11 +219,15 @@ func getMathFunctions() map[string]*environment.Function {
 						return environment.DoubleValue(math.Tan(float64(doubleVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("TAN: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "TAN: invalid numeric type"}
 				},
 			},
 			"ASIN": {
-				Name:       "ASIN",
+				Name: "ASIN",
+				Documentation: []string{
+					"Returns the arc sine (inverse sine) of a value in radians.",
+					"Input must be in range [-1, 1]. Result is in range [-π/2, π/2].",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -195,16 +238,20 @@ func getMathFunctions() map[string]*environment.Function {
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
 						val := float64(doubleVal)
 						if val < -1 || val > 1 {
-							return environment.NOTHIN, fmt.Errorf("ASIN: input out of range [-1, 1]")
+							return environment.NOTHIN, runtime.Exception{Message: "ASIN: input out of range [-1, 1]"}
 						}
 						return environment.DoubleValue(math.Asin(val)), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("ASIN: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "ASIN: invalid numeric type"}
 				},
 			},
 			"ACOS": {
-				Name:       "ACOS",
+				Name: "ACOS",
+				Documentation: []string{
+					"Returns the arc cosine (inverse cosine) of a value in radians.",
+					"Input must be in range [-1, 1]. Result is in range [0, π].",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -215,16 +262,20 @@ func getMathFunctions() map[string]*environment.Function {
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
 						val := float64(doubleVal)
 						if val < -1 || val > 1 {
-							return environment.NOTHIN, fmt.Errorf("ACOS: input out of range [-1, 1]")
+							return environment.NOTHIN, runtime.Exception{Message: "ACOS: input out of range [-1, 1]"}
 						}
 						return environment.DoubleValue(math.Acos(val)), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("ACOS: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "ACOS: invalid numeric type"}
 				},
 			},
 			"ATAN": {
-				Name:       "ATAN",
+				Name: "ATAN",
+				Documentation: []string{
+					"Returns the arc tangent (inverse tangent) of a value in radians.",
+					"Result is in range [-π/2, π/2].",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -236,11 +287,15 @@ func getMathFunctions() map[string]*environment.Function {
 						return environment.DoubleValue(math.Atan(float64(doubleVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("ATAN: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "ATAN: invalid numeric type"}
 				},
 			},
 			"ATAN2": {
-				Name:       "ATAN2",
+				Name: "ATAN2",
+				Documentation: []string{
+					"Returns the arc tangent of y/x in radians, considering quadrant.",
+					"Result is in range [-π, π]. More robust than ATAN for coordinate conversion.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "y", Type: "DUBBLE"},
@@ -255,11 +310,15 @@ func getMathFunctions() map[string]*environment.Function {
 						}
 					}
 
-					return environment.NOTHIN, fmt.Errorf("ATAN2: invalid numeric environment")
+					return environment.NOTHIN, runtime.Exception{Message: "ATAN2: invalid numeric environment"}
 				},
 			},
 			"LOG": {
-				Name:       "LOG",
+				Name: "LOG",
+				Documentation: []string{
+					"Returns the natural logarithm (base e) of a number.",
+					"Input must be positive. Throws error for zero or negative values.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -270,16 +329,20 @@ func getMathFunctions() map[string]*environment.Function {
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
 						val := float64(doubleVal)
 						if val <= 0 {
-							return environment.NOTHIN, fmt.Errorf("LOG: input must be positive")
+							return environment.NOTHIN, runtime.Exception{Message: "LOG: input must be positive"}
 						}
 						return environment.DoubleValue(math.Log(val)), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("LOG: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "LOG: invalid numeric type"}
 				},
 			},
 			"LOG10": {
-				Name:       "LOG10",
+				Name: "LOG10",
+				Documentation: []string{
+					"Returns the base-10 logarithm of a number.",
+					"Input must be positive. Common logarithm for scientific calculations.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -290,16 +353,20 @@ func getMathFunctions() map[string]*environment.Function {
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
 						val := float64(doubleVal)
 						if val <= 0 {
-							return environment.NOTHIN, fmt.Errorf("LOG10: input must be positive")
+							return environment.NOTHIN, runtime.Exception{Message: "LOG10: input must be positive"}
 						}
 						return environment.DoubleValue(math.Log10(val)), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("LOG10: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "LOG10: invalid numeric type"}
 				},
 			},
 			"LOG2": {
-				Name:       "LOG2",
+				Name: "LOG2",
+				Documentation: []string{
+					"Returns the base-2 logarithm of a number.",
+					"Input must be positive. Useful for binary and computer science calculations.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -310,16 +377,20 @@ func getMathFunctions() map[string]*environment.Function {
 					if doubleVal, ok := value.(environment.DoubleValue); ok {
 						val := float64(doubleVal)
 						if val <= 0 {
-							return environment.NOTHIN, fmt.Errorf("LOG2: input must be positive")
+							return environment.NOTHIN, runtime.Exception{Message: "LOG2: input must be positive"}
 						}
 						return environment.DoubleValue(math.Log2(val)), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("LOG2: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "LOG2: invalid numeric type"}
 				},
 			},
 			"EXP": {
-				Name:       "EXP",
+				Name: "EXP",
+				Documentation: []string{
+					"Returns e raised to the power of the given value (e^value).",
+					"The exponential function, inverse of natural logarithm.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -331,11 +402,15 @@ func getMathFunctions() map[string]*environment.Function {
 						return environment.DoubleValue(math.Exp(float64(doubleVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("EXP: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "EXP: invalid numeric type"}
 				},
 			},
 			"CEIL": {
-				Name:       "CEIL",
+				Name: "CEIL",
+				Documentation: []string{
+					"Returns the smallest integer greater than or equal to the value (ceiling).",
+					"Rounds up to the next whole number.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -347,11 +422,15 @@ func getMathFunctions() map[string]*environment.Function {
 						return environment.DoubleValue(math.Ceil(float64(doubleVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("CEIL: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "CEIL: invalid numeric type"}
 				},
 			},
 			"FLOOR": {
-				Name:       "FLOOR",
+				Name: "FLOOR",
+				Documentation: []string{
+					"Returns the largest integer less than or equal to the value (floor).",
+					"Rounds down to the previous whole number.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -363,11 +442,15 @@ func getMathFunctions() map[string]*environment.Function {
 						return environment.DoubleValue(math.Floor(float64(doubleVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("FLOOR: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "FLOOR: invalid numeric type"}
 				},
 			},
 			"ROUND": {
-				Name:       "ROUND",
+				Name: "ROUND",
+				Documentation: []string{
+					"Returns the value rounded to the nearest integer.",
+					"Rounds 0.5 up to the next integer (round half up).",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -379,11 +462,15 @@ func getMathFunctions() map[string]*environment.Function {
 						return environment.DoubleValue(math.Round(float64(doubleVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("ROUND: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "ROUND: invalid numeric type"}
 				},
 			},
 			"TRUNC": {
-				Name:       "TRUNC",
+				Name: "TRUNC",
+				Documentation: []string{
+					"Returns the integer part of a number by removing the fractional part.",
+					"Truncates towards zero, different from floor for negative numbers.",
+				},
 				ReturnType: "DUBBLE",
 				Parameters: []environment.Parameter{
 					{Name: "value", Type: "DUBBLE"},
@@ -395,7 +482,7 @@ func getMathFunctions() map[string]*environment.Function {
 						return environment.DoubleValue(math.Trunc(float64(doubleVal))), nil
 					}
 
-					return environment.NOTHIN, fmt.Errorf("TRUNC: invalid numeric type")
+					return environment.NOTHIN, runtime.Exception{Message: "TRUNC: invalid numeric type"}
 				},
 			},
 		}
@@ -415,10 +502,7 @@ func RegisterMATHInEnv(env *environment.Environment, declarations ...string) err
 			env.DefineFunction(fn)
 		}
 		for _, variable := range mathVariables {
-			err := env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, nil)
-			if err != nil {
-				return fmt.Errorf("failed to define MATH variable %s: %v", variable.Name, err)
-			}
+			env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, variable.Documentation)
 		}
 		return nil
 	}
@@ -429,12 +513,9 @@ func RegisterMATHInEnv(env *environment.Environment, declarations ...string) err
 		if fn, exists := mathFunctions[declUpper]; exists {
 			env.DefineFunction(fn)
 		} else if variable, exists := mathVariables[declUpper]; exists {
-			err := env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, nil)
-			if err != nil {
-				return fmt.Errorf("failed to define MATH variable %s: %v", variable.Name, err)
-			}
+			env.DefineVariable(variable.Name, variable.Type, variable.Value, variable.IsLocked, variable.Documentation)
 		} else {
-			return fmt.Errorf("unknown MATH declaration: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown MATH declaration: %s", decl)}
 		}
 	}
 

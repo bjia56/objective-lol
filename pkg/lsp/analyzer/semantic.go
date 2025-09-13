@@ -441,6 +441,7 @@ func (sa *SemanticAnalyzer) initializeStdlibSymbols() {
 				Visibility:    VisibilityPublic,
 				QualifiedName: decl.Name,
 				SourceModule:  "stdlib",
+				Documentation: joinDocs(decl.Docs),
 			}
 			sa.addSymbolWithPosition(symbol)
 		}
@@ -454,6 +455,8 @@ func (sa *SemanticAnalyzer) stdlibKindToSymbolKind(kind stdlib.StdlibDefinitionK
 		return SymbolKindFunction
 	case stdlib.StdlibDefinitionKindClass:
 		return SymbolKindClass
+	case stdlib.StdlibDefinitionKindVariable:
+		return SymbolKindVariable
 	default:
 		return SymbolKindUnknown
 	}
@@ -687,6 +690,37 @@ func (sa *SemanticAnalyzer) extractSymbolsFromEnvironment(env *environment.Envir
 			Name:          name,
 			Kind:          SymbolKindClass,
 			Type:          class.Name,
+			Position:      ast.PositionInfo{},
+			Range:         protocol.Range{},
+			Scope:         ScopeTypeGlobal,
+			ScopeID:       "global",
+			Visibility:    VisibilityPublic,
+			QualifiedName: name,
+			SourceModule:  sourceModule,
+		}
+		sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, symbol)
+	}
+
+	// Extract variables
+	for name, variable := range env.GetAllVariables() {
+		if len(declarations) > 0 {
+			found := false
+			for _, decl := range declarations {
+				if strings.EqualFold(name, decl) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				continue
+			}
+		}
+
+		symbol := EnhancedSymbol{
+			Documentation: joinDocs(variable.Documentation),
+			Name:          name,
+			Kind:          SymbolKindVariable,
+			Type:          variable.Type,
 			Position:      ast.PositionInfo{},
 			Range:         protocol.Range{},
 			Scope:         ScopeTypeGlobal,
@@ -1219,6 +1253,7 @@ func (sa *SemanticAnalyzer) trackIdentifierReference(node *ast.IdentifierNode) {
 			ParentClass:   symbol.ParentClass,
 			QualifiedName: symbol.QualifiedName,
 			References:    []ast.PositionInfo{position},
+			Documentation: symbol.Documentation,
 		}
 	} else {
 		// Create a "reference-only" symbol for unresolved identifiers
@@ -1278,6 +1313,7 @@ func (sa *SemanticAnalyzer) trackMemberReference(node *ast.MemberAccessNode) {
 			ParentClass:   symbol.ParentClass,
 			QualifiedName: symbol.QualifiedName,
 			References:    []ast.PositionInfo{position},
+			Documentation: symbol.Documentation,
 		}
 	} else {
 		// Create a "reference-only" symbol for unresolved members

@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
+	"github.com/bjia56/objective-lol/pkg/runtime"
 )
 
 // Global I/O configuration - defaults to standard streams
@@ -41,7 +42,11 @@ func getStdioFunctions() map[string]*environment.Function {
 	stdioFunctionsOnce.Do(func() {
 		stdioFunctions = map[string]*environment.Function{
 			"SAY": {
-				Name:       "SAY",
+				Name: "SAY",
+				Documentation: []string{
+					"Prints a value to standard output without a newline.",
+					"Accepts any type and converts it to STRIN representation.",
+				},
 				Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					fmt.Fprint(StdoutWriter, args[0].String())
@@ -49,7 +54,11 @@ func getStdioFunctions() map[string]*environment.Function {
 				},
 			},
 			"SAYZ": {
-				Name:       "SAYZ",
+				Name: "SAYZ",
+				Documentation: []string{
+					"Prints a value to standard output followed by a newline.",
+					"Accepts any type and converts it to STRIN representation.",
+				},
 				Parameters: []environment.Parameter{{Name: "VALUE", Type: ""}}, // Accept any type
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 					fmt.Fprintln(StdoutWriter, args[0].String())
@@ -57,7 +66,11 @@ func getStdioFunctions() map[string]*environment.Function {
 				},
 			},
 			"GIMME": {
-				Name:       "GIMME",
+				Name: "GIMME",
+				Documentation: []string{
+					"Reads a line of input from standard input.",
+					"Returns the input as a STRIN with trailing newline removed.",
+				},
 				ReturnType: "STRIN",
 				Parameters: []environment.Parameter{},
 				NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
@@ -98,7 +111,7 @@ func RegisterSTDIOInEnv(env *environment.Environment, declarations ...string) er
 		if fn, exists := stdioFunctions[declUpper]; exists {
 			env.DefineFunction(fn)
 		} else {
-			return fmt.Errorf("unknown STDIO function: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown STDIO declaration: %s", decl)}
 		}
 	}
 

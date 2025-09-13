@@ -362,7 +362,7 @@ func TestRANDOMInvalidFunction(t *testing.T) {
 	// Test importing non-existent function
 	err := RegisterRANDOMInEnv(env, "NONEXISTENT")
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "unknown RANDOM function: NONEXISTENT")
+	assert.Contains(t, err.Error(), "unknown RANDOM declaration: NONEXISTENT")
 }
 
 func TestRANDOMCaseInsensitive(t *testing.T) {

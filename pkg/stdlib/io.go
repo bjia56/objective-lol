@@ -35,24 +35,36 @@ func getIoClasses() map[string]*environment.Class {
 	ioClassesOnce.Do(func() {
 		ioClasses = map[string]*environment.Class{
 			"READER": {
-				Name:          "READER",
+				Name: "READER",
+				Documentation: []string{
+					"Abstract base class for objects that can read data.",
+					"Defines the interface for reading operations with READ and CLOSE methods.",
+				},
 				QualifiedName: "stdlib:IO.READER",
 				ModulePath:    "stdlib:IO",
 				ParentClasses: []string{},
 				MRO:           []string{"stdlib:IO.READER"},
 				PublicFunctions: map[string]*environment.Function{
 					"READ": {
-						Name:       "READ",
+						Name: "READ",
+						Documentation: []string{
+							"Reads up to the specified number of characters from the input source.",
+							"Returns empty string when end-of-file is reached.",
+						},
 						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{
 							{Name: "size", Type: "INTEGR"},
 						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							return environment.NOTHIN, runtime.Exception{Message: "Not implemented"}
+							return environment.NOTHIN, runtime.Exception{Message: "not implemented"}
 						},
 					},
 					"CLOSE": {
 						Name: "CLOSE",
+						Documentation: []string{
+							"Closes the reader and releases any associated resources.",
+							"Should be called when done reading to ensure proper cleanup.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return environment.NOTHIN, nil
 						},
@@ -65,24 +77,36 @@ func getIoClasses() map[string]*environment.Class {
 				PublicVariables:  make(map[string]*environment.MemberVariable),
 			},
 			"WRITER": {
-				Name:          "WRITER",
+				Name: "WRITER",
+				Documentation: []string{
+					"Abstract base class for objects that can write data.",
+					"Defines the interface for writing operations with WRITE and CLOSE methods.",
+				},
 				QualifiedName: "stdlib:IO.WRITER",
 				ModulePath:    "stdlib:IO",
 				ParentClasses: []string{},
 				MRO:           []string{"stdlib:IO.WRITER"},
 				PublicFunctions: map[string]*environment.Function{
 					"WRITE": {
-						Name:       "WRITE",
+						Name: "WRITE",
+						Documentation: []string{
+							"Writes string data to the output destination.",
+							"Returns the number of characters written.",
+						},
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
 						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							return environment.NOTHIN, runtime.Exception{Message: "Not implemented"}
+							return environment.NOTHIN, runtime.Exception{Message: "not implemented"}
 						},
 					},
 					"CLOSE": {
 						Name: "CLOSE",
+						Documentation: []string{
+							"Closes the writer and releases any associated resources.",
+							"Should be called when done writing to ensure proper cleanup.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							return environment.NOTHIN, nil
 						},
@@ -95,7 +119,11 @@ func getIoClasses() map[string]*environment.Class {
 				PublicVariables:  make(map[string]*environment.MemberVariable),
 			},
 			"READWRITER": {
-				Name:             "READWRITER",
+				Name: "READWRITER",
+				Documentation: []string{
+					"Interface that combines both READER and WRITER capabilities.",
+					"Inherits READ and CLOSE from READER, and WRITE from WRITER.",
+				},
 				QualifiedName:    "stdlib:IO.READWRITER",
 				ModulePath:       "stdlib:IO",
 				ParentClasses:    []string{},
@@ -109,10 +137,18 @@ func getIoClasses() map[string]*environment.Class {
 			},
 			"BUFFERED_READER": {
 				Name: "BUFFERED_READER",
+				Documentation: []string{
+					"Buffered reader that wraps another READER object for improved performance.",
+					"Reduces the number of actual I/O operations by buffering data internally.",
+				},
 				PublicFunctions: map[string]*environment.Function{
 					// Constructor
 					"BUFFERED_READER": {
 						Name: "BUFFERED_READER",
+						Documentation: []string{
+							"Initializes a BUFFERED_READER with the given READER object.",
+							"Default buffer size is 1024.",
+						},
 						Parameters: []environment.Parameter{
 							{Name: "reader", Type: "READER"},
 						},
@@ -121,26 +157,14 @@ func getIoClasses() map[string]*environment.Class {
 
 							// Validate that the argument is an object with READ and CLOSE methods
 							// Type assert to get the concrete ObjectInstance
-							readerInstance, ok := reader.(*environment.ObjectInstance)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("BUFFERED_READER constructor: invalid object instance type")
-							}
-
-							// Check if reader has READ method
-							_, err := readerInstance.GetMemberFunction("READ", "BUFFERED_READER")
+							readerInstance, err := reader.Cast("READER")
 							if err != nil {
-								return environment.NOTHIN, fmt.Errorf("BUFFERED_READER constructor: provided object does not have READ method: %v", err)
-							}
-
-							// Check if reader has CLOSE method
-							_, err = readerInstance.GetMemberFunction("CLOSE", "BUFFERED_READER")
-							if err != nil {
-								return environment.NOTHIN, fmt.Errorf("BUFFERED_READER constructor: provided object does not have CLOSE method: %v", err)
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("BUFFERED_READER constructor expects READER object, got %s", reader.Type())}
 							}
 
 							// Initialize the buffered reader data
 							bufferData := &BufferedReaderData{
-								Reader:     readerInstance,
+								Reader:     readerInstance.(*environment.ObjectInstance),
 								Buffer:     "",
 								Position:   0,
 								BufferSize: defaultBufferSize,
@@ -151,45 +175,14 @@ func getIoClasses() map[string]*environment.Class {
 							return environment.NOTHIN, nil
 						},
 					},
-					// SET_SIZ method
-					"SET_SIZ": {
-						Name: "SET_SIZ",
-						Parameters: []environment.Parameter{
-							{Name: "newSize", Type: "INTEGR"},
-						},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							newSize := args[0]
-
-							newSizeVal, ok := newSize.(environment.IntegerValue)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("SET_SIZ expects INTEGR, got %s", newSize.Type())
-							}
-
-							size := int(newSizeVal)
-							if size <= 0 {
-								return environment.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", size)
-							}
-
-							if bufferData, ok := this.NativeData.(*BufferedReaderData); ok {
-								bufferData.BufferSize = size
-								// Clear the buffer when size changes
-								bufferData.Buffer = ""
-								bufferData.Position = 0
-								bufferData.EOF = false
-
-								// Update SIZ variable
-								if sizVar, exists := this.Variables["SIZ"]; exists {
-									sizVar.Value = environment.IntegerValue(size)
-								}
-
-								return environment.NOTHIN, nil
-							}
-							return environment.NOTHIN, fmt.Errorf("SET_SIZ: invalid context")
-						},
-					},
 					// READ method
 					"READ": {
-						Name:       "READ",
+						Name: "READ",
+						Documentation: []string{
+							"Reads up to the specified number of characters from the buffered reader.",
+							"Utilizes internal buffer to minimize calls to the underlying READER.",
+							"Returns empty string when end-of-file is reached.",
+						},
 						ReturnType: "STRIN",
 						Parameters: []environment.Parameter{
 							{Name: "size", Type: "INTEGR"},
@@ -199,7 +192,7 @@ func getIoClasses() map[string]*environment.Class {
 
 							sizeVal, ok := size.(environment.IntegerValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("read expects INTEGR size, got %s", size.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("READ expects INTEGR size, got %s", size.Type())}
 							}
 
 							requestedSize := int(sizeVal)
@@ -208,7 +201,7 @@ func getIoClasses() map[string]*environment.Class {
 							}
 							bufferData, ok := this.NativeData.(*BufferedReaderData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("READ: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "READ: invalid context"}
 							}
 
 							// If we've reached EOF, return empty string
@@ -250,13 +243,13 @@ func getIoClasses() map[string]*environment.Class {
 
 								readResult, err := interpreter.CallMemberFunction(bufferData.Reader, "READ", []environment.Value{environment.IntegerValue(toRequest)})
 								if err != nil {
-									return environment.NOTHIN, fmt.Errorf("read: error reading from underlying reader: %v", err)
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("READ: error reading from underlying reader: %v", err)}
 								}
 
 								// Convert result to string
 								readStr, ok := readResult.(environment.StringValue)
 								if !ok {
-									return environment.NOTHIN, fmt.Errorf("read: underlying reader returned non-string value: %s", readResult.Type())
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("READ: underlying reader returned non-string value: %s", readResult.Type())}
 								}
 
 								// If we got empty string, we've reached EOF
@@ -276,16 +269,20 @@ func getIoClasses() map[string]*environment.Class {
 					// CLOSE method
 					"CLOSE": {
 						Name: "CLOSE",
+						Documentation: []string{
+							"Closes the buffered reader and the underlying READER.",
+							"Releases any associated resources.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							bufferData, ok := this.NativeData.(*BufferedReaderData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "CLOSE: invalid context"}
 							}
 
 							// Call the CLOSE method on the underlying reader
 							_, err := interpreter.CallMemberFunction(bufferData.Reader, "CLOSE", []environment.Value{})
 							if err != nil {
-								return environment.NOTHIN, fmt.Errorf("CLOSE: error closing underlying reader: %v", err)
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("CLOSE: error closing underlying reader: %v", err)}
 							}
 
 							// Clear buffer data
@@ -300,7 +297,12 @@ func getIoClasses() map[string]*environment.Class {
 				PublicVariables: map[string]*environment.MemberVariable{
 					"SIZ": {
 						Variable: environment.Variable{
-							Name:     "SIZ",
+							Name: "SIZ",
+							Documentation: []string{
+								"Gets or sets the size of the internal buffer used for reading.",
+								"Setting a new size will clear the existing buffer.",
+								"Default is 1024. Must be a positive integer.",
+							},
 							Type:     "INTEGR",
 							IsLocked: false,
 							IsPublic: true,
@@ -312,14 +314,14 @@ func getIoClasses() map[string]*environment.Class {
 							return environment.NOTHIN, fmt.Errorf("SIZ: invalid context")
 						},
 						NativeSet: func(this *environment.ObjectInstance, newValue environment.Value) error {
-							newSizeVal, ok := newValue.(environment.IntegerValue)
-							if !ok {
-								return fmt.Errorf("SIZ expects INTEGR, got %s", newValue.Type())
+							val, err := newValue.Cast("INTEGR")
+							if err != nil {
+								return runtime.Exception{Message: fmt.Sprintf("SIZ expects INTEGR, got %s", newValue.Type())}
 							}
 
-							size := int(newSizeVal)
+							size := int(val.(environment.IntegerValue))
 							if size <= 0 {
-								return fmt.Errorf("SIZ: buffer size must be positive, got %d", size)
+								return runtime.Exception{Message: fmt.Sprintf("SIZ: buffer size must be positive, got %d", size)}
 							}
 
 							if bufferData, ok := this.NativeData.(*BufferedReaderData); ok {
@@ -330,7 +332,7 @@ func getIoClasses() map[string]*environment.Class {
 								bufferData.EOF = false
 								return nil
 							}
-							return fmt.Errorf("SIZ: invalid context")
+							return runtime.Exception{Message: "SIZ: invalid context"}
 						},
 					},
 				},
@@ -344,7 +346,11 @@ func getIoClasses() map[string]*environment.Class {
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 			"BUFFERED_WRITER": {
-				Name:          "BUFFERED_WRITER",
+				Name: "BUFFERED_WRITER",
+				Documentation: []string{
+					"Buffered writer that wraps another WRITER object for improved performance.",
+					"Reduces the number of actual I/O operations by buffering data internally.",
+				},
 				QualifiedName: "stdlib:IO.BUFFERED_WRITER",
 				ModulePath:    "stdlib:IO",
 				ParentClasses: []string{"stdlib:IO.WRITER"},
@@ -353,6 +359,10 @@ func getIoClasses() map[string]*environment.Class {
 					// Constructor
 					"BUFFERED_WRITER": {
 						Name: "BUFFERED_WRITER",
+						Documentation: []string{
+							"Initializes a BUFFERED_WRITER with the given WRITER object.",
+							"Default buffer size is 1024.",
+						},
 						Parameters: []environment.Parameter{
 							{Name: "writer", Type: "WRITER"},
 						},
@@ -360,26 +370,14 @@ func getIoClasses() map[string]*environment.Class {
 							writer := args[0]
 
 							// Validate that the argument is an object with WRITE and CLOSE methods
-							writerInstance, ok := writer.(*environment.ObjectInstance)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor expects WRITER object, got %s", args[0].Type())
-							}
-
-							// Check if writer has WRITE method
-							_, err := writerInstance.GetMemberFunction("WRITE", "BUFFERED_WRITER")
+							writerInstance, err := writer.Cast("WRITER")
 							if err != nil {
-								return environment.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor: provided object does not have WRITE method: %v", err)
-							}
-
-							// Check if writer has CLOSE method
-							_, err = writerInstance.GetMemberFunction("CLOSE", "BUFFERED_WRITER")
-							if err != nil {
-								return environment.NOTHIN, fmt.Errorf("BUFFERED_WRITER constructor: provided object does not have CLOSE method: %v", err)
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("BUFFERED_WRITER constructor expects WRITER object, got %s", writer.Type())}
 							}
 
 							// Initialize the buffered writer data
 							bufferData := &BufferedWriterData{
-								Writer:     writerInstance,
+								Writer:     writerInstance.(*environment.ObjectInstance),
 								Buffer:     "",
 								BufferSize: defaultBufferSize,
 							}
@@ -388,50 +386,14 @@ func getIoClasses() map[string]*environment.Class {
 							return environment.NOTHIN, nil
 						},
 					},
-					// SET_SIZ method
-					"SET_SIZ": {
-						Name: "SET_SIZ",
-						Parameters: []environment.Parameter{
-							{Name: "newSize", Type: "INTEGR"},
-						},
-						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
-							newSize := args[0]
-
-							newSizeVal, ok := newSize.(environment.IntegerValue)
-							if !ok {
-								return environment.NOTHIN, fmt.Errorf("SET_SIZ expects INTEGR, got %s", args[0].Type())
-							}
-
-							size := int(newSizeVal)
-							if size <= 0 {
-								return environment.NOTHIN, fmt.Errorf("SET_SIZ: buffer size must be positive, got %d", size)
-							}
-
-							if bufferData, ok := this.NativeData.(*BufferedWriterData); ok {
-								// Flush existing buffer before changing size
-								if len(bufferData.Buffer) > 0 {
-									_, err := interpreter.CallMemberFunction(bufferData.Writer, "WRITE", []environment.Value{environment.StringValue(bufferData.Buffer)})
-									if err != nil {
-										return environment.NOTHIN, fmt.Errorf("SET_SIZ: error flushing buffer: %v", err)
-									}
-									bufferData.Buffer = ""
-								}
-
-								bufferData.BufferSize = size
-
-								// Update SIZ variable
-								if sizVar, exists := this.Variables["SIZ"]; exists {
-									sizVar.Value = environment.IntegerValue(size)
-								}
-
-								return environment.NOTHIN, nil
-							}
-							return environment.NOTHIN, fmt.Errorf("SET_SIZ: invalid context")
-						},
-					},
 					// WRITE method
 					"WRITE": {
-						Name:       "WRITE",
+						Name: "WRITE",
+						Documentation: []string{
+							"Writes string data to the buffered writer.",
+							"Data is buffered internally and flushed to the underlying WRITER when the buffer is full or when FLUSH/CLOSE is called.",
+							"Returns the number of characters written.",
+						},
 						ReturnType: "INTEGR",
 						Parameters: []environment.Parameter{
 							{Name: "data", Type: "STRIN"},
@@ -441,7 +403,7 @@ func getIoClasses() map[string]*environment.Class {
 
 							dataVal, ok := data.(environment.StringValue)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("WRITE expects STRIN data, got %s", data.Type())
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("WRITE expects STRING data, got %s", data.Type())}
 							}
 
 							dataBuffer := string(dataVal)
@@ -449,7 +411,7 @@ func getIoClasses() map[string]*environment.Class {
 
 							bufferData, ok := this.NativeData.(*BufferedWriterData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("WRITE: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "WRITE: invalid context"}
 							}
 
 							// If data fits in remaining buffer space, just buffer it
@@ -462,7 +424,7 @@ func getIoClasses() map[string]*environment.Class {
 							if len(bufferData.Buffer) > 0 {
 								_, err := interpreter.CallMemberFunction(bufferData.Writer, "WRITE", []environment.Value{environment.StringValue(bufferData.Buffer)})
 								if err != nil {
-									return environment.NOTHIN, fmt.Errorf("WRITE: error flushing buffer: %v", err)
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("WRITE: error flushing buffer: %v", err)}
 								}
 								bufferData.Buffer = ""
 							}
@@ -471,7 +433,7 @@ func getIoClasses() map[string]*environment.Class {
 							if len(dataBuffer) >= bufferData.BufferSize {
 								_, err := interpreter.CallMemberFunction(bufferData.Writer, "WRITE", []environment.Value{environment.StringValue(dataBuffer)})
 								if err != nil {
-									return environment.NOTHIN, fmt.Errorf("WRITE: error writing large data: %v", err)
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("WRITE: error writing large data: %v", err)}
 								}
 								return environment.IntegerValue(originalLength), nil
 							}
@@ -484,17 +446,21 @@ func getIoClasses() map[string]*environment.Class {
 					// FLUSH method
 					"FLUSH": {
 						Name: "FLUSH",
+						Documentation: []string{
+							"Flushes the internal buffer to the underlying WRITER.",
+							"Should be called to ensure all buffered data is written out.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							bufferData, ok := this.NativeData.(*BufferedWriterData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("FLUSH: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "FLUSH: invalid context"}
 							}
 
 							// Flush buffer if it has data
 							if len(bufferData.Buffer) > 0 {
 								_, err := interpreter.CallMemberFunction(bufferData.Writer, "WRITE", []environment.Value{environment.StringValue(bufferData.Buffer)})
 								if err != nil {
-									return environment.NOTHIN, fmt.Errorf("FLUSH: error flushing buffer: %v", err)
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("FLUSH: error flushing buffer: %v", err)}
 								}
 								bufferData.Buffer = ""
 							}
@@ -505,17 +471,21 @@ func getIoClasses() map[string]*environment.Class {
 					// CLOSE method
 					"CLOSE": {
 						Name: "CLOSE",
+						Documentation: []string{
+							"Closes the buffered writer and the underlying WRITER.",
+							"Flushes any remaining buffered data before closing.",
+						},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							bufferData, ok := this.NativeData.(*BufferedWriterData)
 							if !ok {
-								return environment.NOTHIN, fmt.Errorf("CLOSE: invalid context")
+								return environment.NOTHIN, runtime.Exception{Message: "CLOSE: invalid context"}
 							}
 
 							// Flush buffer before closing
 							if len(bufferData.Buffer) > 0 {
 								_, err := interpreter.CallMemberFunction(bufferData.Writer, "WRITE", []environment.Value{environment.StringValue(bufferData.Buffer)})
 								if err != nil {
-									return environment.NOTHIN, fmt.Errorf("CLOSE: error flushing buffer: %v", err)
+									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("CLOSE: error flushing buffer: %v", err)}
 								}
 								bufferData.Buffer = ""
 							}
@@ -523,7 +493,7 @@ func getIoClasses() map[string]*environment.Class {
 							// Call the CLOSE method on the underlying writer
 							_, err := interpreter.CallMemberFunction(bufferData.Writer, "CLOSE", []environment.Value{})
 							if err != nil {
-								return environment.NOTHIN, fmt.Errorf("CLOSE: error closing underlying writer: %v", err)
+								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("CLOSE: error closing underlying writer: %v", err)}
 							}
 
 							return environment.NOTHIN, nil
@@ -533,7 +503,12 @@ func getIoClasses() map[string]*environment.Class {
 				PublicVariables: map[string]*environment.MemberVariable{
 					"SIZ": {
 						Variable: environment.Variable{
-							Name:     "SIZ",
+							Name: "SIZ",
+							Documentation: []string{
+								"Gets or sets the size of the internal buffer used for writing.",
+								"Setting a new size will drop the existing buffer.",
+								"Default is 1024. Must be a positive integer.",
+							},
 							Type:     "INTEGR",
 							IsLocked: false,
 							IsPublic: true,
@@ -542,17 +517,17 @@ func getIoClasses() map[string]*environment.Class {
 							if bufferData, ok := this.NativeData.(*BufferedWriterData); ok {
 								return environment.IntegerValue(bufferData.BufferSize), nil
 							}
-							return environment.NOTHIN, fmt.Errorf("SIZ: invalid context")
+							return environment.NOTHIN, runtime.Exception{Message: "SIZ: invalid context"}
 						},
 						NativeSet: func(this *environment.ObjectInstance, newValue environment.Value) error {
-							newSizeVal, ok := newValue.(environment.IntegerValue)
-							if !ok {
-								return fmt.Errorf("SIZ expects INTEGR, got %s", newValue.Type())
+							val, err := newValue.Cast("INTEGR")
+							if err != nil {
+								return runtime.Exception{Message: fmt.Sprintf("SIZ expects INTEGR, got %s", newValue.Type())}
 							}
 
-							size := int(newSizeVal)
+							size := int(val.(environment.IntegerValue))
 							if size <= 0 {
-								return fmt.Errorf("SIZ: buffer size must be positive, got %d", size)
+								return runtime.Exception{Message: fmt.Sprintf("SIZ: buffer size must be positive, got %d", size)}
 							}
 
 							if bufferData, ok := this.NativeData.(*BufferedWriterData); ok {
@@ -566,7 +541,7 @@ func getIoClasses() map[string]*environment.Class {
 								bufferData.BufferSize = size
 								return nil
 							}
-							return fmt.Errorf("SIZ: invalid context")
+							return runtime.Exception{Message: "SIZ: invalid context"}
 						},
 					},
 				},
@@ -599,7 +574,7 @@ func RegisterIOInEnv(env *environment.Environment, declarations ...string) error
 		if class, exists := ioClasses[declUpper]; exists {
 			env.DefineClass(class)
 		} else {
-			return fmt.Errorf("unknown IO class: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown IO declaration: %s", decl)}
 		}
 	}
 

@@ -40,12 +40,14 @@ type StdlibDefinitionKind int
 const (
 	StdlibDefinitionKindFunction StdlibDefinitionKind = iota
 	StdlibDefinitionKindClass
+	StdlibDefinitionKindVariable
 )
 
 type StdlibDefinition struct {
 	Name string
 	Kind StdlibDefinitionKind
 	Type string // For functions, this is the return type; for classes, this is always the class name
+	Docs []string
 }
 
 // GetStdlibDefinitions extracts a list of standard library definitions (from the given initializers)
@@ -58,13 +60,23 @@ func GetStdlibDefinitions(fromInitializers interpreter.StdlibInitializer) []Stdl
 			Name: name,
 			Kind: StdlibDefinitionKindFunction,
 			Type: function.ReturnType,
+			Docs: function.Documentation,
 		})
 	}
-	for name := range env.GetAllClasses() {
+	for name, class := range env.GetAllClasses() {
 		definitions = append(definitions, StdlibDefinition{
 			Name: name,
 			Kind: StdlibDefinitionKindClass,
 			Type: name,
+			Docs: class.Documentation,
+		})
+	}
+	for name, variable := range env.GetAllVariables() {
+		definitions = append(definitions, StdlibDefinition{
+			Name: name,
+			Kind: StdlibDefinitionKindVariable,
+			Type: variable.Type,
+			Docs: variable.Documentation,
 		})
 	}
 	return definitions

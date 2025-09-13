@@ -179,7 +179,7 @@ func TestStdioInvalidFunction(t *testing.T) {
 	// Try to import non-existent function
 	err := RegisterSTDIOInEnv(env, "INVALID")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "unknown STDIO function: INVALID")
+	assert.Contains(t, err.Error(), "unknown STDIO declaration: INVALID")
 }
 
 func TestStdioCaseInsensitive(t *testing.T) {

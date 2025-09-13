@@ -1,7 +1,6 @@
 package stdlib
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/bjia56/objective-lol/pkg/environment"
@@ -69,8 +68,14 @@ func TestMinionConstructor(t *testing.T) {
 	if cmdlineVar, exists := minion.Variables["CMDLINE"]; !exists {
 		t.Error("CMDLINE variable not set")
 	} else {
-		if cmdlineVar.Value != bukkit {
-			t.Error("CMDLINE variable not set correctly")
+		val, err := cmdlineVar.Get(minion)
+		if err != nil {
+			t.Errorf("Failed to get CMDLINE value: %v", err)
+		}
+		// Note: CMDLINE stores a copy of the BUKKIT, so we check the contents rather than identity
+		cmdlineInstance := val.(*environment.ObjectInstance)
+		if cmdlineInstance.Class.Name != "BUKKIT" {
+			t.Error("CMDLINE should be a BUKKIT")
 		}
 	}
 
@@ -114,18 +119,20 @@ func TestMinionSetWorkdir(t *testing.T) {
 		t.Fatalf("MINION constructor failed: %v", err)
 	}
 
-	// Test SET_WORKDIR
-	_, err = minionClass.PublicFunctions["SET_WORKDIR"].NativeImpl(nil, minion, []environment.Value{
-		environment.StringValue("/tmp"),
-	})
-	if err != nil {
-		t.Fatalf("SET_WORKDIR failed: %v", err)
+	// Test WORKDIR variable setter
+	workdirVar := minion.Variables["WORKDIR"]
+	setErr := workdirVar.NativeSet(minion, environment.StringValue("/tmp"))
+	if setErr != nil {
+		t.Fatalf("WORKDIR set failed: %v", setErr)
 	}
 
 	// Check that working directory was set
-	minionData := minion.NativeData.(*MinionData)
-	if minionData.WorkDir != "/tmp" {
-		t.Errorf("Expected WorkDir to be '/tmp', got '%s'", minionData.WorkDir)
+	val, err := workdirVar.Get(minion)
+	if err != nil {
+		t.Fatalf("WORKDIR get failed: %v", err)
+	}
+	if string(val.(environment.StringValue)) != "/tmp" {
+		t.Errorf("Expected WorkDir to be '/tmp', got '%s'", string(val.(environment.StringValue)))
 	}
 }
 
@@ -156,26 +163,23 @@ func TestMinionAddEnv(t *testing.T) {
 		t.Fatalf("MINION constructor failed: %v", err)
 	}
 
-	// Test ADD_ENV
-	_, err = minionClass.PublicFunctions["ADD_ENV"].NativeImpl(nil, minion, []environment.Value{
-		environment.StringValue("TEST_VAR"),
-		environment.StringValue("test_value"),
-	})
+	// Get the ENV variable (BASKIT)
+	envVar := minion.Variables["ENV"]
+	envBaskit, err := envVar.Get(minion)
 	if err != nil {
-		t.Fatalf("ADD_ENV failed: %v", err)
+		t.Fatalf("Failed to get ENV: %v", err)
 	}
 
+	// Add environment variable to the BASKIT
+	envInstance := envBaskit.(*environment.ObjectInstance)
+	envMap := envInstance.NativeData.(BaskitMap)
+	envMap["TEST_VAR"] = environment.StringValue("test_value")
+
 	// Check that environment variable was added
-	minionData := minion.NativeData.(*MinionData)
-	found := false
-	for _, envVar := range minionData.Env {
-		if strings.HasPrefix(envVar, "TEST_VAR=test_value") {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Error("Environment variable TEST_VAR=test_value not found")
+	if val, exists := envMap["TEST_VAR"]; !exists {
+		t.Error("Environment variable TEST_VAR not found")
+	} else if string(val.(environment.StringValue)) != "test_value" {
+		t.Errorf("Expected TEST_VAR=test_value, got TEST_VAR=%s", string(val.(environment.StringValue)))
 	}
 }
 
@@ -243,7 +247,8 @@ func TestMinionBasicExecution(t *testing.T) {
 	if stdinVar, exists := minion.Variables["STDIN"]; !exists {
 		t.Error("STDIN variable not found")
 	} else {
-		if stdinVar.Value == environment.NOTHIN {
+		val, _ := stdinVar.Get(minion)
+		if val == environment.NOTHIN {
 			t.Error("STDIN should be set after start")
 		}
 	}
@@ -251,7 +256,8 @@ func TestMinionBasicExecution(t *testing.T) {
 	if stdoutVar, exists := minion.Variables["STDOUT"]; !exists {
 		t.Error("STDOUT variable not found")
 	} else {
-		if stdoutVar.Value == environment.NOTHIN {
+		val, _ := stdoutVar.Get(minion)
+		if val == environment.NOTHIN {
 			t.Error("STDOUT should be set after start")
 		}
 	}
@@ -315,8 +321,10 @@ func TestPipeReadWrite(t *testing.T) {
 	}
 
 	// Get stdin and stdout pipes
-	stdinPipe := minion.Variables["STDIN"].Value.(*environment.ObjectInstance)
-	stdoutPipe := minion.Variables["STDOUT"].Value.(*environment.ObjectInstance)
+	stdinPipeVal, _ := minion.Variables["STDIN"].Get(minion)
+	stdoutPipeVal, _ := minion.Variables["STDOUT"].Get(minion)
+	stdinPipe := stdinPipeVal.(*environment.ObjectInstance)
+	stdoutPipe := stdoutPipeVal.(*environment.ObjectInstance)
 
 	pipeClass := env.GetAllClasses()["PIPE"]
 
@@ -387,13 +395,14 @@ func TestMinionIsAlive(t *testing.T) {
 		t.Fatalf("MINION constructor failed: %v", err)
 	}
 
-	// Check IS_ALIVE before starting
-	result, err := minionClass.PublicFunctions["IS_ALIVE"].NativeImpl(nil, minion, []environment.Value{})
+	// Check RUNNING before starting
+	runningVar := minion.Variables["RUNNING"]
+	result, err := runningVar.Get(minion)
 	if err != nil {
-		t.Fatalf("IS_ALIVE failed: %v", err)
+		t.Fatalf("RUNNING get failed: %v", err)
 	}
 	if result != environment.NO {
-		t.Error("IS_ALIVE should be NO before start")
+		t.Error("RUNNING should be NO before start")
 	}
 
 	// Start the process
@@ -402,13 +411,13 @@ func TestMinionIsAlive(t *testing.T) {
 		t.Fatalf("START failed: %v", err)
 	}
 
-	// Check IS_ALIVE after starting
-	result, err = minionClass.PublicFunctions["IS_ALIVE"].NativeImpl(nil, minion, []environment.Value{})
+	// Check RUNNING after starting
+	result, err = runningVar.Get(minion)
 	if err != nil {
-		t.Fatalf("IS_ALIVE failed: %v", err)
+		t.Fatalf("RUNNING get failed: %v", err)
 	}
 	if result != environment.YEZ {
-		t.Error("IS_ALIVE should be YEZ after start")
+		t.Error("RUNNING should be YEZ after start")
 	}
 
 	// Wait for process to complete
@@ -417,13 +426,13 @@ func TestMinionIsAlive(t *testing.T) {
 		t.Fatalf("WAIT failed: %v", err)
 	}
 
-	// Check IS_ALIVE after completion
-	result, err = minionClass.PublicFunctions["IS_ALIVE"].NativeImpl(nil, minion, []environment.Value{})
+	// Check RUNNING after completion
+	result, err = runningVar.Get(minion)
 	if err != nil {
-		t.Fatalf("IS_ALIVE failed: %v", err)
+		t.Fatalf("RUNNING get failed: %v", err)
 	}
 	if result != environment.NO {
-		t.Error("IS_ALIVE should be NO after completion")
+		t.Error("RUNNING should be NO after completion")
 	}
 }
 

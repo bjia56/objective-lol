@@ -181,7 +181,7 @@ func TestSTRINGInvalidFunction(t *testing.T) {
 	// Test importing non-existent function
 	err := RegisterSTRINGInEnv(env, "NONEXISTENT")
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "unknown STRING function: NONEXISTENT")
+	assert.Contains(t, err.Error(), "unknown STRING declaration: NONEXISTENT")
 }
 
 func TestStringUPPER(t *testing.T) {

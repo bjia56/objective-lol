@@ -113,35 +113,6 @@ func TestASSERTFunction(t *testing.T) {
 	}
 }
 
-func TestIsTruthyHelper(t *testing.T) {
-	tests := []struct {
-		name     string
-		value    environment.Value
-		expected bool
-	}{
-		// Truthy cases
-		{"True boolean", environment.YEZ, true},
-		{"Non-zero integer", environment.IntegerValue(1), true},
-		{"Negative integer", environment.IntegerValue(-1), true},
-		{"Non-zero double", environment.DoubleValue(0.1), true},
-		{"Non-empty string", environment.StringValue("test"), true},
-
-		// Falsy cases
-		{"False boolean", environment.NO, false},
-		{"Zero integer", environment.IntegerValue(0), false},
-		{"Zero double", environment.DoubleValue(0.0), false},
-		{"Empty string", environment.StringValue(""), false},
-		{"Nothing value", environment.NOTHIN, false},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			result := isTruthy(test.value)
-			assert.Equal(t, test.expected, result)
-		})
-	}
-}
-
 func TestTESTSelectiveImport(t *testing.T) {
 	env := environment.NewEnvironment(nil)
 
@@ -160,7 +131,7 @@ func TestTESTInvalidFunction(t *testing.T) {
 	// Try to import non-existent function
 	err := RegisterTESTInEnv(env, "INVALID")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "unknown TEST function: INVALID")
+	assert.Contains(t, err.Error(), "unknown TEST declaration: INVALID")
 }
 
 func TestTESTCaseInsensitive(t *testing.T) {

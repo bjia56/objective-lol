@@ -34,7 +34,11 @@ func getHTTPClasses() map[string]*environment.Class {
 	httpClassesOnce.Do(func() {
 		httpClasses = map[string]*environment.Class{
 			"INTERWEB": {
-				Name:          "INTERWEB",
+				Name: "INTERWEB",
+				Documentation: []string{
+					"HTTP client that can make requests to web servers.",
+					"Supports HTTP and HTTPS protocols with configurable timeout and headers.",
+				},
 				QualifiedName: "stdlib:HTTP.INTERWEB",
 				ModulePath:    "stdlib:HTTP",
 				ParentClasses: []string{},
@@ -42,7 +46,11 @@ func getHTTPClasses() map[string]*environment.Class {
 				PublicFunctions: map[string]*environment.Function{
 					// Constructor
 					"INTERWEB": {
-						Name:       "INTERWEB",
+						Name: "INTERWEB",
+						Documentation: []string{
+							"Initializes an INTERWEB HTTP client with default settings.",
+							"Default timeout is 30 seconds with empty headers.",
+						},
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
 							// Initialize HTTP client
@@ -64,7 +72,11 @@ func getHTTPClasses() map[string]*environment.Class {
 					},
 					// GET method
 					"GET": {
-						Name:       "GET",
+						Name: "GET",
+						Documentation: []string{
+							"Makes an HTTP GET request to the specified URL.",
+							"Returns a RESPONSE object containing status, body, and headers.",
+						},
 						ReturnType: "RESPONSE",
 						Parameters: []environment.Parameter{
 							{Name: "url", Type: "STRIN"},
@@ -75,7 +87,11 @@ func getHTTPClasses() map[string]*environment.Class {
 					},
 					// POST method
 					"POST": {
-						Name:       "POST",
+						Name: "POST",
+						Documentation: []string{
+							"Makes an HTTP POST request with data in the request body to the specified URL.",
+							"Returns a RESPONSE object containing status, body, and headers.",
+						},
 						ReturnType: "RESPONSE",
 						Parameters: []environment.Parameter{
 							{Name: "url", Type: "STRIN"},
@@ -87,7 +103,11 @@ func getHTTPClasses() map[string]*environment.Class {
 					},
 					// PUT method
 					"PUT": {
-						Name:       "PUT",
+						Name: "PUT",
+						Documentation: []string{
+							"Makes an HTTP PUT request with data in the request body to the specified URL.",
+							"Returns a RESPONSE object containing status, body, and headers.",
+						},
 						ReturnType: "RESPONSE",
 						Parameters: []environment.Parameter{
 							{Name: "url", Type: "STRIN"},
@@ -99,7 +119,11 @@ func getHTTPClasses() map[string]*environment.Class {
 					},
 					// DELETE method
 					"DELETE": {
-						Name:       "DELETE",
+						Name: "DELETE",
+						Documentation: []string{
+							"Makes an HTTP DELETE request to the specified URL.",
+							"Returns a RESPONSE object containing status, body, and headers.",
+						},
 						ReturnType: "RESPONSE",
 						Parameters: []environment.Parameter{
 							{Name: "url", Type: "STRIN"},
@@ -112,7 +136,11 @@ func getHTTPClasses() map[string]*environment.Class {
 				PublicVariables: map[string]*environment.MemberVariable{
 					"TIMEOUT": {
 						Variable: environment.Variable{
-							Name:     "TIMEOUT",
+							Name: "TIMEOUT",
+							Documentation: []string{
+								"Request timeout in seconds.",
+								"Default is 30 seconds. Set to 0 for no timeout.",
+							},
 							Type:     "INTEGR",
 							IsLocked: false,
 							IsPublic: true,
@@ -121,22 +149,28 @@ func getHTTPClasses() map[string]*environment.Class {
 							if interwebData, ok := this.NativeData.(*InterwebData); ok {
 								return environment.IntegerValue(int(interwebData.Client.Timeout.Seconds())), nil
 							}
-							return environment.IntegerValue(0), fmt.Errorf("invalid context for TIMEOUT")
+							return environment.IntegerValue(0), runtime.Exception{Message: "TIMEOUT: invalid context"}
 						},
 						NativeSet: func(this *environment.ObjectInstance, value environment.Value) error {
-							if interwebData, ok := this.NativeData.(*InterwebData); ok {
-								if intVal, ok := value.(environment.IntegerValue); ok {
-									interwebData.Client.Timeout = time.Duration(int(intVal)) * time.Second
-									return nil
-								}
+							timeoutValue, err := value.Cast("INTEGR")
+							if err != nil {
 								return fmt.Errorf("TIMEOUT expects INTEGR value, got %s", value.Type())
 							}
-							return fmt.Errorf("invalid context for TIMEOUT")
+							if interwebData, ok := this.NativeData.(*InterwebData); ok {
+								intVal := timeoutValue.(environment.IntegerValue)
+								interwebData.Client.Timeout = time.Duration(int(intVal)) * time.Second
+								return nil
+							}
+							return fmt.Errorf("TIMEOUT: invalid context")
 						},
 					},
 					"HEADERS": {
 						Variable: environment.Variable{
-							Name:     "HEADERS",
+							Name: "HEADERS",
+							Documentation: []string{
+								"Request headers as key-value pairs stored in a BASKIT.",
+								"Headers are applied to all HTTP requests made by this client.",
+							},
 							Type:     "BASKIT",
 							Value:    NewBaskitInstance(),
 							IsLocked: false,
@@ -152,7 +186,10 @@ func getHTTPClasses() map[string]*environment.Class {
 				SharedFunctions:  make(map[string]*environment.Function),
 			},
 			"RESPONSE": {
-				Name:          "RESPONSE",
+				Name: "RESPONSE",
+				Documentation: []string{
+					"HTTP response object containing status information, headers, and response body.",
+				},
 				QualifiedName: "stdlib:HTTP.RESPONSE",
 				ModulePath:    "stdlib:HTTP",
 				ParentClasses: []string{},
@@ -160,7 +197,11 @@ func getHTTPClasses() map[string]*environment.Class {
 				PublicFunctions: map[string]*environment.Function{
 					// TO_JSON method
 					"TO_JSON": {
-						Name:       "TO_JSON",
+						Name: "TO_JSON",
+						Documentation: []string{
+							"Parses the response body as JSON and returns a BASKIT.",
+							"Throws an exception if the response body is not valid JSON.",
+						},
 						ReturnType: "BASKIT",
 						Parameters: []environment.Parameter{},
 						NativeImpl: func(interpreter environment.Interpreter, this *environment.ObjectInstance, args []environment.Value) (environment.Value, error) {
@@ -174,7 +215,7 @@ func getHTTPClasses() map[string]*environment.Class {
 								return environment.NOTHIN, runtime.Exception{Message: "TO_JSON: BODY is not a string"}
 							}
 
-							var jsonData interface{}
+							var jsonData any
 							err := json.Unmarshal([]byte(bodyVal), &jsonData)
 							if err != nil {
 								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("TO_JSON: failed to parse JSON: %v", err)}
@@ -189,7 +230,11 @@ func getHTTPClasses() map[string]*environment.Class {
 				PublicVariables: map[string]*environment.MemberVariable{
 					"STATUS": {
 						Variable: environment.Variable{
-							Name:     "STATUS",
+							Name: "STATUS",
+							Documentation: []string{
+								"HTTP status code returned by the server.",
+								"Examples: 200 (OK), 404 (Not Found), 500 (Server Error).",
+							},
 							Type:     "INTEGR",
 							Value:    environment.IntegerValue(0),
 							IsLocked: true,
@@ -198,7 +243,11 @@ func getHTTPClasses() map[string]*environment.Class {
 					},
 					"BODY": {
 						Variable: environment.Variable{
-							Name:     "BODY",
+							Name: "BODY",
+							Documentation: []string{
+								"Response body content as a string.",
+								"Contains the full response data returned by the server.",
+							},
 							Type:     "STRIN",
 							Value:    environment.StringValue(""),
 							IsLocked: true,
@@ -207,7 +256,11 @@ func getHTTPClasses() map[string]*environment.Class {
 					},
 					"HEADERS": {
 						Variable: environment.Variable{
-							Name:     "HEADERS",
+							Name: "HEADERS",
+							Documentation: []string{
+								"Response headers as key-value pairs stored in a BASKIT.",
+								"Contains all HTTP headers returned by the server.",
+							},
 							Type:     "BASKIT",
 							Value:    NewBaskitInstance(),
 							IsLocked: true,
@@ -216,7 +269,10 @@ func getHTTPClasses() map[string]*environment.Class {
 					},
 					"IS_SUCCESS": {
 						Variable: environment.Variable{
-							Name:     "IS_SUCCESS",
+							Name: "IS_SUCCESS",
+							Documentation: []string{
+								"YEZ if the HTTP status code indicates success (200-299), NO otherwise.",
+							},
 							Type:     "BOOL",
 							Value:    environment.NO,
 							IsLocked: true,
@@ -225,7 +281,11 @@ func getHTTPClasses() map[string]*environment.Class {
 					},
 					"IS_ERROR": {
 						Variable: environment.Variable{
-							Name:     "IS_ERROR",
+							Name: "IS_ERROR",
+							Documentation: []string{
+								"YEZ if the HTTP status code indicates an error (400+), NO otherwise.",
+								"Includes both client errors (4xx) and server errors (5xx).",
+							},
 							Type:     "BOOL",
 							Value:    environment.NO,
 							IsLocked: true,
@@ -248,7 +308,7 @@ func executeHTTPRequest(this *environment.ObjectInstance, method string, urlArg 
 	// Get URL
 	urlVal, ok := urlArg.(environment.StringValue)
 	if !ok {
-		return environment.NOTHIN, fmt.Errorf("%s expects STRIN url, got %s", method, urlArg.Type())
+		return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("%s expects STRIN url, got %s", method, urlArg.Type())}
 	}
 
 	// Get data (for POST/PUT)
@@ -257,14 +317,14 @@ func executeHTTPRequest(this *environment.ObjectInstance, method string, urlArg 
 		var ok bool
 		dataVal, ok = dataArg.(environment.StringValue)
 		if !ok {
-			return environment.NOTHIN, fmt.Errorf("%s expects STRIN data, got %s", method, dataArg.Type())
+			return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("%s expects STRIN data, got %s", method, dataArg.Type())}
 		}
 	}
 
 	// Get INTERWEB data
 	interwebData, ok := this.NativeData.(*InterwebData)
 	if !ok {
-		return environment.NOTHIN, fmt.Errorf("%s: invalid context", method)
+		return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("%s: invalid context", method)}
 	}
 
 	// Create request
@@ -278,7 +338,7 @@ func executeHTTPRequest(this *environment.ObjectInstance, method string, urlArg 
 	}
 
 	if err != nil {
-		return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("HTTP request failed: %v", err)}
+		return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("%s: HTTP request creation failed: %v", method, err)}
 	}
 
 	// Apply headers from HEADERS baskit
@@ -298,14 +358,14 @@ func executeHTTPRequest(this *environment.ObjectInstance, method string, urlArg 
 	// Execute request
 	resp, err := interwebData.Client.Do(req)
 	if err != nil {
-		return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("HTTP request failed: %v", err)}
+		return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("%s: HTTP request failed: %v", method, err)}
 	}
 	defer resp.Body.Close()
 
 	// Read response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("Failed to read response body: %v", err)}
+		return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("%s: failed to read response body: %v", method, err)}
 	}
 
 	// Create RESPONSE object
@@ -344,16 +404,16 @@ func executeHTTPRequest(this *environment.ObjectInstance, method string, urlArg 
 }
 
 // jsonToBaskit converts a JSON interface{} to a BASKIT
-func jsonToBaskit(data interface{}) environment.Value {
+func jsonToBaskit(data any) environment.Value {
 	switch v := data.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		baskit := NewBaskitInstance()
 		baskitMap := baskit.NativeData.(BaskitMap)
 		for key, value := range v {
 			baskitMap[key] = jsonToBaskit(value)
 		}
 		return baskit
-	case []interface{}:
+	case []any:
 		bukkit := NewBukkitInstance()
 		bukkitSlice := bukkit.NativeData.(BukkitSlice)
 		for _, value := range v {
@@ -402,7 +462,7 @@ func RegisterHTTPInEnv(env *environment.Environment, declarations ...string) err
 				}
 			}
 		} else {
-			return fmt.Errorf("unknown HTTP class: %s", decl)
+			return runtime.Exception{Message: fmt.Sprintf("unknown HTTP declaration: %s", decl)}
 		}
 	}
 

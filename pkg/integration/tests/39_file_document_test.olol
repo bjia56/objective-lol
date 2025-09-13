@@ -62,7 +62,7 @@ HAI ME TEH FUNCSHUN TEST_BASIC_DOCUMENT_OPERATIONS
     SAYZ WIT "--- Basic DOCUMENT Operations ---"
 
     BTW Test basic DOCUMENT creation
-    I HAS A VARIABLE MY_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt" AN WIT "W"
+    I HAS A VARIABLE MY_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt"
     SAYZ WIT "DOCUMENT created successfully"
 
     BTW Check initial properties
@@ -77,10 +77,10 @@ KTHXBAI
 HAI ME TEH FUNCSHUN TEST_FILE_WRITING
     SAYZ WIT "--- File Writing Test ---"
 
-    I HAS A VARIABLE WRITER_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt" AN WIT "W"
+    I HAS A VARIABLE WRITER_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt"
 
     SAYZ WIT "Opening file for writing..."
-    WRITER_DOC DO OPEN
+    WRITER_DOC DO OPEN WIT "W"
     SAY WIT "File opened successfully - Open: "
     SAYZ WIT WRITER_DOC IS_OPEN
 
@@ -105,10 +105,10 @@ HAI ME TEH FUNCSHUN TEST_FILE_READING
     SAYZ WIT "--- File Reading Test ---"
 
     SAYZ WIT "Creating reader for same file..."
-    I HAS A VARIABLE READER_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt" AN WIT "R"
+    I HAS A VARIABLE READER_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt"
 
     SAYZ WIT "Opening file for reading..."
-    READER_DOC DO OPEN
+    READER_DOC DO OPEN WIT "R"
 
     SAY WIT "File exists: "
     SAYZ WIT READER_DOC DO EXISTS
@@ -137,8 +137,8 @@ HAI ME TEH FUNCSHUN TEST_APPEND_MODE
     SAYZ WIT "--- Append Mode Test ---"
 
     SAYZ WIT "Opening file in append mode..."
-    I HAS A VARIABLE APPEND_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt" AN WIT "A"
-    APPEND_DOC DO OPEN
+    I HAS A VARIABLE APPEND_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt"
+    APPEND_DOC DO OPEN WIT "A"
 
     SAYZ WIT "Appending more data..."
     I HAS A VARIABLE APPENDED_BYTES TEH INTEGR ITZ APPEND_DOC DO WRITE WIT " More content!"
@@ -156,8 +156,8 @@ HAI ME TEH FUNCSHUN TEST_READWRITE_MODE
     SAYZ WIT "--- Read/Write Mode Test ---"
 
     SAYZ WIT "Creating file in RW mode..."
-    I HAS A VARIABLE RW_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "rw_test.txt" AN WIT "RW"
-    RW_DOC DO OPEN
+    I HAS A VARIABLE RW_DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT "rw_test.txt"
+    RW_DOC DO OPEN WIT "RW"
 
     SAYZ WIT "Writing initial data..."
     RW_DOC DO WRITE WIT "RW Mode Test"
@@ -179,12 +179,12 @@ HAI ME TEH FUNCSHUN TEST_CLEANUP
     SAYZ WIT "Deleting test files..."
 
     BTW Delete the main test file
-    I HAS A VARIABLE CLEANUP_DOC1 TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt" AN WIT "R"
+    I HAS A VARIABLE CLEANUP_DOC1 TEH DOCUMENT ITZ NEW DOCUMENT WIT "test_output.txt"
     CLEANUP_DOC1 DO DELETE
     SAYZ WIT "test_output.txt deleted"
 
     BTW Delete the RW test file
-    I HAS A VARIABLE CLEANUP_DOC2 TEH DOCUMENT ITZ NEW DOCUMENT WIT "rw_test.txt" AN WIT "R"
+    I HAS A VARIABLE CLEANUP_DOC2 TEH DOCUMENT ITZ NEW DOCUMENT WIT "rw_test.txt"
     CLEANUP_DOC2 DO DELETE
     SAYZ WIT "rw_test.txt deleted"
 KTHXBAI

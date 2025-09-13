@@ -455,7 +455,7 @@ func TestCACHEModuleInvalidImport(t *testing.T) {
 		t.Fatal("Expected error for invalid class import")
 	}
 
-	expectedError := "unknown CACHE class: INVALID_CLASS"
+	expectedError := "unknown CACHE declaration: INVALID_CLASS"
 	if err.Error() != expectedError {
 		t.Fatalf("Expected error '%s', got '%s'", expectedError, err.Error())
 	}
