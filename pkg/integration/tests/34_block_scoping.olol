@@ -3,11 +3,11 @@ I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT "=== Block Scoping Test ==="
-    
+
     BTW Test if-statement block scoping
     SAYZ WIT "Testing if-statement scoping:"
     I HAS A VARIABLE OUTER_VAR TEH INTEGR ITZ 42
-    
+
     IZ OUTER_VAR BIGGR THAN 40?
         I HAS A VARIABLE INNER_VAR TEH INTEGR ITZ 10
         SAYZ WIT "Inside if: INNER_VAR ="
@@ -15,7 +15,7 @@ HAI ME TEH FUNCSHUN MAIN
         SAYZ WIT "Inside if: OUTER_VAR ="
         SAYZ WIT OUTER_VAR
     KTHX
-    
+
     BTW Try to access INNER_VAR outside if block - should fail
     MAYB
         SAYZ WIT "Trying to access INNER_VAR outside if block:"
@@ -26,11 +26,11 @@ HAI ME TEH FUNCSHUN MAIN
         SAYZ WIT "Exception: "
         SAYZ WIT ERR
     KTHX
-    
-    BTW Test else block scoping  
+
+    BTW Test else block scoping
     SAYZ WIT "Testing else-statement scoping:"
     I HAS A VARIABLE TEST_VAL TEH INTEGR ITZ 5
-    
+
     IZ TEST_VAL BIGGR THAN 10?
         I HAS A VARIABLE IF_VAR TEH STRIN ITZ "in if"
         SAYZ WIT IF_VAR
@@ -39,7 +39,7 @@ HAI ME TEH FUNCSHUN MAIN
         SAYZ WIT "Inside else: ELSE_VAR ="
         SAYZ WIT ELSE_VAR
     KTHX
-    
+
     BTW Try to access ELSE_VAR outside else block - should fail
     MAYB
         SAYZ WIT "Trying to access ELSE_VAR outside else block:"
@@ -48,11 +48,11 @@ HAI ME TEH FUNCSHUN MAIN
     OOPSIE ERR
         SAYZ WIT "SUCCESS: ELSE_VAR correctly not accessible outside else block"
     KTHX
-    
+
     BTW Test while loop block scoping
     SAYZ WIT "Testing while loop scoping:"
     I HAS A VARIABLE COUNTER TEH INTEGR ITZ 3
-    
+
     WHILE COUNTER BIGGR THAN 0
         I HAS A VARIABLE LOOP_VAR TEH STRIN ITZ "loop iteration"
         SAY WIT "Loop "
@@ -61,7 +61,7 @@ HAI ME TEH FUNCSHUN MAIN
         SAYZ WIT LOOP_VAR
         COUNTER ITZ COUNTER LES 1
     KTHX
-    
+
     BTW Try to access LOOP_VAR outside while block - should fail
     MAYB
         SAYZ WIT "Trying to access LOOP_VAR outside while loop:"
@@ -70,10 +70,10 @@ HAI ME TEH FUNCSHUN MAIN
     OOPSIE ERR
         SAYZ WIT "SUCCESS: LOOP_VAR correctly not accessible outside while loop"
     KTHX
-    
+
     BTW Test try-catch block scoping
     SAYZ WIT "Testing try-catch-finally scoping:"
-    
+
     MAYB
         I HAS A VARIABLE TRY_VAR TEH STRIN ITZ "defined in try"
         SAYZ WIT "Inside try: TRY_VAR ="
@@ -86,11 +86,11 @@ HAI ME TEH FUNCSHUN MAIN
         SAYZ WIT "Exception was: "
         SAYZ WIT EX
     ALWAYZ
-        I HAS A VARIABLE FINALLY_VAR TEH STRIN ITZ "defined in finally"
-        SAYZ WIT "Inside finally: FINALLY_VAR ="
-        SAYZ WIT FINALLY_VAR
+        I HAS A VARIABLE ALWAYZ_VAR TEH STRIN ITZ "defined in finally"
+        SAYZ WIT "Inside finally: ALWAYZ_VAR ="
+        SAYZ WIT ALWAYZ_VAR
     KTHX
-    
+
     BTW Try to access try block variable - should fail
     MAYB
         SAYZ WIT "Trying to access TRY_VAR outside try block:"
@@ -99,8 +99,8 @@ HAI ME TEH FUNCSHUN MAIN
     OOPSIE ERR
         SAYZ WIT "SUCCESS: TRY_VAR correctly not accessible outside try block"
     KTHX
-    
-    BTW Try to access catch block variable - should fail  
+
+    BTW Try to access catch block variable - should fail
     MAYB
         SAYZ WIT "Trying to access CATCH_VAR outside catch block:"
         SAYZ WIT CATCH_VAR
@@ -108,43 +108,43 @@ HAI ME TEH FUNCSHUN MAIN
     OOPSIE ERR
         SAYZ WIT "SUCCESS: CATCH_VAR correctly not accessible outside catch block"
     KTHX
-    
+
     BTW Try to access finally block variable - should fail
     MAYB
-        SAYZ WIT "Trying to access FINALLY_VAR outside finally block:"
-        SAYZ WIT FINALLY_VAR
-        SAYZ WIT "ERROR: FINALLY_VAR should not be accessible here"
+        SAYZ WIT "Trying to access ALWAYZ_VAR outside finally block:"
+        SAYZ WIT ALWAYZ_VAR
+        SAYZ WIT "ERROR: ALWAYZ_VAR should not be accessible here"
     OOPSIE ERR
-        SAYZ WIT "SUCCESS: FINALLY_VAR correctly not accessible outside finally block"
+        SAYZ WIT "SUCCESS: ALWAYZ_VAR correctly not accessible outside finally block"
     KTHX
-    
+
     BTW Test nested scoping
     SAYZ WIT "Testing nested block scoping:"
     I HAS A VARIABLE LEVEL1 TEH INTEGR ITZ 1
-    
+
     IZ LEVEL1 SAEM AS 1?
         I HAS A VARIABLE LEVEL2 TEH INTEGR ITZ 2
         SAYZ WIT "Level 2 can access LEVEL1:"
         SAYZ WIT LEVEL1
-        
+
         WHILE LEVEL2 SMALLR THAN 4
             I HAS A VARIABLE LEVEL3 TEH INTEGR ITZ 3
             SAY WIT "Level 3 can access LEVEL1: "
-            SAY WIT LEVEL1  
+            SAY WIT LEVEL1
             SAY WIT ", LEVEL2: "
             SAY WIT LEVEL2
             SAY WIT ", LEVEL3: "
             SAYZ WIT LEVEL3
             LEVEL2 ITZ LEVEL2 MOAR 1
         KTHX
-        
+
         SAYZ WIT "Back in level 2, LEVEL2 ="
         SAYZ WIT LEVEL2
     KTHX
-    
+
     BTW Verify outer level variable still accessible
     SAYZ WIT "Back in main, LEVEL1 ="
     SAYZ WIT LEVEL1
-    
+
     SAYZ WIT "=== Block Scoping Test Complete ==="
 KTHXBAI

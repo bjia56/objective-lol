@@ -333,7 +333,7 @@ func getProcessClasses() map[string]*environment.Class {
 							"OOPSIE ERR",
 							"    SAYZ WIT \"Error occurred: \"",
 							"    SAYZ WIT ERR",
-							"FINALLY",
+							"ALWAYZ",
 							"    IZ PROC STDIN IS_OPEN?",
 							"        PROC STDIN DO CLOSE",
 							"    KTHX",

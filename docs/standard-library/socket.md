@@ -137,7 +137,7 @@ BTW Server work here
 OOPSIE ERR
 SAYZ WIT "Server error: "
 SAYZ WIT ERR
-FINALLY
+ALWAYZ
 SERVER DO CLOSE BTW Always cleanup
 KTHX
 ```
@@ -607,7 +607,7 @@ BTW Process result here
 OOPSIE ERR
 SAYZ WIT "Connection error: "
 SAYZ WIT ERR
-FINALLY
+ALWAYZ
 IZ CONN IS_CONNECTED?
 CONN DO CLOSE BTW Always cleanup
 KTHX
@@ -812,7 +812,7 @@ CONN DO SEND WIT "Important message"
 OOPSIE ERR
 SAYZ WIT "Network error: "
 SAYZ WIT ERR
-FINALLY
+ALWAYZ
 IZ CONN IS_CONNECTED?
 CONN DO CLOSE
 KTHX

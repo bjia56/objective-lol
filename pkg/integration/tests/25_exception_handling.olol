@@ -4,13 +4,13 @@ I CAN HAS STDIO?
 BTW Test basic throw and catch
 HAI ME TEH FUNCSHUN TEST_BASIC_EXCEPTION
     SAYZ WIT "=== Basic Exception Test ==="
-    
+
     MAYB
         SAYZ WIT "Before throwing exception"
         OOPS "This is a test exception!"
         SAYZ WIT "This should not be printed"
     OOPSIE ERROR_MSG
-        SAYZ WIT "Caught exception: " 
+        SAYZ WIT "Caught exception: "
         SAYZ WIT ERROR_MSG
     KTHX
 KTHXBAI
@@ -25,22 +25,22 @@ KTHXBAI
 
 HAI ME TEH FUNCSHUN TEST_FUNCTION_EXCEPTION
     SAYZ WIT "=== Function Exception Test ==="
-    
+
     MAYB
         I HAS A VARIABLE RESULT TEH INTEGR ITZ RISKY_FUNCTION WIT -5
-        SAYZ WIT "Result: " 
+        SAYZ WIT "Result: "
         SAYZ WIT RESULT
     OOPSIE FUNC_ERROR
-        SAYZ WIT "Function threw exception: " 
+        SAYZ WIT "Function threw exception: "
         SAYZ WIT FUNC_ERROR
     KTHX
-    
+
     MAYB
         I HAS A VARIABLE GOOD_RESULT TEH INTEGR ITZ RISKY_FUNCTION WIT 10
-        SAYZ WIT "Good result: " 
+        SAYZ WIT "Good result: "
         SAYZ WIT GOOD_RESULT
     OOPSIE FUNC_ERROR2
-        SAYZ WIT "Unexpected exception: " 
+        SAYZ WIT "Unexpected exception: "
         SAYZ WIT FUNC_ERROR2
     KTHX
 KTHXBAI
@@ -48,37 +48,37 @@ KTHXBAI
 BTW Test division by zero exception
 HAI ME TEH FUNCSHUN TEST_DIVISION_BY_ZERO
     SAYZ WIT "=== Division by Zero Test ==="
-    
+
     MAYB
         I HAS A VARIABLE RESULT TEH DUBBLE ITZ 10.0 DIVIDEZ 0.0
-        SAYZ WIT "This should not print: " 
+        SAYZ WIT "This should not print: "
         SAYZ WIT RESULT
     OOPSIE MATH_ERROR
-        SAYZ WIT "Division error caught: " 
+        SAYZ WIT "Division error caught: "
         SAYZ WIT MATH_ERROR
     KTHX
 KTHXBAI
 
-BTW Test type casting exception  
+BTW Test type casting exception
 HAI ME TEH FUNCSHUN TEST_CAST_EXCEPTION
     SAYZ WIT "=== Type Casting Exception Test ==="
-    
+
     MAYB
         I HAS A VARIABLE NUM TEH INTEGR ITZ "not a number" AS INTEGR
-        SAYZ WIT "This should not print: " 
+        SAYZ WIT "This should not print: "
         SAYZ WIT NUM
     OOPSIE CAST_ERROR
-        SAYZ WIT "Cast error caught: " 
+        SAYZ WIT "Cast error caught: "
         SAYZ WIT CAST_ERROR
     KTHX
-    
+
     BTW Test successful cast
     MAYB
         I HAS A VARIABLE GOOD_NUM TEH INTEGR ITZ "42" AS INTEGR
-        SAYZ WIT "Successful cast: " 
+        SAYZ WIT "Successful cast: "
         SAYZ WIT GOOD_NUM
     OOPSIE CAST_ERROR2
-        SAYZ WIT "Unexpected cast error: " 
+        SAYZ WIT "Unexpected cast error: "
         SAYZ WIT CAST_ERROR2
     KTHX
 KTHXBAI
@@ -86,18 +86,18 @@ KTHXBAI
 BTW Test array bounds exception
 HAI ME TEH FUNCSHUN TEST_ARRAY_BOUNDS
     SAYZ WIT "=== Array Bounds Exception Test ==="
-    
+
     I HAS A VARIABLE ARR TEH BUKKIT ITZ NEW BUKKIT
     ARR DO PUSH WIT 10
     ARR DO PUSH WIT 20
     ARR DO PUSH WIT 30
-    
+
     MAYB
         I HAS A VARIABLE ITEM TEH INTEGR ITZ ARR DO AT WIT 10
-        SAYZ WIT "This should not print: " 
+        SAYZ WIT "This should not print: "
         SAYZ WIT ITEM
     OOPSIE BOUNDS_ERROR
-        SAYZ WIT "Array bounds error caught: " 
+        SAYZ WIT "Array bounds error caught: "
         SAYZ WIT BOUNDS_ERROR
     KTHX
 KTHXBAI
@@ -105,39 +105,39 @@ KTHXBAI
 BTW Test nested try-catch
 HAI ME TEH FUNCSHUN TEST_NESTED_EXCEPTION
     SAYZ WIT "=== Nested Exception Test ==="
-    
+
     MAYB
         SAYZ WIT "Outer try block"
         MAYB
-            SAYZ WIT "Inner try block" 
+            SAYZ WIT "Inner try block"
             OOPS "Inner exception!"
         OOPSIE INNER_ERR
-            SAYZ WIT "Inner catch: " 
+            SAYZ WIT "Inner catch: "
             SAYZ WIT INNER_ERR
             OOPS "Re-throwing from inner catch!"
         KTHX
     OOPSIE OUTER_ERR
-        SAYZ WIT "Outer catch: " 
+        SAYZ WIT "Outer catch: "
         SAYZ WIT OUTER_ERR
     KTHX
 KTHXBAI
 
 BTW Test finally block
-HAI ME TEH FUNCSHUN TEST_FINALLY_BLOCK
+HAI ME TEH FUNCSHUN TEST_ALWAYZ_BLOCK
     SAYZ WIT "=== Finally Block Test ==="
-    
+
     MAYB
         SAYZ WIT "Try block executing"
         OOPS "Exception in try block"
     OOPSIE ERR_MSG
-        SAYZ WIT "Catch block: " 
+        SAYZ WIT "Catch block: "
         SAYZ WIT ERR_MSG
     ALWAYZ
         SAYZ WIT "Finally block always executes"
     KTHX
-    
+
     SAYZ WIT "--- Finally without exception ---"
-    
+
     MAYB
         SAYZ WIT "Try block without exception"
     OOPSIE ERR_MSG2
@@ -150,11 +150,11 @@ KTHXBAI
 BTW Test undefined variable exception
 HAI ME TEH FUNCSHUN TEST_UNDEFINED_VARIABLE
     SAYZ WIT "=== Undefined Variable Test ==="
-    
+
     MAYB
         SAYZ WIT UNDEFINED_VARIABLE_NAME
     OOPSIE UNDEF_ERROR
-        SAYZ WIT "Undefined variable error: " 
+        SAYZ WIT "Undefined variable error: "
         SAYZ WIT UNDEF_ERROR
     KTHX
 KTHXBAI
@@ -163,31 +163,31 @@ HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT "Testing Exception Handling System"
     SAYZ WIT "===================================="
     SAYZ WIT ""
-    
+
     TEST_BASIC_EXCEPTION
     SAYZ WIT ""
-    
+
     TEST_FUNCTION_EXCEPTION
     SAYZ WIT ""
-    
+
     TEST_DIVISION_BY_ZERO
     SAYZ WIT ""
-    
+
     TEST_CAST_EXCEPTION
     SAYZ WIT ""
-    
+
     TEST_ARRAY_BOUNDS
     SAYZ WIT ""
-    
+
     TEST_NESTED_EXCEPTION
     SAYZ WIT ""
-    
-    TEST_FINALLY_BLOCK
+
+    TEST_ALWAYZ_BLOCK
     SAYZ WIT ""
-    
+
     TEST_UNDEFINED_VARIABLE
     SAYZ WIT ""
-    
+
     SAYZ WIT "===================================="
     SAYZ WIT "All exception handling tests completed!"
 KTHXBAI

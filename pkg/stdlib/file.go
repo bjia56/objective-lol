@@ -543,7 +543,7 @@ func getFileClasses() map[string]*environment.Class {
 							"    BTW Process data here",
 							"OOPSIE ERR",
 							"    SAYZ WIT ERR",
-							"FINALLY",
+							"ALWAYZ",
 							"    IZ DOC IS_OPEN?",
 							"        DOC DO CLOSE BTW Ensure file is always closed",
 							"    KTHX",
