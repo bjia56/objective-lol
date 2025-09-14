@@ -47,3 +47,17 @@ func GetExceptionMessage(err error) string {
 	}
 	return err.Error()
 }
+
+type BreakLoop struct {
+	Label string
+}
+
+func (b BreakLoop) Error() string {
+	return "break"
+}
+
+// Helper function to check if an error is a break loop
+func IsBreakLoop(err error) bool {
+	_, ok := err.(BreakLoop)
+	return ok
+}

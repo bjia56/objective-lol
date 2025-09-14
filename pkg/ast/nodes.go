@@ -28,6 +28,7 @@ type Visitor interface {
 	VisitIfStatement(node *IfStatementNode) (environment.Value, error)
 	VisitWhileStatement(node *WhileStatementNode) (environment.Value, error)
 	VisitReturnStatement(node *ReturnStatementNode) (environment.Value, error)
+	VisitBreakStatement(node *BreakStatementNode) (environment.Value, error)
 	VisitFunctionCall(node *FunctionCallNode) (environment.Value, error)
 	VisitMemberAccess(node *MemberAccessNode) (environment.Value, error)
 	VisitBinaryOp(node *BinaryOpNode) (environment.Value, error)
@@ -212,6 +213,7 @@ func (n *IfStatementNode) SetPosition(pos PositionInfo) {
 
 // WhileStatementNode represents while loops
 type WhileStatementNode struct {
+	Label     string
 	Condition Node
 	Body      *StatementBlockNode
 	Position  PositionInfo
@@ -244,6 +246,24 @@ func (n *ReturnStatementNode) GetPosition() PositionInfo {
 }
 
 func (n *ReturnStatementNode) SetPosition(pos PositionInfo) {
+	n.Position = pos
+}
+
+// BreakStatementNode represents break statements
+type BreakStatementNode struct {
+	Label    string // Optional label for breaking out of labeled loops
+	Position PositionInfo
+}
+
+func (n *BreakStatementNode) Accept(visitor Visitor) (environment.Value, error) {
+	return visitor.VisitBreakStatement(n)
+}
+
+func (n *BreakStatementNode) GetPosition() PositionInfo {
+	return n.Position
+}
+
+func (n *BreakStatementNode) SetPosition(pos PositionInfo) {
 	n.Position = pos
 }
 

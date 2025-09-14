@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
@@ -27,6 +28,7 @@ type Interpreter struct {
 	currentObject     *environment.ObjectInstance // For tracking current object instance in method calls
 	currentFile       string                      // For tracking current file being processed (for relative imports)
 	currentModulePath string                      // For tracking current module context for qualified class names
+	whileLoopStack    []string                    // Stack of active while loop labels for nested loops
 }
 
 type StdlibInitializer func(*environment.Environment, ...string) error
@@ -637,6 +639,13 @@ func (i *Interpreter) VisitIfStatement(node *ast.IfStatementNode) (environment.V
 
 // VisitWhileStatement handles while loops
 func (i *Interpreter) VisitWhileStatement(node *ast.WhileStatementNode) (environment.Value, error) {
+	// Push loop label onto stack
+	i.whileLoopStack = append(i.whileLoopStack, node.Label)
+	defer func() {
+		// Pop loop label from stack
+		i.whileLoopStack = i.whileLoopStack[:len(i.whileLoopStack)-1]
+	}()
+
 	for {
 		// Check for context cancellation
 		if err := i.checkContext(); err != nil {
@@ -664,6 +673,13 @@ func (i *Interpreter) VisitWhileStatement(node *ast.WhileStatementNode) (environ
 		i.environment = oldEnv
 
 		if err != nil {
+			if runtime.IsBreakLoop(err) {
+				if brk := err.(runtime.BreakLoop); brk.Label == "" || brk.Label == node.Label {
+					return environment.NOTHIN, nil
+				}
+				// If the break label doesn't match, propagate the break up
+				return environment.NOTHIN, err
+			}
 			return environment.NOTHIN, err
 		}
 	}
@@ -684,6 +700,27 @@ func (i *Interpreter) VisitReturnStatement(node *ast.ReturnStatementNode) (envir
 	}
 
 	return environment.NOTHIN, runtime.ReturnValue{Value: value}
+}
+
+// VisitBreakStatement handles break statements
+func (i *Interpreter) VisitBreakStatement(node *ast.BreakStatementNode) (environment.Value, error) {
+	// Check for context cancellation
+	if err := i.checkContext(); err != nil {
+		return environment.NOTHIN, err
+	}
+
+	// Check if we're inside a loop
+	if len(i.whileLoopStack) == 0 {
+		return environment.NOTHIN, fmt.Errorf("break statement not within loop")
+	}
+
+	// If a label is specified, check if it matches any active loop
+	if !slices.Contains(i.whileLoopStack, node.Label) && node.Label != "" {
+		return environment.NOTHIN, fmt.Errorf("no loop with label '%s' found for break statement", node.Label)
+	}
+
+	// Signal the break
+	return environment.NOTHIN, runtime.BreakLoop{Label: node.Label}
 }
 
 // VisitFunctionCall handles function calls

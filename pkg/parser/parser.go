@@ -785,6 +785,8 @@ func (p *Parser) parseStatement() ast.Node {
 		return p.parseWhileStatement()
 	case GIVEZ:
 		return p.parseReturnStatement()
+	case OUTTA:
+		return p.parseBreakStatement()
 	case MAYB:
 		return p.parseTryStatement()
 	case OOPS:
@@ -920,6 +922,15 @@ func (p *Parser) parseWhileStatement() *ast.WhileStatementNode {
 	p.nextToken() // move past WHILE
 	node.Condition = p.parseExpression()
 
+	if p.peekTokenIs(CALLZ) {
+		p.nextToken() // consume CALLZ
+		if !p.expectPeek(IDENTIFIER) {
+			p.addError(fmt.Sprintf("expected identifier after 'CALLZ', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
+			return nil
+		}
+		node.Label = p.currentToken.Literal
+	}
+
 	node.Body = p.parseStatementBlock(KTHX)
 
 	if !p.currentTokenIs(KTHX) {
@@ -944,6 +955,26 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatementNode {
 	} else {
 		p.nextToken() // move past GIVEZ
 		node.Value = p.parseExpression()
+	}
+
+	return node
+}
+
+// parseBreakStatement parses break statements
+func (p *Parser) parseBreakStatement() *ast.BreakStatementNode {
+	node := &ast.BreakStatementNode{}
+
+	// Set position from the OUTTA token
+	node.Position = p.convertPosition(p.currentToken.Position)
+
+	if p.peekTokenIs(HERE) {
+		p.nextToken() // consume HERE
+		// OUTTA HERE - break from innermost loop
+		node.Label = ""
+	} else if p.peekTokenIs(IDENTIFIER) {
+		p.nextToken() // consume IDENTIFIER
+		// OUTTA label - break from specified loop
+		node.Label = p.currentToken.Literal
 	}
 
 	return node
