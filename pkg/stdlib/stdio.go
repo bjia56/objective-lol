@@ -12,6 +12,12 @@ import (
 	"github.com/bjia56/objective-lol/pkg/runtime"
 )
 
+// moduleSTDIOCategories defines the order that categories should be rendered in documentation
+var moduleSTDIOCategories = []string{
+	"output",
+	"input",
+}
+
 // Global I/O configuration - defaults to standard streams
 var (
 	StdoutWriter io.Writer = os.Stdout
@@ -37,12 +43,6 @@ func ResetToStandardStreams() {
 // Global STDIO function definitions - created once and reused
 var stdioFunctionsOnce = sync.Once{}
 var stdioFunctions map[string]*environment.Function
-
-// moduleSTDIOCategories defines the order that categories should be rendered in documentation
-var moduleSTDIOCategories = []string{
-	"output",
-	"input",
-}
 
 func getStdioFunctions() map[string]*environment.Function {
 	stdioFunctionsOnce.Do(func() {

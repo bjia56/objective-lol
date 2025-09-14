@@ -11,6 +11,17 @@ import (
 	"github.com/bjia56/objective-lol/pkg/runtime"
 )
 
+// moduleFileCategories defines the order that categories should be rendered in documentation
+var moduleFileCategories = []string{
+	"file-creation",
+	"file-io",
+	"file-properties",
+	"file-positioning",
+	"file-management",
+	"directory-operations",
+	"directory-properties",
+}
+
 // DocumentData stores the internal state of a DOCUMENT
 type DocumentData struct {
 	FilePath string
@@ -27,17 +38,6 @@ type CabinetData struct {
 // Global FILE class definitions - created once and reused
 var fileClassesOnce = sync.Once{}
 var fileClasses map[string]*environment.Class
-
-// moduleFileCategories defines the order that categories should be rendered in documentation
-var moduleFileCategories = []string{
-	"file-creation",
-	"file-io",
-	"file-properties",
-	"file-positioning",
-	"file-management",
-	"directory-operations",
-	"directory-properties",
-}
 
 func getFileClasses() map[string]*environment.Class {
 	fileClassesOnce.Do(func() {
@@ -65,8 +65,8 @@ func getFileClasses() map[string]*environment.Class {
 					"IZ DOC DO EXISTS?",
 					"    SAYZ WIT \"File exists!\"",
 					"KTHX",
-					"SAYZ WIT DOC HAZ PATH",
-					"SAYZ WIT DOC HAZ SIZ",
+					"SAYZ WIT DOC PATH",
+					"SAYZ WIT DOC SIZ",
 					"@note Supports modes: R (read), W (write/overwrite), RW (read-write), A (append)",
 					"@note File is automatically created for W, RW, and A modes if it doesn't exist",
 					"@see CABINET, IO.READWRITER",
@@ -211,10 +211,10 @@ func getFileClasses() map[string]*environment.Class {
 							"@example Read file in chunks",
 							"DOC DO OPEN WIT \"R\"",
 							"I HAS A VARIABLE CHUNK TEH STRIN ITZ DOC DO READ WIT 256",
-							"IM OUTTA UR LOOP WHILE NOT (CHUNK SAEM AS \"\")",
+							"WHILE NO SAEM AS (CHUNK SAEM AS \"\")",
 							"    SAYZ WIT CHUNK",
 							"    CHUNK ITZ DOC DO READ WIT 256",
-							"IM IN UR LOOP",
+							"KTHX",
 							"DOC DO CLOSE",
 							"@note File must be opened in R or RW mode before reading",
 							"@note Returns empty string when end of file is reached",
@@ -236,7 +236,7 @@ func getFileClasses() map[string]*environment.Class {
 
 							docData, ok := this.NativeData.(*DocumentData)
 							if !ok {
-								return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("READ: invalid context")}
+								return environment.NOTHIN, runtime.Exception{Message: "READ: invalid context"}
 							}
 
 							if !docData.IsOpen {
@@ -450,7 +450,7 @@ func getFileClasses() map[string]*environment.Class {
 							"    SAYZ WIT \"File not found!\"",
 							"KTHX",
 							"@example Conditional file creation",
-							"IZ NOT (DOC DO EXISTS)?",
+							"IZ NO SAEM AS (DOC DO EXISTS)?",
 							"    DOC DO OPEN WIT \"W\"",
 							"    DOC DO WRITE WIT \"Default content\"",
 							"    DOC DO CLOSE",
@@ -544,7 +544,7 @@ func getFileClasses() map[string]*environment.Class {
 							"OOPSIE ERR",
 							"    SAYZ WIT ERR",
 							"FINALLY",
-							"    IZ DOC HAZ IS_OPEN?",
+							"    IZ DOC IS_OPEN?",
 							"        DOC DO CLOSE BTW Ensure file is always closed",
 							"    KTHX",
 							"KTHX",
@@ -654,7 +654,7 @@ func getFileClasses() map[string]*environment.Class {
 								"@property {STRIN} PATH - The file path used when creating this document",
 								"@example Access file path",
 								"I HAS A VARIABLE DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT \"/home/user/data.txt\"",
-								"SAYZ WIT DOC HAZ PATH BTW Prints: /home/user/data.txt",
+								"SAYZ WIT DOC PATH BTW Prints: /home/user/data.txt",
 								"@note This is the original path provided to the constructor",
 								"@note Path may be relative or absolute depending on how document was created",
 								"@see MODE, IS_OPEN",
@@ -681,11 +681,11 @@ func getFileClasses() map[string]*environment.Class {
 								"@example Check file mode",
 								"I HAS A VARIABLE DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT \"data.txt\"",
 								"DOC DO OPEN WIT \"RW\"",
-								"SAYZ WIT DOC HAZ MODE BTW Prints: RW",
+								"SAYZ WIT DOC MODE BTW Prints: RW",
 								"@example Conditional operations based on mode",
-								"IZ (DOC HAZ MODE) SAEM AS \"R\"?",
+								"IZ (DOC MODE) SAEM AS \"R\"?",
 								"    SAYZ WIT \"File is read-only\"",
-								"NOPE IZ (DOC HAZ MODE) SAEM AS \"W\"?",
+								"NOPE IZ (DOC MODE) SAEM AS \"W\"?",
 								"    SAYZ WIT \"File is write-only\"",
 								"NOPE",
 								"    SAYZ WIT \"File allows both read and write\"",
@@ -715,14 +715,14 @@ func getFileClasses() map[string]*environment.Class {
 								"@property {BOOL} IS_OPEN - YEZ if file is open, NO if closed",
 								"@example Check if file is open before operations",
 								"I HAS A VARIABLE DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT \"data.txt\"",
-								"IZ DOC HAZ IS_OPEN?",
+								"IZ DOC IS_OPEN?",
 								"    SAYZ WIT \"File is already open\"",
 								"NOPE",
 								"    DOC DO OPEN WIT \"R\"",
 								"    SAYZ WIT \"File is now open\"",
 								"KTHX",
 								"@example Safe file operations",
-								"IZ DOC HAZ IS_OPEN?",
+								"IZ DOC IS_OPEN?",
 								"    I HAS A VARIABLE CONTENT TEH STRIN ITZ DOC DO READ WIT 100",
 								"NOPE",
 								"    SAYZ WIT \"Cannot read - file is not open\"",
@@ -757,13 +757,13 @@ func getFileClasses() map[string]*environment.Class {
 								"@example Check file size",
 								"I HAS A VARIABLE DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT \"data.txt\"",
 								"IZ DOC DO EXISTS?",
-								"    I HAS A VARIABLE FILESIZE TEH INTEGR ITZ DOC HAZ SIZ",
+								"    I HAS A VARIABLE FILESIZE TEH INTEGR ITZ DOC SIZ",
 								"    SAYZ WIT \"File size: \"",
 								"    SAYZ WIT FILESIZE",
 								"    SAYZ WIT \" bytes\"",
 								"KTHX",
 								"@example Size-based file processing",
-								"IZ (DOC HAZ SIZ) BIGGR DAN 1024?",
+								"IZ (DOC SIZ) BIGGR DAN 1024?",
 								"    SAYZ WIT \"Large file - processing in chunks\"",
 								"NOPE",
 								"    SAYZ WIT \"Small file - loading entirely\"",
@@ -799,14 +799,14 @@ func getFileClasses() map[string]*environment.Class {
 								"@property {INTEGR} RWX - File permission bits (Unix-style octal)",
 								"@example Check file permissions",
 								"I HAS A VARIABLE DOC TEH DOCUMENT ITZ NEW DOCUMENT WIT \"script.sh\"",
-								"I HAS A VARIABLE PERMS TEH INTEGR ITZ DOC HAZ RWX",
+								"I HAS A VARIABLE PERMS TEH INTEGR ITZ DOC RWX",
 								"SAYZ WIT \"File permissions: \"",
 								"SAYZ WIT PERMS",
 								"@example Make file executable",
-								"DOC HAZ RWX ITZ 755 BTW rwxr-xr-x",
+								"DOC RWX ITZ 755 BTW rwxr-xr-x",
 								"SAYZ WIT \"File is now executable\"",
 								"@example Set read-only permissions",
-								"DOC HAZ RWX ITZ 444 BTW r--r--r--",
+								"DOC RWX ITZ 444 BTW r--r--r--",
 								"SAYZ WIT \"File is now read-only\"",
 								"@example Common permission values",
 								"BTW 644 = rw-r--r-- (owner read/write, others read)",
@@ -860,7 +860,7 @@ func getFileClasses() map[string]*environment.Class {
 					"@class CABINET",
 					"@example Create and work with directory",
 					"I HAS A VARIABLE DIR TEH CABINET ITZ NEW CABINET WIT \"my_folder\"",
-					"IZ NOT (DIR DO EXISTS)?",
+					"IZ NO SAEM AS (DIR DO EXISTS)?",
 					"    DIR DO CREATE",
 					"    SAYZ WIT \"Directory created\"",
 					"KTHX",
@@ -872,7 +872,7 @@ func getFileClasses() map[string]*environment.Class {
 					"@example Find specific files",
 					"I HAS A VARIABLE TXTFILES TEH BUKKIT ITZ DIR DO FIND WIT \"*.txt\"",
 					"SAYZ WIT \"Found \"",
-					"SAYZ WIT TXTFILES HAZ SIZ",
+					"SAYZ WIT TXTFILES SIZ",
 					"SAYZ WIT \" text files\"",
 					"@note Works with both relative and absolute directory paths",
 					"@note Directory operations may require appropriate filesystem permissions",
@@ -942,7 +942,7 @@ func getFileClasses() map[string]*environment.Class {
 							"    SAYZ WIT \"Directory doesn't exist\"",
 							"KTHX",
 							"@example Conditional directory creation",
-							"IZ NOT (DIR DO EXISTS)?",
+							"IZ NO SAEM AS (DIR DO EXISTS)?",
 							"    DIR DO CREATE",
 							"    SAYZ WIT \"Directory created\"",
 							"NOPE",
@@ -981,7 +981,7 @@ func getFileClasses() map[string]*environment.Class {
 							"I HAS A VARIABLE DIR TEH CABINET ITZ NEW CABINET WIT \"documents\"",
 							"I HAS A VARIABLE FILES TEH BUKKIT ITZ DIR DO LIST",
 							"SAYZ WIT \"Directory contains \"",
-							"SAYZ WIT FILES HAZ SIZ",
+							"SAYZ WIT FILES SIZ",
 							"SAYZ WIT \" items:\"",
 							"IM OUTTA UR FILES NERFIN FILENAME",
 							"    SAYZ WIT \"  \"",
@@ -1043,7 +1043,7 @@ func getFileClasses() map[string]*environment.Class {
 							"NESTED DO CREATE",
 							"SAYZ WIT \"Nested directory structure created\"",
 							"@example Safe directory creation",
-							"IZ NOT (DIR DO EXISTS)?",
+							"IZ NO SAEM AS (DIR DO EXISTS)?",
 							"    DIR DO CREATE",
 							"    SAYZ WIT \"Directory created\"",
 							"NOPE",
@@ -1134,7 +1134,7 @@ func getFileClasses() map[string]*environment.Class {
 							"@example Cleanup with confirmation",
 							"I HAS A VARIABLE FILES TEH BUKKIT ITZ TMPDIR DO LIST",
 							"SAYZ WIT \"About to delete directory with \"",
-							"SAYZ WIT FILES HAZ SIZ",
+							"SAYZ WIT FILES SIZ",
 							"SAYZ WIT \" items. Continue? (y/n)\"",
 							"I HAS A VARIABLE CONFIRM TEH STRIN ITZ GIMME",
 							"IZ CONFIRM SAEM AS \"y\"?",
@@ -1185,7 +1185,7 @@ func getFileClasses() map[string]*environment.Class {
 							"@example Find files with specific prefix",
 							"I HAS A VARIABLE LOGFILES TEH BUKKIT ITZ DIR DO FIND WIT \"log_*\"",
 							"SAYZ WIT \"Found \"",
-							"SAYZ WIT LOGFILES HAZ SIZ",
+							"SAYZ WIT LOGFILES SIZ",
 							"SAYZ WIT \" log files\"",
 							"@example Find files with specific patterns",
 							"I HAS A VARIABLE IMAGES TEH BUKKIT ITZ DIR DO FIND WIT \"*.{jpg,png,gif}\"",
@@ -1253,11 +1253,11 @@ func getFileClasses() map[string]*environment.Class {
 								"@property {STRIN} PATH - The directory path used when creating this cabinet",
 								"@example Access directory path",
 								"I HAS A VARIABLE DIR TEH CABINET ITZ NEW CABINET WIT \"/home/user/documents\"",
-								"SAYZ WIT DIR HAZ PATH BTW Prints: /home/user/documents",
+								"SAYZ WIT DIR PATH BTW Prints: /home/user/documents",
 								"@example Build full file paths",
 								"I HAS A VARIABLE FILES TEH BUKKIT ITZ DIR DO LIST",
 								"IM OUTTA UR FILES NERFIN FILENAME",
-								"    I HAS A VARIABLE FULLPATH TEH STRIN ITZ DIR HAZ PATH",
+								"    I HAS A VARIABLE FULLPATH TEH STRIN ITZ DIR PATH",
 								"    FULLPATH ITZ FULLPATH MOAR FILE.SEP MOAR FILENAME",
 								"    SAYZ WIT \"Full path: \"",
 								"    SAYZ WIT FULLPATH",

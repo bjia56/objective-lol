@@ -95,8 +95,24 @@ func GetModuleCategories(moduleName string) []string {
 		return moduleMapsCategories
 	case "FILE":
 		return moduleFileCategories
+	case "HTTP":
+		return moduleHTTPCategories
+	case "IO":
+		return moduleIOCategories
 	case "SOCKET":
 		return moduleSocketCategories
+	case "PROCESS":
+		return moduleProcessCategories
+	case "SYSTEM":
+		return moduleSystemCategories
+	case "CACHE":
+		return moduleCacheCategories
+	case "RANDOM":
+		return moduleRandomCategories
+	case "TEST":
+		return moduleTestCategories
+	case "THREAD":
+		return moduleThreadCategories
 	default:
 		return nil
 	}

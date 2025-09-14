@@ -9,6 +9,15 @@ import (
 	"github.com/bjia56/objective-lol/pkg/runtime"
 )
 
+// moduleMapsCategories defines the order that categories should be rendered in documentation
+var moduleMapsCategories = []string{
+	"map-creation",
+	"map-access",
+	"map-modification",
+	"map-inspection",
+	"map-transformation",
+}
+
 type BaskitMap map[string]environment.Value
 
 func NewBaskitInstance() *environment.ObjectInstance {
@@ -28,15 +37,6 @@ func NewBaskitInstance() *environment.ObjectInstance {
 // Global BASKIT class definition - created once and reused
 var mapClassesOnce = sync.Once{}
 var mapClasses map[string]*environment.Class
-
-// moduleMapsCategories defines the order that categories should be rendered in documentation
-var moduleMapsCategories = []string{
-	"map-creation",
-	"map-access",
-	"map-modification",
-	"map-inspection",
-	"map-transformation",
-}
 
 func getMapClasses() map[string]*environment.Class {
 	mapClassesOnce.Do(func() {
@@ -308,12 +308,12 @@ func getMapClasses() map[string]*environment.Class {
 							"I HAS A VARIABLE KEYS TEH BUKKIT ITZ MAP DO KEYS",
 							"BTW KEYS = [\"apple\", \"banana\", \"zebra\"] (alphabetical)",
 							"@example Iterate over keys",
-							"I HAS A VARIABLE I TEH INTEGR ITZ 0",
-							"WHILE I SMALLR THAN KEYS SIZ",
-							"    I HAS A VARIABLE KEY TEH STRIN ITZ KEYS DO AT WIT I",
+							"I HAS A VARIABLE IDX TEH INTEGR ITZ 0",
+							"WHILE IDX SMALLR THAN KEYS SIZ",
+							"    I HAS A VARIABLE KEY TEH STRIN ITZ KEYS DO AT WIT IDX",
 							"    I HAS A VARIABLE VALUE TEH INTEGR ITZ MAP DO GET WIT KEY",
 							"    SAYZ WIT KEY MOAR \": \" MOAR VALUE",
-							"    I ITZ I MOAR 1",
+							"    IDX ITZ IDX MOAR 1",
 							"KTHX",
 							"@note Keys are always sorted alphabetically",
 							"@note Returns empty BUKKIT if map is empty",
@@ -362,10 +362,10 @@ func getMapClasses() map[string]*environment.Class {
 							"@example Process all values",
 							"I HAS A VARIABLE TOTAL TEH INTEGR ITZ 0",
 							"I HAS A VARIABLE SCORES TEH BUKKIT ITZ MAP DO VALUES",
-							"I HAS A VARIABLE I TEH INTEGR ITZ 0",
-							"WHILE I SMALLR THAN SCORES SIZ",
-							"    TOTAL ITZ TOTAL MOAR (SCORES DO AT WIT I)",
-							"    I ITZ I MOAR 1",
+							"I HAS A VARIABLE IDX TEH INTEGR ITZ 0",
+							"WHILE IDX SMALLR THAN SCORES SIZ",
+							"    TOTAL ITZ TOTAL MOAR (SCORES DO AT WIT IDX)",
+							"    IDX ITZ IDX MOAR 1",
 							"KTHX",
 							"@note Values are ordered by their keys' alphabetical order",
 							"@note Returns empty BUKKIT if map is empty",
@@ -411,13 +411,13 @@ func getMapClasses() map[string]*environment.Class {
 							"I HAS A VARIABLE PAIRS TEH BUKKIT ITZ MAP DO PAIRS",
 							"BTW PAIRS = [[\"age\", 30], [\"name\", \"David\"]] (by key order)",
 							"@example Iterate over pairs",
-							"I HAS A VARIABLE I TEH INTEGR ITZ 0",
-							"WHILE I SMALLR THAN PAIRS SIZ",
-							"    I HAS A VARIABLE PAIR TEH BUKKIT ITZ PAIRS DO AT WIT I",
+							"I HAS A VARIABLE IDX TEH INTEGR ITZ 0",
+							"WHILE IDX SMALLR THAN PAIRS SIZ",
+							"    I HAS A VARIABLE PAIR TEH BUKKIT ITZ PAIRS DO AT WIT IDX",
 							"    I HAS A VARIABLE KEY TEH STRIN ITZ PAIR DO AT WIT 0",
 							"    I HAS A VARIABLE VALUE TEH STRIN ITZ PAIR DO AT WIT 1",
 							"    SAYZ WIT KEY MOAR \": \" MOAR VALUE",
-							"    I ITZ I MOAR 1",
+							"    IDX ITZ IDX MOAR 1",
 							"KTHX",
 							"@note Each pair is a BUKKIT with [key, value]",
 							"@note Pairs are ordered by key alphabetically",

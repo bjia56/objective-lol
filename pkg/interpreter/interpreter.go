@@ -899,7 +899,12 @@ func (i *Interpreter) VisitBinaryOp(node *ast.BinaryOpNode) (environment.Value, 
 				return leftNum.Add(rightNum), nil
 			}
 		}
-		return environment.NOTHIN, fmt.Errorf("operands must be numbers for addition")
+		if leftStr, err := left.Cast("STRIN"); err == nil {
+			if rightStr, err := right.Cast("STRIN"); err == nil {
+				return leftStr.(environment.StringValue) + rightStr.(environment.StringValue), nil
+			}
+		}
+		return environment.NOTHIN, fmt.Errorf("operands must be numbers or STRINs for addition")
 
 	case "LES": // Subtraction
 		if leftNum, ok := left.(environment.NumberValue); ok {

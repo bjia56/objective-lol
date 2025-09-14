@@ -10,6 +10,15 @@ import (
 	"github.com/bjia56/objective-lol/pkg/runtime"
 )
 
+// moduleArraysCategories defines the order that categories should be rendered in documentation
+var moduleArraysCategories = []string{
+	"array-creation",
+	"array-access",
+	"array-modification",
+	"array-inspection",
+	"array-transformation",
+}
+
 type BukkitSlice []environment.Value
 
 func NewBukkitInstance() *environment.ObjectInstance {
@@ -29,15 +38,6 @@ func NewBukkitInstance() *environment.ObjectInstance {
 // Global BUKKIT class definition - created once and reused
 var arrayClassOnce = sync.Once{}
 var arrayClasses map[string]*environment.Class
-
-// moduleArraysCategories defines the order that categories should be rendered in documentation
-var moduleArraysCategories = []string{
-	"array-creation",
-	"array-access",
-	"array-modification",
-	"array-inspection",
-	"array-transformation",
-}
 
 func getArrayClasses() map[string]*environment.Class {
 	arrayClassOnce.Do(func() {

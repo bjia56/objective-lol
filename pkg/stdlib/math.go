@@ -10,14 +10,6 @@ import (
 	"github.com/bjia56/objective-lol/pkg/runtime"
 )
 
-// Global MATH function definitions - created once and reused
-var mathFuncOnce = sync.Once{}
-var mathFunctions map[string]*environment.Function
-
-// Global MATH variable definitions - created once and reused
-var mathVarsOnce = sync.Once{}
-var mathVariables map[string]*environment.Variable
-
 // moduleMATHCategories defines the order that categories should be rendered in documentation
 var moduleMATHCategories = []string{
 	"mathematical-constants",
@@ -27,6 +19,14 @@ var moduleMATHCategories = []string{
 	"logarithmic",
 	"rounding",
 }
+
+// Global MATH function definitions - created once and reused
+var mathFuncOnce = sync.Once{}
+var mathFunctions map[string]*environment.Function
+
+// Global MATH variable definitions - created once and reused
+var mathVarsOnce = sync.Once{}
+var mathVariables map[string]*environment.Variable
 
 func getMathVariables() map[string]*environment.Variable {
 	mathVarsOnce.Do(func() {
@@ -169,7 +169,7 @@ func getMathFunctions() map[string]*environment.Function {
 					"",
 					"@syntax MIN WIT <value1> AN WIT <value2>",
 					"@param {DUBBLE} a - First number to compare",
-					"@param {DUBBLE} b - Second number to compare", 
+					"@param {DUBBLE} b - Second number to compare",
 					"@returns {DUBBLE} The smaller of the two values",
 					"@example Compare positive numbers",
 					"I HAS A VARIABLE RESULT TEH DUBBLE ITZ MIN WIT 10.5 AN WIT 7.2",
