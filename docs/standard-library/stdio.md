@@ -7,8 +7,8 @@ BTW Full import
 I CAN HAS STDIO?
 
 BTW Selective import examples
+I CAN HAS GIMME FROM STDIO?
 I CAN HAS SAY FROM STDIO?
-I CAN HAS SAYZ FROM STDIO?
 ```
 
 ## Output

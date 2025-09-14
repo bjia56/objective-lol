@@ -625,7 +625,7 @@ I HAS A VARIABLE CACHE TEH MEMSTASH ITZ NEW MEMSTASH WIT 50
 WHILE YEZ
 BTW ... add items ...
 IZ CACHE SIZ BIGGR THAN 45?
-GTFO BTW Near capacity
+OUTTA HERE BTW Near capacity
 KTHX
 KTHX
 ```
@@ -696,7 +696,7 @@ WHILE YEZ
 CACHE DO GET WIT "hot_data" BTW Keeps this item fresh
 CACHE DO PUT WIT "new_data" AN WIT "value"
 IZ CACHE SIZ BIGGR THAN 900?
-GTFO BTW Cache getting full
+OUTTA HERE BTW Cache getting full
 KTHX
 KTHX
 ```

@@ -7,8 +7,8 @@ BTW Full import
 I CAN HAS MATH?
 
 BTW Selective import examples
+I CAN HAS MIN FROM MATH?
 I CAN HAS MAX FROM MATH?
-I CAN HAS LOG2 FROM MATH?
 I CAN HAS PI FROM MATH?
 ```
 
