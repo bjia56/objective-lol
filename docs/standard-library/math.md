@@ -1,6 +1,4 @@
-# MATH Module - Mathematical Functions
-
-The MATH module provides essential mathematical functions for numerical computations.
+# MATH Module
 
 ## Import
 
@@ -9,457 +7,824 @@ BTW Full import
 I CAN HAS MATH?
 
 BTW Selective import examples
-I CAN HAS ABS FROM MATH?
-I CAN HAS SQRT AN POW FROM MATH?
-I CAN HAS PI AN E FROM MATH?
+I CAN HAS MAX FROM MATH?
+I CAN HAS LOG2 FROM MATH?
+I CAN HAS PI FROM MATH?
 ```
 
 ## Mathematical Constants
 
-### PI - Pi Constant
+### E
 
-The mathematical constant π (pi) ≈ 3.14159.
-
-**Type:** DUBBLE
-**Value:** 3.14159265359
-
-```lol
-I CAN HAS PI FROM MATH?
-
-I HAS A VARIABLE CIRCLE_AREA TEH DUBBLE ITZ PI TIEMZ RADIUS TIEMZ RADIUS
-I HAS A VARIABLE RADIANS TEH DUBBLE ITZ DEGREES TIEMZ PI DIVIDEZ 180.0
-```
-
-### E - Euler's Number
-
-The mathematical constant e (Euler's number) ≈ 2.71828.
+Euler's number e ≈ 2.71828.
+The base of natural logarithms, fundamental mathematical constant.
 
 **Type:** DUBBLE
 **Value:** 2.71828182846
 
 ```lol
-I CAN HAS E FROM MATH?
+I CAN HAS E FROM MODULE?
 
-I HAS A VARIABLE NATURAL_LOG TEH DUBBLE ITZ LOG WIT E    BTW Result: 1.0
-I HAS A VARIABLE EXPONENTIAL TEH DUBBLE ITZ EXP WIT 1.0  BTW Result: E
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ LOG WIT E
+BTW Result: 1.0 (ln(e) = 1)
 ```
 
-## Basic Mathematical Functions
+```lol
+I CAN HAS E FROM MODULE?
 
-### ABS - Absolute Value
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ EXP WIT 2.0
+BTW Result: 7.389056099 (e^2)
+```
+
+### PI
+
+The mathematical constant π (pi) ≈ 3.14159.
+Represents the ratio of a circle's circumference to its diameter.
+
+**Type:** DUBBLE
+**Value:** 3.14159265359
+
+```lol
+I CAN HAS PI FROM MODULE?
+
+I HAS A VARIABLE RADIUS TEH DUBBLE ITZ 2.0
+I HAS A VARIABLE AREA TEH DUBBLE ITZ PI TIEMZ RADIUS TIEMZ RADIUS
+BTW Result: 12.566370614
+```
+
+```lol
+I CAN HAS PI FROM MODULE?
+
+I HAS A VARIABLE DEGREES TEH DUBBLE ITZ 180.0
+I HAS A VARIABLE RADIANS TEH DUBBLE ITZ DEGREES TIEMZ PI DIVIDEZ 180.0
+BTW Result: 3.14159265359 (π radians)
+```
+
+## Basic Math
+
+### ABS
 
 Returns the absolute value of a number.
+Removes the sign and returns the positive magnitude.
 
 **Syntax:** `ABS WIT <number>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS ABS FROM MATH?
+**Parameters:**
+- `value` (DUBBLE): The number to get absolute value of
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ABS WIT -5.5      BTW 5.5
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ ABS WIT 42        BTW 42.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ ABS WIT 0         BTW 0.0
+**Example: Basic absolute value**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ABS WIT -5.5
+BTW Result: 5.5
 ```
 
-### MAX - Maximum of Two Values
+**Example: Positive number unchanged**
 
-Returns the larger of two values.
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ABS WIT 42.0
+BTW Result: 42.0
+```
+
+**Example: Zero unchanged**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ABS WIT 0.0
+BTW Result: 0.0
+```
+
+**Note:** Works with both positive and negative numbers
+
+**See also:** MAX, MIN
+
+### MAX
+
+Returns the larger of two numbers.
+Compares two values and returns the maximum.
 
 **Syntax:** `MAX WIT <value1> AN WIT <value2>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS MAX FROM MATH?
+**Parameters:**
+- `a` (DUBBLE): First number to compare
+- `b` (DUBBLE): Second number to compare
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ MAX WIT 10.5 AN WIT 7.2    BTW 10.5
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ MAX WIT -3 AN WIT -8       BTW -3.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ MAX WIT 0 AN WIT 0         BTW 0.0
+**Example: Compare positive numbers**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ MAX WIT 10.5 AN WIT 7.2
+BTW Result: 10.5
 ```
 
-### MIN - Minimum of Two Values
+**Example: Compare negative numbers**
 
-Returns the smaller of two values.
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ MAX WIT -3.0 AN WIT -8.0
+BTW Result: -3.0
+```
+
+**Example: Equal values**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ MAX WIT 5.0 AN WIT 5.0
+BTW Result: 5.0
+```
+
+**Note:** Returns the first value if both are equal
+
+**See also:** MIN, ABS
+
+### MIN
+
+Returns the smaller of two numbers.
+Compares two values and returns the minimum.
 
 **Syntax:** `MIN WIT <value1> AN WIT <value2>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS MIN FROM MATH?
+**Parameters:**
+- `a` (DUBBLE): First number to compare
+- `b` (DUBBLE): Second number to compare
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ MIN WIT 10.5 AN WIT 7.2    BTW 7.2
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ MIN WIT -3 AN WIT -8       BTW -8.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ MIN WIT 5 AN WIT 5         BTW 5.0
-```
-
-## Advanced Mathematical Functions
-
-### SQRT - Square Root
-
-Returns the square root of a number.
-
-**Syntax:** `SQRT WIT <number>`
-**Returns:** DUBBLE
+**Example: Compare positive numbers**
 
 ```lol
-I CAN HAS SQRT FROM MATH?
-
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ SQRT WIT 16.0     BTW 4.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ SQRT WIT 2.0      BTW 1.414...
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ SQRT WIT 0.0      BTW 0.0
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ MIN WIT 10.5 AN WIT 7.2
+BTW Result: 7.2
 ```
 
-### POW - Power Function
+**Example: Compare negative numbers**
 
-Returns base raised to the power of exponent.
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ MIN WIT -3.0 AN WIT -8.0
+BTW Result: -8.0
+```
+
+**Example: Equal values**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ MIN WIT 5.0 AN WIT 5.0
+BTW Result: 5.0
+```
+
+**Note:** Returns the first value if both are equal
+
+**See also:** MAX, ABS
+
+## Advanced Math
+
+### POW
+
+Returns base raised to the power of exponent (base^exponent).
+Performs exponentiation using floating-point arithmetic.
 
 **Syntax:** `POW WIT <base> AN WIT <exponent>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS POW FROM MATH?
+**Parameters:**
+- `base` (DUBBLE): The base number
+- `exponent` (DUBBLE): The power to raise the base to
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ POW WIT 2.0 AN WIT 3.0     BTW 8.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ POW WIT 10.0 AN WIT 2.0    BTW 100.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ POW WIT 4.0 AN WIT 0.5     BTW 2.0 (square root)
+**Example: Integer exponent**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ POW WIT 2.0 AN WIT 3.0
+BTW Result: 8.0
 ```
 
-## Trigonometric Functions
+**Example: Fractional exponent (square root)**
 
-### SIN - Sine Function
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ POW WIT 4.0 AN WIT 0.5
+BTW Result: 2.0
+```
 
-Returns the sine of an angle (in radians).
+**Example: Power of ten**
 
-**Syntax:** `SIN WIT <angle_radians>`
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ POW WIT 10.0 AN WIT 2.0
+BTW Result: 100.0
+```
+
+**Example: Zero exponent**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ POW WIT 5.0 AN WIT 0.0
+BTW Result: 1.0
+```
+
+**Note:** Any number to the power of 0 equals 1
+
+**See also:** SQRT, EXP, LOG
+
+### SQRT
+
+Returns the square root of a number.
+Input must be non-negative. Throws error for negative values.
+
+**Syntax:** `SQRT WIT <number>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS SIN AN PI FROM MATH?
+**Parameters:**
+- `value` (DUBBLE): The number to get square root of (must be ≥ 0)
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ SIN WIT 0.0           BTW 0.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ SIN WIT PI DIVIDEZ 2  BTW 1.0 (sin(π/2))
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ SIN WIT PI            BTW ≈0.0 (sin(π))
+**Example: Perfect square**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ SQRT WIT 16.0
+BTW Result: 4.0
 ```
 
-### COS - Cosine Function
+**Example: Decimal result**
 
-Returns the cosine of an angle (in radians).
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ SQRT WIT 2.0
+BTW Result: 1.4142135623
+```
+
+**Example: Zero input**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ SQRT WIT 0.0
+BTW Result: 0.0
+```
+
+**Note:** Input must be non-negative
+
+**See also:** POW, ABS
+
+## Trigonometry
+
+### ACOS
+
+Returns the arc cosine (inverse cosine) of a value in radians.
+Input must be in range [-1, 1]. Result is in range [0, π].
+
+**Syntax:** `ACOS WIT <value>`
+**Returns:** DUBBLE
+
+**Parameters:**
+- `value` (DUBBLE): Input value (must be between -1 and 1)
+
+**Example: Arc cosine of 1**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ACOS WIT 1.0
+BTW Result: 0.0
+```
+
+**Example: Arc cosine of 0**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ACOS WIT 0.0
+BTW Result: π/2 (≈1.5708)
+```
+
+**Example: Arc cosine of -1**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ACOS WIT -1.0
+BTW Result: π (≈3.1416)
+```
+
+**Note:** Input must be in range [-1, 1]
+
+**See also:** COS, ASIN, ATAN, PI
+
+### ASIN
+
+Returns the arc sine (inverse sine) of a value in radians.
+Input must be in range [-1, 1]. Result is in range [-π/2, π/2].
+
+**Syntax:** `ASIN WIT <value>`
+**Returns:** DUBBLE
+
+**Parameters:**
+- `value` (DUBBLE): Input value (must be between -1 and 1)
+
+**Example: Arc sine of 0**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ASIN WIT 0.0
+BTW Result: 0.0
+```
+
+**Example: Arc sine of 1**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ASIN WIT 1.0
+BTW Result: π/2 (≈1.5708)
+```
+
+**Example: Arc sine of -1**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ASIN WIT -1.0
+BTW Result: -π/2 (≈-1.5708)
+```
+
+**Note:** Input must be in range [-1, 1]
+
+**See also:** SIN, ACOS, ATAN, PI
+
+### ATAN
+
+Returns the arc tangent (inverse tangent) of a value in radians.
+Result is in range [-π/2, π/2].
+
+**Syntax:** `ATAN WIT <value>`
+**Returns:** DUBBLE
+
+**Parameters:**
+- `value` (DUBBLE): Input value (any real number)
+
+**Example: Arc tangent of 0**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ATAN WIT 0.0
+BTW Result: 0.0
+```
+
+**Example: Arc tangent of 1**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ATAN WIT 1.0
+BTW Result: π/4 (≈0.7854)
+```
+
+**Example: Arc tangent of -1**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ATAN WIT -1.0
+BTW Result: -π/4 (≈-0.7854)
+```
+
+**Note:** Input can be any real number
+
+**See also:** TAN, ATAN2, ASIN, ACOS, PI
+
+### ATAN2
+
+Returns the arc tangent of y/x in radians, considering quadrant.
+Result is in range [-π, π]. More robust than ATAN for coordinate conversion.
+
+**Syntax:** `ATAN2 WIT <y> AN WIT <x>`
+**Returns:** DUBBLE
+
+**Parameters:**
+- `y` (DUBBLE): Y coordinate
+- `x` (DUBBLE): X coordinate
+
+**Example: Point in first quadrant**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ATAN2 WIT 1.0 AN WIT 1.0
+BTW Result: π/4 (≈0.7854)
+```
+
+**Example: Point on positive y-axis**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ATAN2 WIT 1.0 AN WIT 0.0
+BTW Result: π/2 (≈1.5708)
+```
+
+**Example: Point on positive x-axis**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ATAN2 WIT 0.0 AN WIT 1.0
+BTW Result: 0.0
+```
+
+**Note:** More robust than ATAN for coordinate conversion
+
+**Note:** Handles all quadrants correctly
+
+**See also:** ATAN, TAN, PI
+
+### COS
+
+Returns the cosine of an angle in radians.
+Input angle should be in radians, not degrees.
 
 **Syntax:** `COS WIT <angle_radians>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS COS AN PI FROM MATH?
+**Parameters:**
+- `value` (DUBBLE): The angle in radians
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ COS WIT 0.0           BTW 1.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ COS WIT PI DIVIDEZ 2  BTW ≈0.0 (cos(π/2))
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ COS WIT PI            BTW -1.0 (cos(π))
+**Example: Cosine of 0**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ COS WIT 0.0
+BTW Result: 1.0
 ```
 
-### TAN - Tangent Function
+**Example: Cosine of π/2 (90 degrees)**
 
-Returns the tangent of an angle (in radians).
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ COS WIT PI DIVIDEZ 2
+BTW Result: ≈0.0
+```
+
+**Example: Cosine of π (180 degrees)**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ COS WIT PI
+BTW Result: -1.0
+```
+
+**Note:** Input must be in radians, not degrees
+
+**Note:** Result is always between -1 and 1
+
+**See also:** SIN, TAN, ACOS, PI
+
+### SIN
+
+Returns the sine of an angle in radians.
+Input angle should be in radians, not degrees.
+
+**Syntax:** `SIN WIT <angle_radians>`
+**Returns:** DUBBLE
+
+**Parameters:**
+- `value` (DUBBLE): The angle in radians
+
+**Example: Sine of 0**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ SIN WIT 0.0
+BTW Result: 0.0
+```
+
+**Example: Sine of π/2 (90 degrees)**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ SIN WIT PI DIVIDEZ 2
+BTW Result: 1.0
+```
+
+**Example: Sine of π (180 degrees)**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ SIN WIT PI
+BTW Result: ≈0.0
+```
+
+**Note:** Input must be in radians, not degrees
+
+**Note:** Result is always between -1 and 1
+
+**See also:** COS, TAN, ASIN, PI
+
+### TAN
+
+Returns the tangent of an angle in radians.
+Input angle should be in radians. Undefined at π/2 + nπ.
 
 **Syntax:** `TAN WIT <angle_radians>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS TAN AN PI FROM MATH?
+**Parameters:**
+- `value` (DUBBLE): The angle in radians
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ TAN WIT 0.0           BTW 0.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ TAN WIT PI DIVIDEZ 4  BTW 1.0 (tan(π/4))
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ TAN WIT PI            BTW ≈0.0 (tan(π))
-```
-
-### ASIN - Arcsine Function
-
-Returns the arcsine (inverse sine) of a value. Input must be in range [-1, 1].
-
-**Syntax:** `ASIN WIT <value>`
-**Returns:** DUBBLE (angle in radians)
+**Example: Tangent of 0**
 
 ```lol
-I CAN HAS ASIN FROM MATH?
-
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ASIN WIT 0.0    BTW 0.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ ASIN WIT 1.0    BTW π/2
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ ASIN WIT -1.0   BTW -π/2
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ TAN WIT 0.0
+BTW Result: 0.0
 ```
 
-### ACOS - Arccosine Function
-
-Returns the arccosine (inverse cosine) of a value. Input must be in range [-1, 1].
-
-**Syntax:** `ACOS WIT <value>`
-**Returns:** DUBBLE (angle in radians)
+**Example: Tangent of π/4 (45 degrees)**
 
 ```lol
-I CAN HAS ACOS FROM MATH?
-
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ACOS WIT 1.0    BTW 0.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ ACOS WIT 0.0    BTW π/2
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ ACOS WIT -1.0   BTW π
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ TAN WIT PI DIVIDEZ 4
+BTW Result: 1.0
 ```
 
-### ATAN - Arctangent Function
-
-Returns the arctangent (inverse tangent) of a value.
-
-**Syntax:** `ATAN WIT <value>`
-**Returns:** DUBBLE (angle in radians)
+**Example: Tangent of π (180 degrees)**
 
 ```lol
-I CAN HAS ATAN FROM MATH?
-
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ATAN WIT 0.0    BTW 0.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ ATAN WIT 1.0    BTW π/4
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ ATAN WIT -1.0   BTW -π/4
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ TAN WIT PI
+BTW Result: ≈0.0
 ```
 
-### ATAN2 - Two-Argument Arctangent
+**Note:** Input must be in radians, not degrees
 
-Returns the angle (in radians) from the x-axis to the point (x,y).
+**Note:** Undefined at π/2 + nπ (90°, 270°, etc.)
 
-**Syntax:** `ATAN2 WIT <y> AN WIT <x>`
-**Returns:** DUBBLE (angle in radians)
+**See also:** SIN, COS, ATAN, PI
+
+## Logarithmic
+
+### EXP
+
+Returns e raised to the power of the given value (e^value).
+The exponential function, inverse of natural logarithm.
+
+**Syntax:** `EXP WIT <number>`
+**Returns:** DUBBLE
+
+**Parameters:**
+- `value` (DUBBLE): The exponent to raise e to
+
+**Example: e to the power of 1**
 
 ```lol
-I CAN HAS ATAN2 FROM MATH?
-
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ATAN2 WIT 1.0 AN WIT 1.0    BTW π/4
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ ATAN2 WIT 1.0 AN WIT 0.0    BTW π/2
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ ATAN2 WIT 0.0 AN WIT 1.0    BTW 0.0
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ EXP WIT 1.0
+BTW Result: 2.718281828 (e)
 ```
 
-## Logarithmic and Exponential Functions
+**Example: e to the power of 0**
 
-### LOG - Natural Logarithm
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ EXP WIT 0.0
+BTW Result: 1.0
+```
+
+**Example: e to the power of 2**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ EXP WIT 2.0
+BTW Result: 7.389056099 (e²)
+```
+
+**Note:** The exponential function, inverse of natural logarithm
+
+**Note:** EXP(LOG(x)) = x for positive x
+
+**See also:** LOG, LOG10, LOG2, E, POW
+
+### LOG
 
 Returns the natural logarithm (base e) of a number.
+Input must be positive. Throws error for zero or negative values.
 
-**Syntax:** `LOG WIT <value>`
+**Syntax:** `LOG WIT <number>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS LOG AN E FROM MATH?
+**Parameters:**
+- `value` (DUBBLE): The number to get natural logarithm of (must be > 0)
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ LOG WIT E      BTW 1.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ LOG WIT 1.0    BTW 0.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ LOG WIT 10.0   BTW ≈2.3026
+**Example: Natural log of e**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ LOG WIT E
+BTW Result: 1.0
 ```
 
-### LOG10 - Base-10 Logarithm
+**Example: Natural log of 1**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ LOG WIT 1.0
+BTW Result: 0.0
+```
+
+**Example: Natural log of 10**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ LOG WIT 10.0
+BTW Result: 2.302585093
+```
+
+**Note:** Input must be positive (greater than zero)
+
+**See also:** LOG10, LOG2, EXP, E
+
+### LOG10
 
 Returns the base-10 logarithm of a number.
+Input must be positive. Common logarithm for scientific calculations.
 
-**Syntax:** `LOG10 WIT <value>`
+**Syntax:** `LOG10 WIT <number>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS LOG10 FROM MATH?
+**Parameters:**
+- `value` (DUBBLE): The number to get base-10 logarithm of (must be > 0)
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ LOG10 WIT 10.0    BTW 1.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ LOG10 WIT 100.0   BTW 2.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ LOG10 WIT 1.0     BTW 0.0
+**Example: Log base 10 of 10**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ LOG10 WIT 10.0
+BTW Result: 1.0
 ```
 
-### LOG2 - Base-2 Logarithm
+**Example: Log base 10 of 100**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ LOG10 WIT 100.0
+BTW Result: 2.0
+```
+
+**Example: Log base 10 of 1**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ LOG10 WIT 1.0
+BTW Result: 0.0
+```
+
+**Note:** Input must be positive (greater than zero)
+
+**Note:** Common logarithm for scientific calculations
+
+**See also:** LOG, LOG2, EXP
+
+### LOG2
 
 Returns the base-2 logarithm of a number.
+Input must be positive. Useful for binary and computer science calculations.
 
-**Syntax:** `LOG2 WIT <value>`
+**Syntax:** `LOG2 WIT <number>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS LOG2 FROM MATH?
+**Parameters:**
+- `value` (DUBBLE): The number to get base-2 logarithm of (must be > 0)
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ LOG2 WIT 2.0     BTW 1.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ LOG2 WIT 8.0     BTW 3.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ LOG2 WIT 1.0     BTW 0.0
+**Example: Log base 2 of 2**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ LOG2 WIT 2.0
+BTW Result: 1.0
 ```
 
-### EXP - Exponential Function
+**Example: Log base 2 of 8**
 
-Returns e raised to the power of a number.
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ LOG2 WIT 8.0
+BTW Result: 3.0
+```
 
-**Syntax:** `EXP WIT <value>`
+**Example: Log base 2 of 1**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ LOG2 WIT 1.0
+BTW Result: 0.0
+```
+
+**Note:** Input must be positive (greater than zero)
+
+**Note:** Useful for binary and computer science calculations
+
+**See also:** LOG, LOG10, EXP
+
+## Rounding
+
+### CEIL
+
+Returns the smallest integer greater than or equal to the value (ceiling).
+Rounds up to the next whole number.
+
+**Syntax:** `CEIL WIT <number>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS EXP AN E FROM MATH?
+**Parameters:**
+- `value` (DUBBLE): The number to round up
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ EXP WIT 1.0     BTW E (≈2.718)
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ EXP WIT 0.0     BTW 1.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ EXP WIT 2.0     BTW E² (≈7.389)
+**Example: Ceiling of positive decimal**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ CEIL WIT 3.2
+BTW Result: 4.0
 ```
 
-## Rounding Functions
+**Example: Ceiling of whole number**
 
-### CEIL - Ceiling Function
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ CEIL WIT 3.0
+BTW Result: 3.0
+```
 
-Returns the smallest integer greater than or equal to the given value.
+**Example: Ceiling of negative number**
 
-**Syntax:** `CEIL WIT <value>`
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ CEIL WIT -3.7
+BTW Result: -3.0
+```
+
+**Note:** Always rounds up to the next whole number
+
+**Note:** For negative numbers, rounds towards zero
+
+**See also:** FLOOR, ROUND, TRUNC
+
+### FLOOR
+
+Returns the largest integer less than or equal to the value (floor).
+Rounds down to the previous whole number.
+
+**Syntax:** `FLOOR WIT <number>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS CEIL FROM MATH?
+**Parameters:**
+- `value` (DUBBLE): The number to round down
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ CEIL WIT 3.2     BTW 4.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ CEIL WIT 3.0     BTW 3.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ CEIL WIT -3.7    BTW -3.0
-```
-
-### FLOOR - Floor Function
-
-Returns the largest integer less than or equal to the given value.
-
-**Syntax:** `FLOOR WIT <value>`
-**Returns:** DUBBLE
+**Example: Floor of positive decimal**
 
 ```lol
-I CAN HAS FLOOR FROM MATH?
-
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ FLOOR WIT 3.7    BTW 3.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ FLOOR WIT 3.0    BTW 3.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ FLOOR WIT -3.2   BTW -4.0
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ FLOOR WIT 3.7
+BTW Result: 3.0
 ```
 
-### ROUND - Round Function
+**Example: Floor of whole number**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ FLOOR WIT 3.0
+BTW Result: 3.0
+```
+
+**Example: Floor of negative number**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ FLOOR WIT -3.2
+BTW Result: -4.0
+```
+
+**Note:** Always rounds down to the previous whole number
+
+**Note:** For negative numbers, rounds away from zero
+
+**See also:** CEIL, ROUND, TRUNC
+
+### ROUND
 
 Returns the value rounded to the nearest integer.
+Rounds 0.5 up to the next integer (round half up).
 
-**Syntax:** `ROUND WIT <value>`
+**Syntax:** `ROUND WIT <number>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS ROUND FROM MATH?
+**Parameters:**
+- `value` (DUBBLE): The number to round
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ ROUND WIT 3.4    BTW 3.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ ROUND WIT 3.5    BTW 4.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ ROUND WIT 3.6    BTW 4.0
+**Example: Round down**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ROUND WIT 3.4
+BTW Result: 3.0
 ```
 
-### TRUNC - Truncate Function
+**Example: Round up**
 
-Returns the integer part of a number, removing any fractional digits.
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ROUND WIT 3.6
+BTW Result: 4.0
+```
 
-**Syntax:** `TRUNC WIT <value>`
+**Example: Round half up**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ROUND WIT 3.5
+BTW Result: 4.0
+```
+
+**Example: Negative numbers**
+
+```lol
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ ROUND WIT -3.5
+BTW Result: -3.0
+```
+
+**Note:** Uses "round half up" strategy for 0.5 values
+
+**See also:** CEIL, FLOOR, TRUNC
+
+### TRUNC
+
+Returns the integer part of a number by removing the fractional part.
+Truncates towards zero, different from floor for negative numbers.
+
+**Syntax:** `TRUNC WIT <number>`
 **Returns:** DUBBLE
 
-```lol
-I CAN HAS TRUNC FROM MATH?
+**Parameters:**
+- `value` (DUBBLE): The number to truncate
 
-I HAS A VARIABLE RESULT1 TEH DUBBLE ITZ TRUNC WIT 3.7    BTW 3.0
-I HAS A VARIABLE RESULT2 TEH DUBBLE ITZ TRUNC WIT -3.7   BTW -3.0
-I HAS A VARIABLE RESULT3 TEH DUBBLE ITZ TRUNC WIT 5.0    BTW 5.0
-```
-
-## Usage Examples
-
-### Calculator Functions
+**Example: Truncate positive decimal**
 
 ```lol
-I CAN HAS MATH?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN CALCULATE_HYPOTENUSE WIT A TEH DUBBLE AN WIT B TEH DUBBLE
-    I HAS A VARIABLE A_SQUARED TEH DUBBLE ITZ POW WIT A AN WIT 2
-    I HAS A VARIABLE B_SQUARED TEH DUBBLE ITZ POW WIT B AN WIT 2
-    I HAS A VARIABLE C_SQUARED TEH DUBBLE ITZ A_SQUARED MOAR B_SQUARED
-    GIVEZ SQRT WIT C_SQUARED
-KTHXBAI
-
-HAI ME TEH FUNCSHUN MAIN
-    I HAS A VARIABLE HYPOTENUSE TEH DUBBLE ITZ CALCULATE_HYPOTENUSE WIT 3.0 AN WIT 4.0
-    SAYZ WIT HYPOTENUSE    BTW 5.0
-KTHXBAI
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ TRUNC WIT 3.7
+BTW Result: 3.0
 ```
 
-### Statistics Functions
+**Example: Truncate negative decimal**
 
 ```lol
-I CAN HAS MATH?
-
-HAI ME TEH FUNCSHUN FIND_RANGE WIT NUMBERS TEH BUKKIT
-    I HAS A VARIABLE MIN_VAL TEH DUBBLE ITZ NUMBERS DO AT WIT 0
-    I HAS A VARIABLE MAX_VAL TEH DUBBLE ITZ NUMBERS DO AT WIT 0
-    I HAS A VARIABLE INDEX TEH INTEGR ITZ 1
-
-    WHILE INDEX SMALLR THAN NUMBERS SIZ
-        I HAS A VARIABLE CURRENT TEH DUBBLE ITZ NUMBERS DO AT WIT INDEX
-        MIN_VAL ITZ MIN WIT MIN_VAL AN WIT CURRENT
-        MAX_VAL ITZ MAX WIT MAX_VAL AN WIT CURRENT
-        INDEX ITZ INDEX MOAR 1
-    KTHX
-
-    GIVEZ MAX_VAL LES MIN_VAL
-KTHXBAI
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ TRUNC WIT -3.7
+BTW Result: -3.0
 ```
 
-## Trigonometry Example
+**Example: Truncate whole number**
 
 ```lol
-I CAN HAS MATH?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN DEGREES_TO_RADIANS WIT DEGREES TEH DUBBLE
-    GIVEZ DEGREES TIEMZ PI DIVIDEZ 180.0
-KTHXBAI
-
-HAI ME TEH FUNCSHUN MAIN
-    BTW Calculate sine and cosine of 45 degrees
-    I HAS A VARIABLE ANGLE_DEG TEH DUBBLE ITZ 45.0
-    I HAS A VARIABLE ANGLE_RAD TEH DUBBLE ITZ DEGREES_TO_RADIANS WIT ANGLE_DEG
-
-    I HAS A VARIABLE SINE_VAL TEH DUBBLE ITZ SIN WIT ANGLE_RAD
-    I HAS A VARIABLE COSINE_VAL TEH DUBBLE ITZ COS WIT ANGLE_RAD
-    I HAS A VARIABLE TANGENT_VAL TEH DUBBLE ITZ TAN WIT ANGLE_RAD
-
-    SAY WIT "sin(45°) = "
-    SAYZ WIT SINE_VAL      BTW ≈ 0.7071
-    SAY WIT "cos(45°) = "
-    SAYZ WIT COSINE_VAL    BTW ≈ 0.7071
-    SAY WIT "tan(45°) = "
-    SAYZ WIT TANGENT_VAL   BTW ≈ 1.0
-KTHXBAI
+I HAS A VARIABLE RESULT TEH DUBBLE ITZ TRUNC WIT 5.0
+BTW Result: 5.0
 ```
 
-## Function Summary
+**Note:** Always truncates towards zero
 
-### Constants
+**Note:** Different from FLOOR for negative numbers
 
-| Constant | Type | Value | Description |
-|----------|------|-------|-------------|
-| `PI` | DUBBLE | 3.14159... | Mathematical constant π |
-| `E` | DUBBLE | 2.71828... | Euler's number |
+**See also:** CEIL, FLOOR, ROUND
 
-### Functions
-
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `ABS` | number | DUBBLE | Absolute value |
-| `MAX` | value1, value2 | DUBBLE | Maximum of two values |
-| `MIN` | value1, value2 | DUBBLE | Minimum of two values |
-| `SQRT` | number | DUBBLE | Square root |
-| `POW` | base, exponent | DUBBLE | Power function |
-| `SIN` | angle_radians | DUBBLE | Sine function |
-| `COS` | angle_radians | DUBBLE | Cosine function |
-| `TAN` | angle_radians | DUBBLE | Tangent function |
-| `ASIN` | value | DUBBLE | Arcsine function |
-| `ACOS` | value | DUBBLE | Arccosine function |
-| `ATAN` | value | DUBBLE | Arctangent function |
-| `ATAN2` | y, x | DUBBLE | Two-argument arctangent |
-| `LOG` | value | DUBBLE | Natural logarithm |
-| `LOG10` | value | DUBBLE | Base-10 logarithm |
-| `LOG2` | value | DUBBLE | Base-2 logarithm |
-| `EXP` | value | DUBBLE | Exponential function |
-| `CEIL` | value | DUBBLE | Ceiling function |
-| `FLOOR` | value | DUBBLE | Floor function |
-| `ROUND` | value | DUBBLE | Rounding function |
-| `TRUNC` | value | DUBBLE | Truncation function |
-
-## Related
-
-- [STDIO Module](stdio.md) - For displaying calculation results
-- [RANDOM Module](random.md) - For random number generation
-- [Examples](../examples/calculator.md) - Mathematical calculation examples

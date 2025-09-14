@@ -1,679 +1,1044 @@
-# SOCKET Module - Network Socket Operations
+# SOCKET Module
 
-The SOCKET module provides TCP and UDP socket functionality through the SOKKIT class for socket management and the WIRE class for TCP connections.
-
-## Importing SOCKET Module
+## Import
 
 ```lol
-BTW Import entire module
+BTW Full import
 I CAN HAS SOCKET?
 
-BTW Selective import
-I CAN HAS SOKKIT FROM SOCKET?
-I CAN HAS WIRE FROM SOCKET?
+BTW Selective import examples
 ```
 
-**Note:** The SOCKET module automatically imports the WIRE class when SOKKIT is imported.
+## Miscellaneous
 
-## SOKKIT Class
+### SOKKIT Class
 
-The SOKKIT class represents a network socket that can operate in TCP or UDP mode. It provides server and client functionality with configurable network parameters.
+A network socket that provides TCP and UDP networking capabilities.
+Supports both client and server operations with configurable protocol, host, port, and timeout settings.
 
-### Constructor
+**Methods:**
+
+#### ACCEPT
+
+Accepts an incoming TCP client connection on a listening socket.
+Blocks until a client connects, then returns a WIRE connection object.
+
+**Syntax:** `<socket> DO ACCEPT`
+**Example: Simple echo server**
 
 ```lol
-I HAS A VARIABLE SOCKET TEH SOKKIT ITZ NEW SOKKIT
+I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+SERVER PORT ITZ 8080
+SERVER DO BIND
+SERVER DO LISTEN
+SAYZ WIT "Echo server listening..."
+I HAS A VARIABLE CLIENT TEH WIRE ITZ SERVER DO ACCEPT
+SAYZ WIT "Client connected!"
+I HAS A VARIABLE MSG TEH STRIN ITZ CLIENT DO RECEIVE WIT 1024
+CLIENT DO SEND WIT "Echo: " MOAR MSG
+CLIENT DO CLOSE
 ```
 
-The constructor creates a socket with default settings:
-- **Protocol**: TCP
-- **Host**: localhost
-- **Port**: 8080
-- **Timeout**: 30 seconds
-
-### Properties
-
-- **PROTOCOL**: STRIN - Socket protocol, either "TCP" or "UDP" (default: "TCP")
-- **HOST**: STRIN - Target host address (default: "localhost")
-- **PORT**: INTEGR - Target port number (default: 8080)
-- **TIMEOUT**: INTEGR - Connection timeout in seconds (default: 30)
-
-### Methods
-
-#### Socket Management
-
-##### BIND - Bind Socket to Address
-
-Binds the socket to the specified host and port for server operations.
+**Example: Multi-client server loop**
 
 ```lol
-socket DO BIND
+SERVER DO LISTEN
+IM OUTTA UR LOOP
+I HAS A VARIABLE CLIENT TEH WIRE ITZ SERVER DO ACCEPT
+SAYZ WIT "New client from "
+SAYZ WIT CLIENT REMOTE_HOST
+SAYZ WIT ":"
+SAYZ WIT CLIENT REMOTE_PORT
+BTW Handle client in separate thread/process
+CLIENT DO SEND WIT "Hello from server!"
+CLIENT DO CLOSE
+KTHX
 ```
 
-**Parameters:** None (uses HOST and PORT properties)
+**Note:** Blocks execution until a client connects
 
-**Throws:** Exception if binding fails
+**Note:** Socket must be in LISTEN state before calling ACCEPT
 
-##### LISTEN - Start Listening (TCP only)
+**Note:** Returns new WIRE object for each accepted connection
 
-Starts listening for incoming connections on a bound TCP socket.
+**Note:** Use returned WIRE object for data transfer with client
+
+#### BIND
+
+Binds the socket to the configured host and port address.
+Prepares the socket for server operations (TCP) or datagram communication (UDP).
+
+**Syntax:** `<socket> DO BIND`
+**Example: Bind TCP server socket**
 
 ```lol
-socket DO LISTEN
+I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+SERVER HOST ITZ "0.0.0.0" BTW Listen on all interfaces
+SERVER PORT ITZ 8080
+SERVER PROTOCOL ITZ "TCP"
+SERVER DO BIND
+SAYZ WIT "Server bound to port 8080"
 ```
 
-**Parameters:** None
-
-**Throws:** Exception if socket is not bound or not TCP
-
-##### CLOSE - Close Socket
-
-Closes the socket and releases resources.
+**Example: Bind UDP socket**
 
 ```lol
-socket DO CLOSE
+I HAS A VARIABLE UDP_SOCK TEH SOKKIT ITZ NEW SOKKIT
+UDP_SOCK PROTOCOL ITZ "UDP"
+UDP_SOCK PORT ITZ 9999
+UDP_SOCK DO BIND
+SAYZ WIT "UDP socket bound to port 9999"
 ```
 
-**Parameters:** None
-
-#### TCP Operations
-
-##### CONNECT - Connect to Server
-
-Connects to a remote TCP server and returns a WIRE connection object.
+**Example: Bind with error handling**
 
 ```lol
-I HAS A VARIABLE CONNECTION TEH WIRE ITZ socket DO CONNECT
+MAYB
+SERVER DO BIND
+SAYZ WIT "Successfully bound to port"
+OOPSIE ERR
+SAYZ WIT "Failed to bind: "
+SAYZ WIT ERR
+KTHX
 ```
 
-**Parameters:** None (uses HOST, PORT, and TIMEOUT properties)
+**Note:** Uses current HOST and PORT property values
 
-**Returns:** WIRE - The connection object
+**Note:** For TCP: enables LISTEN and ACCEPT operations
 
-**Throws:** Exception if connection fails
+**Note:** For UDP: enables SEND_TO and RECEIVE_FROM operations
 
-##### ACCEPT - Accept Incoming Connection
+**Note:** Throws exception if port is already in use or insufficient permissions
 
-Accepts an incoming connection on a listening TCP socket.
+#### CLOSE
+
+Closes the socket and releases all associated network resources.
+Stops listening, closes connections, and frees system resources.
+
+**Syntax:** `<socket> DO CLOSE`
+**Example: Proper server shutdown**
 
 ```lol
-I HAS A VARIABLE CLIENT TEH WIRE ITZ socket DO ACCEPT
+I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+SERVER DO BIND
+SERVER DO LISTEN
+BTW Server operations here
+SERVER DO CLOSE
+SAYZ WIT "Server shut down"
 ```
 
-**Parameters:** None
-
-**Returns:** WIRE - The client connection object
-
-**Throws:** Exception if socket is not listening
-
-#### UDP Operations
-
-##### SEND_TO - Send UDP Data
-
-Sends data to a specific UDP address.
+**Example: Cleanup in exception handling**
 
 ```lol
-socket DO SEND_TO WIT <data> AN WIT <host> AN WIT <port>
+MAYB
+SERVER DO BIND
+SERVER DO LISTEN
+BTW Server work here
+OOPSIE ERR
+SAYZ WIT "Server error: "
+SAYZ WIT ERR
+FINALLY
+SERVER DO CLOSE BTW Always cleanup
+KTHX
 ```
 
+**Note:** Safe to call multiple times - no error if already closed
+
+**Note:** Automatically called when socket object is garbage collected
+
+**Note:** For TCP servers: stops accepting new connections
+
+**Note:** For UDP sockets: stops receiving packets
+
+**Note:** Does not close existing WIRE connections from ACCEPT
+
+#### CONNECT
+
+Connects to a remote TCP server using configured HOST and PORT.
+Returns a WIRE connection object for data transfer, respects TIMEOUT setting.
+
+**Syntax:** `<socket> DO CONNECT`
+**Example: Connect to TCP server**
+
+```lol
+I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
+CLIENT HOST ITZ "127.0.0.1"
+CLIENT PORT ITZ 8080
+CLIENT TIMEOUT ITZ 10 BTW 10 second timeout
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+SAYZ WIT "Connected to server!"
+```
+
+**Example: HTTP client example**
+
+```lol
+CLIENT HOST ITZ "httpbin.org"
+CLIENT PORT ITZ 80
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+CONN DO SEND WIT "GET / HTTP/1.1\r\nHost: httpbin.org\r\n\r\n"
+I HAS A VARIABLE RESPONSE TEH STRIN ITZ CONN DO RECEIVE WIT 4096
+SAYZ WIT RESPONSE
+CONN DO CLOSE
+```
+
+**Example: Connect with error handling**
+
+```lol
+MAYB
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+SAYZ WIT "Successfully connected"
+BTW Use connection here
+CONN DO CLOSE
+OOPSIE ERR
+SAYZ WIT "Connection failed: "
+SAYZ WIT ERR
+KTHX
+```
+
+**Note:** Only works with TCP protocol sockets
+
+**Note:** Uses current HOST, PORT, and TIMEOUT property values
+
+**Note:** Throws exception if connection fails or times out
+
+**Note:** Returns WIRE object - same type as ACCEPT returns
+
+#### LISTEN
+
+Starts listening for incoming TCP connections on a bound socket.
+Enables the socket to accept client connections using ACCEPT method.
+
+**Syntax:** `<socket> DO LISTEN`
+**Example: Complete TCP server setup**
+
+```lol
+I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+SERVER PROTOCOL ITZ "TCP"
+SERVER HOST ITZ "0.0.0.0"
+SERVER PORT ITZ 8080
+SERVER DO BIND
+SERVER DO LISTEN
+SAYZ WIT "Server listening on port 8080"
+```
+
+**Example: Server with client acceptance loop**
+
+```lol
+SERVER DO LISTEN
+SAYZ WIT "Waiting for connections..."
+IM OUTTA UR LOOP
+I HAS A VARIABLE CLIENT TEH WIRE ITZ SERVER DO ACCEPT
+SAYZ WIT "Client connected from "
+SAYZ WIT CLIENT REMOTE_HOST
+CLIENT DO SEND WIT "Welcome to server!"
+CLIENT DO CLOSE
+KTHX
+```
+
+**Note:** Only works with TCP protocol sockets
+
+**Note:** Socket must be bound before calling LISTEN
+
+**Note:** After LISTEN, use ACCEPT to handle incoming connections
+
+**Note:** Does not block - ACCEPT is where blocking occurs
+
+#### RECEIVE_FROM
+
+Receives UDP data and returns both the data and sender information.
+Blocks until data is received, returns BASKIT with DATA, HOST, and PORT keys.
+
+**Syntax:** `<socket> DO RECEIVE_FROM`
+**Example: UDP server receiving data**
+
+```lol
+I HAS A VARIABLE UDP_SERVER TEH SOKKIT ITZ NEW SOKKIT
+UDP_SERVER PROTOCOL ITZ "UDP"
+UDP_SERVER PORT ITZ 9999
+UDP_SERVER DO BIND
+SAYZ WIT "UDP server listening on port 9999"
+I HAS A VARIABLE PACKET TEH BASKIT ITZ UDP_SERVER DO RECEIVE_FROM
+SAYZ WIT "Received: "
+SAYZ WIT PACKET DO GET WIT "DATA"
+SAYZ WIT "From: "
+SAYZ WIT PACKET DO GET WIT "HOST"
+SAYZ WIT ":"
+SAYZ WIT PACKET DO GET WIT "PORT"
+```
+
+**Example: Echo UDP server**
+
+```lol
+IM OUTTA UR LOOP
+I HAS A VARIABLE PACKET TEH BASKIT ITZ UDP_SERVER DO RECEIVE_FROM
+I HAS A VARIABLE MSG TEH STRIN ITZ PACKET DO GET WIT "DATA"
+I HAS A VARIABLE CLIENT_HOST TEH STRIN ITZ PACKET DO GET WIT "HOST"
+I HAS A VARIABLE CLIENT_PORT TEH INTEGR ITZ PACKET DO GET WIT "PORT"
+UDP_SERVER DO SEND_TO WIT "Echo: " MOAR MSG AN WIT CLIENT_HOST AN WIT CLIENT_PORT
+KTHX
+```
+
+**Example: Process UDP packets**
+
+```lol
+I HAS A VARIABLE PACKET TEH BASKIT ITZ UDP_SERVER DO RECEIVE_FROM
+IZ (PACKET DO GET WIT "DATA") SAEM AS "PING"?
+UDP_SERVER DO SEND_TO WIT "PONG" AN WIT (PACKET DO GET WIT "HOST") AN WIT (PACKET DO GET WIT "PORT")
+KTHX
+```
+
+**Note:** Only works with UDP protocol sockets
+
+**Note:** Socket must be bound before receiving
+
+**Note:** Blocks execution until data arrives
+
+**Note:** Maximum packet size is 4096 bytes
+
+#### SEND_TO
+
+Sends data to a specific UDP address without establishing a connection.
+Used for UDP datagram communication - data is sent directly to the target.
+
+**Syntax:** `<socket> DO SEND_TO WIT <data> AN WIT <host> AN WIT <port>`
 **Parameters:**
-- **data**: STRIN - The data to send
-- **host**: STRIN - Target host address
-- **port**: INTEGR - Target port number
+- `data` (STRIN): The data to send
+- `host` (STRIN): Target host address (IP or hostname)
+- `port` (INTEGR): Target port number
 
-**Throws:** Exception if socket is not bound or not UDP
-
-##### RECEIVE_FROM - Receive UDP Data
-
-Receives data from a UDP socket and returns sender information.
+**Example: UDP client sending data**
 
 ```lol
-I HAS A VARIABLE PACKET TEH BASKIT ITZ socket DO RECEIVE_FROM
+I HAS A VARIABLE UDP_CLIENT TEH SOKKIT ITZ NEW SOKKIT
+UDP_CLIENT PROTOCOL ITZ "UDP"
+UDP_CLIENT PORT ITZ 0 BTW Use any available port
+UDP_CLIENT DO BIND
+UDP_CLIENT DO SEND_TO WIT "Hello UDP!" AN WIT "127.0.0.1" AN WIT 9999
+SAYZ WIT "UDP message sent"
 ```
 
-**Parameters:** None
-
-**Returns:** BASKIT - Contains "DATA", "HOST", and "PORT" keys
-
-**Throws:** Exception if socket is not bound or not UDP
-
-## WIRE Class
-
-The WIRE class represents a TCP connection providing bidirectional data transfer capabilities.
-
-### Properties
-
-- **REMOTE_HOST**: STRIN (read-only) - Remote endpoint IP address
-- **REMOTE_PORT**: INTEGR (read-only) - Remote endpoint port number
-- **LOCAL_HOST**: STRIN (read-only) - Local endpoint IP address
-- **LOCAL_PORT**: INTEGR (read-only) - Local endpoint port number
-- **IS_CONNECTED**: BOOL (read-only) - Connection status
-
-### Methods
-
-##### SEND - Send Data
-
-Sends data over the TCP connection.
+**Example: Send to multiple destinations**
 
 ```lol
-connection DO SEND WIT <data>
+I HAS A VARIABLE SERVERS TEH BUKKIT ITZ NEW BUKKIT
+SERVERS DO PUSH WIT "192.168.1.100"
+SERVERS DO PUSH WIT "192.168.1.101"
+IM OUTTA UR SERVERS NERFIN SERVER_IP
+UDP_CLIENT DO SEND_TO WIT "Broadcast message" AN WIT SERVER_IP AN WIT 8888
+IM IN UR SERVERS
 ```
 
+**Example: UDP logging client**
+
+```lol
+UDP_CLIENT DO SEND_TO WIT "ERROR: Something went wrong" AN WIT "log-server.local" AN WIT 514
+```
+
+**Note:** Only works with UDP protocol sockets
+
+**Note:** Socket must be bound before sending
+
+**Note:** No connection establishment - fire and forget
+
+**Note:** No delivery guarantee - UDP is unreliable
+
+#### SOKKIT
+
+Creates a new socket with default network settings.
+Initializes with TCP protocol, localhost host, port 8080, and 30-second timeout.
+
+**Syntax:** `NEW SOKKIT`
+**Example: Create default socket**
+
+```lol
+I HAS A VARIABLE SOCK TEH SOKKIT ITZ NEW SOKKIT
+BTW Socket created with TCP, localhost:8080, 30s timeout
+```
+
+**Example: Create and configure socket**
+
+```lol
+I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+SERVER PROTOCOL ITZ "TCP"
+SERVER HOST ITZ "0.0.0.0" BTW Listen on all interfaces
+SERVER PORT ITZ 3000
+SERVER TIMEOUT ITZ 60 BTW 60 second timeout
+```
+
+**Note:** Use properties (PROTOCOL, HOST, PORT, TIMEOUT) to configure before operations
+
+**Note:** Socket is not bound or connected after creation - use BIND or CONNECT
+
+**Member Variables:**
+
+#### HOST
+
+Target host address for network operations.
+
+
+**Example: Set specific IP address**
+
+```lol
+I HAS A VARIABLE SOCK TEH SOKKIT ITZ NEW SOKKIT
+SOCK HOST ITZ "192.168.1.100"
+SAYZ WIT "Connecting to "
+SAYZ WIT SOCK HOST
+```
+
+**Example: Set hostname**
+
+```lol
+SOCK HOST ITZ "example.com"
+```
+
+**Example: Server listening on all interfaces**
+
+```lol
+I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+SERVER HOST ITZ "0.0.0.0" BTW Listen on all network interfaces
+SERVER PORT ITZ 8080
+SERVER DO BIND
+```
+
+**Example: Localhost connections only**
+
+```lol
+SERVER HOST ITZ "127.0.0.1" BTW Local connections only
+```
+
+**Note:** For servers: determines which network interface to bind to
+
+**Note:** For clients: determines which host to connect to
+
+**Note:** Use "0.0.0.0" to listen on all interfaces (servers only)
+
+**Note:** Use "127.0.0.1" or "localhost" for local-only connections
+
+#### PORT
+
+Target port number for network operations.
+
+
+**Example: Set web server port**
+
+```lol
+I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+SERVER PORT ITZ 80 BTW HTTP default port
+```
+
+**Example: Set custom port**
+
+```lol
+SERVER PORT ITZ 3000
+```
+
+**Example: Use ephemeral port (system assigns)**
+
+```lol
+I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
+CLIENT PORT ITZ 0 BTW System will assign available port
+CLIENT DO BIND
+```
+
+**Example: Common port numbers**
+
+```lol
+BTW SERVER PORT ITZ 21    BTW FTP
+BTW SERVER PORT ITZ 22    BTW SSH
+BTW SERVER PORT ITZ 80    BTW HTTP
+BTW SERVER PORT ITZ 443   BTW HTTPS
+BTW SERVER PORT ITZ 993   BTW IMAPS
+```
+
+**Note:** Ports 0-1023 are reserved and may require admin privileges
+
+**Note:** Port 0 means "assign any available port" when binding
+
+**Note:** Port must be in range 0-65535
+
+**Note:** Common ports: 80 (HTTP), 443 (HTTPS), 22 (SSH), 21 (FTP)
+
+#### PROTOCOL
+
+Socket protocol specification - either TCP or UDP.
+
+
+**Example: Set TCP protocol (default)**
+
+```lol
+I HAS A VARIABLE SOCK TEH SOKKIT ITZ NEW SOKKIT
+SOCK PROTOCOL ITZ "TCP"
+SAYZ WIT "Using TCP protocol"
+```
+
+**Example: Set UDP protocol**
+
+```lol
+SOCK PROTOCOL ITZ "UDP"
+SAYZ WIT "Using UDP protocol"
+```
+
+**Example: Check current protocol**
+
+```lol
+IZ (SOCK PROTOCOL) SAEM AS "TCP"?
+SAYZ WIT "Socket is configured for TCP"
+NOPE
+SAYZ WIT "Socket is configured for UDP"
+KTHX
+```
+
+**Note:** TCP provides reliable, ordered, connection-based communication
+
+**Note:** UDP provides fast, connectionless, datagram-based communication
+
+**Note:** Must be set before BIND operation
+
+**Note:** Case-insensitive (converted to uppercase)
+
+#### TIMEOUT
+
+Connection timeout in seconds for TCP client connections.
+
+
+**Example: Set short timeout**
+
+```lol
+I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
+CLIENT HOST ITZ "slow-server.com"
+CLIENT TIMEOUT ITZ 5 BTW 5 second timeout
+MAYB
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+SAYZ WIT "Connected successfully"
+OOPSIE ERR
+SAYZ WIT "Connection timed out or failed"
+KTHX
+```
+
+**Example: Set long timeout for slow connections**
+
+```lol
+CLIENT TIMEOUT ITZ 120 BTW 2 minute timeout
+```
+
+**Example: Disable timeout (wait indefinitely)**
+
+```lol
+CLIENT TIMEOUT ITZ 0 BTW No timeout
+```
+
+**Example: Check current timeout**
+
+```lol
+SAYZ WIT "Connection timeout: "
+SAYZ WIT CLIENT TIMEOUT
+SAYZ WIT " seconds"
+```
+
+**Note:** Only affects TCP CONNECT operations, not UDP or server operations
+
+**Note:** Timeout of 0 means wait indefinitely
+
+**Note:** Must be non-negative integer
+
+**Note:** Default is 30 seconds for new sockets
+
+**Example: TCP server setup**
+
+```lol
+I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
+SERVER HOST ITZ "0.0.0.0"
+SERVER PORT ITZ 8080
+SERVER PROTOCOL ITZ "TCP"
+SERVER DO BIND
+SERVER DO LISTEN
+```
+
+**Example: TCP client connection**
+
+```lol
+I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
+CLIENT HOST ITZ "127.0.0.1"
+CLIENT PORT ITZ 8080
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+```
+
+**Example: UDP socket communication**
+
+```lol
+I HAS A VARIABLE UDP_SOCK TEH SOKKIT ITZ NEW SOKKIT
+UDP_SOCK PROTOCOL ITZ "UDP"
+UDP_SOCK PORT ITZ 9999
+UDP_SOCK DO BIND
+UDP_SOCK DO SEND_TO WIT "Hello UDP!" AN WIT "localhost" AN WIT 8888
+```
+
+### WIRE Class
+
+A TCP connection that provides bidirectional data transfer capabilities.
+Represents an active network connection between two endpoints for reliable data exchange.
+
+**Methods:**
+
+#### CLOSE
+
+Closes the TCP connection and releases associated resources.
+Connection becomes unusable after closing and IS_CONNECTED becomes NO.
+
+**Syntax:** `<wire> DO CLOSE`
+**Example: Proper connection cleanup**
+
+```lol
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+CONN DO SEND WIT "Hello, Server!"
+I HAS A VARIABLE REPLY TEH STRIN ITZ CONN DO RECEIVE WIT 100
+CONN DO CLOSE
+SAYZ WIT "Connection closed"
+```
+
+**Example: Connection cleanup in exception handling**
+
+```lol
+MAYB
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+CONN DO SEND WIT "Important data"
+I HAS A VARIABLE RESULT TEH STRIN ITZ CONN DO RECEIVE WIT 500
+BTW Process result here
+OOPSIE ERR
+SAYZ WIT "Connection error: "
+SAYZ WIT ERR
+FINALLY
+IZ CONN IS_CONNECTED?
+CONN DO CLOSE BTW Always cleanup
+KTHX
+KTHX
+```
+
+**Example: Server client handling**
+
+```lol
+I HAS A VARIABLE CLIENT TEH WIRE ITZ SERVER DO ACCEPT
+CLIENT DO SEND WIT "Welcome!"
+I HAS A VARIABLE REQUEST TEH STRIN ITZ CLIENT DO RECEIVE WIT 1024
+BTW Process request and send response
+CLIENT DO CLOSE BTW Close client connection
+```
+
+**Note:** Safe to call multiple times - no error if already closed
+
+**Note:** Connection cannot be reused after closing
+
+**Note:** Always close connections to prevent resource leaks
+
+**Note:** IS_CONNECTED property becomes NO after closing
+
+#### RECEIVE
+
+Receives up to the specified number of characters from the TCP connection.
+Blocks until data is available, returns received data (may be shorter than requested).
+
+**Syntax:** `<wire> DO RECEIVE WIT <length>`
 **Parameters:**
-- **data**: STRIN - The data to send
+- `length` (INTEGR): Maximum number of characters to receive
 
-**Throws:** Exception if connection is not established
-
-##### RECEIVE - Receive Data
-
-Receives a specific amount of data from the TCP connection.
+**Example: Receive fixed amount of data**
 
 ```lol
-I HAS A VARIABLE DATA TEH STRIN ITZ connection DO RECEIVE WIT <length>
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+I HAS A VARIABLE DATA TEH STRIN ITZ CONN DO RECEIVE WIT 1024
+SAYZ WIT "Received: "
+SAYZ WIT DATA
 ```
 
+**Example: Receive HTTP response**
+
+```lol
+CONN DO SEND WIT "GET / HTTP/1.1\r\nHost: example.com\r\n\r\n"
+I HAS A VARIABLE HEADERS TEH STRIN ITZ CONN DO RECEIVE WIT 4096
+SAYZ WIT "Response headers: "
+SAYZ WIT HEADERS
+```
+
+**Example: Receive data in chunks**
+
+```lol
+I HAS A VARIABLE BUFFER TEH STRIN ITZ ""
+WHILE NO SAEM AS (BUFFER ENDS WIT "END")
+I HAS A VARIABLE CHUNK TEH STRIN ITZ CONN DO RECEIVE WIT 256
+IZ CHUNK SAEM AS ""?
+GTFO BTW Connection closed
+KTHX
+BUFFER ITZ BUFFER MOAR CHUNK
+KTHX
+```
+
+**Note:** Blocks execution until data arrives or connection closes
+
+**Note:** Returns empty string if connection is closed by remote end
+
+**Note:** May return less data than requested if that's all that's available
+
+**Note:** Connection must be established before receiving
+
+#### RECEIVE_ALL
+
+Receives all available data from the TCP connection until the connection closes.
+Blocks until the remote end closes the connection, then returns all received data.
+
+**Syntax:** `<wire> DO RECEIVE_ALL`
+**Example: Download entire web page**
+
+```lol
+I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
+CLIENT HOST ITZ "httpbin.org"
+CLIENT PORT ITZ 80
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+CONN DO SEND WIT "GET /get HTTP/1.1\r\nHost: httpbin.org\r\nConnection: close\r\n\r\n"
+I HAS A VARIABLE RESPONSE TEH STRIN ITZ CONN DO RECEIVE_ALL
+SAYZ WIT "Full response: "
+SAYZ WIT RESPONSE
+```
+
+**Example: Receive complete file transfer**
+
+```lol
+CONN DO SEND WIT "GET_FILE document.txt"
+I HAS A VARIABLE FILE_CONTENT TEH STRIN ITZ CONN DO RECEIVE_ALL
+SAYZ WIT "File received, size: "
+SAYZ WIT FILE_CONTENT SIZ
+```
+
+**Example: Simple protocol with termination**
+
+```lol
+CONN DO SEND WIT "DOWNLOAD_DATA"
+I HAS A VARIABLE ALL_DATA TEH STRIN ITZ CONN DO RECEIVE_ALL
+BTW Server closes connection when done sending
+SAYZ WIT "Received all data: "
+SAYZ WIT ALL_DATA
+```
+
+**Note:** Blocks until remote end closes the connection
+
+**Note:** Connection is automatically marked as closed after completion
+
+**Note:** Useful for protocols where server closes connection to signal end
+
+**Note:** May use significant memory for large data transfers
+
+#### SEND
+
+Sends string data over the TCP connection to the remote endpoint.
+Data is transmitted immediately and may be buffered by the network stack.
+
+**Syntax:** `<wire> DO SEND WIT <data>`
 **Parameters:**
-- **length**: INTEGR - Maximum number of bytes to receive
+- `data` (STRIN): The string data to send
 
-**Returns:** STRIN - The received data (may be shorter than requested)
-
-##### RECEIVE_ALL - Receive All Data
-
-Receives all available data from the TCP connection until it closes.
+**Example: Send simple message**
 
 ```lol
-I HAS A VARIABLE DATA TEH STRIN ITZ connection DO RECEIVE_ALL
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+CONN DO SEND WIT "Hello, Server!"
 ```
 
-**Parameters:** None
-
-**Returns:** STRIN - All received data
-
-##### CLOSE - Close Connection
-
-Closes the TCP connection.
+**Example: Send HTTP request**
 
 ```lol
-connection DO CLOSE
+CONN DO SEND WIT "GET /api/users HTTP/1.1\r\n"
+CONN DO SEND WIT "Host: api.example.com\r\n"
+CONN DO SEND WIT "Content-Length: 0\r\n\r\n"
 ```
 
-**Parameters:** None
-
-## TCP Socket Operations
-
-### TCP Server
+**Example: Send JSON data**
 
 ```lol
-I CAN HAS SOCKET?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN TCP_SERVER WIT PORT TEH INTEGR
-    SAYZ WIT "=== TCP Server Example ==="
-
-    BTW Create server socket
-    I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
-    SERVER PROTOCOL ITZ "TCP"
-    SERVER HOST ITZ "localhost"
-    SERVER PORT ITZ PORT
-
-    MAYB
-        BTW Bind and listen
-        SERVER DO BIND
-        SAYZ WIT "Server bound to port " + PORT
-        SERVER DO LISTEN
-        SAYZ WIT "Server listening for connections..."
-
-        BTW Accept client connection
-        I HAS A VARIABLE CLIENT TEH WIRE ITZ SERVER DO ACCEPT
-        SAYZ WIT "Client connected!"
-
-        BTW Show client information
-        SAY WIT "Client address: "
-        SAY WIT CLIENT REMOTE_HOST
-        SAY WIT ":"
-        SAYZ WIT CLIENT REMOTE_PORT
-
-        BTW Receive message from client
-        I HAS A VARIABLE MESSAGE TEH STRIN ITZ CLIENT DO RECEIVE WIT 1024
-        SAY WIT "Received: "
-        SAYZ WIT MESSAGE
-
-        BTW Send response
-        CLIENT DO SEND WIT "Hello from server!"
-
-        BTW Clean up
-        CLIENT DO CLOSE
-        SERVER DO CLOSE
-        SAYZ WIT "Server closed"
-
-    OOPSIE ERR
-        SAYZ WIT "Server error: " + ERR
-        SERVER DO CLOSE
-    KTHX
-KTHXBAI
+I HAS A VARIABLE JSON_DATA TEH STRIN ITZ "{\"name\":\"Alice\",\"age\":25}"
+CONN DO SEND WIT "POST /users HTTP/1.1\r\n"
+CONN DO SEND WIT "Content-Type: application/json\r\n"
+CONN DO SEND WIT "Content-Length: "
+CONN DO SEND WIT JSON_DATA SIZ
+CONN DO SEND WIT "\r\n\r\n"
+CONN DO SEND WIT JSON_DATA
 ```
 
-### TCP Client
+**Note:** Connection must be established (IS_CONNECTED = YEZ)
+
+**Note:** Data is sent as-is - no automatic newlines or formatting added
+
+**Note:** Large data may be sent in multiple network packets
+
+**Note:** Throws exception if connection is broken or closed
+
+**Member Variables:**
+
+#### IS_CONNECTED
+
+Read-only property indicating whether the connection is currently active.
+
+
+**Example: Check connection before operations**
 
 ```lol
-I CAN HAS SOCKET?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN TCP_CLIENT WIT HOST TEH STRIN AN WIT PORT TEH INTEGR
-    SAYZ WIT "=== TCP Client Example ==="
-
-    BTW Create client socket
-    I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
-    CLIENT PROTOCOL ITZ "TCP"
-    CLIENT HOST ITZ HOST
-    CLIENT PORT ITZ PORT
-    CLIENT TIMEOUT ITZ 10
-
-    MAYB
-        BTW Connect to server
-        I HAS A VARIABLE CONNECTION TEH WIRE ITZ CLIENT DO CONNECT
-        SAYZ WIT "Connected to server!"
-
-        BTW Show connection information
-        SAY WIT "Connected to: "
-        SAY WIT CONNECTION REMOTE_HOST
-        SAY WIT ":"
-        SAYZ WIT CONNECTION REMOTE_PORT
-
-        BTW Send message
-        CONNECTION DO SEND WIT "Hello from client!"
-        SAYZ WIT "Message sent"
-
-        BTW Receive response
-        I HAS A VARIABLE RESPONSE TEH STRIN ITZ CONNECTION DO RECEIVE WIT 1024
-        SAY WIT "Server responded: "
-        SAYZ WIT RESPONSE
-
-        BTW Close connection
-        CONNECTION DO CLOSE
-        SAYZ WIT "Connection closed"
-
-    OOPSIE ERR
-        SAYZ WIT "Client error: " + ERR
-    KTHX
-KTHXBAI
-
-HAI ME TEH FUNCSHUN DEMO_TCP_CLIENT
-    TCP_CLIENT WIT "localhost" AN WIT 8080
-KTHXBAI
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+IZ CONN IS_CONNECTED?
+CONN DO SEND WIT "Hello!"
+I HAS A VARIABLE REPLY TEH STRIN ITZ CONN DO RECEIVE WIT 100
+NOPE
+SAYZ WIT "Connection not available"
+KTHX
 ```
 
-## UDP Socket Operations
-
-### UDP Server
+**Example: Connection monitoring loop**
 
 ```lol
-I CAN HAS SOCKET?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN UDP_SERVER WIT PORT TEH INTEGR
-    SAYZ WIT "=== UDP Server Example ==="
-
-    BTW Create UDP server socket
-    I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
-    SERVER PROTOCOL ITZ "UDP"
-    SERVER HOST ITZ "localhost"
-    SERVER PORT ITZ PORT
-
-    MAYB
-        BTW Bind UDP socket
-        SERVER DO BIND
-        SAYZ WIT "UDP server listening on port " + PORT
-
-        BTW Receive data from client
-        I HAS A VARIABLE PACKET TEH BASKIT ITZ SERVER DO RECEIVE_FROM
-        
-        I HAS A VARIABLE DATA TEH STRIN ITZ PACKET DO GET WIT "DATA"
-        I HAS A VARIABLE CLIENT_HOST TEH STRIN ITZ PACKET DO GET WIT "HOST"
-        I HAS A VARIABLE CLIENT_PORT TEH INTEGR ITZ PACKET DO GET WIT "PORT"
-
-        SAY WIT "Received from "
-        SAY WIT CLIENT_HOST
-        SAY WIT ":"
-        SAY WIT CLIENT_PORT
-        SAY WIT " - "
-        SAYZ WIT DATA
-
-        BTW Send response back to client
-        SERVER DO SEND_TO WIT "Server response: " + DATA AN WIT CLIENT_HOST AN WIT CLIENT_PORT
-        SAYZ WIT "Response sent back to client"
-
-        BTW Clean up
-        SERVER DO CLOSE
-        SAYZ WIT "UDP server closed"
-
-    OOPSIE ERR
-        SAYZ WIT "UDP server error: " + ERR
-        SERVER DO CLOSE
-    KTHX
-KTHXBAI
+WHILE (CONN IS_CONNECTED)
+I HAS A VARIABLE DATA TEH STRIN ITZ CONN DO RECEIVE WIT 256
+IZ DATA SAEM AS ""?
+GTFO BTW Connection closed by remote
+KTHX
+BTW Process received data
+SAYZ WIT "Received: "
+SAYZ WIT DATA
+KTHX
 ```
 
-### UDP Client
+**Example: Safe connection cleanup**
 
 ```lol
-I CAN HAS SOCKET?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN UDP_CLIENT WIT HOST TEH STRIN AN WIT PORT TEH INTEGR
-    SAYZ WIT "=== UDP Client Example ==="
-
-    BTW Create UDP client socket
-    I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
-    CLIENT PROTOCOL ITZ "UDP"
-    CLIENT HOST ITZ "localhost"
-    CLIENT PORT ITZ 0  BTW Use any available port
-
-    MAYB
-        BTW Bind to any available port
-        CLIENT DO BIND
-        SAYZ WIT "UDP client ready"
-
-        BTW Send data to server
-        I HAS A VARIABLE MESSAGE TEH STRIN ITZ "Hello UDP server!"
-        CLIENT DO SEND_TO WIT MESSAGE AN WIT HOST AN WIT PORT
-        SAYZ WIT "Message sent to server"
-
-        BTW Receive response
-        I HAS A VARIABLE RESPONSE TEH BASKIT ITZ CLIENT DO RECEIVE_FROM
-        I HAS A VARIABLE REPLY TEH STRIN ITZ RESPONSE DO GET WIT "DATA"
-        
-        SAY WIT "Server replied: "
-        SAYZ WIT REPLY
-
-        BTW Clean up
-        CLIENT DO CLOSE
-        SAYZ WIT "UDP client closed"
-
-    OOPSIE ERR
-        SAYZ WIT "UDP client error: " + ERR
-        CLIENT DO CLOSE
-    KTHX
-KTHXBAI
-
-HAI ME TEH FUNCSHUN DEMO_UDP_CLIENT
-    UDP_CLIENT WIT "localhost" AN WIT 8081
-KTHXBAI
+MAYB
+BTW Some network operations
+CONN DO SEND WIT "Important message"
+OOPSIE ERR
+SAYZ WIT "Network error: "
+SAYZ WIT ERR
+FINALLY
+IZ CONN IS_CONNECTED?
+CONN DO CLOSE
+KTHX
+KTHX
 ```
 
-## Advanced Socket Operations
+**Note:** Automatically set to NO when connection fails or is closed
 
-### Multi-Client TCP Server
+**Note:** Use this to avoid exceptions from operations on closed connections
+
+**Note:** Connection may become disconnected due to network errors or remote closure
+
+#### LOCAL_HOST
+
+Read-only property containing the local endpoint's IP address.
+
+
+**Example: Show server's local address**
 
 ```lol
-I CAN HAS SOCKET?
-I CAN HAS STDIO?
-I CAN HAS THREAD?
-
-HAI ME TEH FUNCSHUN HANDLE_CLIENT WIT CLIENT_CONN TEH WIRE
-    MAYB
-        BTW Get client information
-        I HAS A VARIABLE CLIENT_ADDR TEH STRIN ITZ CLIENT_CONN REMOTE_HOST + ":" + CLIENT_CONN REMOTE_PORT
-        SAYZ WIT "Handling client: " + CLIENT_ADDR
-
-        BTW Echo server - receive and send back
-        I HAS A VARIABLE DATA TEH STRIN ITZ CLIENT_CONN DO RECEIVE WIT 1024
-        IZ DATA SAEM AS ""?
-            SAYZ WIT "Client " + CLIENT_ADDR + " disconnected"
-        NOPE
-            SAYZ WIT "Echoing to " + CLIENT_ADDR + ": " + DATA
-            CLIENT_CONN DO SEND WIT "Echo: " + DATA
-        KTHX
-
-        CLIENT_CONN DO CLOSE
-        SAYZ WIT "Client " + CLIENT_ADDR + " handler finished"
-
-    OOPSIE ERR
-        SAYZ WIT "Client handling error: " + ERR
-        CLIENT_CONN DO CLOSE
-    KTHX
-KTHXBAI
-
-HAI ME TEH FUNCSHUN MULTI_CLIENT_SERVER WIT PORT TEH INTEGR
-    SAYZ WIT "=== Multi-Client TCP Server ==="
-
-    I HAS A VARIABLE SERVER TEH SOKKIT ITZ NEW SOKKIT
-    SERVER PROTOCOL ITZ "TCP"
-    SERVER HOST ITZ "localhost"
-    SERVER PORT ITZ PORT
-
-    MAYB
-        SERVER DO BIND
-        SERVER DO LISTEN
-        SAYZ WIT "Multi-client server listening on port " + PORT
-
-        BTW Accept multiple clients (simplified example)
-        BTW In practice, you'd use threading for each client
-        I HAS A VARIABLE CLIENT_COUNT TEH INTEGR ITZ 0
-        
-        BTW Accept and handle first client
-        I HAS A VARIABLE CLIENT1 TEH WIRE ITZ SERVER DO ACCEPT
-        SAYZ WIT "Client 1 connected"
-        HANDLE_CLIENT WIT CLIENT1
-
-        SERVER DO CLOSE
-        SAYZ WIT "Multi-client server closed"
-
-    OOPSIE ERR
-        SAYZ WIT "Multi-client server error: " + ERR
-        SERVER DO CLOSE
-    KTHX
-KTHXBAI
+I HAS A VARIABLE CLIENT TEH WIRE ITZ SERVER DO ACCEPT
+SAYZ WIT "Server address: "
+SAYZ WIT CLIENT LOCAL_HOST
+SAYZ WIT ":"
+SAYZ WIT CLIENT LOCAL_PORT
 ```
 
-### Socket with Custom Configuration
+**Example: Full connection details**
 
 ```lol
-I CAN HAS SOCKET?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN CONFIGURED_SOCKET_CLIENT WIT HOST TEH STRIN AN WIT PORT TEH INTEGR
-    SAYZ WIT "=== Configured Socket Client ==="
-
-    BTW Create socket with custom settings
-    I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
-    CLIENT PROTOCOL ITZ "TCP"
-    CLIENT HOST ITZ HOST
-    CLIENT PORT ITZ PORT
-    CLIENT TIMEOUT ITZ 5  BTW Short timeout for demo
-
-    MAYB
-        SAYZ WIT "Attempting connection with 5 second timeout..."
-        I HAS A VARIABLE CONNECTION TEH WIRE ITZ CLIENT DO CONNECT
-
-        SAYZ WIT "Connection established!"
-        SAY WIT "Local address: "
-        SAY WIT CONNECTION LOCAL_HOST
-        SAY WIT ":"
-        SAYZ WIT CONNECTION LOCAL_PORT
-
-        SAY WIT "Remote address: "
-        SAY WIT CONNECTION REMOTE_HOST
-        SAY WIT ":"
-        SAYZ WIT CONNECTION REMOTE_PORT
-
-        SAY WIT "Connection status: "
-        SAYZ WIT CONNECTION IS_CONNECTED
-
-        CONNECTION DO CLOSE
-        SAYZ WIT "Connection closed"
-
-    OOPSIE ERR
-        SAYZ WIT "Connection failed: " + ERR
-    KTHX
-KTHXBAI
-
-HAI ME TEH FUNCSHUN DEMO_CONFIGURED_CLIENT
-    CONFIGURED_SOCKET_CLIENT WIT "httpbin.org" AN WIT 80
-KTHXBAI
+SAYZ WIT "Connection: "
+SAYZ WIT CLIENT LOCAL_HOST
+SAYZ WIT ":"
+SAYZ WIT CLIENT LOCAL_PORT
+SAYZ WIT " <-> "
+SAYZ WIT CLIENT REMOTE_HOST
+SAYZ WIT ":"
+SAYZ WIT CLIENT REMOTE_PORT
 ```
 
-## Error Handling
-
-### Network Error Handling
+**Example: Check local interface**
 
 ```lol
-I CAN HAS SOCKET?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN ROBUST_SOCKET_CLIENT WIT HOST TEH STRIN AN WIT PORT TEH INTEGR
-    SAYZ WIT "=== Robust Socket Client ==="
-
-    I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
-    CLIENT PROTOCOL ITZ "TCP"
-    CLIENT HOST ITZ HOST
-    CLIENT PORT ITZ PORT
-    CLIENT TIMEOUT ITZ 10
-
-    MAYB
-        I HAS A VARIABLE CONNECTION TEH WIRE ITZ CLIENT DO CONNECT
-        SAYZ WIT "Connection successful!"
-
-        BTW Test connection status before operations
-        IZ CONNECTION IS_CONNECTED?
-            SAYZ WIT "Connection is active, sending data..."
-            CONNECTION DO SEND WIT "Test message"
-            
-            I HAS A VARIABLE RESPONSE TEH STRIN ITZ CONNECTION DO RECEIVE WIT 1024
-            IZ RESPONSE SAEM AS ""?
-                SAYZ WIT "No data received (connection may be closed)"
-            NOPE
-                SAYZ WIT "Received: " + RESPONSE
-            KTHX
-        NOPE
-            SAYZ WIT "Connection is not active"
-        KTHX
-
-        CONNECTION DO CLOSE
-
-    OOPSIE ERR
-        SAYZ WIT "Socket error: " + ERR
-        SAYZ WIT "This could be due to:"
-        SAYZ WIT "- Network connectivity issues"
-        SAYZ WIT "- Invalid host or port"
-        SAYZ WIT "- Connection timeout"
-        SAYZ WIT "- Server not responding"
-    KTHX
-KTHXBAI
-
-HAI ME TEH FUNCSHUN DEMO_ERROR_HANDLING
-    BTW Test with unreachable host
-    ROBUST_SOCKET_CLIENT WIT "192.0.2.1" AN WIT 12345
-
-    BTW Test with invalid port
-    ROBUST_SOCKET_CLIENT WIT "localhost" AN WIT 99999
-KTHXBAI
+IZ (CLIENT LOCAL_HOST) SAEM AS "127.0.0.1"?
+SAYZ WIT "Local loopback connection"
+NOPE IZ (CLIENT LOCAL_HOST) SAEM AS "0.0.0.0"?
+SAYZ WIT "Listening on all interfaces"
+NOPE
+SAYZ WIT "Specific interface: "
+SAYZ WIT CLIENT LOCAL_HOST
+KTHX
 ```
 
-### UDP Error Scenarios
+**Note:** Returns empty string if connection is not established
+
+**Note:** Shows the actual IP address of the local endpoint
+
+**Note:** For servers: shows which interface accepted the connection
+
+#### LOCAL_PORT
+
+Read-only property containing the local endpoint's port number.
+
+
+**Example: Display server port information**
 
 ```lol
-I CAN HAS SOCKET?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN UDP_ERROR_SCENARIOS
-    SAYZ WIT "=== UDP Error Scenarios ==="
-
-    I HAS A VARIABLE UDP_SOCKET TEH SOKKIT ITZ NEW SOKKIT
-    UDP_SOCKET PROTOCOL ITZ "UDP"
-
-    BTW Test operations without binding
-    SAYZ WIT "Testing operations without binding..."
-    MAYB
-        UDP_SOCKET DO SEND_TO WIT "test" AN WIT "localhost" AN WIT 9999
-        SAYZ WIT "ERROR: SEND_TO should have failed without bind"
-    OOPSIE ERR
-        SAYZ WIT "✓ SEND_TO correctly failed without bind: " + ERR
-    KTHX
-
-    MAYB
-        I HAS A VARIABLE DATA TEH BASKIT ITZ UDP_SOCKET DO RECEIVE_FROM
-        SAYZ WIT "ERROR: RECEIVE_FROM should have failed without bind"
-    OOPSIE ERR
-        SAYZ WIT "✓ RECEIVE_FROM correctly failed without bind: " + ERR
-    KTHX
-
-    BTW Test with proper binding
-    SAYZ WIT "Testing with proper binding..."
-    MAYB
-        UDP_SOCKET HOST ITZ "localhost"
-        UDP_SOCKET PORT ITZ 0  BTW Any available port
-        UDP_SOCKET DO BIND
-        SAYZ WIT "✓ UDP socket bound successfully"
-
-        BTW Test sending to invalid address
-        MAYB
-            UDP_SOCKET DO SEND_TO WIT "test" AN WIT "invalid.host.name" AN WIT 9999
-        OOPSIE ERR
-            SAYZ WIT "✓ Invalid address correctly handled: " + ERR
-        KTHX
-
-        UDP_SOCKET DO CLOSE
-        SAYZ WIT "✓ UDP socket closed"
-
-    OOPSIE ERR
-        SAYZ WIT "Bind error: " + ERR
-    KTHX
-KTHXBAI
+I HAS A VARIABLE CLIENT TEH WIRE ITZ SERVER DO ACCEPT
+SAYZ WIT "Server running on port: "
+SAYZ WIT CLIENT LOCAL_PORT
 ```
 
-## Quick Reference
+**Example: Connection summary**
 
-### Constructor
+```lol
+SAYZ WIT "Local: "
+SAYZ WIT CLIENT LOCAL_HOST
+SAYZ WIT ":"
+SAYZ WIT CLIENT LOCAL_PORT
+SAYZ WIT " | Remote: "
+SAYZ WIT CLIENT REMOTE_HOST
+SAYZ WIT ":"
+SAYZ WIT CLIENT REMOTE_PORT
+```
 
-| Usage | Description |
-|-------|-------------|
-| `NEW SOKKIT` | Create socket with default TCP settings |
+**Example: Service identification**
 
-### SOKKIT Configuration
+```lol
+I HAS A VARIABLE PORT TEH INTEGR ITZ CLIENT LOCAL_PORT
+IZ PORT SAEM AS 80?
+SAYZ WIT "HTTP service"
+NOPE IZ PORT SAEM AS 443?
+SAYZ WIT "HTTPS service"
+NOPE IZ PORT SAEM AS 22?
+SAYZ WIT "SSH service"
+NOPE
+SAYZ WIT "Custom service on port "
+SAYZ WIT PORT
+KTHX
+```
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `PROTOCOL` | STRIN | "TCP" or "UDP" |
-| `HOST` | STRIN | Target host address |
-| `PORT` | INTEGR | Target port number |
-| `TIMEOUT` | INTEGR | Connection timeout in seconds |
+**Note:** Returns 0 if connection is not established
 
-### SOKKIT Methods
+**Note:** Shows the actual port the server is listening on
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `BIND` | None | None | Bind socket to address |
-| `LISTEN` | None | None | Start listening (TCP only) |
-| `CONNECT` | None | WIRE | Connect to server (TCP only) |
-| `ACCEPT` | None | WIRE | Accept connection (TCP only) |
-| `SEND_TO WIT data AN WIT host AN WIT port` | data: STRIN, host: STRIN, port: INTEGR | None | Send UDP data |
-| `RECEIVE_FROM` | None | BASKIT | Receive UDP data |
-| `CLOSE` | None | None | Close socket |
+**Note:** Useful for logging and connection management
 
-### WIRE Properties
+#### REMOTE_HOST
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `REMOTE_HOST` | STRIN | Remote IP address |
-| `REMOTE_PORT` | INTEGR | Remote port number |
-| `LOCAL_HOST` | STRIN | Local IP address |
-| `LOCAL_PORT` | INTEGR | Local port number |
-| `IS_CONNECTED` | BOOL | Connection status |
+Read-only property containing the remote endpoint's IP address.
 
-### WIRE Methods
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `SEND WIT data` | data: STRIN | None | Send TCP data |
-| `RECEIVE WIT length` | length: INTEGR | STRIN | Receive TCP data |
-| `RECEIVE_ALL` | None | STRIN | Receive all available data |
-| `CLOSE` | None | None | Close connection |
+**Example: Check client connection details**
 
-## Related
+```lol
+I HAS A VARIABLE CLIENT TEH WIRE ITZ SERVER DO ACCEPT
+SAYZ WIT "Client connected from: "
+SAYZ WIT CLIENT REMOTE_HOST
+SAYZ WIT ":"
+SAYZ WIT CLIENT REMOTE_PORT
+```
 
-- [HTTP Module](http.md) - High-level HTTP client operations
-- [THREAD Module](threading.md) - Concurrency for multi-client servers
-- [STDIO Module](stdio.md) - Console output for debugging
-- [Collections](collections.md) - BASKIT operations for UDP packets
-- [Control Flow](../language-guide/control-flow.md) - Exception handling patterns
+**Example: Log connection information**
+
+```lol
+SAYZ WIT "New connection: "
+SAYZ WIT CLIENT REMOTE_HOST
+SAYZ WIT " -> "
+SAYZ WIT CLIENT LOCAL_HOST
+SAYZ WIT ":"
+SAYZ WIT CLIENT LOCAL_PORT
+```
+
+**Example: Access control by IP**
+
+```lol
+IZ (CLIENT REMOTE_HOST) SAEM AS "127.0.0.1"?
+SAYZ WIT "Local connection allowed"
+NOPE
+SAYZ WIT "Remote connection from "
+SAYZ WIT CLIENT REMOTE_HOST
+CLIENT DO CLOSE BTW Block external connections
+KTHX
+```
+
+**Note:** Returns empty string if connection is not established
+
+**Note:** Shows actual IP address, not hostname
+
+**Note:** IPv4 addresses shown in dotted decimal notation (e.g., "192.168.1.100")
+
+#### REMOTE_PORT
+
+Read-only property containing the remote endpoint's port number.
+
+
+**Example: Display connection details**
+
+```lol
+I HAS A VARIABLE CLIENT TEH WIRE ITZ SERVER DO ACCEPT
+SAYZ WIT "Connection from "
+SAYZ WIT CLIENT REMOTE_HOST
+SAYZ WIT ":"
+SAYZ WIT CLIENT REMOTE_PORT
+```
+
+**Example: Connection logging**
+
+```lol
+SAYZ WIT "Accepted connection from "
+SAYZ WIT CLIENT REMOTE_HOST
+SAYZ WIT ":"
+SAYZ WIT CLIENT REMOTE_PORT
+SAYZ WIT " on local port "
+SAYZ WIT CLIENT LOCAL_PORT
+```
+
+**Example: Port-based filtering**
+
+```lol
+IZ (CLIENT REMOTE_PORT) BIGGR DAN 1024?
+SAYZ WIT "Client using non-privileged port"
+NOPE
+SAYZ WIT "Client using privileged port: "
+SAYZ WIT CLIENT REMOTE_PORT
+KTHX
+```
+
+**Note:** Returns 0 if connection is not established
+
+**Note:** Shows the actual port number the remote client is using
+
+**Note:** Remote port is typically assigned randomly by the client's OS
+
+**Example: Client connection usage**
+
+```lol
+I HAS A VARIABLE CLIENT TEH SOKKIT ITZ NEW SOKKIT
+CLIENT HOST ITZ "127.0.0.1"
+CLIENT PORT ITZ 8080
+I HAS A VARIABLE CONN TEH WIRE ITZ CLIENT DO CONNECT
+CONN DO SEND WIT "GET /api/data HTTP/1.1\r\n\r\n"
+I HAS A VARIABLE RESPONSE TEH STRIN ITZ CONN DO RECEIVE WIT 1024
+SAYZ WIT RESPONSE
+CONN DO CLOSE
+```
+
+**Example: Server-side connection handling**
+
+```lol
+BTW From server ACCEPT
+I HAS A VARIABLE CLIENT_CONN TEH WIRE ITZ SERVER DO ACCEPT
+SAYZ WIT "Client connected from "
+SAYZ WIT CLIENT_CONN REMOTE_HOST
+CLIENT_CONN DO SEND WIT "Welcome to server!"
+I HAS A VARIABLE REQUEST TEH STRIN ITZ CLIENT_CONN DO RECEIVE WIT 512
+CLIENT_CONN DO CLOSE
+```
+
+**Example: Bidirectional communication**
+
+```lol
+CONN DO SEND WIT "HELLO"
+I HAS A VARIABLE REPLY TEH STRIN ITZ CONN DO RECEIVE WIT 100
+IZ REPLY SAEM AS "OK"?
+CONN DO SEND WIT "DATA: important message"
+KTHX
+```
+

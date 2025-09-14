@@ -1,493 +1,1659 @@
-# IO Module - Advanced Input/Output Classes
+# IO Module
 
-The IO module provides advanced input/output functionality through abstract base classes and buffered implementations for efficient data processing.
-
-## Importing IO Module
+## Import
 
 ```lol
-BTW Import entire module
+BTW Full import
 I CAN HAS IO?
 
-BTW Selective imports
-I CAN HAS READER FROM IO?
-I CAN HAS WRITER FROM IO?
-I CAN HAS BUFFERED_READER FROM IO?
-I CAN HAS BUFFERED_WRITER FROM IO?
-I CAN HAS READWRITER FROM IO?
+BTW Selective import examples
 ```
 
-## Abstract Base Classes
-
-The IO module provides abstract base classes that define the interface for reading and writing operations.
+## Io Interfaces
 
 ### READER Class
 
-The READER class is an abstract base class for objects that can read data.
+Abstract base class for objects that can read data.
+Defines the interface for reading operations with READ and CLOSE methods.
 
-#### Methods
+**Methods:**
 
-- **READ WIT size**: Read up to `size` characters
-- **CLOSE**: Close the reader
+#### CLOSE
+
+Closes the reader and releases any associated resources.
+Should be called when done reading to ensure proper cleanup.
+
+**Syntax:** `<reader> DO CLOSE`
+**Example: Basic cleanup**
 
 ```lol
-BTW READER is abstract - you cannot instantiate it directly
-BTW I HAS A VARIABLE R TEH READER ITZ NEW READER  BTW This would fail
-
-BTW Instead, use it as a parent class or use concrete implementations
+I HAS A VARIABLE READER TEH READER ITZ GET_FILE_READER
+I HAS A VARIABLE DATA TEH STRIN ITZ READER DO READ WIT 1024
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+PROCESS_DATA WIT DATA
+DATA ITZ READER DO READ WIT 1024
+KTHX
+READER DO CLOSE
+SAYZ WIT "Reader closed successfully"
 ```
 
-### WRITER Class
-
-The WRITER class is an abstract base class for objects that can write data.
-
-#### Methods
-
-- **WRITE WIT data**: Write string data
-- **CLOSE**: Close the writer
+**Example: Close in error handling**
 
 ```lol
-BTW WRITER is abstract - you cannot instantiate it directly
-BTW I HAS A VARIABLE W TEH WRITER ITZ NEW WRITER  BTW This would fail
+I HAS A VARIABLE READER TEH READER ITZ GET_NETWORK_READER
+MAYB
+I HAS A VARIABLE DATA TEH STRIN ITZ READER DO READ WIT 512
+PROCESS_DATA WIT DATA
+OOPSIE ERR
+SAYZ WIT "Error during processing: "
+SAYZ WIT ERR
+READER DO CLOSE
+KTHX
+```
 
-BTW Instead, use it as a parent class or use concrete implementations
+**Example: Multiple readers cleanup**
+
+```lol
+I HAS A VARIABLE READERS TEH BUKKIT ITZ NEW BUKKIT
+READERS DO PUSH WIT GET_FILE_READER_1
+READERS DO PUSH WIT GET_FILE_READER_2
+READERS DO PUSH WIT GET_FILE_READER_3
+WHILE NO SAEM AS (READERS LENGTH SAEM AS 0)
+I HAS A VARIABLE READER TEH READER ITZ READERS DO POP
+I HAS A VARIABLE DATA TEH STRIN ITZ READER DO READ WIT 1024
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+PROCESS_DATA WIT DATA
+DATA ITZ READER DO READ WIT 1024
+KTHX
+READER DO CLOSE
+KTHX
+SAYZ WIT "All readers closed"
+```
+
+**Example: Close with resource tracking**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_DATABASE_READER
+I HAS A VARIABLE RESOURCE_COUNT TEH INTEGR ITZ 1
+MAYB
+I HAS A VARIABLE DATA TEH STRIN ITZ READER DO READ WIT 2048
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+SAVE_TO_DATABASE WIT DATA
+DATA ITZ READER DO READ WIT 2048
+KTHX
+OOPSIE ERR
+SAYZ WIT "Database operation failed: "
+SAYZ WIT ERR
+KTHX
+RESOURCE_COUNT ITZ RESOURCE_COUNT MINUS 1
+READER DO CLOSE
+SAYZ WIT "Resources remaining: "
+SAYZ WIT RESOURCE_COUNT
+```
+
+**Note:** Always call CLOSE to prevent resource leaks
+
+**Note:** CLOSE should be called even if errors occur during reading
+
+**Note:** Multiple CLOSE calls should be safe (idempotent)
+
+**Note:** CLOSE may flush buffers or finalize operations
+
+**Note:** After CLOSE, further READ operations may fail
+
+#### READ
+
+Reads up to the specified number of characters from the input source.
+Returns empty string when end-of-file is reached.
+
+**Syntax:** `<reader> DO READ WIT <size>`
+**Parameters:**
+- `size` (INTEGR): Maximum number of characters to read
+
+**Example: Read fixed-size chunks**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_FILE_READER
+I HAS A VARIABLE CHUNK_SIZE TEH INTEGR ITZ 1024
+I HAS A VARIABLE DATA TEH STRIN ITZ READER DO READ WIT CHUNK_SIZE
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+SAYZ WIT "Read chunk of length: "
+SAYZ WIT DATA LENGTH
+DATA ITZ READER DO READ WIT CHUNK_SIZE
+KTHX
+READER DO CLOSE
+```
+
+**Example: Read single character at a time**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_INPUT_READER
+I HAS A VARIABLE CHAR TEH STRIN ITZ READER DO READ WIT 1
+WHILE NO SAEM AS (CHAR LENGTH SAEM AS 0)
+SAYZ WIT "Character: "
+SAYZ WIT CHAR
+CHAR ITZ READER DO READ WIT 1
+KTHX
+READER DO CLOSE
+```
+
+**Example: Handle end-of-file**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_FILE_READER
+I HAS A VARIABLE DATA TEH STRIN ITZ READER DO READ WIT 100
+IZ DATA LENGTH SAEM AS 0?
+SAYZ WIT "Reached end of file"
+NOPE
+SAYZ WIT "Read data: "
+SAYZ WIT DATA
+KTHX
+READER DO CLOSE
+```
+
+**Example: Read with size validation**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_NETWORK_READER
+I HAS A VARIABLE REQUESTED_SIZE TEH INTEGR ITZ 2048
+I HAS A VARIABLE DATA TEH STRIN ITZ READER DO READ WIT REQUESTED_SIZE
+IZ DATA LENGTH SAEM AS 0?
+SAYZ WIT "No data available"
+NOPE
+IZ DATA LENGTH BIGGR THAN REQUESTED_SIZE?
+SAYZ WIT "Error: Read more than requested"
+NOPE
+SAYZ WIT "Successfully read "
+SAYZ WIT DATA LENGTH
+SAYZ WIT " characters"
+KTHX
+KTHX
+READER DO CLOSE
+```
+
+**Note:** May return fewer characters than requested
+
+**Note:** Returns empty string when end-of-file is reached
+
+**Note:** Size must be a positive integer
+
+**Note:** Implementation depends on the concrete reader type
+
+**Example: Basic reader usage pattern**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_SOME_READER
+I HAS A VARIABLE DATA TEH STRIN ITZ READER DO READ WIT 1024
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+SAYZ WIT DATA
+DATA ITZ READER DO READ WIT 1024
+KTHX
+READER DO CLOSE
+```
+
+**Example: Reading with error handling**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_SOME_READER
+MAYB
+I HAS A VARIABLE DATA TEH STRIN ITZ READER DO READ WIT 512
+SAYZ WIT "Read data: "
+SAYZ WIT DATA
+OOPSIE ERR
+SAYZ WIT "Error reading: "
+SAYZ WIT ERR
+KTHX
+READER DO CLOSE
+```
+
+**Example: Reading entire content**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_SOME_READER
+I HAS A VARIABLE CONTENT TEH STRIN ITZ ""
+I HAS A VARIABLE CHUNK TEH STRIN ITZ READER DO READ WIT 4096
+WHILE NO SAEM AS (CHUNK LENGTH SAEM AS 0)
+CONTENT ITZ CONTENT MOAR CHUNK
+CHUNK ITZ READER DO READ WIT 4096
+KTHX
+SAYZ WIT "Total content length: "
+SAYZ WIT CONTENT LENGTH
+READER DO CLOSE
 ```
 
 ### READWRITER Class
 
-The READWRITER class combines READER and WRITER interfaces, providing both reading and writing capabilities.
+Interface that combines both READER and WRITER capabilities.
+Inherits READ and CLOSE from READER, and WRITE from WRITER.
+
+**Example: Basic read-write operations**
 
 ```lol
-BTW READWRITER inherits from both READER and WRITER
-BTW It provides all methods from both parent classes
+I HAS A VARIABLE RW TEH READWRITER ITZ GET_READWRITER
+RW DO WRITE WIT "Hello"
+I HAS A VARIABLE RESPONSE TEH STRIN ITZ RW DO READ WIT 1024
+SAYZ WIT "Response: "
+SAYZ WIT RESPONSE
+RW DO CLOSE
 ```
 
-## Buffered I/O Classes
+**Example: Echo protocol implementation**
 
-The IO module provides buffered implementations that improve performance by reducing the number of actual I/O operations.
+```lol
+I HAS A VARIABLE CONNECTION TEH READWRITER ITZ GET_NETWORK_CONNECTION
+I HAS A VARIABLE RUNNING TEH BOOL ITZ YEZ
+WHILE RUNNING
+I HAS A VARIABLE INPUT TEH STRIN ITZ CONNECTION DO READ WIT 1024
+IZ INPUT LENGTH SAEM AS 0?
+RUNNING ITZ NO
+NOPE
+CONNECTION DO WRITE WIT "Echo: "
+CONNECTION DO WRITE WIT INPUT
+CONNECTION DO WRITE WIT "\n"
+KTHX
+KTHX
+CONNECTION DO CLOSE
+```
+
+**Example: File copy operation**
+
+```lol
+I HAS A VARIABLE SOURCE TEH READWRITER ITZ OPEN_FILE_FOR_READWRITE
+I HAS A VARIABLE DEST TEH READWRITER ITZ OPEN_DEST_FILE
+I HAS A VARIABLE BUFFER TEH STRIN ITZ SOURCE DO READ WIT 4096
+WHILE NO SAEM AS (BUFFER LENGTH SAEM AS 0)
+DEST DO WRITE WIT BUFFER
+BUFFER ITZ SOURCE DO READ WIT 4096
+KTHX
+SOURCE DO CLOSE
+DEST DO CLOSE
+SAYZ WIT "File copy completed"
+```
+
+**Example: Interactive session**
+
+```lol
+I HAS A VARIABLE SESSION TEH READWRITER ITZ START_INTERACTIVE_SESSION
+I HAS A VARIABLE COMMANDS TEH BUKKIT ITZ NEW BUKKIT
+COMMANDS DO PUSH WIT "HELP"
+COMMANDS DO PUSH WIT "STATUS"
+COMMANDS DO PUSH WIT "QUIT"
+WHILE NO SAEM AS (COMMANDS LENGTH SAEM AS 0)
+I HAS A VARIABLE CMD TEH STRIN ITZ COMMANDS DO POP
+SESSION DO WRITE WIT CMD
+SESSION DO WRITE WIT "\n"
+I HAS A VARIABLE RESPONSE TEH STRIN ITZ SESSION DO READ WIT 2048
+SAYZ WIT "Command: "
+SAYZ WIT CMD
+SAYZ WIT "Response: "
+SAYZ WIT RESPONSE
+KTHX
+SESSION DO CLOSE
+```
+
+### WRITER Class
+
+Abstract base class for objects that can write data.
+Defines the interface for writing operations with WRITE and CLOSE methods.
+
+**Methods:**
+
+#### CLOSE
+
+Closes the writer and releases any associated resources.
+Should be called when done writing to ensure proper cleanup.
+
+**Syntax:** `<writer> DO CLOSE`
+**Example: Basic cleanup after writing**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+WRITER DO WRITE WIT "Final data"
+WRITER DO CLOSE
+SAYZ WIT "Writer closed successfully"
+```
+
+**Example: Close with error handling**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_NETWORK_WRITER
+MAYB
+WRITER DO WRITE WIT "Important data"
+WRITER DO CLOSE
+SAYZ WIT "Data written and writer closed"
+OOPSIE ERR
+SAYZ WIT "Error during write/close: "
+SAYZ WIT ERR
+MAYB
+WRITER DO CLOSE
+OOPSIE CLOSE_ERR
+SAYZ WIT "Error closing writer: "
+SAYZ WIT CLOSE_ERR
+KTHX
+KTHX
+```
+
+**Example: Multiple writers cleanup**
+
+```lol
+I HAS A VARIABLE WRITERS TEH BUKKIT ITZ NEW BUKKIT
+WRITERS DO PUSH WIT GET_FILE_WRITER_1
+WRITERS DO PUSH WIT GET_FILE_WRITER_2
+WRITERS DO PUSH WIT GET_FILE_WRITER_3
+WHILE NO SAEM AS (WRITERS LENGTH SAEM AS 0)
+I HAS A VARIABLE WRITER TEH WRITER ITZ WRITERS DO POP
+WRITER DO WRITE WIT "Data for writer"
+WRITER DO CLOSE
+KTHX
+SAYZ WIT "All writers closed"
+```
+
+**Example: Close with final flush**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_BUFFERED_WRITER
+WRITER DO WRITE WIT "Data 1"
+WRITER DO WRITE WIT "Data 2"
+WRITER DO WRITE WIT "Data 3"
+WRITER DO CLOSE
+SAYZ WIT "All buffered data flushed and writer closed"
+```
+
+**Example: Resource management pattern**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_DATABASE_WRITER
+I HAS A VARIABLE RESOURCE_COUNT TEH INTEGR ITZ 1
+MAYB
+WRITER DO WRITE WIT "INSERT INTO table VALUES (...)"
+WRITER DO WRITE WIT "COMMIT"
+OOPSIE ERR
+SAYZ WIT "Database write failed: "
+SAYZ WIT ERR
+WRITER DO WRITE WIT "ROLLBACK"
+KTHX
+RESOURCE_COUNT ITZ RESOURCE_COUNT MINUS 1
+WRITER DO CLOSE
+SAYZ WIT "Database connection closed, resources: "
+SAYZ WIT RESOURCE_COUNT
+```
+
+**Note:** Always call CLOSE to prevent resource leaks
+
+**Note:** CLOSE ensures all buffered data is written
+
+**Note:** CLOSE should be called even if errors occur during writing
+
+**Note:** Multiple CLOSE calls should be safe (idempotent)
+
+**Note:** After CLOSE, further WRITE operations may fail
+
+**Note:** CLOSE may finalize file headers, network connections, etc.
+
+#### WRITE
+
+Writes string data to the output destination.
+Returns the number of characters written.
+
+**Syntax:** `<writer> DO WRITE WIT <data>`
+**Parameters:**
+- `data` (STRIN): String data to write
+
+**Example: Write simple text**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE CHARS_WRITTEN TEH INTEGR ITZ WRITER DO WRITE WIT "Hello World"
+SAYZ WIT "Wrote "
+SAYZ WIT CHARS_WRITTEN
+SAYZ WIT " characters"
+WRITER DO CLOSE
+```
+
+**Example: Write with validation**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_NETWORK_WRITER
+I HAS A VARIABLE DATA TEH STRIN ITZ "Important message"
+I HAS A VARIABLE WRITTEN TEH INTEGR ITZ WRITER DO WRITE WIT DATA
+IZ WRITTEN SAEM AS DATA LENGTH?
+SAYZ WIT "All data written successfully"
+NOPE
+SAYZ WIT "Warning: Only wrote "
+SAYZ WIT WRITTEN
+SAYZ WIT " of "
+SAYZ WIT DATA LENGTH
+SAYZ WIT " characters"
+KTHX
+WRITER DO CLOSE
+```
+
+**Example: Write formatted data**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_LOG_WRITER
+I HAS A VARIABLE TIMESTAMP TEH STRIN ITZ GET_CURRENT_TIME
+I HAS A VARIABLE LEVEL TEH STRIN ITZ "INFO"
+I HAS A VARIABLE MESSAGE TEH STRIN ITZ "Process started"
+WRITER DO WRITE WIT TIMESTAMP
+WRITER DO WRITE WIT " ["
+WRITER DO WRITE WIT LEVEL
+WRITER DO WRITE WIT "] "
+WRITER DO WRITE WIT MESSAGE
+WRITER DO WRITE WIT "\n"
+WRITER DO CLOSE
+```
+
+**Example: Write binary-like data**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_BINARY_WRITER
+I HAS A VARIABLE HEADER TEH STRIN ITZ "\x00\x01\x02\x03"
+I HAS A VARIABLE PAYLOAD TEH STRIN ITZ "\x04\x05\x06\x07"
+WRITER DO WRITE WIT HEADER
+WRITER DO WRITE WIT PAYLOAD
+I HAS A VARIABLE TOTAL_WRITTEN TEH INTEGR ITZ HEADER LENGTH MOAR PAYLOAD LENGTH
+SAYZ WIT "Binary data written: "
+SAYZ WIT TOTAL_WRITTEN
+SAYZ WIT " bytes"
+WRITER DO CLOSE
+```
+
+**Example: Batch writing with progress**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE LINES TEH BUKKIT ITZ NEW BUKKIT
+LINES DO PUSH WIT "Line 1"
+LINES DO PUSH WIT "Line 2"
+LINES DO PUSH WIT "Line 3"
+I HAS A VARIABLE TOTAL_CHARS TEH INTEGR ITZ 0
+WHILE NO SAEM AS (LINES LENGTH SAEM AS 0)
+I HAS A VARIABLE LINE TEH STRIN ITZ LINES DO POP
+I HAS A VARIABLE LINE_WITH_NEWLINE TEH STRIN ITZ LINE MOAR "\n"
+I HAS A VARIABLE WRITTEN TEH INTEGR ITZ WRITER DO WRITE WIT LINE_WITH_NEWLINE
+TOTAL_CHARS ITZ TOTAL_CHARS MOAR WRITTEN
+KTHX
+SAYZ WIT "Total characters written: "
+SAYZ WIT TOTAL_CHARS
+WRITER DO CLOSE
+```
+
+**Note:** Returns the number of characters actually written
+
+**Note:** May write fewer characters than provided if error occurs
+
+**Note:** Data may be buffered and not immediately written
+
+**Note:** Call CLOSE to ensure all data is flushed
+
+**Note:** Implementation depends on the concrete writer type
+
+**Example: Basic writer usage pattern**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_SOME_WRITER
+WRITER DO WRITE WIT "Hello, World!"
+WRITER DO CLOSE
+SAYZ WIT "Data written successfully"
+```
+
+**Example: Writing with error handling**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+MAYB
+WRITER DO WRITE WIT "Important data"
+SAYZ WIT "Data written successfully"
+OOPSIE ERR
+SAYZ WIT "Error writing data: "
+SAYZ WIT ERR
+KTHX
+WRITER DO CLOSE
+```
+
+**Example: Writing multiple pieces of data**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_LOG_WRITER
+I HAS A VARIABLE MESSAGES TEH BUKKIT ITZ NEW BUKKIT
+MESSAGES DO PUSH WIT "Starting process..."
+MESSAGES DO PUSH WIT "Processing data..."
+MESSAGES DO PUSH WIT "Process complete"
+WHILE NO SAEM AS (MESSAGES LENGTH SAEM AS 0)
+I HAS A VARIABLE MSG TEH STRIN ITZ MESSAGES DO POP
+WRITER DO WRITE WIT MSG
+WRITER DO WRITE WIT "\n"
+KTHX
+WRITER DO CLOSE
+```
+
+## Io Buffered
 
 ### BUFFERED_READER Class
 
-The BUFFERED_READER class wraps another READER object and provides buffering for improved read performance.
+Buffered reader that wraps another READER object for improved performance.
+Reduces the number of actual I/O operations by buffering data internally.
 
-#### Constructor
+**Methods:**
+
+#### BUFFERED_READER
+
+Initializes a BUFFERED_READER with the given READER object.
+Default buffer size is 1024.
+
+**Syntax:** `NEW BUFFERED_READER WIT <reader>`
+**Parameters:**
+- `reader` (READER): The underlying reader to wrap with buffering
+
+**Example: Basic construction**
 
 ```lol
-I CAN HAS IO?
-
-BTW Wrap any object that has READ and CLOSE methods
-I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT some_reader
+I HAS A VARIABLE BASE_READER TEH READER ITZ GET_FILE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT BASE_READER
+SAYZ WIT "Buffered reader created with default buffer size"
 ```
 
-#### Properties
-
-- **SIZ**: INTEGR - Current buffer size (default: 1024)
-
-#### Methods
-
-- **SET_SIZ WIT newSize**: Change the buffer size
-- **READ WIT size**: Read up to `size` characters (buffered)
-- **CLOSE**: Close the buffered reader and underlying reader
-
-#### Example
+**Example: Construction with immediate use**
 
 ```lol
-I CAN HAS IO?
-I CAN HAS STDIO?
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT GET_NETWORK_READER
+I HAS A VARIABLE FIRST_CHUNK TEH STRIN ITZ BUFFERED DO READ WIT 512
+SAYZ WIT "First chunk: "
+SAYZ WIT FIRST_CHUNK
+BUFFERED DO CLOSE
+```
 
-BTW Create a mock reader class for demonstration
-HAI ME TEH CLAS MOCK_READER
-    EVRYONE
-    DIS TEH VARIABLE DATA TEH STRIN ITZ "This is test data for buffered reading example. It contains multiple sentences to demonstrate buffering behavior."
-    DIS TEH VARIABLE POSITION TEH INTEGR ITZ 0
+**Example: Construction for different reader types**
 
-    DIS TEH FUNCSHUN READ TEH STRIN WIT SIZE TEH INTEGR
-        IZ POSITION BIGGR THAN LEN WIT DATA LES 1?
-            GIVEZ ""  BTW EOF reached
-        KTHX
+```lol
+I HAS A VARIABLE TYPES TEH BUKKIT ITZ NEW BUKKIT
+TYPES DO PUSH WIT "file"
+TYPES DO PUSH WIT "network"
+TYPES DO PUSH WIT "memory"
+WHILE NO SAEM AS (TYPES LENGTH SAEM AS 0)
+I HAS A VARIABLE TYPE TEH STRIN ITZ TYPES DO POP
+I HAS A VARIABLE READER TEH READER ITZ GET_READER_BY_TYPE WIT TYPE
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+SAYZ WIT "Created buffered reader for type: "
+SAYZ WIT TYPE
+BUFFERED DO CLOSE
+KTHX
+```
 
-        I HAS A VARIABLE REMAINING TEH INTEGR ITZ LEN WIT DATA LES POSITION
-        I HAS A VARIABLE TO_READ TEH INTEGR ITZ SIZE
+**Example: Construction with error handling**
 
-        IZ TO_READ BIGGR THAN REMAINING?
-            TO_READ ITZ REMAINING
-        KTHX
+```lol
+MAYB
+I HAS A VARIABLE READER TEH READER ITZ GET_SOME_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+SAYZ WIT "Buffered reader created successfully"
+OOPSIE ERR
+SAYZ WIT "Failed to create buffered reader: "
+SAYZ WIT ERR
+KTHX
+```
 
-        BTW Simulate reading data (simplified substring operation)
-        I HAS A VARIABLE RESULT TEH STRIN ITZ "mock data"  BTW In real implementation, would extract substring
-        POSITION ITZ POSITION MOAR TO_READ
-        GIVEZ RESULT
-    KTHX
+**Note:** Default buffer size is 1024 characters
 
-    DIS TEH FUNCSHUN CLOSE
-        SAYZ WIT "Mock reader closed"
-    KTHX
-KTHXBAI
+**Note:** Buffer size can be changed after construction using SIZ
 
-HAI ME TEH FUNCSHUN DEMO_BUFFERED_READER
-    SAYZ WIT "=== BUFFERED_READER Demo ==="
+**Note:** The underlying reader is not closed when buffered reader is closed
 
-    BTW Create a mock reader
-    I HAS A VARIABLE MOCK TEH MOCK_READER ITZ NEW MOCK_READER
+**Note:** Buffered reader takes ownership of the underlying reader
 
-    BTW Wrap it in a buffered reader
-    I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT MOCK
+#### CLOSE
 
-    SAY WIT "Default buffer size: "
-    SAYZ WIT BUFFERED SIZ
+Closes the buffered reader and the underlying READER.
+Releases any associated resources.
 
-    BTW Change buffer size
-    BUFFERED DO SET_SIZ WIT 512
-    SAY WIT "New buffer size: "
-    SAYZ WIT BUFFERED SIZ
+**Syntax:** `<buffered_reader> DO CLOSE`
+**Example: Basic cleanup**
 
-    BTW Read data in chunks
-    I HAS A VARIABLE CHUNK1 TEH STRIN ITZ BUFFERED DO READ WIT 10
-    SAY WIT "Read chunk 1: "
-    SAYZ WIT CHUNK1
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_FILE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+I HAS A VARIABLE DATA TEH STRIN ITZ BUFFERED DO READ WIT 1024
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+PROCESS_DATA WIT DATA
+DATA ITZ BUFFERED DO READ WIT 1024
+KTHX
+BUFFERED DO CLOSE
+SAYZ WIT "Buffered reader and underlying reader closed"
+```
 
-    I HAS A VARIABLE CHUNK2 TEH STRIN ITZ BUFFERED DO READ WIT 20
-    SAY WIT "Read chunk 2: "
-    SAYZ WIT CHUNK2
+**Example: Close with error handling**
 
-    BTW Close the buffered reader
-    BUFFERED DO CLOSE
-    SAYZ WIT "Buffered reader closed"
-KTHXBAI
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_NETWORK_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+MAYB
+I HAS A VARIABLE DATA TEH STRIN ITZ BUFFERED DO READ WIT 512
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+SAVE_DATA WIT DATA
+DATA ITZ BUFFERED DO READ WIT 512
+KTHX
+OOPSIE ERR
+SAYZ WIT "Error during reading: "
+SAYZ WIT ERR
+KTHX
+BUFFERED DO CLOSE
+```
+
+**Example: Multiple buffered readers cleanup**
+
+```lol
+I HAS A VARIABLE READERS TEH BUKKIT ITZ NEW BUKKIT
+READERS DO PUSH WIT GET_READER_1
+READERS DO PUSH WIT GET_READER_2
+READERS DO PUSH WIT GET_READER_3
+WHILE NO SAEM AS (READERS LENGTH SAEM AS 0)
+I HAS A VARIABLE READER TEH READER ITZ READERS DO POP
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+I HAS A VARIABLE DATA TEH STRIN ITZ BUFFERED DO READ WIT 1024
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+PROCESS_DATA WIT DATA
+DATA ITZ BUFFERED DO READ WIT 1024
+KTHX
+BUFFERED DO CLOSE
+KTHX
+SAYZ WIT "All buffered readers closed"
+```
+
+**Example: Close after partial reading**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_LARGE_FILE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+I HAS A VARIABLE FIRST_CHUNK TEH STRIN ITZ BUFFERED DO READ WIT 100
+SAYZ WIT "Read first chunk: "
+SAYZ WIT FIRST_CHUNK LENGTH
+SAYZ WIT " characters"
+BUFFERED DO CLOSE
+SAYZ WIT "Reader closed early - remaining data discarded"
+```
+
+**Example: Resource cleanup pattern**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_DATABASE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+I HAS A VARIABLE RESOURCE_COUNT TEH INTEGR ITZ 1
+MAYB
+I HAS A VARIABLE DATA TEH STRIN ITZ BUFFERED DO READ WIT 2048
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+PROCESS_DATABASE_ROW WIT DATA
+DATA ITZ BUFFERED DO READ WIT 2048
+KTHX
+OOPSIE ERR
+SAYZ WIT "Database read failed: "
+SAYZ WIT ERR
+KTHX
+RESOURCE_COUNT ITZ RESOURCE_COUNT MINUS 1
+BUFFERED DO CLOSE
+SAYZ WIT "Database connection closed, resources: "
+SAYZ WIT RESOURCE_COUNT
+```
+
+**Note:** Closes both the buffered reader and underlying reader
+
+**Note:** Releases all associated resources and buffers
+
+**Note:** Any remaining buffered data is discarded
+
+**Note:** Safe to call multiple times (idempotent)
+
+**Note:** After CLOSE, further READ operations will fail
+
+**Note:** Ensures underlying reader is properly closed
+
+#### READ
+
+Reads up to the specified number of characters from the buffered reader.
+Utilizes internal buffer to minimize calls to the underlying READER.
+Returns empty string when end-of-file is reached.
+
+**Syntax:** `<buffered_reader> DO READ WIT <size>`
+**Parameters:**
+- `size` (INTEGR): Maximum number of characters to read
+
+**Example: Efficient large reads**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_LARGE_FILE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+I HAS A VARIABLE CHUNK_SIZE TEH INTEGR ITZ 8192
+I HAS A VARIABLE DATA TEH STRIN ITZ BUFFERED DO READ WIT CHUNK_SIZE
+I HAS A VARIABLE TOTAL_READ TEH INTEGR ITZ 0
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+TOTAL_READ ITZ TOTAL_READ MOAR DATA LENGTH
+PROCESS_CHUNK WIT DATA
+DATA ITZ BUFFERED DO READ WIT CHUNK_SIZE
+KTHX
+SAYZ WIT "Total characters read: "
+SAYZ WIT TOTAL_READ
+BUFFERED DO CLOSE
+```
+
+**Example: Small reads with buffering benefit**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_CHARACTER_DEVICE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+I HAS A VARIABLE CHAR TEH STRIN ITZ BUFFERED DO READ WIT 1
+I HAS A VARIABLE COUNT TEH INTEGR ITZ 0
+WHILE NO SAEM AS (CHAR LENGTH SAEM AS 0)
+COUNT ITZ COUNT UP 1
+IZ COUNT MOD 100 SAEM AS 0?
+SAYZ WIT "Read "
+SAYZ WIT COUNT
+SAYZ WIT " characters so far"
+KTHX
+CHAR ITZ BUFFERED DO READ WIT 1
+KTHX
+SAYZ WIT "Total characters: "
+SAYZ WIT COUNT
+BUFFERED DO CLOSE
+```
+
+**Example: Buffer size impact demonstration**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_TEST_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+BUFFERED SIZ ITZ 64
+SAYZ WIT "Small buffer (64): "
+I HAS A VARIABLE DATA1 TEH STRIN ITZ BUFFERED DO READ WIT 32
+SAYZ WIT DATA1 LENGTH
+BUFFERED SIZ ITZ 4096
+SAYZ WIT "Large buffer (4096): "
+I HAS A VARIABLE DATA2 TEH STRIN ITZ BUFFERED DO READ WIT 32
+SAYZ WIT DATA2 LENGTH
+BUFFERED DO CLOSE
+```
+
+**Example: End-of-file handling**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_SHORT_FILE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+I HAS A VARIABLE DATA TEH STRIN ITZ BUFFERED DO READ WIT 1000
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+SAYZ WIT "Read: "
+SAYZ WIT DATA LENGTH
+SAYZ WIT " characters"
+DATA ITZ BUFFERED DO READ WIT 1000
+KTHX
+SAYZ WIT "Reached end of file"
+BUFFERED DO CLOSE
+```
+
+**Example: Mixed read sizes**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_MIXED_DATA_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+I HAS A VARIABLE SIZES TEH BUKKIT ITZ NEW BUKKIT
+SIZES DO PUSH WIT 10
+SIZES DO PUSH WIT 50
+SIZES DO PUSH WIT 100
+SIZES DO PUSH WIT 500
+WHILE NO SAEM AS (SIZES LENGTH SAEM AS 0)
+I HAS A VARIABLE SIZE TEH INTEGR ITZ SIZES DO POP
+I HAS A VARIABLE DATA TEH STRIN ITZ BUFFERED DO READ WIT SIZE
+SAYZ WIT "Requested "
+SAYZ WIT SIZE
+SAYZ WIT " got "
+SAYZ WIT DATA LENGTH
+SAYZ WIT " characters"
+KTHX
+BUFFERED DO CLOSE
+```
+
+**Note:** Uses internal buffer to reduce underlying I/O calls
+
+**Note:** May return fewer characters than requested
+
+**Note:** Returns empty string when end-of-file is reached
+
+**Note:** Buffer size affects performance but not correctness
+
+**Note:** Subsequent calls may reuse buffered data
+
+**Member Variables:**
+
+#### SIZ
+
+Gets or sets the size of the internal buffer used for reading.
+Setting a new size will clear the existing buffer.
+Default is 1024. Must be a positive integer.
+
+
+**Example: Get current buffer size**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_FILE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+SAYZ WIT "Current buffer size: "
+SAYZ WIT BUFFERED SIZ
+BUFFERED DO CLOSE
+```
+
+**Example: Set custom buffer size**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_NETWORK_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+BUFFERED SIZ ITZ 4096
+SAYZ WIT "Buffer size set to: "
+SAYZ WIT BUFFERED SIZ
+BUFFERED DO CLOSE
+```
+
+**Example: Optimize for different data patterns**
+
+```lol
+I HAS A VARIABLE PATTERNS TEH BUKKIT ITZ NEW BUKKIT
+PATTERNS DO PUSH WIT "small_records"
+PATTERNS DO PUSH WIT "large_files"
+PATTERNS DO PUSH WIT "network_packets"
+WHILE NO SAEM AS (PATTERNS LENGTH SAEM AS 0)
+I HAS A VARIABLE PATTERN TEH STRIN ITZ PATTERNS DO POP
+I HAS A VARIABLE READER TEH READER ITZ GET_READER_FOR_PATTERN WIT PATTERN
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+IZ PATTERN SAEM AS "small_records"?
+BUFFERED SIZ ITZ 512
+NOPE
+IZ PATTERN SAEM AS "large_files"?
+BUFFERED SIZ ITZ 65536
+NOPE
+IZ PATTERN SAEM AS "network_packets"?
+BUFFERED SIZ ITZ 8192
+NOPE
+BUFFERED SIZ ITZ 1024
+KTHX
+KTHX
+KTHX
+SAYZ WIT "Pattern "
+SAYZ WIT PATTERN
+SAYZ WIT " using buffer size: "
+SAYZ WIT BUFFERED SIZ
+BUFFERED DO CLOSE
+KTHX
+```
+
+**Example: Dynamic buffer size adjustment**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_ADAPTIVE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+I HAS A VARIABLE INITIAL_SIZE TEH INTEGR ITZ 1024
+BUFFERED SIZ ITZ INITIAL_SIZE
+I HAS A VARIABLE DATA TEH STRIN ITZ BUFFERED DO READ WIT 100
+I HAS A VARIABLE READ_COUNT TEH INTEGR ITZ 0
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+READ_COUNT ITZ READ_COUNT UP 1
+IZ READ_COUNT MOD 10 SAEM AS 0?
+BUFFERED SIZ ITZ BUFFERED SIZ MUL 2
+SAYZ WIT "Increased buffer size to: "
+SAYZ WIT BUFFERED SIZ
+KTHX
+DATA ITZ BUFFERED DO READ WIT 100
+KTHX
+BUFFERED DO CLOSE
+```
+
+**Example: Buffer size validation**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_FILE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+MAYB
+BUFFERED SIZ ITZ 0
+SAYZ WIT "Error: Should not allow zero buffer size"
+OOPSIE ERR
+SAYZ WIT "Expected error for zero buffer size: "
+SAYZ WIT ERR
+KTHX
+MAYB
+BUFFERED SIZ ITZ -100
+SAYZ WIT "Error: Should not allow negative buffer size"
+OOPSIE ERR
+SAYZ WIT "Expected error for negative buffer size: "
+SAYZ WIT ERR
+KTHX
+BUFFERED SIZ ITZ 2048
+SAYZ WIT "Valid buffer size set to: "
+SAYZ WIT BUFFERED SIZ
+BUFFERED DO CLOSE
+```
+
+**Note:** Default buffer size is 1024 characters
+
+**Note:** Setting new size clears existing buffer contents
+
+**Note:** Must be a positive integer greater than 0
+
+**Note:** Larger buffers improve performance for sequential reads
+
+**Note:** Smaller buffers use less memory
+
+**Note:** Can be changed at any time during reader lifetime
+
+**Example: Basic buffered reading**
+
+```lol
+I HAS A VARIABLE BASE_READER TEH READER ITZ GET_FILE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT BASE_READER
+I HAS A VARIABLE DATA TEH STRIN ITZ BUFFERED DO READ WIT 1024
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+PROCESS_DATA WIT DATA
+DATA ITZ BUFFERED DO READ WIT 1024
+KTHX
+BUFFERED DO CLOSE
+```
+
+**Example: Custom buffer size**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_NETWORK_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+BUFFERED SIZ ITZ 8192
+SAYZ WIT "Buffer size set to 8192"
+I HAS A VARIABLE CHUNK TEH STRIN ITZ BUFFERED DO READ WIT 4096
+WHILE NO SAEM AS (CHUNK LENGTH SAEM AS 0)
+SAYZ WIT "Read chunk of "
+SAYZ WIT CHUNK LENGTH
+SAYZ WIT " characters"
+CHUNK ITZ BUFFERED DO READ WIT 4096
+KTHX
+BUFFERED DO CLOSE
+```
+
+**Example: Efficient small reads**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_LARGE_FILE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+I HAS A VARIABLE TOTAL_CHARS TEH INTEGR ITZ 0
+I HAS A VARIABLE CHAR TEH STRIN ITZ BUFFERED DO READ WIT 1
+WHILE NO SAEM AS (CHAR LENGTH SAEM AS 0)
+TOTAL_CHARS ITZ TOTAL_CHARS UP 1
+IZ TOTAL_CHARS MOD 1000 SAEM AS 0?
+SAYZ WIT "Processed "
+SAYZ WIT TOTAL_CHARS
+SAYZ WIT " characters"
+KTHX
+CHAR ITZ BUFFERED DO READ WIT 1
+KTHX
+SAYZ WIT "Total characters read: "
+SAYZ WIT TOTAL_CHARS
+BUFFERED DO CLOSE
+```
+
+**Example: Buffer size optimization**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_FAST_DEVICE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+BUFFERED SIZ ITZ 65536
+SAYZ WIT "Using large buffer for fast device: "
+SAYZ WIT BUFFERED SIZ
+I HAS A VARIABLE DATA TEH STRIN ITZ BUFFERED DO READ WIT BUFFERED SIZ
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+PROCESS_LARGE_CHUNK WIT DATA
+DATA ITZ BUFFERED DO READ WIT BUFFERED SIZ
+KTHX
+BUFFERED DO CLOSE
+```
+
+**Example: Error handling with buffering**
+
+```lol
+I HAS A VARIABLE READER TEH READER ITZ GET_UNRELIABLE_READER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT READER
+MAYB
+I HAS A VARIABLE DATA TEH STRIN ITZ BUFFERED DO READ WIT 2048
+WHILE NO SAEM AS (DATA LENGTH SAEM AS 0)
+SAVE_DATA WIT DATA
+DATA ITZ BUFFERED DO READ WIT 2048
+KTHX
+OOPSIE ERR
+SAYZ WIT "Error during buffered reading: "
+SAYZ WIT ERR
+KTHX
+BUFFERED DO CLOSE
 ```
 
 ### BUFFERED_WRITER Class
 
-The BUFFERED_WRITER class wraps another WRITER object and provides buffering for improved write performance.
+Buffered writer that wraps another WRITER object for improved performance.
+Reduces the number of actual I/O operations by buffering data internally.
 
-#### Constructor
+**Methods:**
 
-```lol
-I CAN HAS IO?
+#### BUFFERED_WRITER
 
-BTW Wrap any object that has WRITE and CLOSE methods
-I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT some_writer
-```
+Initializes a BUFFERED_WRITER with the given WRITER object.
+Default buffer size is 1024.
 
-#### Properties
+**Syntax:** `NEW BUFFERED_WRITER WIT <writer>`
+**Parameters:**
+- `writer` (WRITER): The underlying writer to wrap with buffering
 
-- **SIZ**: INTEGR - Current buffer size (default: 1024)
-
-#### Methods
-
-- **SET_SIZ WIT newSize**: Change the buffer size (flushes existing buffer)
-- **WRITE WIT data**: Write string data (buffered)
-- **FLUSH**: Force write buffered data to underlying writer
-- **CLOSE**: Flush and close the buffered writer and underlying writer
-
-#### Example
+**Example: Basic construction**
 
 ```lol
-I CAN HAS IO?
-I CAN HAS STDIO?
-
-BTW Create a mock writer class for demonstration
-HAI ME TEH CLAS MOCK_WRITER
-    EVRYONE
-    DIS TEH VARIABLE WRITTEN_DATA TEH STRIN ITZ ""
-
-    DIS TEH FUNCSHUN WRITE TEH INTEGR WIT DATA TEH STRIN
-        WRITTEN_DATA ITZ WRITTEN_DATA MOAR DATA
-        SAY WIT "[MOCK WRITE: "
-        SAY WIT DATA
-        SAYZ WIT "]"
-        GIVEZ LEN WIT DATA  BTW Return number of characters written
-    KTHX
-
-    DIS TEH FUNCSHUN CLOSE
-        SAYZ WIT "Mock writer closed"
-    KTHX
-
-    DIS TEH FUNCSHUN GET_WRITTEN_DATA TEH STRIN
-        GIVEZ WRITTEN_DATA
-    KTHX
-KTHXBAI
-
-HAI ME TEH FUNCSHUN DEMO_BUFFERED_WRITER
-    SAYZ WIT "=== BUFFERED_WRITER Demo ==="
-
-    BTW Create a mock writer
-    I HAS A VARIABLE MOCK TEH MOCK_WRITER ITZ NEW MOCK_WRITER
-
-    BTW Wrap it in a buffered writer
-    I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT MOCK
-
-    SAY WIT "Default buffer size: "
-    SAYZ WIT BUFFERED SIZ
-
-    BTW Write small amounts (should be buffered)
-    BUFFERED DO WRITE WIT "Hello, "
-    BUFFERED DO WRITE WIT "World! "
-    BUFFERED DO WRITE WIT "This is buffered writing. "
-    SAYZ WIT "Small writes completed (data is buffered)"
-
-    BTW Force flush
-    BUFFERED DO FLUSH
-    SAYZ WIT "Buffer flushed"
-
-    BTW Write more data
-    BUFFERED DO WRITE WIT "More data after flush. "
-
-    BTW Change buffer size (triggers flush)
-    BUFFERED DO SET_SIZ WIT 2048
-    SAYZ WIT "Buffer size changed (triggers flush)"
-
-    BTW Write final data
-    BUFFERED DO WRITE WIT "Final data."
-
-    BTW Close (triggers final flush)
-    BUFFERED DO CLOSE
-    SAYZ WIT "Buffered writer closed"
-KTHXBAI
+I HAS A VARIABLE BASE_WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT BASE_WRITER
+SAYZ WIT "Buffered writer created with default buffer size"
 ```
 
-## Practical Examples
-
-### File-like Object Pattern
+**Example: Construction with immediate use**
 
 ```lol
-I CAN HAS IO?
-I CAN HAS STDIO?
-
-BTW Simple in-memory "file" that implements READER/WRITER interface
-HAI ME TEH CLAS MEMORY_FILE
-    EVRYONE
-    DIS TEH VARIABLE CONTENT TEH STRIN ITZ ""
-    DIS TEH VARIABLE READ_POS TEH INTEGR ITZ 0
-
-    BTW READER interface
-    DIS TEH FUNCSHUN READ TEH STRIN WIT SIZE TEH INTEGR
-        IZ READ_POS BIGGR THAN LEN WIT CONTENT LES 1?
-            GIVEZ ""  BTW EOF
-        KTHX
-
-        I HAS A VARIABLE REMAINING TEH INTEGR ITZ LEN WIT CONTENT LES READ_POS
-        I HAS A VARIABLE TO_READ TEH INTEGR ITZ SIZE
-
-        IZ TO_READ BIGGR THAN REMAINING?
-            TO_READ ITZ REMAINING
-        KTHX
-
-        BTW For simplicity, return a fixed-size chunk
-        READ_POS ITZ READ_POS MOAR TO_READ
-        GIVEZ "chunk"  BTW In real implementation, would return actual substring
-    KTHX
-
-    BTW WRITER interface
-    DIS TEH FUNCSHUN WRITE TEH INTEGR WIT DATA TEH STRIN
-        CONTENT ITZ CONTENT MOAR DATA
-        GIVEZ LEN WIT DATA
-    KTHX
-
-    DIS TEH FUNCSHUN CLOSE
-        SAYZ WIT "Memory file closed"
-    KTHX
-
-    DIS TEH FUNCSHUN RESET
-        CONTENT ITZ ""
-        READ_POS ITZ 0
-    KTHX
-
-    DIS TEH FUNCSHUN GET_CONTENT TEH STRIN
-        GIVEZ CONTENT
-    KTHX
-KTHXBAI
-
-HAI ME TEH FUNCSHUN DEMO_MEMORY_FILE_WITH_BUFFERING
-    SAYZ WIT "=== Memory File with Buffering Demo ==="
-
-    BTW Create memory file
-    I HAS A VARIABLE MEM_FILE TEH MEMORY_FILE ITZ NEW MEMORY_FILE
-
-    BTW Create buffered writer for efficient writing
-    I HAS A VARIABLE BUF_WRITER TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT MEM_FILE
-
-    BTW Write data efficiently through buffer
-    BUF_WRITER DO WRITE WIT "Line 1: Introduction"
-    BUF_WRITER DO WRITE WIT "\n"
-    BUF_WRITER DO WRITE WIT "Line 2: Main content"
-    BUF_WRITER DO WRITE WIT "\n"
-    BUF_WRITER DO WRITE WIT "Line 3: Conclusion"
-
-    BTW Flush and close
-    BUF_WRITER DO CLOSE
-
-    BTW Show what was written
-    SAY WIT "Content written: "
-    SAYZ WIT MEM_FILE DO GET_CONTENT
-
-    BTW Now read it back with buffered reader
-    MEM_FILE DO RESET  BTW Reset read position
-    I HAS A VARIABLE BUF_READER TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT MEM_FILE
-
-    BTW Read data in chunks
-    I HAS A VARIABLE CHUNK1 TEH STRIN ITZ BUF_READER DO READ WIT 15
-    SAY WIT "Read chunk: "
-    SAYZ WIT CHUNK1
-
-    BUF_READER DO CLOSE
-KTHXBAI
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT GET_NETWORK_WRITER
+BUFFERED DO WRITE WIT "Hello from buffered writer!"
+BUFFERED DO CLOSE
+SAYZ WIT "Data written through buffered writer"
 ```
 
-### Stream Processing Pattern
+**Example: Construction for different writer types**
 
 ```lol
-I CAN HAS IO?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN PROCESS_STREAM WIT READER TEH BUFFERED_READER AN WIT WRITER TEH BUFFERED_WRITER
-    SAYZ WIT "Processing stream data..."
-
-    I HAS A VARIABLE TOTAL_PROCESSED TEH INTEGR ITZ 0
-
-    WHILE YEZ  BTW Infinite loop, break on EOF
-        I HAS A VARIABLE CHUNK TEH STRIN ITZ READER DO READ WIT 100
-
-        BTW Check for EOF
-        IZ LEN WIT CHUNK SAEM AS 0?
-            SAYZ WIT "End of stream reached"
-            BREAK  BTW Would use proper break syntax in real implementation
-        KTHX
-
-        BTW Process chunk (uppercase conversion simulation)
-        BTW In real implementation, would do actual text processing
-        I HAS A VARIABLE PROCESSED TEH STRIN ITZ "[PROCESSED: " MOAR CHUNK MOAR "]"
-
-        BTW Write processed chunk
-        WRITER DO WRITE WIT PROCESSED
-
-        TOTAL_PROCESSED ITZ TOTAL_PROCESSED MOAR LEN WIT CHUNK
-
-        BTW Exit condition for demo
-        IZ TOTAL_PROCESSED BIGGR THAN 200?
-            SAYZ WIT "Demo limit reached"
-            GIVEZ UP  BTW Exit function
-        KTHX
-    KTHX
-
-    SAY WIT "Processed "
-    SAY WIT TOTAL_PROCESSED
-    SAYZ WIT " characters"
-KTHXBAI
+I HAS A VARIABLE TYPES TEH BUKKIT ITZ NEW BUKKIT
+TYPES DO PUSH WIT "file"
+TYPES DO PUSH WIT "network"
+TYPES DO PUSH WIT "console"
+WHILE NO SAEM AS (TYPES LENGTH SAEM AS 0)
+I HAS A VARIABLE TYPE TEH STRIN ITZ TYPES DO POP
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_WRITER_BY_TYPE WIT TYPE
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+SAYZ WIT "Created buffered writer for type: "
+SAYZ WIT TYPE
+BUFFERED DO CLOSE
+KTHX
 ```
 
-## Error Handling
-
-### I/O Exception Handling
+**Example: Construction with error handling**
 
 ```lol
-I CAN HAS IO?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN SAFE_IO_OPERATIONS
-    SAYZ WIT "=== Safe I/O Operations ==="
-
-    MAYB
-        BTW Attempt to create buffered reader with invalid object
-        I HAS A VARIABLE BAD_READER TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT "not_a_reader"
-    OOPSIE READER_ERROR
-        SAYZ WIT "Reader creation error (expected): "
-        SAYZ WIT READER_ERROR
-    KTHX
-
-    MAYB
-        BTW Attempt to set invalid buffer size
-        I HAS A VARIABLE READER TEH BUFFERED_READER ITZ NEW BUFFERED_READER WIT some_reader
-        READER DO SET_SIZ WIT -100  BTW Invalid negative size
-    OOPSIE SIZE_ERROR
-        SAYZ WIT "Buffer size error (expected): "
-        SAYZ WIT SIZE_ERROR
-    KTHX
-KTHXBAI
+MAYB
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_SOME_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+SAYZ WIT "Buffered writer created successfully"
+OOPSIE ERR
+SAYZ WIT "Failed to create buffered writer: "
+SAYZ WIT ERR
+KTHX
 ```
 
-### Resource Cleanup Pattern
+**Note:** Default buffer size is 1024 characters
+
+**Note:** Buffer size can be changed after construction using SIZ
+
+**Note:** The underlying writer is not closed when buffered writer is closed
+
+**Note:** Buffered writer takes ownership of the underlying writer
+
+#### CLOSE
+
+Closes the buffered writer and the underlying WRITER.
+Flushes any remaining buffered data before closing.
+
+**Syntax:** `<buffered_writer> DO CLOSE`
+**Example: Basic cleanup with auto-flush**
 
 ```lol
-I CAN HAS IO?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN PROPER_RESOURCE_CLEANUP
-    SAYZ WIT "=== Resource Cleanup Demo ==="
-
-    I HAS A VARIABLE READER TEH BUFFERED_READER ITZ NOTHIN
-    I HAS A VARIABLE WRITER TEH BUFFERED_WRITER ITZ NOTHIN
-
-    MAYB
-        BTW Create resources
-        READER ITZ NEW BUFFERED_READER WIT some_reader_source
-        WRITER ITZ NEW BUFFERED_WRITER WIT some_writer_dest
-
-        BTW Do work with resources
-        I HAS A VARIABLE DATA TEH STRIN ITZ READER DO READ WIT 100
-        WRITER DO WRITE WIT DATA
-
-        SAYZ WIT "Work completed successfully"
-
-    OOPSIE IO_ERROR
-        SAYZ WIT "I/O error occurred: "
-        SAYZ WIT IO_ERROR
-
-    ALWAYZ
-        BTW Always clean up resources
-        IZ READER SAEM AS NOTHIN SAEM AS NO?
-            READER DO CLOSE
-            SAYZ WIT "Reader closed"
-        KTHX
-
-        IZ WRITER SAEM AS NOTHIN SAEM AS NO?
-            WRITER DO CLOSE
-            SAYZ WIT "Writer closed"
-        KTHX
-
-        SAYZ WIT "Resource cleanup completed"
-    KTHX
-KTHXBAI
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED DO WRITE WIT "Final data"
+BUFFERED DO CLOSE
+SAYZ WIT "Buffered writer closed - data auto-flushed"
 ```
 
-## Quick Reference
+**Example: Close with error handling**
 
-### Classes
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_NETWORK_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED DO WRITE WIT "Data to send"
+MAYB
+BUFFERED DO CLOSE
+SAYZ WIT "Writer closed successfully"
+OOPSIE ERR
+SAYZ WIT "Error during close: "
+SAYZ WIT ERR
+KTHX
+```
 
-| Class | Type | Description |
-|-------|------|-------------|
-| `READER` | Abstract | Base class for reading operations |
-| `WRITER` | Abstract | Base class for writing operations |
-| `READWRITER` | Abstract | Combined reader/writer interface |
-| `BUFFERED_READER` | Concrete | Buffered reading implementation |
-| `BUFFERED_WRITER` | Concrete | Buffered writing implementation |
+**Example: Multiple writers cleanup**
 
-### BUFFERED_READER Methods
+```lol
+I HAS A VARIABLE WRITERS TEH BUKKIT ITZ NEW BUKKIT
+WRITERS DO PUSH WIT GET_WRITER_1
+WRITERS DO PUSH WIT GET_WRITER_2
+WRITERS DO PUSH WIT GET_WRITER_3
+WHILE NO SAEM AS (WRITERS LENGTH SAEM AS 0)
+I HAS A VARIABLE WRITER TEH WRITER ITZ WRITERS DO POP
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED DO WRITE WIT "Data for writer"
+BUFFERED DO CLOSE
+KTHX
+SAYZ WIT "All buffered writers closed"
+```
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `BUFFERED_READER WIT reader` | reader: READER | - | Constructor |
-| `SET_SIZ WIT size` | size: INTEGR | - | Change buffer size |
-| `READ WIT size` | size: INTEGR | STRIN | Read data (buffered) |
-| `CLOSE` | - | - | Close reader |
+**Example: Close after explicit flush**
 
-### BUFFERED_WRITER Methods
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_LOG_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED DO WRITE WIT "Log data"
+BUFFERED DO FLUSH
+SAYZ WIT "Data flushed explicitly"
+BUFFERED DO CLOSE
+SAYZ WIT "Writer closed (no additional flush needed)"
+```
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `BUFFERED_WRITER WIT writer` | writer: WRITER | - | Constructor |
-| `SET_SIZ WIT size` | size: INTEGR | - | Change buffer size |
-| `WRITE WIT data` | data: STRIN | INTEGR | Write data (buffered) |
-| `FLUSH` | - | - | Force write buffer |
-| `CLOSE` | - | - | Flush and close writer |
+**Example: Resource management pattern**
 
-### Properties
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_DATABASE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+I HAS A VARIABLE RESOURCE_COUNT TEH INTEGR ITZ 1
+MAYB
+BUFFERED DO WRITE WIT "INSERT INTO table VALUES (...)"
+BUFFERED DO WRITE WIT "COMMIT"
+OOPSIE ERR
+SAYZ WIT "Database write failed: "
+SAYZ WIT ERR
+BUFFERED DO WRITE WIT "ROLLBACK"
+KTHX
+RESOURCE_COUNT ITZ RESOURCE_COUNT MINUS 1
+BUFFERED DO CLOSE
+SAYZ WIT "Database connection closed, resources: "
+SAYZ WIT RESOURCE_COUNT
+```
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `SIZ` | INTEGR | Current buffer size |
+**Example: Close with partial buffer**
 
-## Related
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED DO WRITE WIT "Incomplete"
+BUFFERED DO CLOSE
+SAYZ WIT "Partial buffer data flushed during close"
+```
 
-- [STDIO Module](stdio.md) - Basic input/output functions
-- [Collections](collections.md) - Working with data structures
-- [Control Flow](../language-guide/control-flow.md) - Exception handling patterns
+**Note:** Automatically flushes any remaining buffered data
+
+**Note:** Closes both the buffered writer and underlying writer
+
+**Note:** Releases all associated resources
+
+**Note:** Safe to call multiple times (idempotent)
+
+**Note:** After CLOSE, further WRITE operations will fail
+
+**Note:** Ensures underlying writer is properly closed
+
+#### FLUSH
+
+Flushes the internal buffer to the underlying WRITER.
+Should be called to ensure all buffered data is written out.
+
+**Syntax:** `<buffered_writer> DO FLUSH`
+**Example: Explicit flushing for immediate writes**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_LOG_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED DO WRITE WIT "Important log message"
+BUFFERED DO FLUSH
+SAYZ WIT "Log message written immediately"
+```
+
+**Example: Periodic flushing**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+I HAS A VARIABLE LINES TEH BUKKIT ITZ NEW BUKKIT
+LINES DO PUSH WIT "Line 1"
+LINES DO PUSH WIT "Line 2"
+LINES DO PUSH WIT "Line 3"
+I HAS A VARIABLE COUNT TEH INTEGR ITZ 0
+WHILE NO SAEM AS (LINES LENGTH SAEM AS 0)
+I HAS A VARIABLE LINE TEH STRIN ITZ LINES DO POP
+BUFFERED DO WRITE WIT LINE
+BUFFERED DO WRITE WIT "\n"
+COUNT ITZ COUNT UP 1
+IZ COUNT MOD 2 SAEM AS 0?
+BUFFERED DO FLUSH
+SAYZ WIT "Flushed after "
+SAYZ WIT COUNT
+SAYZ WIT " lines"
+KTHX
+KTHX
+BUFFERED DO CLOSE
+```
+
+**Example: Flush before reading response**
+
+```lol
+I HAS A VARIABLE CONNECTION TEH READWRITER ITZ GET_NETWORK_CONNECTION
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT CONNECTION
+BUFFERED DO WRITE WIT "GET /data HTTP/1.1\n"
+BUFFERED DO WRITE WIT "Host: example.com\n\n"
+BUFFERED DO FLUSH
+I HAS A VARIABLE RESPONSE TEH STRIN ITZ CONNECTION DO READ WIT 1024
+SAYZ WIT "Server response: "
+SAYZ WIT RESPONSE
+BUFFERED DO CLOSE
+```
+
+**Example: Error handling during flush**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_UNRELIABLE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED DO WRITE WIT "Data to flush"
+MAYB
+BUFFERED DO FLUSH
+SAYZ WIT "Data flushed successfully"
+OOPSIE ERR
+SAYZ WIT "Error during flush: "
+SAYZ WIT ERR
+KTHX
+BUFFERED DO CLOSE
+```
+
+**Example: Flush with empty buffer**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED DO FLUSH
+SAYZ WIT "Flush on empty buffer - no operation performed"
+BUFFERED DO WRITE WIT "Some data"
+BUFFERED DO FLUSH
+SAYZ WIT "Data flushed after writing"
+BUFFERED DO CLOSE
+```
+
+**Example: Multiple flushes in sequence**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_CONSOLE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED DO WRITE WIT "First "
+BUFFERED DO FLUSH
+BUFFERED DO WRITE WIT "Second "
+BUFFERED DO FLUSH
+BUFFERED DO WRITE WIT "Third"
+BUFFERED DO FLUSH
+SAYZ WIT "All parts written incrementally"
+BUFFERED DO CLOSE
+```
+
+**Note:** Forces immediate writing of all buffered data
+
+**Note:** Does not affect buffer size or configuration
+
+**Note:** Safe to call on empty buffer (no operation)
+
+**Note:** Can be called multiple times safely
+
+**Note:** Useful for ensuring data reaches destination immediately
+
+**Note:** May improve responsiveness for interactive applications
+
+#### WRITE
+
+Writes string data to the buffered writer.
+Data is buffered internally and flushed to the underlying WRITER when the buffer is full or when FLUSH/CLOSE is called.
+Returns the number of characters written.
+
+**Syntax:** `<buffered_writer> DO WRITE WIT <data>`
+**Parameters:**
+- `data` (STRIN): String data to write
+
+**Example: Basic buffered writing**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+I HAS A VARIABLE CHARS_WRITTEN TEH INTEGR ITZ BUFFERED DO WRITE WIT "Hello World"
+SAYZ WIT "Wrote "
+SAYZ WIT CHARS_WRITTEN
+SAYZ WIT " characters to buffer"
+BUFFERED DO CLOSE
+```
+
+**Example: Writing with buffer management**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_NETWORK_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+I HAS A VARIABLE DATA TEH STRIN ITZ "Small data"
+I HAS A VARIABLE WRITTEN TEH INTEGR ITZ BUFFERED DO WRITE WIT DATA
+SAYZ WIT "Data buffered: "
+SAYZ WIT WRITTEN
+SAYZ WIT " characters"
+I HAS A VARIABLE LARGE_DATA TEH STRIN ITZ "Very large data that exceeds buffer size..."
+I HAS A VARIABLE LARGE_WRITTEN TEH INTEGR ITZ BUFFERED DO WRITE WIT LARGE_DATA
+SAYZ WIT "Large data written directly: "
+SAYZ WIT LARGE_WRITTEN
+SAYZ WIT " characters"
+BUFFERED DO CLOSE
+```
+
+**Example: Batch writing with size tracking**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_LOG_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+I HAS A VARIABLE MESSAGES TEH BUKKIT ITZ NEW BUKKIT
+MESSAGES DO PUSH WIT "INFO: Starting process"
+MESSAGES DO PUSH WIT "INFO: Processing data"
+MESSAGES DO PUSH WIT "INFO: Process complete"
+I HAS A VARIABLE TOTAL_WRITTEN TEH INTEGR ITZ 0
+WHILE NO SAEM AS (MESSAGES LENGTH SAEM AS 0)
+I HAS A VARIABLE MSG TEH STRIN ITZ MESSAGES DO POP
+I HAS A VARIABLE MSG_WITH_NEWLINE TEH STRIN ITZ MSG MOAR "\n"
+I HAS A VARIABLE WRITTEN TEH INTEGR ITZ BUFFERED DO WRITE WIT MSG_WITH_NEWLINE
+TOTAL_WRITTEN ITZ TOTAL_WRITTEN MOAR WRITTEN
+KTHX
+SAYZ WIT "Total characters buffered: "
+SAYZ WIT TOTAL_WRITTEN
+BUFFERED DO CLOSE
+```
+
+**Example: Writing with explicit flushing**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_CONSOLE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED DO WRITE WIT "First message"
+BUFFERED DO FLUSH
+SAYZ WIT "First message should be visible now"
+BUFFERED DO WRITE WIT "Second message"
+BUFFERED DO CLOSE
+SAYZ WIT "Second message flushed on close"
+```
+
+**Example: Error handling during writing**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_UNRELIABLE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+MAYB
+I HAS A VARIABLE WRITTEN TEH INTEGR ITZ BUFFERED DO WRITE WIT "Test data"
+SAYZ WIT "Data buffered successfully: "
+SAYZ WIT WRITTEN
+SAYZ WIT " characters"
+OOPSIE ERR
+SAYZ WIT "Error during buffered writing: "
+SAYZ WIT ERR
+KTHX
+BUFFERED DO CLOSE
+```
+
+**Example: Performance comparison**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_SLOW_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+I HAS A VARIABLE START_TIME TEH INTEGR ITZ GET_CURRENT_TIME
+I HAS A VARIABLE IDX TEH INTEGR ITZ 0
+WHILE IDX SMALLR THAN 100
+BUFFERED DO WRITE WIT "Data chunk "
+BUFFERED DO WRITE WIT IDX
+BUFFERED DO WRITE WIT "\n"
+IDX ITZ IDX UP 1
+KTHX
+BUFFERED DO CLOSE
+I HAS A VARIABLE END_TIME TEH INTEGR ITZ GET_CURRENT_TIME
+SAYZ WIT "Buffered writing took: "
+SAYZ WIT END_TIME MINUS START_TIME
+SAYZ WIT " time units"
+```
+
+**Note:** Data is buffered until buffer is full or FLUSH/CLOSE is called
+
+**Note:** Large data may be written directly bypassing the buffer
+
+**Note:** Returns the number of characters actually written
+
+**Note:** Buffer size affects when data is automatically flushed
+
+**Note:** May return fewer characters if error occurs during writing
+
+**Member Variables:**
+
+#### SIZ
+
+Gets or sets the size of the internal buffer used for writing.
+Setting a new size will drop the existing buffer.
+Default is 1024. Must be a positive integer.
+
+
+**Example: Get current buffer size**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+SAYZ WIT "Current buffer size: "
+SAYZ WIT BUFFERED SIZ
+BUFFERED DO CLOSE
+```
+
+**Example: Set custom buffer size**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_NETWORK_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED SIZ ITZ 2048
+SAYZ WIT "Buffer size set to: "
+SAYZ WIT BUFFERED SIZ
+BUFFERED DO CLOSE
+```
+
+**Example: Optimize for different data patterns**
+
+```lol
+I HAS A VARIABLE PATTERNS TEH BUKKIT ITZ NEW BUKKIT
+PATTERNS DO PUSH WIT "frequent_small_writes"
+PATTERNS DO PUSH WIT "occasional_large_writes"
+PATTERNS DO PUSH WIT "real_time_logging"
+WHILE NO SAEM AS (PATTERNS LENGTH SAEM AS 0)
+I HAS A VARIABLE PATTERN TEH STRIN ITZ PATTERNS DO POP
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_WRITER_FOR_PATTERN WIT PATTERN
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+IZ PATTERN SAEM AS "frequent_small_writes"?
+BUFFERED SIZ ITZ 4096
+NOPE
+IZ PATTERN SAEM AS "occasional_large_writes"?
+BUFFERED SIZ ITZ 1024
+NOPE
+IZ PATTERN SAEM AS "real_time_logging"?
+BUFFERED SIZ ITZ 256
+NOPE
+BUFFERED SIZ ITZ 1024
+KTHX
+KTHX
+KTHX
+SAYZ WIT "Pattern "
+SAYZ WIT PATTERN
+SAYZ WIT " using buffer size: "
+SAYZ WIT BUFFERED SIZ
+BUFFERED DO CLOSE
+KTHX
+```
+
+**Example: Dynamic buffer size adjustment**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_ADAPTIVE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+I HAS A VARIABLE INITIAL_SIZE TEH INTEGR ITZ 1024
+BUFFERED SIZ ITZ INITIAL_SIZE
+I HAS A VARIABLE WRITE_COUNT TEH INTEGR ITZ 0
+WHILE WRITE_COUNT SMALLR THAN 50
+BUFFERED DO WRITE WIT "Data chunk "
+BUFFERED DO WRITE WIT WRITE_COUNT
+BUFFERED DO WRITE WIT "\n"
+WRITE_COUNT ITZ WRITE_COUNT UP 1
+IZ WRITE_COUNT MOD 10 SAEM AS 0?
+BUFFERED SIZ ITZ BUFFERED SIZ MUL 2
+SAYZ WIT "Increased buffer size to: "
+SAYZ WIT BUFFERED SIZ
+KTHX
+KTHX
+BUFFERED DO CLOSE
+```
+
+**Example: Buffer size impact on flushing**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED SIZ ITZ 10
+SAYZ WIT "Small buffer (10): "
+I HAS A VARIABLE IDX TEH INTEGR ITZ 0
+WHILE IDX SMALLR THAN 5
+BUFFERED DO WRITE WIT "Data chunk that exceeds buffer"
+IDX ITZ IDX UP 1
+KTHX
+SAYZ WIT "Small buffer caused multiple flushes"
+BUFFERED SIZ ITZ 1000
+SAYZ WIT "Large buffer (1000): "
+I HAS A VARIABLE IDX TEH INTEGR ITZ 0
+WHILE IDX SMALLR THAN 5
+BUFFERED DO WRITE WIT "Data chunk that fits in buffer"
+IDX ITZ IDX UP 1
+KTHX
+SAYZ WIT "Large buffer delayed flushing"
+BUFFERED DO CLOSE
+```
+
+**Example: Buffer size validation**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+MAYB
+BUFFERED SIZ ITZ 0
+SAYZ WIT "Error: Should not allow zero buffer size"
+OOPSIE ERR
+SAYZ WIT "Expected error for zero buffer size: "
+SAYZ WIT ERR
+KTHX
+MAYB
+BUFFERED SIZ ITZ -500
+SAYZ WIT "Error: Should not allow negative buffer size"
+OOPSIE ERR
+SAYZ WIT "Expected error for negative buffer size: "
+SAYZ WIT ERR
+KTHX
+BUFFERED SIZ ITZ 3072
+SAYZ WIT "Valid buffer size set to: "
+SAYZ WIT BUFFERED SIZ
+BUFFERED DO CLOSE
+```
+
+**Note:** Default buffer size is 1024 characters
+
+**Note:** Setting new size drops existing buffer contents
+
+**Note:** Must be a positive integer greater than 0
+
+**Note:** Larger buffers reduce I/O calls but use more memory
+
+**Note:** Smaller buffers flush more frequently
+
+**Note:** Can be changed at any time during writer lifetime
+
+**Example: Basic buffered writing**
+
+```lol
+I HAS A VARIABLE BASE_WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT BASE_WRITER
+BUFFERED DO WRITE WIT "Hello, World!"
+BUFFERED DO WRITE WIT "\n"
+BUFFERED DO WRITE WIT "This is buffered writing."
+BUFFERED DO CLOSE
+SAYZ WIT "Data written with buffering"
+```
+
+**Example: Custom buffer size**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_NETWORK_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED SIZ ITZ 4096
+SAYZ WIT "Buffer size set to 4096"
+I HAS A VARIABLE DATA TEH STRIN ITZ "Large data payload..."
+BUFFERED DO WRITE WIT DATA
+BUFFERED DO CLOSE
+SAYZ WIT "Large data written efficiently"
+```
+
+**Example: Explicit flushing**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_LOG_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+BUFFERED DO WRITE WIT "Log entry 1"
+BUFFERED DO WRITE WIT "\n"
+BUFFERED DO FLUSH
+SAYZ WIT "First log entry flushed immediately"
+BUFFERED DO WRITE WIT "Log entry 2"
+BUFFERED DO WRITE WIT "\n"
+BUFFERED DO CLOSE
+SAYZ WIT "Second log entry flushed on close"
+```
+
+**Example: Batch writing with progress**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_FILE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+I HAS A VARIABLE LINES TEH BUKKIT ITZ NEW BUKKIT
+LINES DO PUSH WIT "Line 1"
+LINES DO PUSH WIT "Line 2"
+LINES DO PUSH WIT "Line 3"
+I HAS A VARIABLE TOTAL_CHARS TEH INTEGR ITZ 0
+WHILE NO SAEM AS (LINES LENGTH SAEM AS 0)
+I HAS A VARIABLE LINE TEH STRIN ITZ LINES DO POP
+I HAS A VARIABLE LINE_WITH_NEWLINE TEH STRIN ITZ LINE MOAR "\n"
+I HAS A VARIABLE WRITTEN TEH INTEGR ITZ BUFFERED DO WRITE WIT LINE_WITH_NEWLINE
+TOTAL_CHARS ITZ TOTAL_CHARS MOAR WRITTEN
+IZ TOTAL_CHARS MOD 50 SAEM AS 0?
+SAYZ WIT "Written "
+SAYZ WIT TOTAL_CHARS
+SAYZ WIT " characters so far"
+KTHX
+KTHX
+SAYZ WIT "Total characters written: "
+SAYZ WIT TOTAL_CHARS
+BUFFERED DO CLOSE
+```
+
+**Example: Error handling with buffering**
+
+```lol
+I HAS A VARIABLE WRITER TEH WRITER ITZ GET_UNRELIABLE_WRITER
+I HAS A VARIABLE BUFFERED TEH BUFFERED_WRITER ITZ NEW BUFFERED_WRITER WIT WRITER
+MAYB
+BUFFERED DO WRITE WIT "Important data"
+BUFFERED DO WRITE WIT "\n"
+BUFFERED DO FLUSH
+SAYZ WIT "Data written and flushed successfully"
+OOPSIE ERR
+SAYZ WIT "Error during buffered writing: "
+SAYZ WIT ERR
+KTHX
+BUFFERED DO CLOSE
+```
+

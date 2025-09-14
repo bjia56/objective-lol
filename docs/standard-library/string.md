@@ -1,496 +1,124 @@
-# STRING Module - String Utility Functions
+# STRING Module
 
-The STRING module provides essential string manipulation and analysis functions for working with text data.
-
-## Importing STRING Module
+## Import
 
 ```lol
-BTW Import entire module
+BTW Full import
 I CAN HAS STRING?
 
-BTW Selective imports
-I CAN HAS LEN AN CONCAT FROM STRING?
-I CAN HAS TRIM AN UPPER AN LOWER FROM STRING?
-I CAN HAS SPLIT FROM STRING?
+BTW Selective import examples
+I CAN HAS LEN FROM STRING?
+I CAN HAS LOWER FROM STRING?
 ```
 
-## String Functions
+### CAPITALIZE
 
-### LEN - String Length
+Capitalizes the first character of a STRIN and makes the rest lowercase.
+Returns a new STRIN with the first letter capitalized and the rest in lower case.
 
-Returns the length of a string (number of characters).
+**Returns:** STRIN
 
-**Syntax:**
-```lol
-LEN WIT <string>
-```
+### CONCAT
 
-**Parameters:**
-- **string**: STRIN - The string to measure
+Concatenates multiple values into a single STRIN.
 
-**Returns:** INTEGR - The length of the string
+**Returns:** STRIN
 
-**Examples:**
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
+### CONTAINS
 
-BTW Basic string length
-I HAS A VARIABLE MESSAGE TEH STRIN ITZ "Hello, World!"
-I HAS A VARIABLE LENGTH TEH INTEGR ITZ LEN WIT MESSAGE
-SAYZ WIT LENGTH                    BTW Output: 13
+Checks if STR contains the substring SUBSTR.
+Returns TRUE if SUBSTR is found within STR, otherwise FALSE.
 
-BTW Empty string
-I HAS A VARIABLE EMPTY TEH STRIN ITZ ""
-SAYZ WIT LEN WIT EMPTY            BTW Output: 0
+**Returns:** BOOL
 
-BTW String with special characters
-I HAS A VARIABLE SPECIAL TEH STRIN ITZ "Line 1\nLine 2\t\tTabbed"
-SAYZ WIT LEN WIT SPECIAL          BTW Output: 19
-```
+### INDEX_OF
 
-### CONCAT - String Concatenation
+Finds the index of the first occurrence of SUBSTR in STR.
+Returns the zero-based index of SUBSTR in STR, or -1 if not found.
 
-Combines multiple strings into a single string.
+**Returns:** INTEGR
 
-**Syntax:**
-```lol
-CONCAT WIT <string1> [AN WIT <string2> ...]
-```
+### LEN
 
-**Parameters:**
-All parameters must be convertible to STRIN.
+Returns the length of a STRIN in characters.
+Counts the number of UTF-8 characters in the STRIN.
 
-**Returns:** STRIN - The concatenated string
+**Returns:** INTEGR
 
-**Examples:**
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
+### LOWER
 
-BTW Basic concatenation
-I HAS A VARIABLE FIRST TEH STRIN ITZ "Hello"
-I HAS A VARIABLE SECOND TEH STRIN ITZ " World"
-I HAS A VARIABLE RESULT TEH STRIN ITZ CONCAT WIT FIRST AN WIT SECOND
-SAYZ WIT RESULT                   BTW Output: Hello World
+Converts all characters in a STRIN to lowercase.
+Returns a new STRIN with all letters converted to lower case.
 
-BTW Building longer strings
-I HAS A VARIABLE NAME TEH STRIN ITZ "Alice"
-I HAS A VARIABLE GREETING TEH STRIN ITZ CONCAT WIT "Hello, " AN WIT NAME AN WIT "!"
-SAYZ WIT GRETTING                 BTW Output: Hello, Alice!
-```
+**Returns:** STRIN
 
-### TRIM - Remove Whitespace
+### LTRIM
 
-Removes leading and trailing whitespace from a string.
+Removes whitespace from the left end of a STRIN.
+Trims spaces, tabs, newlines, and carriage returns.
 
-**Syntax:**
-```lol
-TRIM WIT <string>
-```
+**Returns:** STRIN
 
-**Parameters:**
-- **string**: STRIN - The string to trim
+### REPEAT
 
-**Returns:** STRIN - The trimmed string
+Repeats a STRIN a specified number of times.
+Returns a new STRIN consisting of the original STRIN repeated COUNT times.
 
-**Examples:**
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
+**Returns:** STRIN
 
-BTW Basic trimming
-I HAS A VARIABLE PADDED TEH STRIN ITZ "  Hello World  "
-I HAS A VARIABLE CLEAN TEH STRIN ITZ TRIM WIT PADDED
-SAYZ WIT CLEAN                    BTW Output: Hello World
+### REPLACE
 
-BTW Trimming tabs and newlines
-I HAS A VARIABLE MESSY TEH STRIN ITZ "\n\t  Text  \t\n"
-I HAS A VARIABLE NEAT TEH STRIN ITZ TRIM WIT MESSY
-SAYZ WIT NEAT                     BTW Output: Text
+Replaces the first occurrence of OLD substring with NEW substring in STR.
+Returns a new STRIN with the first occurrence of OLD replaced by NEW.
 
-BTW No change if already trimmed
-I HAS A VARIABLE ALREADY_CLEAN TEH STRIN ITZ "Clean"
-SAYZ WIT TRIM WIT ALREADY_CLEAN   BTW Output: Clean
-```
+**Returns:** STRIN
 
-### UPPER - Convert to Uppercase
+### REPLACE_ALL
 
-Converts all letters in a string to uppercase.
+Replaces all occurrences of OLD substring with NEW substring in STR.
+Returns a new STRIN with all occurrences of OLD replaced by NEW.
 
-**Syntax:**
-```lol
-UPPER WIT <string>
-```
+**Returns:** STRIN
 
-**Parameters:**
-- **string**: STRIN - The string to convert
+### RTRIM
 
-**Returns:** STRIN - The uppercase string
+Removes whitespace from the right end of a STRIN.
+Trims spaces, tabs, newlines, and carriage returns.
 
-**Examples:**
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
+**Returns:** STRIN
 
-BTW Basic uppercase conversion
-I HAS A VARIABLE TEXT TEH STRIN ITZ "Hello World"
-I HAS A VARIABLE LOUD TEH STRIN ITZ UPPER WIT TEXT
-SAYZ WIT LOUD                     BTW Output: HELLO WORLD
+### SPLIT
 
-BTW Mixed case conversion
-I HAS A VARIABLE MIXED TEH STRIN ITZ "CaSeD tExT 123!"
-SAYZ WIT UPPER WIT MIXED          BTW Output: CASED TEXT 123!
+Splits a STRIN into a BUKKIT array using the specified separator.
+Returns array of substrings divided by the separator string.
 
-BTW Already uppercase
-I HAS A VARIABLE ALREADY_UPPER TEH STRIN ITZ "LOUD"
-SAYZ WIT UPPER WIT ALREADY_UPPER  BTW Output: LOUD
-```
+**Returns:** BUKKIT
 
-### LOWER - Convert to Lowercase
+### SUBSTR
 
-Converts all letters in a string to lowercase.
+Extracts a substring from a STRIN starting at the given position.
+Returns substring from START index for LENGTH characters. Bounds are checked.
 
-**Syntax:**
-```lol
-LOWER WIT <string>
-```
+**Returns:** STRIN
 
-**Parameters:**
-- **string**: STRIN - The string to convert
+### TITLE
 
-**Returns:** STRIN - The lowercase string
+Converts the first character of each word to uppercase.
+Returns a new STRIN with the first letter of each word capitalized.
 
-**Examples:**
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
+**Returns:** STRIN
 
-BTW Basic lowercase conversion
-I HAS A VARIABLE TEXT TEH STRIN ITZ "HELLO WORLD"
-I HAS A VARIABLE QUIET TEH STRIN ITZ LOWER WIT TEXT
-SAYZ WIT QUIET                    BTW Output: hello world
+### TRIM
 
-BTW Mixed case conversion
-I HAS A VARIABLE MIXED TEH STRIN ITZ "CaSeD tExT 123!"
-SAYZ WIT LOWER WIT MIXED          BTW Output: cased text 123!
+Removes whitespace from both ends of a STRIN.
+Trims spaces, tabs, newlines, and carriage returns.
 
-BTW Already lowercase
-I HAS A VARIABLE ALREADY_LOWER TEH STRIN ITZ "quiet"
-SAYZ WIT LOWER WIT ALREADY_LOWER  BTW Output: quiet
-```
-
-### SPLIT - Split String into Array
-
-Splits a string into an array of substrings using a delimiter.
-
-**Syntax:**
-```lol
-SPLIT WIT <string> AN WIT <delimiter>
-```
-
-**Parameters:**
-- **string**: STRIN - The string to split
-- **delimiter**: STRIN - The delimiter to split on
-
-**Returns:** BUKKIT - Array of string parts
-
-**Examples:**
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
-
-BTW Split by comma
-I HAS A VARIABLE CSV TEH STRIN ITZ "apple,banana,cherry"
-I HAS A VARIABLE FRUITS TEH BUKKIT ITZ SPLIT WIT CSV AN WIT ","
-
-I HAS A VARIABLE I TEH INTEGR ITZ 0
-WHILE I SMALLR THAN FRUITS SIZ
-    SAY WIT "Fruit "
-    SAY WIT I
-    SAY WIT ": "
-    SAYZ WIT FRUITS DO AT WIT I
-    I ITZ I MOAR 1
-KTHX
-
-BTW Split by space
-I HAS A VARIABLE SENTENCE TEH STRIN ITZ "Hello beautiful world"
-I HAS A VARIABLE WORDS TEH BUKKIT ITZ SPLIT WIT SENTENCE AN WIT " "
-SAYZ WIT WORDS SIZ                BTW Output: 3
-
-BTW Split by multiple character delimiter
-I HAS A VARIABLE DATA TEH STRIN ITZ "item1::item2::item3"
-I HAS A VARIABLE ITEMS TEH BUKKIT ITZ SPLIT WIT DATA AN WIT "::"
-SAYZ WIT ITEMS DO AT WIT 0        BTW Output: item1
-```
-
-## Practical Examples
-
-### String Builder Pattern
-
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN BUILD_MESSAGE WIT NAME TEH STRIN AN WIT AGE TEH INTEGR
-    BTW Convert age to string for concatenation
-    I HAS A VARIABLE AGE_STR TEH STRIN ITZ AGE AS STRIN
-
-    BTW Build message step by step
-    I HAS A VARIABLE MSG TEH STRIN ITZ CONCAT WIT "Name: " AN WIT NAME
-    MSG ITZ CONCAT WIT MSG AN WIT ", Age: "
-    MSG ITZ CONCAT WIT MSG AN WIT AGE_STR
-    MSG ITZ CONCAT WIT MSG AN WIT " years old"
-
-    GIVEZ MSG
-KTHXBAI
-
-HAI ME TEH FUNCSHUN MAIN
-    I HAS A VARIABLE PERSON_INFO TEH STRIN ITZ BUILD_MESSAGE WIT "Bob" AN WIT 25
-    SAYZ WIT PERSON_INFO          BTW Output: Name: Bob, Age: 25 years old
-KTHXBAI
-```
-
-### Text Analysis
-
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN ANALYZE_TEXT WIT TEXT TEH STRIN
-    I HAS A VARIABLE LENGTH TEH INTEGR ITZ LEN WIT TEXT
-
-    SAY WIT "Text: \""
-    SAY WIT TEXT
-    SAYZ WIT "\""
-
-    SAY WIT "Length: "
-    SAYZ WIT LENGTH
-
-    BTW Categorize by length
-    IZ LENGTH SAEM AS 0?
-        SAYZ WIT "Category: Empty string"
-    NOPE
-        IZ LENGTH SMALLR THAN 10?
-            SAYZ WIT "Category: Short text"
-        NOPE
-            IZ LENGTH SMALLR THAN 50?
-                SAYZ WIT "Category: Medium text"
-            NOPE
-                SAYZ WIT "Category: Long text"
-            KTHX
-        KTHX
-    KTHX
-KTHXBAI
-
-HAI ME TEH FUNCSHUN MAIN
-    ANALYZE_TEXT WIT ""
-    ANALYZE_TEXT WIT "Hi"
-    ANALYZE_TEXT WIT "This is a medium length sentence."
-    ANALYZE_TEXT WIT "This is a much longer piece of text that contains many words and would be categorized as long text."
-KTHXBAI
-```
-
-### String Comparison Helper
-
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN COMPARE_STRINGS WIT STR1 TEH STRIN AN WIT STR2 TEH STRIN
-    I HAS A VARIABLE LEN1 TEH INTEGR ITZ LEN WIT STR1
-    I HAS A VARIABLE LEN2 TEH INTEGR ITZ LEN WIT STR2
-
-    SAY WIT "String 1: \""
-    SAY WIT STR1
-    SAY WIT "\" (length: "
-    SAY WIT LEN1
-    SAYZ WIT ")"
-
-    SAY WIT "String 2: \""
-    SAY WIT STR2
-    SAY WIT "\" (length: "
-    SAY WIT LEN2
-    SAYZ WIT ")"
-
-    IZ STR1 SAEM AS STR2?
-        SAYZ WIT "Result: Strings are identical"
-    NOPE
-        IZ LEN1 SAEM AS LEN2?
-            SAYZ WIT "Result: Different content, same length"
-        NOPE
-            IZ LEN1 BIGGR THAN LEN2?
-                SAYZ WIT "Result: First string is longer"
-            NOPE
-                SAYZ WIT "Result: Second string is longer"
-            KTHX
-        KTHX
-    KTHX
-    SAYZ WIT ""
-KTHXBAI
-
-HAI ME TEH FUNCSHUN MAIN
-    COMPARE_STRINGS WIT "hello" AN WIT "hello"
-    COMPARE_STRINGS WIT "cat" AN WIT "dog"
-    COMPARE_STRINGS WIT "short" AN WIT "much longer string"
-KTHXBAI
-```
-
-### Data Formatter
-
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN FORMAT_TABLE_ROW WIT COL1 TEH STRIN AN WIT COL2 TEH STRIN AN WIT COL3 TEH STRIN
-    BTW Create table separator
-    I HAS A VARIABLE SEPARATOR TEH STRIN ITZ " | "
-
-    BTW Build the row
-    I HAS A VARIABLE ROW TEH STRIN ITZ CONCAT WIT COL1 AN WIT SEPARATOR
-    ROW ITZ CONCAT WIT ROW AN WIT COL2
-    ROW ITZ CONCAT WIT ROW AN WIT SEPARATOR
-    ROW ITZ CONCAT WIT ROW AN WIT COL3
-
-    GIVEZ ROW
-KTHXBAI
-
-HAI ME TEH FUNCSHUN CREATE_REPORT
-    SAYZ WIT "Employee Report"
-    SAYZ WIT "==============="
-
-    BTW Header
-    I HAS A VARIABLE HEADER TEH STRIN ITZ FORMAT_TABLE_ROW WIT "Name" AN WIT "Department" AN WIT "Years"
-    SAYZ WIT HEADER
-
-    BTW Data rows
-    I HAS A VARIABLE ROW1 TEH STRIN ITZ FORMAT_TABLE_ROW WIT "Alice" AN WIT "Engineering" AN WIT "5"
-    SAYZ WIT ROW1
-
-    I HAS A VARIABLE ROW2 TEH STRIN ITZ FORMAT_TABLE_ROW WIT "Bob" AN WIT "Marketing" AN WIT "3"
-    SAYZ WIT ROW2
-
-    I HAS A VARIABLE ROW3 TEH STRIN ITZ FORMAT_TABLE_ROW WIT "Carol" AN WIT "Design" AN WIT "7"
-    SAYZ WIT ROW3
-KTHXBAI
-```
-
-### Password Validator
-
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN VALIDATE_PASSWORD WIT PASSWORD TEH STRIN
-    I HAS A VARIABLE LENGTH TEH INTEGR ITZ LEN WIT PASSWORD
-    I HAS A VARIABLE IS_VALID TEH BOOL ITZ YEZ
-
-    SAY WIT "Validating password: "
-    SAY WIT PASSWORD
-    SAY WIT " (length: "
-    SAY WIT LENGTH
-    SAYZ WIT ")"
-
-    BTW Check minimum length
-    IZ LENGTH SMALLR THAN 8?
-        SAYZ WIT "❌ Password must be at least 8 characters"
-        IS_VALID ITZ NO
-    NOPE
-        SAYZ WIT "✓ Length requirement met"
-    KTHX
-
-    BTW Check maximum length
-    IZ LENGTH BIGGR THAN 128?
-        SAYZ WIT "❌ Password must be no more than 128 characters"
-        IS_VALID ITZ NO
-    NOPE
-        SAYZ WIT "✓ Length within limits"
-    KTHX
-
-    BTW Overall result
-    IZ IS_VALID?
-        SAYZ WIT "✓ Password is valid!"
-    NOPE
-        SAYZ WIT "❌ Password validation failed"
-    KTHX
-
-    SAYZ WIT ""
-KTHXBAI
-
-HAI ME TEH FUNCSHUN MAIN
-    VALIDATE_PASSWORD WIT "short"
-    VALIDATE_PASSWORD WIT "this_is_a_good_password"
-    VALIDATE_PASSWORD WIT ""
-KTHXBAI
-```
-
-## Working with Built-in String Operations
-
-While the STRING module provides specialized functions, remember that Objective-LOL also has built-in string operations:
-
-```lol
-I CAN HAS STRING?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN DEMONSTRATE_STRING_OPERATIONS
-    I HAS A VARIABLE TEXT1 TEH STRIN ITZ "Hello"
-    I HAS A VARIABLE TEXT2 TEH STRIN ITZ "World"
-
-    BTW Built-in concatenation with MOAR operator
-    I HAS A VARIABLE COMBINED1 TEH STRIN ITZ TEXT1 MOAR " " MOAR TEXT2
-    SAYZ WIT COMBINED1
-
-    BTW STRING module concatenation
-    I HAS A VARIABLE COMBINED2 TEH STRIN ITZ CONCAT WIT TEXT1 AN WIT " "
-    COMBINED2 ITZ CONCAT WIT COMBINED2 AN WIT TEXT2
-    SAYZ WIT COMBINED2
-
-    BTW Both produce the same result
-    IZ COMBINED1 SAEM AS COMBINED2?
-        SAYZ WIT "Both methods produce identical results!"
-    KTHX
-KTHXBAI
-```
-
-## Error Handling
-
-STRING functions will throw exceptions for invalid argument types:
-
-```lol
-I CAN HAS STRING?
-
-MAYB
-    BTW This will cause an error - passing integer instead of string
-    I HAS A VARIABLE LENGTH TEH INTEGR ITZ LEN WIT 12345
-OOPSIE TYPE_ERROR
-    SAYZ WIT "Error: "
-    SAYZ WIT TYPE_ERROR
-KTHX
-
-MAYB
-    BTW This will cause an error - missing second argument
-    I HAS A VARIABLE RESULT TEH STRIN ITZ CONCAT WIT "Hello" AN WIT 123
-OOPSIE CONCAT_ERROR
-    SAYZ WIT "Concatenation error: "
-    SAYZ WIT CONCAT_ERROR
-KTHX
-```
-
-## Quick Reference
-
-### Functions
-
-| Function | Parameters | Return Type | Description |
-|----------|------------|-------------|-------------|
-| `LEN WIT string` | string: STRIN | INTEGR | Get string length |
-| `CONCAT WIT str1 AN WIT str2` | str1: STRIN, str2: STRIN | STRIN | Concatenate strings |
-| `TRIM WIT string` | string: STRIN | STRIN | Remove leading/trailing whitespace |
-| `UPPER WIT string` | string: STRIN | STRIN | Convert to uppercase |
-| `LOWER WIT string` | string: STRIN | STRIN | Convert to lowercase |
-| `SPLIT WIT string AN WIT delimiter` | string: STRIN, delimiter: STRIN | BUKKIT | Split string into array |
-
-## Related
-
-- [STDIO Module](stdio.md) - For string input/output operations
-- [Syntax Basics](../language-guide/syntax-basics.md) - Built-in string operations
-- [Collections](collections.md) - Working with BUKKIT arrays of strings
+**Returns:** STRIN
+
+### UPPER
+
+Converts all characters in a STRIN to uppercase.
+Returns a new STRIN with all letters converted to upper case.
+
+**Returns:** STRIN
+

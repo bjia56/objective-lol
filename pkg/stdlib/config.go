@@ -1,6 +1,8 @@
 package stdlib
 
 import (
+	"strings"
+
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/interpreter"
 )
@@ -56,6 +58,9 @@ func GetStdlibDefinitions(fromInitializers interpreter.StdlibInitializer) []Stdl
 	env := environment.NewEnvironment(nil)
 	fromInitializers(env)
 	for name, function := range env.GetAllFunctions() {
+		if strings.HasPrefix(name, "stdlib:") {
+			continue
+		}
 		definitions = append(definitions, StdlibDefinition{
 			Name: name,
 			Kind: StdlibDefinitionKindFunction,
@@ -64,14 +69,40 @@ func GetStdlibDefinitions(fromInitializers interpreter.StdlibInitializer) []Stdl
 		})
 	}
 	for name, class := range env.GetAllClasses() {
+		if strings.HasPrefix(name, "stdlib:") {
+			continue
+		}
 		definitions = append(definitions, StdlibDefinition{
 			Name: name,
 			Kind: StdlibDefinitionKindClass,
 			Type: name,
 			Docs: class.Documentation,
 		})
+		
+		// Add class methods (public functions)
+		for methodName, method := range class.PublicFunctions {
+			definitions = append(definitions, StdlibDefinition{
+				Name: name + "." + methodName,
+				Kind: StdlibDefinitionKindFunction,
+				Type: method.ReturnType,
+				Docs: method.Documentation,
+			})
+		}
+		
+		// Add class member variables
+		for varName, variable := range class.PublicVariables {
+			definitions = append(definitions, StdlibDefinition{
+				Name: name + "." + varName,
+				Kind: StdlibDefinitionKindVariable,
+				Type: variable.Type,
+				Docs: variable.Documentation,
+			})
+		}
 	}
 	for name, variable := range env.GetAllVariables() {
+		if strings.HasPrefix(name, "stdlib:") {
+			continue
+		}
 		definitions = append(definitions, StdlibDefinition{
 			Name: name,
 			Kind: StdlibDefinitionKindVariable,

@@ -1,6 +1,4 @@
-# RANDOM Module - Random Number Generation
-
-The RANDOM module provides comprehensive random number generation functionality for various data types and use cases.
+# RANDOM Module
 
 ## Import
 
@@ -10,326 +8,670 @@ I CAN HAS RANDOM?
 
 BTW Selective import examples
 I CAN HAS RANDOM_FLOAT FROM RANDOM?
-I CAN HAS RANDOM_INT FROM RANDOM?
-I CAN HAS SEED_TIME AN UUID FROM RANDOM?
-I CAN HAS RANDOM_BOOL AN RANDOM_STRING FROM RANDOM?
+I CAN HAS SHUFFLE FROM RANDOM?
 ```
 
-## Seeding Functions
+## Seeding
 
-### SEED - Set Random Seed
+### SEED
 
-Sets the random number generator seed to a specific value for reproducible results.
+Sets the random number generator seed for reproducible results.
+Using the same seed will produce the same sequence of random numbers.
 
-**Syntax:** `SEED WIT <seed_value>`
-**Parameters:** seed_value (INTEGR)
+**Syntax:** `SEED WIT <seed>`
+**Returns:** 
+
+**Parameters:**
+- `seed` (INTEGR): The seed value for the random number generator
+
+**Example: Set seed for reproducible results**
 
 ```lol
-I CAN HAS SEED FROM RANDOM?
-
-SEED WIT 12345    BTW Set specific seed
-BTW All subsequent random calls will be deterministic
+SEED WIT 42
+I HAS A VARIABLE NUM1 TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 100
+I HAS A VARIABLE NUM2 TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 100
+BTW NUM1 and NUM2 will be the same every time with same seed
 ```
 
-### SEED_TIME - Seed with Current Time
+**Example: Different seeds produce different sequences**
 
-Seeds the random number generator with the current time for non-deterministic results.
+```lol
+SEED WIT 123
+I HAS A VARIABLE SEQ1 TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 10
+SEED WIT 456
+I HAS A VARIABLE SEQ2 TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 10
+BTW SEQ1 and SEQ2 will likely be different
+```
+
+**Example: Reset to same sequence**
+
+```lol
+SEED WIT 999
+I HAS A VARIABLE W TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 100
+I HAS A VARIABLE X TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 100
+SEED WIT 999
+I HAS A VARIABLE Y TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 100
+I HAS A VARIABLE Z TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 100
+BTW W will equal Y, X will equal Z
+```
+
+**Note:** Use SEED_TIME for non-deterministic behavior
+
+**Note:** Same seed always produces same sequence
+
+**Note:** Useful for testing and debugging
+
+**Note:** Affects all subsequent random operations
+
+**See also:** SEED_TIME, RANDOM_INT
+
+### SEED_TIME
+
+Seeds the random number generator with the current time.
+Provides different random sequences on each program run.
 
 **Syntax:** `SEED_TIME`
+**Returns:** 
+
+**Example: Initialize for random behavior**
 
 ```lol
-I CAN HAS SEED_TIME FROM RANDOM?
-
-SEED_TIME    BTW Seed with current timestamp
-BTW All subsequent random calls will vary between runs
+SEED_TIME
+I HAS A VARIABLE DICE TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 7
+SAYZ WIT "You rolled: " MOAR DICE
 ```
 
-## Basic Random Functions
+**Example: Use at program start**
 
-### RANDOM_FLOAT - Random Float
+```lol
+BTW Always call this first for truly random behavior
+SEED_TIME
+WHILE YEZ
+I HAS A VARIABLE MOVE TEH STRIN ITZ RANDOM_CHOICE WIT MOVES
+SAYZ WIT "Computer plays: " MOAR MOVE
+I HAS A VARIABLE CONTINUE TEH BOOL ITZ RANDOM_BOOL
+IZ CONTINUE?
+GTFO
+KTHX
+KTHX
+```
 
-Returns a random floating-point number between 0 (inclusive) and 1 (exclusive).
+**Example: Multiple runs produce different results**
+
+```lol
+SEED_TIME
+I HAS A VARIABLE SESSION_ID TEH STRIN ITZ RANDOM_STRING WIT 8 AN WIT "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+SAYZ WIT "Session ID: " MOAR SESSION_ID
+BTW Each program run will have different session ID
+```
+
+**Example: Games and simulations**
+
+```lol
+SEED_TIME
+I HAS A VARIABLE WEATHER TEH STRIN
+I HAS A VARIABLE ROLL TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 100
+IZ ROLL BIGGR THAN 70?
+WEATHER ITZ "Sunny"
+NOPE IZ ROLL BIGGR THAN 40?
+WEATHER ITZ "Cloudy"
+NOPE
+WEATHER ITZ "Rainy"
+KTHX
+SAYZ WIT "Today's weather: " MOAR WEATHER
+```
+
+**Note:** Should be called once at program start
+
+**Note:** Uses nanosecond precision for uniqueness
+
+**Note:** Subsequent calls will change the sequence
+
+**Note:** Perfect for games, simulations, and one-time use
+
+**See also:** SEED, RANDOM_INT
+
+## Random Numbers
+
+### RANDOM_FLOAT
+
+Returns a random floating-point number between 0.0 (inclusive) and 1.0 (exclusive).
+Useful for probability calculations and random selection.
 
 **Syntax:** `RANDOM_FLOAT`
 **Returns:** DUBBLE
 
+**Example: Basic random float**
+
 ```lol
-I CAN HAS RANDOM_FLOAT FROM RANDOM?
-
-I HAS A VARIABLE RAND1 TEH DUBBLE ITZ RANDOM_FLOAT    BTW e.g., 0.7234
-I HAS A VARIABLE RAND2 TEH DUBBLE ITZ RANDOM_FLOAT    BTW e.g., 0.1849
-
-BTW Generate random number in range [0, 100)
-I HAS A VARIABLE PERCENT TEH DUBBLE ITZ RANDOM_FLOAT TIEMZ 100
+I HAS A VARIABLE PROBABILITY TEH DUBBLE ITZ RANDOM_FLOAT
+SAYZ WIT "Random probability: " MOAR PROBABILITY
 ```
 
-### RANDOM_INT - Random Integer
+**Example: Probability-based decisions**
 
-Returns a random integer in the range [min, max).
+```lol
+I HAS A VARIABLE CHANCE TEH DUBBLE ITZ RANDOM_FLOAT
+IZ CHANCE BIGGR THAN 0.5?
+SAYZ WIT "Heads"
+NOPE
+SAYZ WIT "Tails"
+KTHX
+```
+
+**Example: Random selection weights**
+
+```lol
+I HAS A VARIABLE WEIGHT TEH DUBBLE ITZ RANDOM_FLOAT
+IZ WEIGHT BIGGR THAN 0.7?
+I HAS A VARIABLE RARITY TEH STRIN ITZ "Legendary"
+NOPE IZ WEIGHT BIGGR THAN 0.4?
+RARITY ITZ "Rare"
+NOPE
+RARITY ITZ "Common"
+KTHX
+SAYZ WIT "Got a " MOAR RARITY MOAR " item!"
+```
+
+**Example: Animation timing**
+
+```lol
+WHILE YEZ
+I HAS A VARIABLE DELAY TEH DUBBLE ITZ RANDOM_FLOAT MOAR 0.1
+BTW Add small random delay for natural feel
+I HAS A VARIABLE FRAME TEH DUBBLE ITZ RANDOM_FLOAT
+IZ FRAME BIGGR THAN 0.95?
+GTFO
+KTHX
+KTHX
+```
+
+**Note:** Always returns value >= 0.0 and < 1.0
+
+**Note:** Uses high-quality random number generation
+
+**Note:** Thread-safe for concurrent use
+
+**Note:** Perfect for probabilities and normalized random values
+
+**See also:** RANDOM_RANGE, RANDOM_INT
+
+### RANDOM_INT
+
+Returns a random integer within the specified range.
+Range is [min, max) - includes min but excludes max. Min must be less than max.
 
 **Syntax:** `RANDOM_INT WIT <min> AN WIT <max>`
 **Returns:** INTEGR
 
+**Parameters:**
+- `min` (INTEGR): Minimum value (inclusive)
+- `max` (INTEGR): Maximum value (exclusive)
+
+**Example: Dice roll**
+
 ```lol
-I CAN HAS RANDOM_INT FROM RANDOM?
-
-BTW Dice roll (1-6)
 I HAS A VARIABLE DICE TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 7
-
-BTW Random index for array of size 10
-I HAS A VARIABLE INDEX TEH INTEGR ITZ RANDOM_INT WIT 0 AN WIT 10
-
-BTW Random number between -10 and 10 (inclusive)
-I HAS A VARIABLE SIGNED TEH INTEGR ITZ RANDOM_INT WIT -10 AN WIT 11
+SAYZ WIT "You rolled a " MOAR DICE
 ```
 
-### RANDOM_BOOL - Random Boolean
+**Example: Random index**
 
-Returns a random boolean value.
+```lol
+I HAS A VARIABLE INDEX TEH INTEGR ITZ RANDOM_INT WIT 0 AN WIT 10
+SAYZ WIT "Selected index: " MOAR INDEX
+```
+
+**Example: Random ID generation**
+
+```lol
+I HAS A VARIABLE USER_ID TEH INTEGR ITZ RANDOM_INT WIT 1000 AN WIT 10000
+SAYZ WIT "New user ID: " MOAR USER_ID
+```
+
+**Example: Game mechanics**
+
+```lol
+I HAS A VARIABLE DAMAGE TEH INTEGR ITZ RANDOM_INT WIT 10 AN WIT 21
+I HAS A VARIABLE CRIT_CHANCE TEH INTEGR ITZ RANDOM_INT WIT 1 AN WIT 101
+IZ CRIT_CHANCE BIGGR THAN 90?
+DAMAGE ITZ DAMAGE UP 10
+SAYZ WIT "Critical hit!"
+KTHX
+SAYZ WIT "Dealt " MOAR DAMAGE MOAR " damage"
+```
+
+**Example: Array shuffling indices**
+
+```lol
+I HAS A VARIABLE IDX TEH INTEGR ITZ 0
+WHILE IDX SMALLR THAN 5
+I HAS A VARIABLE POS TEH INTEGR ITZ RANDOM_INT WIT 0 AN WIT 5
+BTW Use for Fisher-Yates shuffle
+IDX ITZ IDX MOAR 1
+KTHX
+```
+
+**Note:** Min must be less than max
+
+**Note:** Returns integers >= min and < max
+
+**Note:** Useful for discrete random selections
+
+**Note:** Thread-safe for concurrent use
+
+**See also:** RANDOM_RANGE, RANDOM_CHOICE
+
+### RANDOM_RANGE
+
+Returns a random floating-point number within the specified range.
+Range is [min, max) - includes min but excludes max. Min must be less than max.
+
+**Syntax:** `RANDOM_RANGE WIT <min> AN WIT <max>`
+**Returns:** DUBBLE
+
+**Parameters:**
+- `min` (DUBBLE): Minimum value (inclusive)
+- `max` (DUBBLE): Maximum value (exclusive)
+
+**Example: Random position**
+
+```lol
+I HAS A VARIABLE X_POS TEH DUBBLE ITZ RANDOM_RANGE WIT 0.0 AN WIT 100.0
+I HAS A VARIABLE Y_POS TEH DUBBLE ITZ RANDOM_RANGE WIT 0.0 AN WIT 50.0
+SAYZ WIT "Position: (" MOAR X_POS MOAR ", " MOAR Y_POS MOAR ")"
+```
+
+**Example: Random damage**
+
+```lol
+I HAS A VARIABLE DAMAGE TEH DUBBLE ITZ RANDOM_RANGE WIT 5.0 AN WIT 15.0
+SAYZ WIT "Dealt " MOAR DAMAGE MOAR " damage!"
+```
+
+**Example: Temperature simulation**
+
+```lol
+I HAS A VARIABLE TEMP TEH DUBBLE ITZ RANDOM_RANGE WIT -10.0 AN WIT 40.0
+IZ TEMP BIGGR THAN 30.0?
+SAYZ WIT "Hot day!"
+NOPE IZ TEMP LSS THAN 0.0?
+SAYZ WIT "Freezing!"
+NOPE
+SAYZ WIT "Nice weather"
+KTHX
+```
+
+**Example: Random delays**
+
+```lol
+I HAS A VARIABLE DELAY TEH DUBBLE ITZ RANDOM_RANGE WIT 0.5 AN WIT 2.0
+BTW Wait between 0.5 and 2.0 seconds
+SAYZ WIT "Waiting " MOAR DELAY MOAR " seconds..."
+```
+
+**Example: Statistical distribution**
+
+```lol
+I HAS A VARIABLE IDX TEH INTEGR ITZ 0
+WHILE IDX SMALLR THAN 100
+I HAS A VARIABLE VALUE TEH DUBBLE ITZ RANDOM_RANGE WIT -1.0 AN WIT 1.0
+BTW Collect samples for statistical analysis
+IDX ITZ IDX MOAR 1
+KTHX
+```
+
+**Note:** Min must be less than max
+
+**Note:** Returns values >= min and < max
+
+**Note:** Useful for continuous random values
+
+**Note:** Thread-safe for concurrent use
+
+**See also:** RANDOM_FLOAT, RANDOM_INT
+
+## Random Selection
+
+### RANDOM_BOOL
+
+Returns a random boolean value (YEZ or NO).
+Each value has a 50% probability of being returned.
 
 **Syntax:** `RANDOM_BOOL`
 **Returns:** BOOL
 
+**Example: Coin flip**
+
 ```lol
-I CAN HAS RANDOM_BOOL FROM RANDOM?
-
-I HAS A VARIABLE COIN_FLIP TEH BOOL ITZ RANDOM_BOOL    BTW YEZ or NO
-
-IZ COIN_FLIP?
-    SAYZ WIT "Heads!"
+I HAS A VARIABLE COIN TEH BOOL ITZ RANDOM_BOOL
+IZ COIN?
+SAYZ WIT "Heads"
 NOPE
-    SAYZ WIT "Tails!"
+SAYZ WIT "Tails"
 KTHX
 ```
 
-## String Generation
+**Example: Random events**
 
-### RANDOM_STRING - Random String
+```lol
+I HAS A VARIABLE RAIN TEH BOOL ITZ RANDOM_BOOL
+IZ RAIN?
+SAYZ WIT "It's raining today"
+NOPE
+SAYZ WIT "Sunny weather"
+KTHX
+```
 
-Generates a random string of specified length using characters from a given charset.
+**Example: Game mechanics**
+
+```lol
+I HAS A VARIABLE SUCCESS TEH BOOL ITZ RANDOM_BOOL
+IZ SUCCESS?
+SAYZ WIT "Action succeeded!"
+NOPE
+SAYZ WIT "Action failed!"
+KTHX
+```
+
+**Example: Random spawning**
+
+```lol
+I HAS A VARIABLE IDX TEH INTEGR ITZ 0
+WHILE IDX SMALLR THAN 10
+I HAS A VARIABLE SPAWN_ENEMY TEH BOOL ITZ RANDOM_BOOL
+IZ SPAWN_ENEMY?
+SAYZ WIT "Enemy spawned!"
+KTHX
+IDX ITZ IDX MOAR 1
+KTHX
+```
+
+**Example: A/B testing**
+
+```lol
+I HAS A VARIABLE USE_NEW_FEATURE TEH BOOL ITZ RANDOM_BOOL
+IZ USE_NEW_FEATURE?
+SAYZ WIT "Using new feature version"
+NOPE
+SAYZ WIT "Using old feature version"
+KTHX
+```
+
+**Note:** Each outcome has exactly 50% probability
+
+**Note:** Useful for binary random decisions
+
+**Note:** Thread-safe for concurrent use
+
+**Note:** Perfect for yes/no scenarios
+
+**See also:** RANDOM_INT, RANDOM_CHOICE
+
+### RANDOM_CHOICE
+
+Returns a randomly selected element from a BUKKIT array.
+Array must not be empty. Each element has equal probability of selection.
+
+**Syntax:** `RANDOM_CHOICE WIT <array>`
+**Returns:** 
+
+**Parameters:**
+- `array` (BUKKIT): The array to select from
+
+**Example: Random card from deck**
+
+```lol
+I HAS A VARIABLE CARDS TEH BUKKIT ITZ BUKKIT WIT "Ace" AN "King" AN "Queen" AN "Jack"
+I HAS A VARIABLE CARD TEH STRIN ITZ RANDOM_CHOICE WIT CARDS
+SAYZ WIT "Drew: " MOAR CARD
+```
+
+**Example: Random enemy type**
+
+```lol
+I HAS A VARIABLE ENEMIES TEH BUKKIT ITZ BUKKIT WIT "Goblin" AN "Orc" AN "Troll" AN "Dragon"
+I HAS A VARIABLE ENEMY TEH STRIN ITZ RANDOM_CHOICE WIT ENEMIES
+SAYZ WIT "Encountered a " MOAR ENEMY
+```
+
+**Example: Random quote**
+
+```lol
+I HAS A VARIABLE QUOTES TEH BUKKIT ITZ BUKKIT WIT "Hello World" AN "LOL" AN "Objective-C"
+I HAS A VARIABLE QUOTE TEH STRIN ITZ RANDOM_CHOICE WIT QUOTES
+SAYZ QUOTE
+```
+
+**Example: Game loot table**
+
+```lol
+I HAS A VARIABLE LOOT TEH BUKKIT ITZ BUKKIT WIT "Sword" AN "Shield" AN "Potion" AN "Gold" AN "Key"
+I HAS A VARIABLE IDX TEH INTEGR ITZ 0
+WHILE IDX SMALLR THAN 3
+I HAS A VARIABLE ITEM TEH STRIN ITZ RANDOM_CHOICE WIT LOOT
+SAYZ WIT "Found: " MOAR ITEM
+IDX ITZ IDX MOAR 1
+KTHX
+```
+
+**Example: Random color**
+
+```lol
+I HAS A VARIABLE COLORS TEH BUKKIT ITZ BUKKIT WIT "Red" AN "Blue" AN "Green" AN "Yellow" AN "Purple"
+I HAS A VARIABLE COLOR TEH STRIN ITZ RANDOM_CHOICE WIT COLORS
+SAYZ WIT "Selected color: " MOAR COLOR
+```
+
+**Note:** Array must not be empty
+
+**Note:** All elements have equal probability
+
+**Note:** Returns element by reference
+
+**Note:** Thread-safe for concurrent use
+
+**See also:** SHUFFLE, RANDOM_INT
+
+## Random Generation
+
+### RANDOM_STRING
+
+Generates a random string of specified length using given character set.
+Each character is randomly selected from the charset. Charset must not be empty.
 
 **Syntax:** `RANDOM_STRING WIT <length> AN WIT <charset>`
 **Returns:** STRIN
 
+**Parameters:**
+- `length` (INTEGR): Length of the generated string
+- `charset` (STRIN): Characters to choose from
+
+**Example: Random password**
+
 ```lol
-I CAN HAS RANDOM_STRING FROM RANDOM?
-
-BTW Generate random alphanumeric string
-I HAS A VARIABLE CHARSET TEH STRIN ITZ "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-I HAS A VARIABLE RANDOM_ID TEH STRIN ITZ RANDOM_STRING WIT 8 AN WIT CHARSET
-
-BTW Generate random numeric string
-I HAS A VARIABLE NUMERIC_CHARSET TEH STRIN ITZ "0123456789"
-I HAS A VARIABLE RANDOM_CODE TEH STRIN ITZ RANDOM_STRING WIT 6 AN WIT NUMERIC_CHARSET
-
-BTW Generate random password-like string
-I HAS A VARIABLE PASS_CHARSET TEH STRIN ITZ "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*"
-I HAS A VARIABLE PASSWORD TEH STRIN ITZ RANDOM_STRING WIT 12 AN WIT PASS_CHARSET
+I HAS A VARIABLE PASSWORD TEH STRIN ITZ RANDOM_STRING WIT 8 AN WIT "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+SAYZ WIT "Generated password: " MOAR PASSWORD
 ```
 
-### UUID - Generate UUID
+**Example: Random hex color**
 
-Generates a universally unique identifier (UUID) string.
+```lol
+I HAS A VARIABLE COLOR TEH STRIN ITZ RANDOM_STRING WIT 6 AN WIT "0123456789ABCDEF"
+SAYZ WIT "Random color: #" MOAR COLOR
+```
+
+**Example: Random ID**
+
+```lol
+I HAS A VARIABLE ID TEH STRIN ITZ RANDOM_STRING WIT 10 AN WIT "abcdefghijklmnopqrstuvwxyz0123456789"
+SAYZ WIT "Random ID: " MOAR ID
+```
+
+**Example: Random letters only**
+
+```lol
+I HAS A VARIABLE WORD TEH STRIN ITZ RANDOM_STRING WIT 5 AN WIT "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+SAYZ WIT "Random word: " MOAR WORD
+```
+
+**Example: Random binary string**
+
+```lol
+I HAS A VARIABLE BINARY TEH STRIN ITZ RANDOM_STRING WIT 16 AN WIT "01"
+SAYZ WIT "Random binary: " MOAR BINARY
+```
+
+**Example: Random emoji**
+
+```lol
+I HAS A VARIABLE EMOJI_CHARSET TEH STRIN ITZ "😀😃😄😁😆😅😂🤣😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🤩🥳😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😬🙄😯😦😧😮😲🥱😴🤤😪😵🤐🥴🤢🤮🤧😷🤒🤕🤑🤠😈👿👹👺🤡💩👻💀☠️👽👾🤖🎃😺😸😹😻😼😽🙀😿😾"
+I HAS A VARIABLE RANDOM_EMOJI TEH STRIN ITZ RANDOM_STRING WIT 1 AN WIT EMOJI_CHARSET
+SAYZ WIT "Random emoji: " MOAR RANDOM_EMOJI
+```
+
+**Note:** Length must be >= 0
+
+**Note:** Charset must not be empty
+
+**Note:** Each character has equal probability
+
+**Note:** Thread-safe for concurrent use
+
+**See also:** RANDOM_INT, UUID
+
+### UUID
+
+Generates a random UUID (Universally Unique Identifier) version 4.
+Returns a string in format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx.
 
 **Syntax:** `UUID`
 **Returns:** STRIN
 
+**Example: Generate unique ID**
+
 ```lol
-I CAN HAS UUID FROM RANDOM?
+I HAS A VARIABLE ID TEH STRIN ITZ UUID
+SAYZ WIT "Generated UUID: " MOAR ID
+```
 
-I HAS A VARIABLE UNIQUE_ID TEH STRIN ITZ UUID
-SAYZ WIT UNIQUE_ID    BTW e.g., "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+**Example: User session ID**
 
-BTW Use UUID for unique identifiers
+```lol
 I HAS A VARIABLE SESSION_ID TEH STRIN ITZ UUID
-I HAS A VARIABLE REQUEST_ID TEH STRIN ITZ UUID
+SAYZ WIT "Session ID: " MOAR SESSION_ID
 ```
 
-## Collection Functions
-
-### RANDOM_CHOICE - Random Array Element
-
-Selects a random element from a BUKKIT array.
-
-**Syntax:** `RANDOM_CHOICE WIT <array>`
-**Returns:** Value from array
+**Example: Database primary key**
 
 ```lol
-I CAN HAS RANDOM_CHOICE FROM RANDOM?
-
-I HAS A VARIABLE COLORS TEH BUKKIT ITZ NEW BUKKIT
-COLORS DO PUSH WIT "red"
-COLORS DO PUSH WIT "blue"
-COLORS DO PUSH WIT "green"
-COLORS DO PUSH WIT "yellow"
-
-I HAS A VARIABLE CHOSEN_COLOR TEH STRIN ITZ RANDOM_CHOICE WIT COLORS
-SAYZ WIT CHOSEN_COLOR    BTW One of the colors
+I HAS A VARIABLE PRIMARY_KEY TEH STRIN ITZ UUID
+SAYZ WIT "New record ID: " MOAR PRIMARY_KEY
 ```
 
-### SHUFFLE - Shuffle Array
+**Example: File naming**
 
-Randomly rearranges the elements in a BUKKIT array in-place.
+```lol
+I HAS A VARIABLE FILENAME TEH STRIN ITZ UUID MOAR ".txt"
+SAYZ WIT "Creating file: " MOAR FILENAME
+```
+
+**Example: Object identification**
+
+```lol
+I HAS A VARIABLE OBJECT_ID TEH STRIN ITZ UUID
+SAYZ WIT "Object created with ID: " MOAR OBJECT_ID
+```
+
+**Example: API key generation**
+
+```lol
+I HAS A VARIABLE API_KEY TEH STRIN ITZ UUID
+SAYZ WIT "Generated API key: " MOAR API_KEY
+```
+
+**Example: Transaction ID**
+
+```lol
+I HAS A VARIABLE TXN_ID TEH STRIN ITZ UUID
+SAYZ WIT "Transaction ID: " MOAR TXN_ID
+```
+
+**Note:** Uses cryptographically secure random generation
+
+**Note:** Globally unique with extremely high probability
+
+**Note:** Version 4 format (random)
+
+**Note:** Thread-safe for concurrent use
+
+**See also:** RANDOM_STRING, RANDOM_INT
+
+## Random Utilities
+
+### SHUFFLE
+
+Returns a new BUKKIT with elements randomly shuffled.
+Uses Fisher-Yates algorithm. Original array is not modified.
 
 **Syntax:** `SHUFFLE WIT <array>`
+**Returns:** BUKKIT
+
+**Parameters:**
+- `array` (BUKKIT): The array to shuffle
+
+**Example: Shuffle a deck of cards**
 
 ```lol
-I CAN HAS SHUFFLE FROM RANDOM?
-
-I HAS A VARIABLE DECK TEH BUKKIT ITZ NEW BUKKIT
-DECK DO PUSH WIT "Ace"
-DECK DO PUSH WIT "King"
-DECK DO PUSH WIT "Queen"
-DECK DO PUSH WIT "Jack"
-
-SHUFFLE WIT DECK    BTW Randomly reorder the elements
-BTW DECK now contains the same elements in random order
+I HAS A VARIABLE DECK TEH BUKKIT ITZ BUKKIT WIT "A" AN "2" AN "3" AN "4" AN "5"
+I HAS A VARIABLE SHUFFLED TEH BUKKIT ITZ SHUFFLE WIT DECK
+SAYZ WIT "Original: " MOAR DECK
+SAYZ WIT "Shuffled: " MOAR SHUFFLED
 ```
 
-## Usage Examples
-
-### Dice Rolling Simulator
+**Example: Randomize playlist**
 
 ```lol
-I CAN HAS RANDOM?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN ROLL_DICE WIT SIDES TEH INTEGR
-    GIVEZ RANDOM_INT WIT 1 AN WIT SIDES MOAR 1
-KTHXBAI
-
-HAI ME TEH FUNCSHUN SIMULATE_DICE_ROLLS WIT NUM_ROLLS TEH INTEGR
-    SEED_TIME    BTW Ensure different results each time
-    
-    I HAS A VARIABLE TOTAL TEH INTEGR ITZ 0
-    I HAS A VARIABLE ROLL_COUNT TEH INTEGR ITZ 0
-
-    WHILE ROLL_COUNT SMALLR THAN NUM_ROLLS
-        I HAS A VARIABLE ROLL TEH INTEGR ITZ ROLL_DICE WIT 6
-        TOTAL ITZ TOTAL MOAR ROLL
-        SAY WIT "Roll "
-        SAY WIT ROLL_COUNT MOAR 1
-        SAY WIT ": "
-        SAYZ WIT ROLL
-        ROLL_COUNT ITZ ROLL_COUNT MOAR 1
-    KTHX
-
-    SAY WIT "Average: "
-    SAYZ WIT TOTAL DIVIDEZ NUM_ROLLS AS INTEGR
-KTHXBAI
+I HAS A VARIABLE SONGS TEH BUKKIT ITZ BUKKIT WIT "Song1" AN "Song2" AN "Song3" AN "Song4"
+I HAS A VARIABLE PLAYLIST TEH BUKKIT ITZ SHUFFLE WIT SONGS
+SAYZ WIT "Random playlist: " MOAR PLAYLIST
 ```
 
-### Password Generator
+**Example: Random game order**
 
 ```lol
-I CAN HAS RANDOM?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN GENERATE_PASSWORD WIT LENGTH TEH INTEGR
-    I HAS A VARIABLE LOWERCASE TEH STRIN ITZ "abcdefghijklmnopqrstuvwxyz"
-    I HAS A VARIABLE UPPERCASE TEH STRIN ITZ "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    I HAS A VARIABLE NUMBERS TEH STRIN ITZ "0123456789"
-    I HAS A VARIABLE SYMBOLS TEH STRIN ITZ "!@#$%^&*()_+-=[]{}|;:,.<>?"
-    
-    BTW Combine all character sets
-    I HAS A VARIABLE CHARSET TEH STRIN ITZ LOWERCASE MOAR UPPERCASE MOAR NUMBERS MOAR SYMBOLS
-    
-    SEED_TIME
-    GIVEZ RANDOM_STRING WIT LENGTH AN WIT CHARSET
-KTHXBAI
-
-HAI ME TEH FUNCSHUN MAIN
-    I HAS A VARIABLE PASSWORD TEH STRIN ITZ GENERATE_PASSWORD WIT 16
-    SAY WIT "Generated password: "
-    SAYZ WIT PASSWORD
-KTHXBAI
+I HAS A VARIABLE PLAYERS TEH BUKKIT ITZ BUKKIT WIT "Alice" AN "Bob" AN "Charlie" AN "Dave"
+I HAS A VARIABLE ORDER TEH BUKKIT ITZ SHUFFLE WIT PLAYERS
+SAYZ WIT "Playing order: " MOAR ORDER
 ```
 
-### Random Selection Game
+**Example: Randomize questions**
 
 ```lol
-I CAN HAS RANDOM?
-I CAN HAS STDIO?
-
-HAI ME TEH FUNCSHUN RANDOM_GAME
-    SEED_TIME
-    
-    I HAS A VARIABLE PRIZES TEH BUKKIT ITZ NEW BUKKIT
-    PRIZES DO PUSH WIT "Car"
-    PRIZES DO PUSH WIT "Vacation"
-    PRIZES DO PUSH WIT "Cash"
-    PRIZES DO PUSH WIT "Electronics"
-    PRIZES DO PUSH WIT "Gift Card"
-    
-    SAY WIT "You won: "
-    I HAS A VARIABLE PRIZE TEH STRIN ITZ RANDOM_CHOICE WIT PRIZES
-    SAYZ WIT PRIZE
-    
-    BTW Show probability
-    I HAS A VARIABLE CHANCE TEH DUBBLE ITZ RANDOM_FLOAT TIEMZ 100
-    SAY WIT "Lucky number: "
-    SAYZ WIT ROUND WIT CHANCE
-KTHXBAI
+I HAS A VARIABLE QUESTIONS TEH BUKKIT ITZ BUKKIT WIT "Q1" AN "Q2" AN "Q3" AN "Q4" AN "Q5"
+I HAS A VARIABLE QUIZ TEH BUKKIT ITZ SHUFFLE WIT QUESTIONS
+I HAS A VARIABLE IDX TEH INTEGR ITZ 0
+WHILE IDX SMALLR THAN 5
+SAYZ WIT "Question: " MOAR QUIZ DO AT IDX
+IDX ITZ IDX MOAR 1
+KTHX
 ```
 
-### Statistical Sampling
+**Example: Randomize positions**
 
 ```lol
-I CAN HAS RANDOM?
-I CAN HAS STDIO?
-I CAN HAS MATH?
-
-HAI ME TEH FUNCSHUN SAMPLE_NORMAL_DISTRIBUTION WIT COUNT TEH INTEGR
-    SEED_TIME
-    
-    I HAS A VARIABLE SAMPLES TEH BUKKIT ITZ NEW BUKKIT
-    I HAS A VARIABLE I TEH INTEGR ITZ 0
-    
-    WHILE I SMALLR THAN COUNT
-        BTW Box-Muller transform for normal distribution
-        I HAS A VARIABLE U1 TEH DUBBLE ITZ RANDOM_FLOAT
-        I HAS A VARIABLE U2 TEH DUBBLE ITZ RANDOM_FLOAT
-        
-        I HAS A VARIABLE Z TEH DUBBLE ITZ SQRT WIT -2.0 TIEMZ LOG WIT U1
-        Z ITZ Z TIEMZ COS WIT 2.0 TIEMZ PI TIEMZ U2
-        
-        SAMPLES DO PUSH WIT Z
-        I ITZ I MOAR 1
-    KTHX
-    
-    GIVEZ SAMPLES
-KTHXBAI
+I HAS A VARIABLE POSITIONS TEH BUKKIT ITZ BUKKIT WIT 1 AN 2 AN 3 AN 4 AN 5
+I HAS A VARIABLE RANDOM_POS TEH BUKKIT ITZ SHUFFLE WIT POSITIONS
+SAYZ WIT "Random positions: " MOAR RANDOM_POS
 ```
 
-## Function Summary
+**Note:** Original array remains unchanged
 
-### Seeding Functions
-| Function | Parameters | Description |
-|----------|------------|-------------|
-| `SEED` | seed (INTEGR) | Set specific random seed |
-| `SEED_TIME` | none | Seed with current time |
+**Note:** Returns new BUKKIT instance
 
-### Basic Random Functions
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `RANDOM_FLOAT` | none | DUBBLE | Random float [0,1) |
-| `RANDOM_INT` | min, max (INTEGR) | INTEGR | Random integer [min,max) |
-| `RANDOM_BOOL` | none | BOOL | Random boolean |
+**Note:** Uses Fisher-Yates shuffle algorithm
 
-### String Generation
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `RANDOM_STRING` | length (INTEGR), charset (STRIN) | STRIN | Random string from charset |
-| `UUID` | none | STRIN | Generate UUID |
+**Note:** Thread-safe for concurrent use
 
-### Collection Functions
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `RANDOM_CHOICE` | array (BUKKIT) | Value | Random element from array |
-| `SHUFFLE` | array (BUKKIT) | none | Shuffle array in-place |
+**See also:** RANDOM_CHOICE, RANDOM_INT
 
-## Related
-
-- [MATH Module](math.md) - For mathematical functions used with random numbers
-- [STRING Module](string.md) - For string manipulation with generated strings
-- [STDIO Module](stdio.md) - For displaying random results
