@@ -1,4 +1,4 @@
-# Objective-LOL
+# <img src="img/logo.png" width="25"> Objective-LOL
 
 A programming language inspired by LOLCODE.
 
