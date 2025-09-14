@@ -81,3 +81,23 @@ func GetStdlibDefinitions(fromInitializers interpreter.StdlibInitializer) []Stdl
 	}
 	return definitions
 }
+
+// GetModuleCategories returns the ordered list of categories for a given module
+func GetModuleCategories(moduleName string) []string {
+	switch moduleName {
+	case "MATH":
+		return moduleMATHCategories
+	case "STDIO":
+		return moduleSTDIOCategories
+	case "ARRAYS":
+		return moduleArraysCategories
+	case "MAPS":
+		return moduleMapsCategories
+	case "FILE":
+		return moduleFileCategories
+	case "SOCKET":
+		return moduleSocketCategories
+	default:
+		return nil
+	}
+}
