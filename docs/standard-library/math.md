@@ -7,9 +7,9 @@ BTW Full import
 I CAN HAS MATH?
 
 BTW Selective import examples
-I CAN HAS CEIL FROM MATH?
-I CAN HAS COS FROM MATH?
-I CAN HAS E FROM MATH?
+I CAN HAS MIN FROM MATH?
+I CAN HAS ACOS FROM MATH?
+I CAN HAS PI FROM MATH?
 ```
 
 ## Mathematical Constants

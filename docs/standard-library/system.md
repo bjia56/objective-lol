@@ -7,9 +7,9 @@ BTW Full import
 I CAN HAS SYSTEM?
 
 BTW Selective import examples
+I CAN HAS ENV FROM SYSTEM?
 I CAN HAS OS FROM SYSTEM?
 I CAN HAS ARCH FROM SYSTEM?
-I CAN HAS ENV FROM SYSTEM?
 ```
 
 ## Global Variables
