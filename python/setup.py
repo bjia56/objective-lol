@@ -18,7 +18,7 @@ from setuptools.command.build_ext import build_ext
 
 
 PACKAGE_PATH="pkg/api"
-PACKAGE_NAME="olol"
+PACKAGE_NAME="objective_lol"
 
 
 def get_python_version():
