@@ -9,36 +9,10 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/bjia56/objective-lol/pkg/docs"
 	"github.com/bjia56/objective-lol/pkg/stdlib"
 )
 
-// JSDocInfo represents parsed JSDoc-style documentation
-type JSDocInfo struct {
-	Description string
-	Syntax      string
-	Params      []JSDocParam
-	Returns     string
-	Examples    []JSDocExample
-	Category    string
-	See         []string
-	Notes       []string
-	Type        string // for variables
-	Value       string // for variables
-}
-
-// JSDocParam represents a function parameter
-type JSDocParam struct {
-	Name        string
-	Type        string
-	Description string
-}
-
-// JSDocExample represents a code example
-type JSDocExample struct {
-	Title       string
-	Code        []string
-	Description string
-}
 
 // ModuleDoc represents documentation for a complete module
 type ModuleDoc struct {
@@ -47,7 +21,7 @@ type ModuleDoc struct {
 	Functions  map[string]stdlib.StdlibDefinition
 	Classes    map[string]stdlib.StdlibDefinition
 	Categories []string
-	JSDocInfo  map[string]JSDocInfo
+	JSDocInfo  map[string]docs.JSDocInfo
 	ClassItems map[string]stdlib.StdlibDefinition // CLASS.ITEM -> Definition (includes kind)
 }
 
@@ -86,12 +60,12 @@ func generateDocs(outputDir string) error {
 			Functions:  make(map[string]stdlib.StdlibDefinition),
 			Classes:    make(map[string]stdlib.StdlibDefinition),
 			Categories: categories,
-			JSDocInfo:  make(map[string]JSDocInfo),
+			JSDocInfo:  make(map[string]docs.JSDocInfo),
 			ClassItems: make(map[string]stdlib.StdlibDefinition),
 		}
 
 		for _, def := range definitions {
-			jsDoc := parseJSDoc(def.Docs)
+			jsDoc := docs.ParseJSDoc(def.Docs)
 			moduleDoc.JSDocInfo[def.Name] = jsDoc
 
 			switch def.Kind {
@@ -141,12 +115,12 @@ func generateDocs(outputDir string) error {
 			Functions:  make(map[string]stdlib.StdlibDefinition),
 			Classes:    make(map[string]stdlib.StdlibDefinition),
 			Categories: categories,
-			JSDocInfo:  make(map[string]JSDocInfo),
+			JSDocInfo:  make(map[string]docs.JSDocInfo),
 			ClassItems: make(map[string]stdlib.StdlibDefinition),
 		}
 
 		for _, def := range definitions {
-			jsDoc := parseJSDoc(def.Docs)
+			jsDoc := docs.ParseJSDoc(def.Docs)
 			moduleDoc.JSDocInfo[def.Name] = jsDoc
 
 			switch def.Kind {
@@ -193,112 +167,6 @@ func generateDocs(outputDir string) error {
 	return nil
 }
 
-func parseJSDoc(docs []string) JSDocInfo {
-	info := JSDocInfo{
-		Params:   []JSDocParam{},
-		Examples: []JSDocExample{},
-		See:      []string{},
-		Notes:    []string{},
-	}
-
-	var currentExample *JSDocExample
-	var descriptionLines []string
-
-	for _, line := range docs {
-		line = strings.TrimSpace(line)
-
-		if line == "" {
-			if currentExample != nil {
-				currentExample.Code = append(currentExample.Code, "")
-			} else {
-				descriptionLines = append(descriptionLines, "")
-			}
-			continue
-		}
-
-		if strings.HasPrefix(line, "@") {
-			// Save current example if any
-			if currentExample != nil {
-				info.Examples = append(info.Examples, *currentExample)
-				currentExample = nil
-			}
-
-			parts := strings.SplitN(line, " ", 2)
-			tag := parts[0]
-			content := ""
-			if len(parts) > 1 {
-				content = parts[1]
-			}
-
-			switch tag {
-			case "@syntax":
-				info.Syntax = content
-			case "@param":
-				param := parseParam(content)
-				info.Params = append(info.Params, param)
-			case "@returns":
-				info.Returns = content
-			case "@example":
-				if currentExample != nil {
-					info.Examples = append(info.Examples, *currentExample)
-				}
-				currentExample = &JSDocExample{
-					Title: content,
-					Code:  []string{},
-				}
-			case "@category":
-				info.Category = content
-			case "@see":
-				info.See = strings.Split(content, ", ")
-			case "@note":
-				info.Notes = append(info.Notes, content)
-			case "@type":
-				info.Type = content
-			case "@value":
-				info.Value = content
-			}
-		} else {
-			if currentExample != nil {
-				currentExample.Code = append(currentExample.Code, line)
-			} else {
-				descriptionLines = append(descriptionLines, line)
-			}
-		}
-	}
-
-	// Save final example
-	if currentExample != nil {
-		info.Examples = append(info.Examples, *currentExample)
-	}
-
-	// Clean up description
-	info.Description = strings.TrimSpace(strings.Join(descriptionLines, "\n"))
-
-	return info
-}
-
-func parseParam(content string) JSDocParam {
-	// Parse format: {TYPE} name - description
-	param := JSDocParam{}
-
-	if strings.HasPrefix(content, "{") {
-		typeEnd := strings.Index(content, "}")
-		if typeEnd > 0 {
-			param.Type = strings.TrimSpace(content[1:typeEnd])
-			content = strings.TrimSpace(content[typeEnd+1:])
-		}
-	}
-
-	parts := strings.SplitN(content, " - ", 2)
-	if len(parts) >= 1 {
-		param.Name = strings.TrimSpace(parts[0])
-	}
-	if len(parts) >= 2 {
-		param.Description = strings.TrimSpace(parts[1])
-	}
-
-	return param
-}
 
 func generateModuleDoc(filepath string, moduleDoc *ModuleDoc) error {
 	file, err := os.Create(filepath)
@@ -433,7 +301,7 @@ func writeUncategorized(file *os.File, moduleDoc *ModuleDoc) {
 	}
 }
 
-func writeVariables(file *os.File, variables map[string]stdlib.StdlibDefinition, jsDocInfo map[string]JSDocInfo) {
+func writeVariables(file *os.File, variables map[string]stdlib.StdlibDefinition, jsDocInfo map[string]docs.JSDocInfo) {
 	if len(variables) == 0 {
 		return
 	}
@@ -475,7 +343,7 @@ func writeVariables(file *os.File, variables map[string]stdlib.StdlibDefinition,
 	}
 }
 
-func writeFunctions(file *os.File, functions map[string]stdlib.StdlibDefinition, jsDocInfo map[string]JSDocInfo) {
+func writeFunctions(file *os.File, functions map[string]stdlib.StdlibDefinition, jsDocInfo map[string]docs.JSDocInfo) {
 	if len(functions) == 0 {
 		return
 	}
@@ -535,7 +403,7 @@ func writeFunctions(file *os.File, functions map[string]stdlib.StdlibDefinition,
 	}
 }
 
-func writeClasses(file *os.File, classes map[string]stdlib.StdlibDefinition, jsDocInfo map[string]JSDocInfo, classItems map[string]stdlib.StdlibDefinition) {
+func writeClasses(file *os.File, classes map[string]stdlib.StdlibDefinition, jsDocInfo map[string]docs.JSDocInfo, classItems map[string]stdlib.StdlibDefinition) {
 	if len(classes) == 0 {
 		return
 	}

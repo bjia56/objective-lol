@@ -9,6 +9,7 @@ import (
 	protocol "github.com/tliron/glsp/protocol_3_16"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
+	"github.com/bjia56/objective-lol/pkg/docs"
 	"github.com/bjia56/objective-lol/pkg/environment"
 	"github.com/bjia56/objective-lol/pkg/modules"
 	"github.com/bjia56/objective-lol/pkg/parser"
@@ -59,7 +60,8 @@ type EnhancedSymbol struct {
 	IsShared      bool
 	SourceModule  string
 	References    []ast.PositionInfo
-	Documentation string
+	Documentation string         // Raw documentation - deprecated, use JSDocInfo
+	JSDocInfo     docs.JSDocInfo // Parsed JSDoc information
 }
 
 // ScopeInfo represents scope information
@@ -100,6 +102,9 @@ const (
 	VisibilityPublic VisibilityType = iota
 	VisibilityPrivate
 	VisibilityShared
+	VisibilityGlobal
+	VisibilityLocal
+	VisibilityModule
 )
 
 // AnalysisError represents semantic analysis errors
@@ -131,6 +136,35 @@ type PositionKey struct {
 
 func joinDocs(docs []string) string {
 	return strings.Join(docs, "\n")
+}
+
+// createEnhancedSymbolWithDocs creates an enhanced symbol with parsed JSDoc
+func createEnhancedSymbolWithDocs(docStrings []string, name, symbolType string, kind SymbolKind, position ast.PositionInfo, symbolRange protocol.Range, scope ScopeType, scopeID string, visibility VisibilityType, parentClass, qualifiedName, sourceModule string, isShared bool) EnhancedSymbol {
+	// Parse JSDoc if available
+	jsDocInfo := docs.JSDocInfo{}
+	rawDocs := joinDocs(docStrings)
+
+	if docs.IsJSDoc(docStrings) {
+		jsDocInfo = docs.ParseJSDoc(docStrings)
+	}
+
+	return EnhancedSymbol{
+		Name:          name,
+		Kind:          kind,
+		Type:          symbolType,
+		Position:      position,
+		Range:         symbolRange,
+		Scope:         scope,
+		ScopeID:       scopeID,
+		Visibility:    visibility,
+		ParentClass:   parentClass,
+		QualifiedName: qualifiedName,
+		IsShared:      isShared,
+		SourceModule:  sourceModule,
+		References:    []ast.PositionInfo{},
+		Documentation: rawDocs,
+		JSDocInfo:     jsDocInfo,
+	}
 }
 
 // NewSemanticAnalyzer creates a new semantic analyzer
@@ -430,19 +464,21 @@ func (sa *SemanticAnalyzer) initializeStdlibSymbols() {
 	// Add global stdlib symbols
 	for _, globalInit := range stdlib.DefaultGlobalInitializers() {
 		for _, decl := range stdlib.GetStdlibDefinitions(globalInit) {
-			symbol := EnhancedSymbol{
-				Name:          decl.Name,
-				Kind:          sa.stdlibKindToSymbolKind(decl.Kind),
-				Type:          decl.Type,
-				Position:      ast.PositionInfo{}, // Stdlib symbols have no position
-				Range:         protocol.Range{},
-				Scope:         ScopeTypeGlobal,
-				ScopeID:       "global",
-				Visibility:    VisibilityPublic,
-				QualifiedName: decl.Name,
-				SourceModule:  "stdlib",
-				Documentation: joinDocs(decl.Docs),
-			}
+			symbol := createEnhancedSymbolWithDocs(
+				decl.Docs,                            // Documentation strings
+				decl.Name,                            // Symbol name
+				decl.Type,                            // Symbol type
+				sa.stdlibKindToSymbolKind(decl.Kind), // Symbol kind
+				ast.PositionInfo{},                   // Position (stdlib symbols have no position)
+				protocol.Range{},                     // Range
+				ScopeTypeGlobal,                      // Scope
+				"global",                             // Scope ID
+				VisibilityPublic,                     // Visibility
+				"",                                   // Parent class
+				decl.Name,                            // Qualified name
+				"stdlib",                             // Source module
+				false,                                // IsShared
+			)
 			sa.addSymbolWithPosition(symbol)
 		}
 	}
@@ -654,19 +690,21 @@ func (sa *SemanticAnalyzer) extractSymbolsFromEnvironment(env *environment.Envir
 			}
 		}
 
-		symbol := EnhancedSymbol{
-			Documentation: joinDocs(function.Documentation),
-			Name:          name,
-			Kind:          SymbolKindFunction,
-			Type:          function.ReturnType,
-			Position:      ast.PositionInfo{}, // Stdlib symbols have no position
-			Range:         protocol.Range{},
-			Scope:         ScopeTypeGlobal,
-			ScopeID:       "global",
-			Visibility:    VisibilityPublic,
-			QualifiedName: name,
-			SourceModule:  sourceModule,
-		}
+		symbol := createEnhancedSymbolWithDocs(
+			function.Documentation, // Documentation strings
+			name,                   // Symbol name
+			function.ReturnType,    // Symbol type
+			SymbolKindFunction,     // Symbol kind
+			ast.PositionInfo{},     // Position
+			protocol.Range{},       // Range
+			ScopeTypeGlobal,        // Scope
+			"global",               // Scope ID
+			VisibilityPublic,       // Visibility
+			"",                     // Parent class
+			name,                   // Qualified name
+			sourceModule,           // Source module
+			false,                  // IsShared
+		)
 		sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, symbol)
 	}
 
@@ -685,19 +723,21 @@ func (sa *SemanticAnalyzer) extractSymbolsFromEnvironment(env *environment.Envir
 			}
 		}
 
-		symbol := EnhancedSymbol{
-			Documentation: joinDocs(class.Documentation),
-			Name:          name,
-			Kind:          SymbolKindClass,
-			Type:          class.Name,
-			Position:      ast.PositionInfo{},
-			Range:         protocol.Range{},
-			Scope:         ScopeTypeGlobal,
-			ScopeID:       "global",
-			Visibility:    VisibilityPublic,
-			QualifiedName: name,
-			SourceModule:  sourceModule,
-		}
+		symbol := createEnhancedSymbolWithDocs(
+			class.Documentation, // Documentation strings
+			name,                // Symbol name
+			class.Name,          // Symbol type
+			SymbolKindClass,     // Symbol kind
+			ast.PositionInfo{},  // Position
+			protocol.Range{},    // Range
+			ScopeTypeGlobal,     // Scope
+			"global",            // Scope ID
+			VisibilityPublic,    // Visibility
+			"",                  // Parent class
+			name,                // Qualified name
+			sourceModule,        // Source module
+			false,               // IsShared
+		)
 		sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, symbol)
 	}
 
@@ -716,19 +756,21 @@ func (sa *SemanticAnalyzer) extractSymbolsFromEnvironment(env *environment.Envir
 			}
 		}
 
-		symbol := EnhancedSymbol{
-			Documentation: joinDocs(variable.Documentation),
-			Name:          name,
-			Kind:          SymbolKindVariable,
-			Type:          variable.Type,
-			Position:      ast.PositionInfo{},
-			Range:         protocol.Range{},
-			Scope:         ScopeTypeGlobal,
-			ScopeID:       "global",
-			Visibility:    VisibilityPublic,
-			QualifiedName: name,
-			SourceModule:  sourceModule,
-		}
+		symbol := createEnhancedSymbolWithDocs(
+			variable.Documentation, // Documentation strings
+			name,                   // Symbol name
+			variable.Type,          // Symbol type
+			SymbolKindVariable,     // Symbol kind
+			ast.PositionInfo{},     // Position
+			protocol.Range{},       // Range
+			ScopeTypeGlobal,        // Scope
+			"global",               // Scope ID
+			VisibilityPublic,       // Visibility
+			"",                     // Parent class
+			name,                   // Qualified name
+			sourceModule,           // Source module
+			false,                  // IsShared
+		)
 		sa.symbolTable.Symbols = append(sa.symbolTable.Symbols, symbol)
 	}
 }
@@ -738,25 +780,26 @@ func (sa *SemanticAnalyzer) analyzeFunctionDeclaration(node *ast.FunctionDeclara
 	functionName := strings.ToUpper(node.Name)
 
 	// Add function symbol to current scope first
-	visibility := VisibilityPublic
+	visibility := VisibilityGlobal
 	if strings.HasPrefix(functionName, "_") {
-		visibility = VisibilityPrivate
+		visibility = VisibilityModule
 	}
 
-	funcSymbol := EnhancedSymbol{
-		Documentation: joinDocs(node.Documentation),
-		Name:          functionName,
-		Kind:          SymbolKindFunction,
-		Type:          strings.ToUpper(node.ReturnType),
-		Position:      node.GetPosition(),
-		Range:         sa.positionToRange(node.GetPosition(), len(node.Name)),
-		Scope:         sa.getCurrentScopeType(),
-		ScopeID:       sa.getCurrentScopeID(),
-		Visibility:    visibility,
-		ParentClass:   sa.currentClass,
-		QualifiedName: sa.getQualifiedName(functionName),
-		IsShared:      node.IsShared != nil && *node.IsShared,
-	}
+	funcSymbol := createEnhancedSymbolWithDocs(
+		node.Documentation,               // Documentation strings
+		functionName,                     // Symbol name
+		strings.ToUpper(node.ReturnType), // Symbol type
+		SymbolKindFunction,               // Symbol kind
+		node.GetPosition(),               // Position
+		sa.positionToRange(node.GetPosition(), len(node.Name)), // Range
+		sa.getCurrentScopeType(),                               // Scope
+		sa.getCurrentScopeID(),                                 // Scope ID
+		visibility,                                             // Visibility
+		sa.currentClass,                                        // Parent class
+		sa.getQualifiedName(functionName),                      // Qualified name
+		"",                                                     // Source module
+		node.IsShared != nil && *node.IsShared,                 // IsShared
+	)
 	sa.addSymbolWithPosition(funcSymbol)
 
 	// Create function scope for analyzing function body
@@ -781,7 +824,7 @@ func (sa *SemanticAnalyzer) analyzeFunctionDeclaration(node *ast.FunctionDeclara
 			Range:         protocol.Range{},
 			Scope:         ScopeTypeFunction,
 			ScopeID:       scopeID,
-			Visibility:    VisibilityPrivate,
+			Visibility:    VisibilityLocal,
 			QualifiedName: strings.ToUpper(param.Name),
 		}
 		sa.addSymbolWithPosition(paramSymbol)
@@ -801,23 +844,26 @@ func (sa *SemanticAnalyzer) analyzeClassDeclaration(node *ast.ClassDeclarationNo
 	className := strings.ToUpper(node.Name)
 
 	// Add class symbol to current scope first
-	visibility := VisibilityPublic
+	visibility := VisibilityGlobal
 	if strings.HasPrefix(className, "_") {
-		visibility = VisibilityPrivate
+		visibility = VisibilityModule
 	}
 
-	classSymbol := EnhancedSymbol{
-		Documentation: joinDocs(node.Documentation),
-		Name:          className,
-		Kind:          SymbolKindClass,
-		Type:          className,
-		Position:      node.GetPosition(),
-		Range:         sa.positionToRange(node.GetPosition(), len(node.Name)),
-		Scope:         sa.getCurrentScopeType(),
-		ScopeID:       sa.getCurrentScopeID(),
-		Visibility:    visibility,
-		QualifiedName: sa.getQualifiedName(className),
-	}
+	classSymbol := createEnhancedSymbolWithDocs(
+		node.Documentation, // Documentation strings
+		className,          // Symbol name
+		className,          // Symbol type
+		SymbolKindClass,    // Symbol kind
+		node.GetPosition(), // Position
+		sa.positionToRange(node.GetPosition(), len(node.Name)), // Range
+		sa.getCurrentScopeType(),                               // Scope
+		sa.getCurrentScopeID(),                                 // Scope ID
+		visibility,                                             // Visibility
+		"",                                                     // Parent class
+		sa.getQualifiedName(className),                         // Qualified name
+		"",                                                     // Source module
+		false,                                                  // IsShared
+	)
 	sa.addSymbolWithPosition(classSymbol)
 
 	// Create class scope for analyzing class members
@@ -935,9 +981,15 @@ func (sa *SemanticAnalyzer) analyzeClassMemberFunction(member *ast.ClassMemberNo
 func (sa *SemanticAnalyzer) analyzeVariableDeclaration(node *ast.VariableDeclarationNode) {
 	varName := strings.ToUpper(node.Name)
 
-	visibility := VisibilityPublic
+	visibility := VisibilityGlobal
 	if strings.HasPrefix(varName, "_") {
-		visibility = VisibilityPrivate
+		visibility = VisibilityModule
+	}
+	for _, scope := range sa.scopeStack {
+		if strings.HasPrefix(scope, "class_") || strings.HasPrefix(scope, "func_") {
+			visibility = VisibilityLocal
+			break
+		}
 	}
 
 	// Determine variable type - use declared type or infer from initialization
@@ -1141,7 +1193,7 @@ func (sa *SemanticAnalyzer) analyzeTryStatement(node *ast.TryStatementNode) {
 				Range:         protocol.Range{},
 				Scope:         ScopeTypeBlock,
 				ScopeID:       catchScopeID,
-				Visibility:    VisibilityPrivate,
+				Visibility:    VisibilityLocal,
 				QualifiedName: strings.ToUpper(node.CatchVar),
 			}
 			sa.addSymbolWithPosition(catchVarSymbol)
@@ -1254,6 +1306,7 @@ func (sa *SemanticAnalyzer) trackIdentifierReference(node *ast.IdentifierNode) {
 			QualifiedName: symbol.QualifiedName,
 			References:    []ast.PositionInfo{position},
 			Documentation: symbol.Documentation,
+			JSDocInfo:     symbol.JSDocInfo,
 		}
 	} else {
 		// Create a "reference-only" symbol for unresolved identifiers
@@ -1266,7 +1319,7 @@ func (sa *SemanticAnalyzer) trackIdentifierReference(node *ast.IdentifierNode) {
 			Range:         sa.positionToRange(position, len(node.Name)),
 			Scope:         sa.getCurrentScopeType(),
 			ScopeID:       currentScopeID,
-			Visibility:    VisibilityPublic,
+			Visibility:    VisibilityGlobal,
 			QualifiedName: identifierName,
 			References:    []ast.PositionInfo{position},
 		}
@@ -1759,7 +1812,7 @@ func (sa *SemanticAnalyzer) GetCompletionItems(position protocol.Position) []pro
 	return completions
 }
 
-// GetHoverInfo provides enhanced hover information with context
+// GetHoverInfo provides enhanced hover information with JSDoc-aware formatting
 func (sa *SemanticAnalyzer) GetHoverInfo(position protocol.Position) *protocol.Hover {
 	// Look for symbol definitions at position
 	symbol := sa.ResolveSymbolAtPosition(position)
@@ -1767,13 +1820,13 @@ func (sa *SemanticAnalyzer) GetHoverInfo(position protocol.Position) *protocol.H
 		return nil
 	}
 
-	// Builtin types
+	// Builtin types with enhanced formatting
 	switch symbol.Name {
 	case "STRIN":
 		return &protocol.Hover{
 			Contents: protocol.MarkupContent{
 				Kind:  protocol.MarkupKindMarkdown,
-				Value: "**STRIN**: Represents text strings.",
+				Value: "```olol\nSTRIN\n```\n\nRepresents text strings.\n\n**Type:** Built-in primitive type",
 			},
 			Range: &symbol.Range,
 		}
@@ -1781,7 +1834,7 @@ func (sa *SemanticAnalyzer) GetHoverInfo(position protocol.Position) *protocol.H
 		return &protocol.Hover{
 			Contents: protocol.MarkupContent{
 				Kind:  protocol.MarkupKindMarkdown,
-				Value: "**INTEGR**: Represents integer numbers.",
+				Value: "```olol\nINTEGR\n```\n\nRepresents integer numbers.\n\n**Type:** Built-in primitive type",
 			},
 			Range: &symbol.Range,
 		}
@@ -1789,7 +1842,7 @@ func (sa *SemanticAnalyzer) GetHoverInfo(position protocol.Position) *protocol.H
 		return &protocol.Hover{
 			Contents: protocol.MarkupContent{
 				Kind:  protocol.MarkupKindMarkdown,
-				Value: "**DUBBLE**: Represents double-precision floating-point numbers.",
+				Value: "```olol\nDUBBLE\n```\n\nRepresents double-precision floating-point numbers.\n\n**Type:** Built-in primitive type",
 			},
 			Range: &symbol.Range,
 		}
@@ -1797,7 +1850,7 @@ func (sa *SemanticAnalyzer) GetHoverInfo(position protocol.Position) *protocol.H
 		return &protocol.Hover{
 			Contents: protocol.MarkupContent{
 				Kind:  protocol.MarkupKindMarkdown,
-				Value: "**BOOL**: Represents boolean values (`YEZ` or `NO`).",
+				Value: "```olol\nBOOL\n```\n\nRepresents boolean values (`YEZ` or `NO`).\n\n**Type:** Built-in primitive type",
 			},
 			Range: &symbol.Range,
 		}
@@ -1805,40 +1858,43 @@ func (sa *SemanticAnalyzer) GetHoverInfo(position protocol.Position) *protocol.H
 		return &protocol.Hover{
 			Contents: protocol.MarkupContent{
 				Kind:  protocol.MarkupKindMarkdown,
-				Value: "**NOTHIN**: Represents the absence of a value.",
+				Value: "```olol\nNOTHIN\n```\n\nRepresents the absence of a value.\n\n**Type:** Built-in primitive type",
 			},
 			Range: &symbol.Range,
 		}
 	}
 
-	// Build comprehensive hover content
-	var contents []string
-
-	// Symbol signature
-	signature := sa.buildSymbolSignature(*symbol)
-	contents = append(contents, fmt.Sprintf("```olol\n%s\n```", signature))
-
-	// Visibility and scope information
-	visibilityInfo := sa.buildVisibilityInfo(*symbol)
-	if visibilityInfo != "" {
-		contents = append(contents, visibilityInfo)
+	// Use JSDoc-aware formatting if JSDoc information is available
+	var markdownContent string
+	if symbol.JSDocInfo.HasJSDocTags() {
+		markdownContent = docs.FormatJSDocAsMarkdown(
+			symbol.JSDocInfo,
+			symbol.Name,
+			symbol.Type,
+			sa.symbolKindToString(symbol.Kind),
+		)
+	} else {
+		// Fallback to basic formatting for symbols without JSDoc
+		markdownContent = docs.FormatBasicSymbolInfo(
+			symbol.Name,
+			symbol.Type,
+			sa.symbolKindToString(symbol.Kind),
+			sa.visibilityTypeToString(symbol.Visibility),
+			symbol.ParentClass,
+			symbol.SourceModule,
+			symbol.Documentation,
+		)
 	}
 
-	// Module source information
-	if symbol.SourceModule != "" {
-		contents = append(contents, fmt.Sprintf("**Module:** `%s`", symbol.SourceModule))
-	}
-
-	// Documentation
-	if symbol.Documentation != "" {
-		contents = append(contents, "---")
-		contents = append(contents, symbol.Documentation)
+	// Return empty hover if no content to display
+	if markdownContent == "" {
+		return nil
 	}
 
 	return &protocol.Hover{
 		Contents: protocol.MarkupContent{
 			Kind:  protocol.MarkupKindMarkdown,
-			Value: strings.Join(contents, "\n\n"),
+			Value: markdownContent,
 		},
 		Range: &symbol.Range,
 	}
@@ -1962,61 +2018,39 @@ func (sa *SemanticAnalyzer) buildFunctionSnippet(symbol EnhancedSymbol) string {
 	return symbol.Name
 }
 
-func (sa *SemanticAnalyzer) buildSymbolSignature(symbol EnhancedSymbol) string {
-	switch symbol.Kind {
-	case SymbolKindFunction:
-		// TODO: Build proper function signature with parameters
-		signature := fmt.Sprintf("FUNCSHUN %s", symbol.Name)
-		if symbol.Type != "" && symbol.Type != "NOTHIN" {
-			signature += fmt.Sprintf(" GIVEZ %s", symbol.Type)
-		}
-		return signature
-	case SymbolKindClass:
-		return fmt.Sprintf("CLAS %s", symbol.Name)
-	case SymbolKindVariable:
-		return fmt.Sprintf("VARIABLE %s TEH %s", symbol.Name, symbol.Type)
-	default:
-		return symbol.Name
-	}
-}
-
-func (sa *SemanticAnalyzer) buildVisibilityInfo(symbol EnhancedSymbol) string {
-	var parts []string
-
-	switch symbol.Visibility {
-	case VisibilityPublic:
-		parts = append(parts, "**Visibility:** Public")
-	case VisibilityPrivate:
-		parts = append(parts, "**Visibility:** Private")
-	case VisibilityShared:
-		parts = append(parts, "**Visibility:** Shared")
-	}
-
-	if symbol.IsShared {
-		parts = append(parts, "**Shared member**")
-	}
-
-	if symbol.ParentClass != "" {
-		parts = append(parts, fmt.Sprintf("**Class:** `%s`", symbol.ParentClass))
-	}
-
-	return strings.Join(parts, " • ")
-}
-
 func (sa *SemanticAnalyzer) symbolKindToString(kind SymbolKind) string {
 	switch kind {
 	case SymbolKindVariable:
-		return "Variable"
+		return "VARIABLE"
 	case SymbolKindFunction:
-		return "Function"
+		return "FUNCSHUN"
 	case SymbolKindClass:
-		return "Class"
+		return "CLAS"
 	case SymbolKindParameter:
 		return "Parameter"
 	case SymbolKindImport:
 		return "Import"
 	default:
 		return "Unknown"
+	}
+}
+
+func (sa *SemanticAnalyzer) visibilityTypeToString(visibility VisibilityType) string {
+	switch visibility {
+	case VisibilityPublic:
+		return "EVRYONE"
+	case VisibilityPrivate:
+		return "MAHSELF"
+	case VisibilityShared:
+		return "SHARD"
+	case VisibilityLocal:
+		return "LOCAL"
+	case VisibilityGlobal:
+		return "GLOBAL"
+	case VisibilityModule:
+		return "MODULE"
+	default:
+		return "EVRYONE"
 	}
 }
 

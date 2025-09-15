@@ -693,3 +693,37 @@ func TestIdentifierRangeHover(t *testing.T) {
 		})
 	}
 }
+
+
+func TestJSDocHoverInfo(t *testing.T) {
+	// Use the existing comprehensive example which already has JSDoc-style documentation
+	analyzer := NewSemanticAnalyzer("test://comprehensive.olol", comprehensiveExample)
+
+	err := analyzer.AnalyzeDocument(context.Background())
+	require.NoError(t, err)
+
+	// Test JSDoc hover on function with parameter documentation
+	// Use the exact same position as the working TestComprehensiveAnalysis_HoverInfo test
+	funcPosition := protocol.Position{Line: 15, Character: 21} // Around "ADD" function
+	hover := analyzer.GetHoverInfo(funcPosition)
+
+	require.NotNil(t, hover, "Expected hover info for JSDoc function declaration")
+	if markup, ok := hover.Contents.(protocol.MarkupContent); ok {
+		assert.Contains(t, markup.Value, "ADD", "Hover should contain function name")
+
+		// Verify JSDoc-specific features are working
+		assert.Contains(t, markup.Value, "**Parameters:**", "JSDoc hover should contain parameters section")
+		assert.Contains(t, markup.Value, "first number to add", "JSDoc hover should contain parameter descriptions")
+		assert.Contains(t, markup.Value, "second number to add", "JSDoc hover should contain parameter descriptions")
+
+		// Verify rich markdown formatting
+		assert.Contains(t, markup.Value, "```olol", "JSDoc hover should contain code blocks")
+		assert.Contains(t, markup.Value, "This method adds two numbers together", "JSDoc hover should contain description")
+
+		t.Logf("JSDoc Function hover content:\n%s", markup.Value)
+
+		// Verify JSDoc enhancements are working by checking for structured format
+		assert.True(t, len(strings.Split(markup.Value, "\n")) > 5, "JSDoc hover should have multiple formatted sections")
+	}
+}
+
