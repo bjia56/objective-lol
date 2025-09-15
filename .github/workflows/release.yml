@@ -187,10 +187,9 @@ jobs:
       - name: Prepare all distributions
         run: |
           mkdir -p dist-all
+
           # Copy wheels from artifacts
           find wheels -name "*.whl" -exec cp {} dist-all/ \;
-          # Copy source distribution
-          cp python/dist/*.tar.gz dist-all/
 
           echo "Distribution files:"
           ls -la dist-all/
