@@ -32,10 +32,29 @@ export function activate(context: vscode.ExtensionContext) {
     });
 }
 
-function ensureLanguageServerInstalled(context: vscode.ExtensionContext) {
-    const url = '';
+const lspVersion = 'v0.0.1';
+const lspPlatform = (() => {
+    switch (process.platform) {
+        case 'win32':
+            return 'windows';
+        default:
+            return process.platform;
+    }
+})();
+const lspArch = (() => {
+    switch (process.arch) {
+        case 'x64':
+            return 'amd64';
+        default:
+            return process.arch;
+    }
+})();
 
-    const binaryPath = path.join(context.globalStorageUri.fsPath, 'olol-lsp');
+function ensureLanguageServerInstalled(context: vscode.ExtensionContext) {
+    const suffix = lspPlatform === 'windows' ? '.exe' : '';
+    const url = `https://github.com/bjia56/objective-lol/releases/download/${lspVersion}/olol-lsp-${lspPlatform}-${lspArch}${suffix}`;
+
+    const binaryPath = path.join(context.globalStorageUri.fsPath, `olol-lsp-${lspVersion}-${lspPlatform}-${lspArch}${suffix}`);
     console.log(`Checking for Objective-LOL Language Server at ${binaryPath}`);
 
     return new Promise<void>((resolve, reject) => {
