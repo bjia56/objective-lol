@@ -140,7 +140,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.validate-tag.outputs.tag-name }}
-          name: "Release ${{ needs.validate-tag.outputs.tag-name }}"
+          name: "${{ needs.validate-tag.outputs.tag-name }}"
           draft: false
           prerelease: false
           files: release-assets/*
@@ -160,13 +160,88 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # release-python:
-  #   if: inputs.component == 'python'
-  #   needs: [validate-tag, build]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Publish to PyPI
-  #       run: echo "TODO: Publish Python package to PyPI"
+  release-python:
+    if: inputs.component == 'python'
+    needs: [validate-tag, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Python wheels
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: wheels
+          merge-multiple: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Prepare all distributions
+        run: |
+          mkdir -p dist-all
+          # Copy wheels from artifacts
+          find wheels -name "*.whl" -exec cp {} dist-all/ \;
+          # Copy source distribution
+          cp python/dist/*.tar.gz dist-all/
+
+          echo "Distribution files:"
+          ls -la dist-all/
+
+      - name: Check distributions
+        run: |
+          python -m twine check dist-all/*
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          python -m twine upload dist-all/*
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.validate-tag.outputs.tag-name }}
+          name: "${{ needs.validate-tag.outputs.tag-name }}"
+          draft: false
+          prerelease: false
+          files: dist-all/*
+          body: |
+            ## Objective-LOL Python Package ${{ inputs.version }}
+
+            Python bindings for the Objective-LOL interpreter.
+
+            ### Installation
+            ```bash
+            pip install objective-lol
+            ```
+
+            ### Usage
+            ```python
+            import objective_lol
+
+            # Run Objective-LOL code
+            result = objective_lol.run("""
+            I CAN HAS STDIO?
+            HAI ME TEH FUNCSHUN MAIN
+                SAYZ WIT "Hello World!"
+            KTHXBAI
+            """)
+            ```
+
+            ### What's included
+            - Pre-built wheels for Windows, macOS, and Linux
+            - Support for Python 3.9+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # release-vscode:
   #   if: inputs.component == 'vscode'

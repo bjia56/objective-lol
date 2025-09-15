@@ -15,6 +15,11 @@ except:
 
 import setuptools
 from setuptools.command.build_ext import build_ext
+from pathlib import Path
+
+
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
 
 
 PACKAGE_PATH="pkg/api"
@@ -354,6 +359,8 @@ setuptools.setup(
     author="Brett Jia",
     author_email="dev.bjia56@gmail.com",
     description="Python bindings for Objective-LOL",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url="https://github.com/bjia56/objective-lol",
     classifiers=[
         "Programming Language :: Python :: 3",
