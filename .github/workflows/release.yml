@@ -1,0 +1,144 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: 'Component to release'
+        required: true
+        type: choice
+        options:
+          - main
+          - python
+          - vscode
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  validate-tag:
+    name: Validate Tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag-name: ${{ steps.set-tag.outputs.tag-name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ "$VERSION" =~ ^v ]]; then
+            echo "Error: Version should not start with 'v' (got: $VERSION)"
+            echo "Please provide version number only (e.g., '1.0.0' not 'v1.0.0')"
+            exit 1
+          fi
+          echo "Version format is valid: $VERSION"
+
+      - name: Set tag name
+        id: set-tag
+        run: |
+          case "${{ inputs.component }}" in
+            "main")
+              TAG_NAME="v${{ inputs.version }}"
+              ;;
+            "python")
+              TAG_NAME="python-v${{ inputs.version }}"
+              ;;
+            "vscode")
+              TAG_NAME="vscode-v${{ inputs.version }}"
+              ;;
+          esac
+          echo "tag-name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "Generated tag name: $TAG_NAME"
+
+      - name: Check if tag exists
+        run: |
+          TAG_NAME="${{ steps.set-tag.outputs.tag-name }}"
+          if git tag -l | grep -q "^${TAG_NAME}$"; then
+            echo "Error: Tag $TAG_NAME already exists"
+            exit 1
+          fi
+          echo "Tag $TAG_NAME is available"
+
+  build:
+    name: Build Components
+    needs: validate-tag
+    uses: ./.github/workflows/build.yml
+
+  release-main:
+    if: inputs.component == 'main'
+    needs: [validate-tag, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release assets directory
+        run: mkdir -p release-assets
+
+      - name: Prepare release assets
+        run: |
+          # Copy and rename Go binaries
+          for dir in artifacts/olol-*; do
+            if [ -d "$dir" ]; then
+              cp "$dir"/* release-assets/
+            fi
+          done
+
+          # Copy and rename LSP binaries
+          for dir in artifacts/olol-lsp-*; do
+            if [ -d "$dir" ]; then
+              cp "$dir"/* release-assets/
+            fi
+          done
+
+          # List what we have
+          echo "Release assets:"
+          ls -la release-assets/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.validate-tag.outputs.tag-name }}
+          name: "Release ${{ needs.validate-tag.outputs.tag-name }}"
+          draft: false
+          prerelease: false
+          files: release-assets/*
+          body: |
+            ## Objective-LOL ${{ inputs.version }}
+
+            ### Downloads
+            - **olol**: Main interpreter binary
+            - **olol-lsp**: Language Server Protocol implementation
+
+            Available for Windows (amd64/arm64), macOS (amd64/arm64), and Linux (amd64/arm64).
+
+            ### Installation
+            1. Download the appropriate binary for your platform
+            2. Make it executable (Unix systems): `chmod +x olol-*`
+            3. Run: `./olol-<platform> your-program.olol`
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # release-python:
+  #   if: inputs.component == 'python'
+  #   needs: [validate-tag, build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Publish to PyPI
+  #       run: echo "TODO: Publish Python package to PyPI"
+
+  # release-vscode:
+  #   if: inputs.component == 'vscode'
+  #   needs: [validate-tag, build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Publish to VS Code Marketplace
+  #       run: echo "TODO: Publish VSCode extension to marketplace"
