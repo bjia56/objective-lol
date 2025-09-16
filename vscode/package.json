@@ -18,6 +18,10 @@
     "esoteric"
   ],
   "icon": "logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bjia56/objective-lol.git"
+  },
   "activationEvents": [
     "onLanguage:objective-lol"
   ],
