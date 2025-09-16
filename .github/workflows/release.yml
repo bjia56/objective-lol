@@ -212,6 +212,7 @@ jobs:
           name: "${{ needs.validate-tag.outputs.tag-name }}"
           draft: false
           prerelease: false
+          make_latest: "false"
           files: dist-all/*
           body: |
             ## Objective-LOL Python Package ${{ inputs.version }}
