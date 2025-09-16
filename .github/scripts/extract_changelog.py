@@ -31,6 +31,10 @@ def extract_changelog_section(changelog_path: Path, version: str) -> str:
             section_level = len(match.group(1))  # Number of # characters
             continue
 
+        # Slight hack - the Python readme uses 4 # for section headers
+        if line.startswith('#### '):
+            line = line.replace('#### ', '### ', 1)
+
         # If we're in the section, check for next section header
         if in_section:
             # Stop if we hit another section at same or higher level
