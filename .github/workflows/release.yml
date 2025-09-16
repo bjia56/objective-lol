@@ -56,10 +56,10 @@ jobs:
               ;;
             "vscode")
               # Check if package.json contains the version
-              if ! grep -q "\"version\": \"$VERSION\"" vscode-extension/package.json; then
-                echo "Error: vscode-extension/package.json does not contain \"version\": \"$VERSION\""
+              if ! grep -q "\"version\": \"$VERSION\"" vscode/package.json; then
+                echo "Error: vscode/package.json does not contain \"version\": \"$VERSION\""
                 echo "Current version in package.json:"
-                grep "\"version\":" vscode-extension/package.json || echo "No version found"
+                grep "\"version\":" vscode/package.json || echo "No version found"
                 echo "Please update package.json with the correct version before releasing"
                 exit 1
               fi
