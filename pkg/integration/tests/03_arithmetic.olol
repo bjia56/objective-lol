@@ -43,5 +43,12 @@ HAI ME TEH FUNCSHUN MAIN
     SAY WIT "15 + -2.5 = "
     SAYZ WIT AA MOAR CC
 
+    BTW Test special bases
+    SAYZ WIT "Special base arithmetic:"
+    I HAS A VARIABLE HEXA TEH INTEGR ITZ 0xA
+    I HAS A VARIABLE OCTA TEH INTEGR ITZ 0o12
+    SAY WIT "0xA + 0o12 = "
+    SAYZ WIT HEXA MOAR OCTA
+
     SAYZ WIT "=== Arithmetic Operations Test Complete ==="
 KTHXBAI

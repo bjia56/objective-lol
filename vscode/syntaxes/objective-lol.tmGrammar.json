@@ -87,7 +87,7 @@
         },
         {
           "name": "constant.numeric.octal.objective-lol",
-          "match": "\\b-?0[0-7]+\\b"
+          "match": "\\b-?0[Oo][0-7]+\\b"
         },
         {
           "name": "constant.numeric.decimal.objective-lol",

@@ -414,6 +414,16 @@ func (l *Lexer) readNumber() (string, TokenType) {
 		return l.input[position:l.position], INTEGER
 	}
 
+	// Handle octal numbers (0O prefix)
+	if l.ch == '0' && (l.peekChar() == 'O' || l.peekChar() == 'o') {
+		l.readChar() // consume '0'
+		l.readChar() // consume 'O'
+		for isDigit(l.ch) && l.ch < '8' {
+			l.readChar()
+		}
+		return l.input[position:l.position], INTEGER
+	}
+
 	// Read digits
 	for isDigit(l.ch) {
 		l.readChar()
@@ -628,13 +638,13 @@ func ConvertValue(tok Token) (interface{}, error) {
 			return -val, nil
 		}
 		// Handle octal numbers (0 prefix)
-		if strings.HasPrefix(literal, "0") && len(literal) > 1 {
-			val, err := strconv.ParseInt(literal[1:], 8, 64)
+		if strings.HasPrefix(strings.ToUpper(literal), "0O") && len(literal) > 2 {
+			val, err := strconv.ParseInt(literal[2:], 8, 64)
 			return val, err
 		}
 		// Handle negative octal numbers
-		if strings.HasPrefix(literal, "-0") && len(literal) > 2 {
-			val, err := strconv.ParseInt(literal[2:], 8, 64)
+		if strings.HasPrefix(strings.ToUpper(literal), "-0O") && len(literal) > 3 {
+			val, err := strconv.ParseInt(literal[3:], 8, 64)
 			if err != nil {
 				return nil, err
 			}

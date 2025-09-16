@@ -874,14 +874,14 @@ SAYZ WIT PERMS
 **Example: Make file executable**
 
 ```lol
-DOC RWX ITZ 755 BTW rwxr-xr-x
+DOC RWX ITZ 0o755 BTW rwxr-xr-x
 SAYZ WIT "File is now executable"
 ```
 
 **Example: Set read-only permissions**
 
 ```lol
-DOC RWX ITZ 444 BTW r--r--r--
+DOC RWX ITZ 0o444 BTW r--r--r--
 SAYZ WIT "File is now read-only"
 ```
 
