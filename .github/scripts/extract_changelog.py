@@ -37,8 +37,9 @@ def extract_changelog_section(changelog_path: Path, version: str) -> str:
 
         # If we're in the section, check for next section header
         if in_section:
-            # Stop if we hit another section at same or higher level
-            if re.match(rf'^#{{{1,{section_level}}}}\s', line):
+            # Stop if we hit another version section (semantic versioning pattern)
+            semver_pattern = rf'^#{{{section_level}}}\s*\[\d+\.\d+\.\d+.*?\]'
+            if re.match(semver_pattern, line):
                 break
             result_lines.append(line)
 

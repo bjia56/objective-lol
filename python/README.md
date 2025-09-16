@@ -108,6 +108,14 @@ MIT License
 
 ## Changelog
 
+### [0.0.2] - 2025-09-16
+
+#### Changed
+- Modified octal prefix from `0` to `0o`
+
+#### Fixed
+- Fixed a stack corruption crash on Windows by using compatibility function calls with separate goroutines
+
 ### [0.0.1] - 2025-09-14
 
 #### Added
