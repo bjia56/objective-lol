@@ -293,8 +293,5 @@ jobs:
             1. Install the extension
             2. Open any `.olol` file
             3. Enjoy syntax highlighting and language support
-
-            ### What's New
-            See the extension changelog for details about this release.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
