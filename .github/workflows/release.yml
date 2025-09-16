@@ -243,10 +243,58 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # release-vscode:
-  #   if: inputs.component == 'vscode'
-  #   needs: [validate-tag, build]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Publish to VS Code Marketplace
-  #       run: echo "TODO: Publish VSCode extension to marketplace"
+  release-vscode:
+    if: inputs.component == 'vscode'
+    needs: [validate-tag, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download VSCode extension
+        uses: actions/download-artifact@v4
+        with:
+          name: vscode
+          path: vscode-artifacts
+
+      - name: Install vsce
+        run: npm install -g @vscode/vsce
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          VSIX_FILE=$(find vscode-artifacts -name "*.vsix" | head -1)
+          vsce publish --packagePath "$VSIX_FILE"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.validate-tag.outputs.tag-name }}
+          name: "${{ needs.validate-tag.outputs.tag-name }}"
+          draft: false
+          prerelease: false
+          make_latest: "false"
+          files: vscode-artifacts/*.vsix
+          body: |
+            ## Objective-LOL VSCode Extension ${{ inputs.version }}
+
+            VSCode extension providing syntax highlighting and language support for Objective-LOL.
+
+            ### Features
+            - Syntax highlighting for `.olol` files
+            - Language configuration and support
+            - LOLCODE-inspired syntax recognition
+
+            ### Installation
+            - **From Marketplace**: Search for "objective-lol" in VSCode Extensions
+            - **From VSIX**: Download the `.vsix` file and install via `code --install-extension objective-lol-${{ inputs.version }}.vsix`
+
+            ### Usage
+            1. Install the extension
+            2. Open any `.olol` file
+            3. Enjoy syntax highlighting and language support
+
+            ### What's New
+            See the extension changelog for details about this release.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
