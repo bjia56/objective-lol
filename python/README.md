@@ -105,3 +105,11 @@ vm.execute(code)  # Prints: 8
 ## License
 
 MIT License
+
+## Changelog
+
+### [0.0.1] - 2025-09-14
+
+#### Added
+- Initial Python bindings for Objective-LOL interpreter
+- Pre-built wheels for Windows, macOS, and Linux for Python 3.9+

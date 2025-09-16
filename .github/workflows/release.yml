@@ -52,7 +52,14 @@ jobs:
                 echo "Please update setup.py with the correct version before releasing"
                 exit 1
               fi
-              echo "Python version validation passed"
+              # Check if changelog extraction succeeds
+              if ! python3 .github/scripts/extract_changelog.py --version "$VERSION" --component python > /dev/null; then
+                echo "Error: Failed to extract changelog for version $VERSION from python/README.md"
+                echo "Expected format: ### [$VERSION] - YYYY-MM-DD"
+                echo "Please add a properly formatted changelog entry before releasing"
+                exit 1
+              fi
+              echo "Python version and changelog validation passed"
               ;;
             "vscode")
               # Check if package.json contains the version
@@ -63,10 +70,24 @@ jobs:
                 echo "Please update package.json with the correct version before releasing"
                 exit 1
               fi
-              echo "VSCode version validation passed"
+              # Check if changelog extraction succeeds
+              if ! python3 .github/scripts/extract_changelog.py --version "$VERSION" --component vscode > /dev/null; then
+                echo "Error: Failed to extract changelog for version $VERSION from vscode/CHANGELOG.md"
+                echo "Expected format: ## [$VERSION] - YYYY-MM-DD"
+                echo "Please add a properly formatted changelog entry before releasing"
+                exit 1
+              fi
+              echo "VSCode version and changelog validation passed"
               ;;
             "main")
-              echo "No version file validation needed for main component"
+              # Check if changelog extraction succeeds
+              if ! python3 .github/scripts/extract_changelog.py --version "$VERSION" --component main > /dev/null; then
+                echo "Error: Failed to extract changelog for version $VERSION from CHANGELOG.md"
+                echo "Expected format: ## [$VERSION] - YYYY-MM-DD"
+                echo "Please add a properly formatted changelog entry before releasing"
+                exit 1
+              fi
+              echo "Main component changelog validation passed"
               ;;
           esac
 
@@ -136,6 +157,16 @@ jobs:
           echo "Release assets:"
           ls -la release-assets/
 
+      - name: Extract changelog for release
+        id: changelog
+        run: |
+          CHANGELOG=$(python3 .github/scripts/extract_changelog.py --version "${{ inputs.version }}" --component "${{ inputs.component }}")
+          {
+            echo 'CHANGELOG<<EOF'
+            echo "$CHANGELOG"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -146,6 +177,8 @@ jobs:
           files: release-assets/*
           body: |
             ## Objective-LOL ${{ inputs.version }}
+
+            ${{ steps.changelog.outputs.CHANGELOG }}
 
             ### Downloads
             - **olol**: Main interpreter binary
@@ -205,6 +238,16 @@ jobs:
         run: |
           python -m twine upload dist-all/*
 
+      - name: Extract changelog for release
+        id: changelog
+        run: |
+          CHANGELOG=$(python3 .github/scripts/extract_changelog.py --version "${{ inputs.version }}" --component "${{ inputs.component }}")
+          {
+            echo 'CHANGELOG<<EOF'
+            echo "$CHANGELOG"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -217,7 +260,7 @@ jobs:
           body: |
             ## Objective-LOL Python Package ${{ inputs.version }}
 
-            Python bindings for the Objective-LOL interpreter.
+            ${{ steps.changelog.outputs.CHANGELOG }}
 
             ### Installation
             ```bash
@@ -236,10 +279,6 @@ jobs:
             KTHXBAI
             """)
             ```
-
-            ### What's included
-            - Pre-built wheels for Windows, macOS, and Linux
-            - Support for Python 3.9+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -266,6 +305,16 @@ jobs:
           VSIX_FILE=$(find vscode-artifacts -name "*.vsix" | head -1)
           vsce publish --packagePath "$VSIX_FILE"
 
+      - name: Extract changelog for release
+        id: changelog
+        run: |
+          CHANGELOG=$(python3 .github/scripts/extract_changelog.py --version "${{ inputs.version }}" --component "${{ inputs.component }}")
+          {
+            echo 'CHANGELOG<<EOF'
+            echo "$CHANGELOG"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -278,12 +327,7 @@ jobs:
           body: |
             ## Objective-LOL VSCode Extension ${{ inputs.version }}
 
-            VSCode extension providing syntax highlighting and language support for Objective-LOL.
-
-            ### Features
-            - Syntax highlighting for `.olol` files
-            - Language configuration and support
-            - LOLCODE-inspired syntax recognition
+            ${{ steps.changelog.outputs.CHANGELOG }}
 
             ### Installation
             - **From Marketplace**: Search for "objective-lol" in VSCode Extensions
