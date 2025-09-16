@@ -17,6 +17,18 @@ type VMCompatibilityShim struct {
 
 type CompatibilityCallback func(id, jsonArgs string) string
 
+// callInGoroutine calls the provided function in a new goroutine and returns the result.
+// This separates the interpreter stack from each callback to avoid stack corruption in
+// the interleaved Go and foreign language calls.
+func callInGoroutine(function CompatibilityCallback, id, jsonArgs string) string {
+	result := make(chan string)
+	go func() {
+		res := function(id, jsonArgs)
+		result <- res
+	}()
+	return <-result
+}
+
 // DefineFunction defines a global function with maximum compatibility,
 // wrapping arguments and return values as JSON strings.
 // An optional id cookie is passed back to the function to identify it.
@@ -35,7 +47,7 @@ func (shim *VMCompatibilityShim) DefineFunction(id, name string, argc int, funct
 		}
 
 		// Call the provided function
-		jsonResult := function(id, string(jsonBytes))
+		jsonResult := callInGoroutine(function, id, string(jsonBytes))
 
 		// Parse JSON result
 		var result map[string]interface{}
@@ -55,30 +67,29 @@ func (shim *VMCompatibilityShim) DefineFunction(id, name string, argc int, funct
 }
 
 func (shim *VMCompatibilityShim) BuildNewClassVariableWithGetter(variable *ClassVariable, getterID string, getter CompatibilityCallback) *ClassVariable {
-	// Wrap the getter to match the expected signature
-	var wrappedGetter func(this GoValue) (GoValue, error)
-	if getter != nil {
-		wrappedGetter = func(this GoValue) (GoValue, error) {
-			args := []interface{}{
-				this.ID(),
-			}
-			jsonBytes, err := json.Marshal(args)
-			if err != nil {
-				return WrapAny(nil), fmt.Errorf("error marshaling getter argument to JSON: %v", err)
-			}
-			jsonResult := getter(getterID, string(jsonBytes))
-			var result map[string]interface{}
-			if err := json.Unmarshal([]byte(jsonResult), &result); err != nil {
-				return WrapAny(nil), fmt.Errorf("error unmarshaling getter result from JSON: %v", err)
-			}
-			if errVal, ok := result["error"]; ok && errVal != nil {
-				return WrapAny(nil), runtime.Exception{Message: fmt.Sprintf("%v", errVal)}
-			}
-			if resultVal, ok := result["result"]; ok {
-				return WrapAny(resultVal), nil
-			}
-			return WrapAny(nil), nil
+	wrappedGetter := func(this GoValue) (GoValue, error) {
+		args := []interface{}{
+			this.ID(),
 		}
+		jsonBytes, err := json.Marshal(args)
+		if err != nil {
+			return WrapAny(nil), fmt.Errorf("error marshaling getter argument to JSON: %v", err)
+		}
+
+		// Call the provided function
+		jsonResult := callInGoroutine(getter, getterID, string(jsonBytes))
+
+		var result map[string]interface{}
+		if err := json.Unmarshal([]byte(jsonResult), &result); err != nil {
+			return WrapAny(nil), fmt.Errorf("error unmarshaling getter result from JSON: %v", err)
+		}
+		if errVal, ok := result["error"]; ok && errVal != nil {
+			return WrapAny(nil), runtime.Exception{Message: fmt.Sprintf("%v", errVal)}
+		}
+		if resultVal, ok := result["result"]; ok {
+			return WrapAny(resultVal), nil
+		}
+		return WrapAny(nil), nil
 	}
 
 	variable.Getter = wrappedGetter
@@ -86,28 +97,27 @@ func (shim *VMCompatibilityShim) BuildNewClassVariableWithGetter(variable *Class
 }
 
 func (shim *VMCompatibilityShim) BuildNewClassVariableWithSetter(variable *ClassVariable, setterID string, setter CompatibilityCallback) *ClassVariable {
-	// Wrap the setter to match the expected signature
-	var wrappedSetter func(this GoValue, value GoValue) error
-	if setter != nil {
-		wrappedSetter = func(this GoValue, value GoValue) error {
-			args := []interface{}{
-				this.ID(),
-				value,
-			}
-			jsonBytes, err := json.Marshal(args)
-			if err != nil {
-				return fmt.Errorf("error marshaling setter argument to JSON: %v", err)
-			}
-			jsonResult := setter(setterID, string(jsonBytes))
-			var result map[string]interface{}
-			if err := json.Unmarshal([]byte(jsonResult), &result); err != nil {
-				return fmt.Errorf("error unmarshaling setter result from JSON: %v", err)
-			}
-			if errVal, ok := result["error"]; ok && errVal != nil {
-				return runtime.Exception{Message: fmt.Sprintf("%v", errVal)}
-			}
-			return nil
+	wrappedSetter := func(this GoValue, value GoValue) error {
+		args := []interface{}{
+			this.ID(),
+			value,
 		}
+		jsonBytes, err := json.Marshal(args)
+		if err != nil {
+			return fmt.Errorf("error marshaling setter argument to JSON: %v", err)
+		}
+
+		// Call the provided function
+		jsonResult := callInGoroutine(setter, setterID, string(jsonBytes))
+
+		var result map[string]interface{}
+		if err := json.Unmarshal([]byte(jsonResult), &result); err != nil {
+			return fmt.Errorf("error unmarshaling setter result from JSON: %v", err)
+		}
+		if errVal, ok := result["error"]; ok && errVal != nil {
+			return runtime.Exception{Message: fmt.Sprintf("%v", errVal)}
+		}
+		return nil
 	}
 
 	variable.Setter = wrappedSetter
@@ -115,7 +125,6 @@ func (shim *VMCompatibilityShim) BuildNewClassVariableWithSetter(variable *Class
 }
 
 func (shim *VMCompatibilityShim) BuildNewClassMethod(method *ClassMethod, id string, function CompatibilityCallback) *ClassMethod {
-	// Wrap the function to match the expected signature
 	wrappedFunction := func(this GoValue, args []GoValue) (GoValue, error) {
 		// Convert args to JSON array string
 		argsList := []interface{}{this.ID()}
@@ -128,7 +137,7 @@ func (shim *VMCompatibilityShim) BuildNewClassMethod(method *ClassMethod, id str
 		}
 
 		// Call the provided function
-		jsonResult := function(id, string(jsonBytes))
+		jsonResult := callInGoroutine(function, id, string(jsonBytes))
 
 		// Parse JSON result
 		var result map[string]interface{}
@@ -162,7 +171,7 @@ func (shim *VMCompatibilityShim) BuildNewUnknownFunctionHandler(id string, funct
 			}
 
 			// Call the provided function
-			jsonResult := function(id, string(jsonBytes))
+			jsonResult := callInGoroutine(function, id, string(jsonBytes))
 
 			// Parse JSON result
 			var result map[string]interface{}
