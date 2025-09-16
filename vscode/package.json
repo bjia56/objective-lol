@@ -17,6 +17,7 @@
     "lolcode",
     "esoteric"
   ],
+  "icon": "logo.png",
   "activationEvents": [
     "onLanguage:objective-lol"
   ],
