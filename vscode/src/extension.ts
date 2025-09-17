@@ -50,11 +50,13 @@ const lspArch = (() => {
     }
 })();
 
+const suffix = lspPlatform === 'windows' ? '.exe' : '';
+const binaryName = `olol-lsp-${lspVersion}-${lspPlatform}-${lspArch}${suffix}`;
+
 function ensureLanguageServerInstalled(context: vscode.ExtensionContext) {
-    const suffix = lspPlatform === 'windows' ? '.exe' : '';
     const url = `https://github.com/bjia56/objective-lol/releases/download/${lspVersion}/olol-lsp-${lspPlatform}-${lspArch}${suffix}`;
 
-    const binaryPath = path.join(context.globalStorageUri.fsPath, `olol-lsp-${lspVersion}-${lspPlatform}-${lspArch}${suffix}`);
+    const binaryPath = path.join(context.globalStorageUri.fsPath, binaryName);
     console.log(`Checking for Objective-LOL Language Server at ${binaryPath}`);
 
     return new Promise<void>((resolve, reject) => {
@@ -87,7 +89,7 @@ function ensureLanguageServerInstalled(context: vscode.ExtensionContext) {
 }
 
 function startLanguageServer(context: vscode.ExtensionContext) {
-    const lspPath = path.join(context.globalStorageUri.fsPath, 'olol-lsp');
+    const lspPath = path.join(context.globalStorageUri.fsPath, binaryName);
 
     // Server options - runs the LSP server
     const serverOptions: ServerOptions = {
