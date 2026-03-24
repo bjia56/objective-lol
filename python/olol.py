@@ -16,6 +16,8 @@ from .api import (
     WrapFloat,
     WrapString,
     WrapBool,
+    WrapSlice,
+    WrapMap,
     GoValue,
     Slice_api_GoValue,
     Map_string_api_GoValue,
@@ -324,13 +326,27 @@ class ObjectiveLOLVM:
         elif isinstance(value, (list, tuple)):
             slice = Slice_api_GoValue()
             for v in value:
-                slice.append(self.convert_to_go_value(v))
+                converted = self.convert_to_go_value(v)
+                if isinstance(converted, Slice_api_GoValue):
+                    converted = WrapSlice(converted)
+                elif isinstance(converted, Map_string_api_GoValue):
+                    converted = WrapMap(converted)
+                slice.append(converted)
             return slice
+        elif isinstance(value, Slice_api_GoValue):
+            return WrapSlice(value)
         elif isinstance(value, dict):
             map = Map_string_api_GoValue()
             for k, v in value.items():
-                map[k] = self.convert_to_go_value(v)
+                converted = self.convert_to_go_value(v)
+                if isinstance(converted, Slice_api_GoValue):
+                    converted = WrapSlice(converted)
+                elif isinstance(converted, Map_string_api_GoValue):
+                    converted = WrapMap(converted)
+                map[k] = converted
             return map
+        elif isinstance(value, Map_string_api_GoValue):
+            return WrapMap(value)
         elif isinstance(type(value), ProxyMeta):
             return value._go_value
         else:

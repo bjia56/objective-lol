@@ -59,6 +59,10 @@ func FromGoValue(val GoValue) (environment.Value, error) {
 		return obj, nil
 	}
 
+	if underlying, ok := val.Get().(GoValue); ok {
+		return FromGoValue(underlying)
+	}
+
 	rv := reflect.ValueOf(val.Get())
 
 	// Handle pointers

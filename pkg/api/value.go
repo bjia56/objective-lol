@@ -146,3 +146,11 @@ func WrapObject(value *environment.ObjectInstance) GoValue {
 	constructedObjects[val.ID()] = value
 	return val
 }
+
+func WrapSlice(value []GoValue) GoValue {
+	return GoValue{value: value}
+}
+
+func WrapMap(value map[string]GoValue) GoValue {
+	return GoValue{value: value}
+}
