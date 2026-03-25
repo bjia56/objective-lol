@@ -19,7 +19,7 @@ on:
 jobs:
   validate-tag:
     name: Validate Tag
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       tag-name: ${{ steps.set-tag.outputs.tag-name }}
     steps:
@@ -125,7 +125,7 @@ jobs:
   release-main:
     if: inputs.component == 'main'
     needs: [validate-tag, build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
@@ -196,7 +196,7 @@ jobs:
   release-python:
     if: inputs.component == 'python'
     needs: [validate-tag, build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
@@ -285,7 +285,7 @@ jobs:
   release-vscode:
     if: inputs.component == 'vscode'
     needs: [validate-tag, build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
