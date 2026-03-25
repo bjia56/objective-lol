@@ -250,7 +250,7 @@ def install_go_dependencies(go_exe, gobin_dir):
     subprocess.check_call([go_exe, "install", "golang.org/x/tools/cmd/goimports@v0.17.0"], env=env)
 
     print("Installing gopy...")
-    subprocess.check_call([go_exe, "install", "github.com/go-python/gopy@v0.4.10"], env=env)
+    subprocess.check_call([go_exe, "install", "github.com/go-python/gopy@04cb87bab1e03ba3d50e827654e6e07c94ed760"], env=env)
 
 
 class CustomBuildExt(build_ext):
