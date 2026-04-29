@@ -269,9 +269,12 @@ class ObjectiveLOLVM:
     _loop: asyncio.AbstractEventLoop
     _prefer_async_loop: bool
 
-    def __init__(self, prefer_async_loop: bool = True):
+    def __init__(self, prefer_async_loop: bool = True, working_directory: str = None):
         # todo: figure out how to bridge stdout/stdin
-        self._vm = NewVM(DefaultConfig())
+        config = DefaultConfig()
+        if working_directory is not None:
+            config.WorkingDirectory = working_directory
+        self._vm = NewVM(config)
         self._compat = self._vm.GetCompatibilityShim()
         self._loop = asyncio.get_event_loop()
         self._prefer_async_loop = prefer_async_loop
