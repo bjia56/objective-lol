@@ -108,6 +108,11 @@ MIT License
 
 ## Changelog
 
+### [0.0.4] - 2026-04-29
+
+#### Fixed
+- Fixed interop of setting primitive values on Python objects from within Objective-LOL
+
 ### [0.0.3] - 2026-03-24
 
 #### Fixed
