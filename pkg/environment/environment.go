@@ -44,12 +44,14 @@ func (v *MemberVariable) Get(this *ObjectInstance) (Value, error) {
 	return v.Variable.Value, nil
 }
 
-func (v *MemberVariable) Set(this *ObjectInstance, value Value) {
+func (v *MemberVariable) Set(this *ObjectInstance, value Value) error {
 	if v.NativeSet != nil {
-		v.NativeSet(this, value)
-	} else {
-		v.Variable.Value = value
+		// NativeSet can fail (e.g. foreign language bridge). Propagate the
+		// error so callers can surface it as a runtime exception.
+		return v.NativeSet(this, value)
 	}
+	v.Variable.Value = value
+	return nil
 }
 
 // Environment represents a lexical scope for variables and functions

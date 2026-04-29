@@ -73,8 +73,7 @@ func (obj *ObjectInstance) SetMemberVariable(name string, value Value, callingCo
 		return fmt.Errorf("cannot assign to variable '%s': %v", name, err)
 	}
 
-	variable.Set(obj, castedValue)
-	return nil
+	return variable.Set(obj, castedValue)
 }
 
 func (o *ObjectInstance) Type() string      { return o.Class.Name }

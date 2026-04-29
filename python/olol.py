@@ -280,10 +280,17 @@ class ObjectiveLOLVM:
         self._prefer_async_loop = prefer_async_loop
 
     def convert_from_go_value(self, go_value: GoValue):
+        # When called from gopy_wrapper, inputs are JSON-decoded Python
+        # primitives/containers (int/float/str/bool/list/dict). Only object
+        # handles are represented as a dict with GoValueIDKey.
         if not isinstance(go_value, GoValue):
-            if go_value and GoValueIDKey in go_value:
+            if isinstance(go_value, dict) and GoValueIDKey in go_value:
                 go_value = self._compat.LookupObject(go_value[GoValueIDKey])
                 return self.convert_from_go_value(go_value)
+            if isinstance(go_value, list):
+                return [self.convert_from_go_value(v) for v in go_value]
+            if isinstance(go_value, dict):
+                return {k: self.convert_from_go_value(v) for k, v in go_value.items()}
             return go_value
         typ = go_value.Type()
         if typ == "INTEGR":
@@ -597,4 +604,3 @@ class ObjectiveLOLVM:
                 fut.set_exception(e)
         threading.Thread(target=do).start()
         return await asyncio.wrap_future(fut)
-
