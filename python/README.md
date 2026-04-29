@@ -110,6 +110,9 @@ MIT License
 
 ### [0.0.4] - 2026-04-29
 
+#### Added
+- Added a mechanism to specify the working directory of the Objective-LOL interpreter from Python at initialization time
+
 #### Fixed
 - Fixed interop of setting primitive values on Python objects from within Objective-LOL
 
