@@ -476,16 +476,7 @@ class ObjectiveLOLVM:
                 return super().__getattribute__(name)
 
             def _create_proxy_method(self, method_name):
-                is_async = False
-                try:
-                    method = super().__getattribute__(method_name)
-                    if callable(method):
-                        if inspect.iscoroutinefunction(method):
-                            is_async = True
-                except:
-                    pass
-
-                if is_async:
+                if superself._asyncio_loop is not None:
                     return functools.partial(superself.call_method_async, self._go_value, method_name)
                 else:
                     return functools.partial(superself.call_method, self._go_value, method_name)
