@@ -108,6 +108,16 @@ MIT License
 
 ## Changelog
 
+### [0.0.7] - 2026-04-30
+
+#### Changed
+- Proxy methods now determine their async/sync interface based on whether the VM was initialized with an asyncio loop, rather than inspecting the wrapped method's own async signature
+- Error messages from Python callbacks now include the exception type (e.g. `ValueError: ...` instead of just the message text)
+
+#### Fixed
+- Member variable getter errors are now propagated as interpreter exceptions instead of being silently swallowed
+- Function and method call failure messages now include the function/method name for easier debugging
+
 ### [0.0.6] - 2026-04-30
 
 #### Changed
