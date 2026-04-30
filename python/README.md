@@ -108,6 +108,13 @@ MIT License
 
 ## Changelog
 
+### [0.0.5] - 2026-04-29
+
+#### Changed
+- Replaced `prefer_async_loop` with an explicit `asyncio_loop` to specify which event loop to use
+- Changed interop of sync Python methods to be called within the asyncio loop, if one is provided
+- Changed interop of async Python methods to require an asyncio loop
+
 ### [0.0.4] - 2026-04-29
 
 #### Added
