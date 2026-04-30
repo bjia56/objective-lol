@@ -112,20 +112,14 @@ class ObjectiveLOLVM:
             class_variable.Value = self._vm.convert_to_go_value(value)
             class_variable.Locked = locked
             if getter is not None:
+                bridged = self._vm._make_getter_wrapper(getter)
                 unique_id = str(uuid.uuid4())
-
-                def wrapper(this_id):
-                    return self._vm.convert_to_go_value(getter(object_instances[this_id]))
-
-                defined_functions[unique_id] = (self._vm, wrapper)
+                defined_functions[unique_id] = (self._vm, lambda this_id, g=bridged: self._vm.convert_to_go_value(g(object_instances[this_id])))
                 self._vm._compat.BuildNewClassVariableWithGetter(class_variable, unique_id, gopy_wrapper)
             if setter is not None:
+                bridged = self._vm._make_setter_wrapper(setter)
                 unique_id = str(uuid.uuid4())
-
-                def wrapper(this_id, value):
-                    setter(object_instances[this_id], self._vm.convert_from_go_value(value))
-
-                defined_functions[unique_id] = (self._vm, wrapper)
+                defined_functions[unique_id] = (self._vm, lambda this_id, v, s=bridged: s(object_instances[this_id], self._vm.convert_from_go_value(v)))
                 self._vm._compat.BuildNewClassVariableWithSetter(class_variable, unique_id, gopy_wrapper)
             return class_variable
 
@@ -195,29 +189,9 @@ class ObjectiveLOLVM:
         def add_public_method(self, name: str, function) -> 'ObjectiveLOLVM.ClassBuilder':
             if self._vm._asyncio_loop is not None:
                 # Treat synchronous methods as asynchronous in case they assume an active event loop, e.g. futures.
-                argc = len(inspect.signature(function).parameters) - 1
-
-                async def async_wrapper(this, *args):
-                    ret = function(this, *args)
-                    if inspect.isawaitable(ret):
-                        return await ret
-                    return ret
-
-                def wrapper(this, *args):
-                    fut = concurrent.futures.Future()
-                    def do():
-                        try:
-                            result = asyncio.run_coroutine_threadsafe(async_wrapper(this, *args), self._vm._asyncio_loop).result()
-                            fut.set_result(result)
-                        except Exception as e:
-                            fut.set_exception(e)
-                    threading.Thread(target=do).start()
-                    return fut.result()
-
-                fn = wrapper
+                fn, argc = self._vm._make_loop_method_wrapper(function)
             else:
-                argc = None
-                fn = function
+                fn, argc = function, None
 
             method = self.__build_method(name, fn, argc)
             self._class.PublicMethods[name] = method
@@ -228,18 +202,7 @@ class ObjectiveLOLVM:
                 raise ValueError("VM was not initialized with an asyncio loop, cannot add coroutine method")
 
             argc = len(inspect.signature(function).parameters) - 1
-
-            def wrapper(this, *args):
-                fut = concurrent.futures.Future()
-                def do():
-                    try:
-                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self._vm._asyncio_loop).result()
-                        fut.set_result(result)
-                    except Exception as e:
-                        fut.set_exception(e)
-                threading.Thread(target=do).start()
-                return fut.result()
-
+            wrapper = lambda this, *args: self._vm._run_in_loop(function(this, *args))
             method = self.__build_method(name, wrapper, argc)
             self._class.PublicMethods[name] = method
             return self
@@ -247,29 +210,9 @@ class ObjectiveLOLVM:
         def add_private_method(self, name: str, function) -> 'ObjectiveLOLVM.ClassBuilder':
             if self._vm._asyncio_loop is not None:
                 # Treat synchronous methods as asynchronous in case they assume an active event loop, e.g. futures.
-                argc = len(inspect.signature(function).parameters) - 1
-
-                async def async_wrapper(this, *args):
-                    ret = function(this, *args)
-                    if inspect.isawaitable(ret):
-                        return await ret
-                    return ret
-
-                def wrapper(this, *args):
-                    fut = concurrent.futures.Future()
-                    def do():
-                        try:
-                            result = asyncio.run_coroutine_threadsafe(async_wrapper(this, *args), self._vm._asyncio_loop).result()
-                            fut.set_result(result)
-                        except Exception as e:
-                            fut.set_exception(e)
-                    threading.Thread(target=do).start()
-                    return fut.result()
-
-                fn = wrapper
+                fn, argc = self._vm._make_loop_method_wrapper(function)
             else:
-                argc = None
-                fn = function
+                fn, argc = function, None
 
             method = self.__build_method(name, fn, argc)
             self._class.PrivateMethods[name] = method
@@ -280,18 +223,7 @@ class ObjectiveLOLVM:
                 raise ValueError("VM was not initialized with an asyncio loop, cannot add coroutine method")
 
             argc = len(inspect.signature(function).parameters) - 1
-
-            def wrapper(this, *args):
-                fut = concurrent.futures.Future()
-                def do():
-                    try:
-                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self._vm._asyncio_loop).result()
-                        fut.set_result(result)
-                    except Exception as e:
-                        fut.set_exception(e)
-                threading.Thread(target=do).start()
-                return fut.result()
-
+            wrapper = lambda this, *args: self._vm._run_in_loop(function(this, *args))
             method = self.__build_method(name, wrapper, argc)
             self._class.PrivateMethods[name] = method
             return self
@@ -307,15 +239,7 @@ class ObjectiveLOLVM:
 
         def add_unknown_coroutine_handler(self, function) -> 'ObjectiveLOLVM.ClassBuilder':
             def handler(this_id: str, fname: str, from_context: str, *args):
-                fut = concurrent.futures.Future()
-                def do():
-                    try:
-                        result = asyncio.run_coroutine_threadsafe(function(object_instances[this_id], fname, from_context, *args), self._vm._asyncio_loop).result()
-                        fut.set_result(result)
-                    except Exception as e:
-                        fut.set_exception(e)
-                threading.Thread(target=do).start()
-                return fut.result()
+                return self._vm._run_in_loop(function(object_instances[this_id], fname, from_context, *args))
 
             unique_id = str(uuid.uuid4())
             defined_functions[unique_id] = (self._vm, handler)
@@ -325,6 +249,86 @@ class ObjectiveLOLVM:
     _vm: VM
     _compat: VMCompatibilityShim
     _asyncio_loop: asyncio.AbstractEventLoop
+
+    def _run_in_loop(self, coro) -> Any:
+        """Submit a coroutine to _asyncio_loop from any thread and block for the result."""
+        fut = concurrent.futures.Future()
+        def do():
+            try:
+                result = asyncio.run_coroutine_threadsafe(coro, self._asyncio_loop).result()
+                fut.set_result(result)
+            except Exception as e:
+                fut.set_exception(e)
+        threading.Thread(target=do).start()
+        return fut.result()
+
+    async def _run_blocking(self, fn: Callable, *args) -> Any:
+        """Run a blocking callable in a thread and await the result."""
+        fut = concurrent.futures.Future()
+        def do():
+            try:
+                fut.set_result(fn(*args))
+            except Exception as e:
+                fut.set_exception(e)
+        threading.Thread(target=do).start()
+        return await asyncio.wrap_future(fut)
+
+    def _make_loop_method_wrapper(self, fn: Callable) -> Tuple[Callable, int]:
+        """Wrap a sync (or async) method to dispatch through _asyncio_loop.
+
+        Returns (wrapper, argc) where argc excludes 'self'."""
+        argc = len(inspect.signature(fn).parameters) - 1
+
+        async def async_wrapper(this, *args):
+            ret = fn(this, *args)
+            if inspect.isawaitable(ret):
+                return await ret
+            return ret
+
+        def wrapper(this, *args):
+            return self._run_in_loop(async_wrapper(this, *args))
+
+        return wrapper, argc
+
+    def _make_getter_wrapper(self, fn: Callable) -> Callable:
+        """Wrap a getter (obj) -> value to dispatch through _asyncio_loop when present."""
+        if self._asyncio_loop is None:
+            return fn
+
+        async def async_wrapper(obj):
+            ret = fn(obj)
+            if inspect.isawaitable(ret):
+                return await ret
+            return ret
+
+        return lambda obj: self._run_in_loop(async_wrapper(obj))
+
+    def _make_setter_wrapper(self, fn: Callable) -> Callable:
+        """Wrap a setter (obj, value) -> None to dispatch through _asyncio_loop when present."""
+        if self._asyncio_loop is None:
+            return fn
+
+        async def async_wrapper(obj, value):
+            ret = fn(obj, value)
+            if inspect.isawaitable(ret):
+                return await ret
+
+        return lambda obj, value: self._run_in_loop(async_wrapper(obj, value))
+
+    def _make_loop_wrapper(self, fn: Callable) -> Tuple[Callable, int]:
+        """Wrap a sync (or async) function to dispatch through _asyncio_loop."""
+        argc = len(inspect.signature(fn).parameters)
+
+        async def async_wrapper(*args):
+            ret = fn(*args)
+            if inspect.isawaitable(ret):
+                return await ret
+            return ret
+
+        def wrapper(*args):
+            return self._run_in_loop(async_wrapper(*args))
+
+        return wrapper, argc
 
     def __init__(self, asyncio_loop: asyncio.AbstractEventLoop = None, working_directory: str = None):
         # todo: figure out how to bridge stdout/stdin
@@ -428,18 +432,16 @@ class ObjectiveLOLVM:
                 class_variable = ClassVariable()
                 class_variable.Name = a.upper()
 
-                getter = lambda obj, attr=a: getattr(obj, attr)
+                raw_getter = lambda obj, attr=a: getattr(obj, attr)
+                bridged_getter = self._make_getter_wrapper(raw_getter)
                 unique_id = str(uuid.uuid4())
-                def wrapper(this_id, getter=getter):
-                    return self.convert_to_go_value(getter(object_instances[this_id]))
-                defined_functions[unique_id] = (self, wrapper)
+                defined_functions[unique_id] = (self, lambda this_id, g=bridged_getter: self.convert_to_go_value(g(object_instances[this_id])))
                 self._compat.BuildNewClassVariableWithGetter(class_variable, unique_id, gopy_wrapper)
 
-                setter = lambda obj, val, attr=a: setattr(obj, attr, val)
+                raw_setter = lambda obj, val, attr=a: setattr(obj, attr, val)
+                bridged_setter = self._make_setter_wrapper(raw_setter)
                 unique_id = str(uuid.uuid4())
-                def wrapper(this_id, value, setter=setter):
-                    setter(object_instances[this_id], self.convert_from_go_value(value))
-                defined_functions[unique_id] = (self, wrapper)
+                defined_functions[unique_id] = (self, lambda this_id, v, s=bridged_setter: s(object_instances[this_id], self.convert_from_go_value(v)))
                 self._compat.BuildNewClassVariableWithSetter(class_variable, unique_id, gopy_wrapper)
 
                 self._compat.AddVariableToObject(instance.ID(), class_variable)
@@ -495,6 +497,10 @@ class ObjectiveLOLVM:
         self._vm.DefineVariable(name, goValue, constant)
 
     def define_function(self, name: str, function, argc: int = None) -> None:
+        if self._asyncio_loop is not None:
+            # Treat synchronous functions as asynchronous in case they assume an active event loop, e.g. futures.
+            function, argc = self._make_loop_wrapper(function)
+
         argc = len(inspect.signature(function).parameters) if argc is None else argc
         unique_id = str(uuid.uuid4())
         defined_functions[unique_id] = (self, function)
@@ -505,18 +511,7 @@ class ObjectiveLOLVM:
             raise ValueError("VM was not initialized with an asyncio loop, cannot define coroutine function")
 
         argc = len(inspect.signature(function).parameters)
-
-        def wrapper(*args):
-            fut = concurrent.futures.Future()
-            def do():
-                try:
-                    result = asyncio.run_coroutine_threadsafe(function(*args), self._asyncio_loop).result()
-                    fut.set_result(result)
-                except Exception as e:
-                    fut.set_exception(e)
-            threading.Thread(target=do).start()
-            return fut.result()
-
+        wrapper = lambda *args: self._run_in_loop(function(*args))
         self.define_function(name, wrapper, argc)
 
     def define_class(self, python_class: type, fully_qualified: bool = False) -> None:
@@ -622,15 +617,8 @@ class ObjectiveLOLVM:
 
     async def call_async(self, name: str, *args):
         goArgs = self.convert_to_go_value(args)
-        fut = concurrent.futures.Future()
-        def do():
-            try:
-                result = self._vm.Call(name, goArgs)
-                fut.set_result(self.convert_from_go_value(result))
-            except Exception as e:
-                fut.set_exception(e)
-        threading.Thread(target=do).start()
-        return await asyncio.wrap_future(fut)
+        result = await self._run_blocking(self._vm.Call, name, goArgs)
+        return self.convert_from_go_value(result)
 
     def call_method(self, receiver: GoValue, name: str, *args):
         goArgs = self.convert_to_go_value(args)
@@ -639,27 +627,11 @@ class ObjectiveLOLVM:
 
     async def call_method_async(self, receiver: GoValue, name: str, *args):
         goArgs = self.convert_to_go_value(args)
-        fut = concurrent.futures.Future()
-        def do():
-            try:
-                result = self._vm.CallMethod(receiver, name, goArgs)
-                fut.set_result(self.convert_from_go_value(result))
-            except Exception as e:
-                fut.set_exception(e)
-        threading.Thread(target=do).start()
-        result = await asyncio.wrap_future(fut)
-        return result
+        result = await self._run_blocking(self._vm.CallMethod, receiver, name, goArgs)
+        return self.convert_from_go_value(result)
 
     def execute(self, code: str) -> None:
         return self._vm.Execute(code)
 
     async def execute_async(self, code: str) -> None:
-        fut = concurrent.futures.Future()
-        def do():
-            try:
-                result = self._vm.Execute(code)
-                fut.set_result(result)
-            except Exception as e:
-                fut.set_exception(e)
-        threading.Thread(target=do).start()
-        return await asyncio.wrap_future(fut)
+        return await self._run_blocking(self._vm.Execute, code)
