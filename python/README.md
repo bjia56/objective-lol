@@ -108,6 +108,12 @@ MIT License
 
 ## Changelog
 
+### [0.0.6] - 2026-04-30
+
+#### Changed
+- Refactored asyncio threading shims into factory methods (`_run_in_loop`, `_run_blocking`, `_make_loop_method_wrapper`, `_make_loop_wrapper`) to eliminate duplicated thread+Future patterns
+- Getter and setter registrations now route through the asyncio event loop when one is provided, consistent with method dispatch
+
 ### [0.0.5] - 2026-04-29
 
 #### Changed
