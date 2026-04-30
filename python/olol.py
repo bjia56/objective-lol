@@ -192,19 +192,48 @@ class ObjectiveLOLVM:
             self._class.PublicMethods[typ.__name__] = class_method
             return self
 
-        def add_public_method(self, name: str, function, argc: int = None) -> 'ObjectiveLOLVM.ClassBuilder':
-            method = self.__build_method(name, function, argc)
+        def add_public_method(self, name: str, function) -> 'ObjectiveLOLVM.ClassBuilder':
+            if self._vm._asyncio_loop is not None:
+                # Treat synchronous methods as asynchronous in case they assume an active event loop, e.g. futures.
+                argc = len(inspect.signature(function).parameters) - 1
+
+                async def async_wrapper(this, *args):
+                    ret = function(this, *args)
+                    if inspect.isawaitable(ret):
+                        return await ret
+                    return ret
+
+                def wrapper(this, *args):
+                    fut = concurrent.futures.Future()
+                    def do():
+                        try:
+                            result = asyncio.run_coroutine_threadsafe(async_wrapper(this, *args), self._vm._asyncio_loop).result()
+                            fut.set_result(result)
+                        except Exception as e:
+                            fut.set_exception(e)
+                    threading.Thread(target=do).start()
+                    return fut.result()
+
+                fn = wrapper
+            else:
+                argc = None
+                fn = function
+
+            method = self.__build_method(name, fn, argc)
             self._class.PublicMethods[name] = method
             return self
 
         def add_public_coroutine(self, name: str, function) -> 'ObjectiveLOLVM.ClassBuilder':
+            if self._vm._asyncio_loop is None:
+                raise ValueError("VM was not initialized with an asyncio loop, cannot add coroutine method")
+
             argc = len(inspect.signature(function).parameters) - 1
 
             def wrapper(this, *args):
                 fut = concurrent.futures.Future()
                 def do():
                     try:
-                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self._vm._loop).result()
+                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self._vm._asyncio_loop).result()
                         fut.set_result(result)
                     except Exception as e:
                         fut.set_exception(e)
@@ -215,19 +244,48 @@ class ObjectiveLOLVM:
             self._class.PublicMethods[name] = method
             return self
 
-        def add_private_method(self, name: str, function, argc: int = None) -> 'ObjectiveLOLVM.ClassBuilder':
-            method = self.__build_method(name, function, argc)
+        def add_private_method(self, name: str, function) -> 'ObjectiveLOLVM.ClassBuilder':
+            if self._vm._asyncio_loop is not None:
+                # Treat synchronous methods as asynchronous in case they assume an active event loop, e.g. futures.
+                argc = len(inspect.signature(function).parameters) - 1
+
+                async def async_wrapper(this, *args):
+                    ret = function(this, *args)
+                    if inspect.isawaitable(ret):
+                        return await ret
+                    return ret
+
+                def wrapper(this, *args):
+                    fut = concurrent.futures.Future()
+                    def do():
+                        try:
+                            result = asyncio.run_coroutine_threadsafe(async_wrapper(this, *args), self._vm._asyncio_loop).result()
+                            fut.set_result(result)
+                        except Exception as e:
+                            fut.set_exception(e)
+                    threading.Thread(target=do).start()
+                    return fut.result()
+
+                fn = wrapper
+            else:
+                argc = None
+                fn = function
+
+            method = self.__build_method(name, fn, argc)
             self._class.PrivateMethods[name] = method
             return self
 
         def add_private_coroutine(self, name: str, function) -> 'ObjectiveLOLVM.ClassBuilder':
+            if self._vm._asyncio_loop is None:
+                raise ValueError("VM was not initialized with an asyncio loop, cannot add coroutine method")
+
             argc = len(inspect.signature(function).parameters) - 1
 
             def wrapper(this, *args):
                 fut = concurrent.futures.Future()
                 def do():
                     try:
-                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self._vm._loop).result()
+                        result = asyncio.run_coroutine_threadsafe(function(this, *args), self._vm._asyncio_loop).result()
                         fut.set_result(result)
                     except Exception as e:
                         fut.set_exception(e)
@@ -252,7 +310,7 @@ class ObjectiveLOLVM:
                 fut = concurrent.futures.Future()
                 def do():
                     try:
-                        result = asyncio.run_coroutine_threadsafe(function(object_instances[this_id], fname, from_context, *args), self._vm._loop).result()
+                        result = asyncio.run_coroutine_threadsafe(function(object_instances[this_id], fname, from_context, *args), self._vm._asyncio_loop).result()
                         fut.set_result(result)
                     except Exception as e:
                         fut.set_exception(e)
@@ -266,18 +324,16 @@ class ObjectiveLOLVM:
 
     _vm: VM
     _compat: VMCompatibilityShim
-    _loop: asyncio.AbstractEventLoop
-    _prefer_async_loop: bool
+    _asyncio_loop: asyncio.AbstractEventLoop
 
-    def __init__(self, prefer_async_loop: bool = True, working_directory: str = None):
+    def __init__(self, asyncio_loop: asyncio.AbstractEventLoop = None, working_directory: str = None):
         # todo: figure out how to bridge stdout/stdin
         config = DefaultConfig()
         if working_directory is not None:
             config.WorkingDirectory = working_directory
         self._vm = NewVM(config)
         self._compat = self._vm.GetCompatibilityShim()
-        self._loop = asyncio.get_event_loop()
-        self._prefer_async_loop = prefer_async_loop
+        self._asyncio_loop = asyncio_loop
 
     def convert_from_go_value(self, go_value: GoValue):
         # When called from gopy_wrapper, inputs are JSON-decoded Python
@@ -445,13 +501,16 @@ class ObjectiveLOLVM:
         self._compat.DefineFunction(unique_id, name, argc, gopy_wrapper)
 
     def define_coroutine(self, name: str, function) -> None:
+        if self._asyncio_loop is None:
+            raise ValueError("VM was not initialized with an asyncio loop, cannot define coroutine function")
+
         argc = len(inspect.signature(function).parameters)
 
         def wrapper(*args):
             fut = concurrent.futures.Future()
             def do():
                 try:
-                    result = asyncio.run_coroutine_threadsafe(function(*args), self._loop).result()
+                    result = asyncio.run_coroutine_threadsafe(function(*args), self._asyncio_loop).result()
                     fut.set_result(result)
                 except Exception as e:
                     fut.set_exception(e)
@@ -497,7 +556,7 @@ class ObjectiveLOLVM:
 
         # Cache for case-insensitive method name lookups
         _method_name_cache = {}
-        if self._prefer_async_loop:
+        if self._asyncio_loop is not None:
             async def async_handler(this, fname: str, from_context: str, *args):
                 # Check cache first
                 cache_key = (id(this), fname.upper())
