@@ -48,7 +48,7 @@ def gopy_wrapper(id: str, json_args: str) -> bytes:
         result = fn(*converted_args)
         return json.dumps({"result": vm.convert_to_go_value(result), "error": None}, default=vm.serialize_go_value).encode('utf-8')
     except Exception as e:
-        return json.dumps({"result": None, "error": str(e)}).encode('utf-8')
+        return json.dumps({"result": None, "error": f"{type(e).__name__}: {e}"}).encode('utf-8')
 
 
 def convert_to_simple_mro(mro: list[str]) -> list[str]:

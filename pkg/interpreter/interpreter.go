@@ -1043,6 +1043,11 @@ func (i *Interpreter) VisitIdentifier(node *ast.IdentifierNode) (environment.Val
 	if i.currentObject != nil {
 		if memberVal, err := i.currentObject.GetMemberVariable(name, i.currentClass); err == nil {
 			return memberVal, nil
+		} else {
+			var notFound *environment.NotFound
+			if !errors.As(err, &notFound) {
+				return environment.NOTHIN, err
+			}
 		}
 	}
 

@@ -199,7 +199,7 @@ func (vm *VM) Call(functionName string, args []GoValue) (GoValue, error) {
 	// Call function through interpreter
 	result, err := vm.interpreter.CallFunction(strings.ToUpper(functionName), ololArgs)
 	if err != nil {
-		return WrapAny(nil), wrapError(err, RuntimeErrorType, "function call failed")
+		return WrapAny(nil), wrapError(err, RuntimeErrorType, fmt.Sprintf("'%s' function call failed", functionName))
 	}
 
 	// Convert result back to Go value
@@ -229,7 +229,7 @@ func (vm *VM) CallMethod(object GoValue, methodName string, args []GoValue) (GoV
 	// Call method through interpreter
 	result, err := vm.interpreter.CallMemberFunction(objInstance, strings.ToUpper(methodName), ololArgs)
 	if err != nil {
-		return WrapAny(nil), wrapError(err, RuntimeErrorType, "method call failed")
+		return WrapAny(nil), wrapError(err, RuntimeErrorType, fmt.Sprintf("'%s' method call failed", methodName))
 	}
 
 	// Convert result back to Go value
