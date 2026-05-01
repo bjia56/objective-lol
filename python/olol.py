@@ -230,7 +230,9 @@ class ObjectiveLOLVM:
 
         def add_unknown_function_handler(self, function) -> 'ObjectiveLOLVM.ClassBuilder':
             def handler(this_id: str, fname: str, from_context: str, *args):
-                return function(object_instances[this_id], fname, from_context, *args)
+                return self._vm.convert_to_go_value(
+                    function(object_instances[this_id], fname, from_context, *args)
+                )
 
             unique_id = str(uuid.uuid4())
             defined_functions[unique_id] = (self._vm, handler)
@@ -239,7 +241,9 @@ class ObjectiveLOLVM:
 
         def add_unknown_coroutine_handler(self, function) -> 'ObjectiveLOLVM.ClassBuilder':
             def handler(this_id: str, fname: str, from_context: str, *args):
-                return self._vm._run_in_loop(function(object_instances[this_id], fname, from_context, *args))
+                return self._vm.convert_to_go_value(
+                    self._vm._run_in_loop(function(object_instances[this_id], fname, from_context, *args))
+                )
 
             unique_id = str(uuid.uuid4())
             defined_functions[unique_id] = (self._vm, handler)
