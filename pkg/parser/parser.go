@@ -598,25 +598,24 @@ func (p *Parser) parseClassMemberWithDocs(memberDocs []string) *ast.ClassMemberN
 		// Set position to the variable identifier
 		member.Position = p.convertPosition(identifierPosition)
 
-		if !p.expectPeek(TEH) {
-			p.addError(fmt.Sprintf("expected 'TEH', got %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
-			return nil
-		}
-
-		p.nextToken()
-		if !p.currentTokenIs(IDENTIFIER) && !p.isTypeToken(p.currentToken.Type) {
-			p.addError(fmt.Sprintf("expected type after 'TEH', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
-			return nil
-		}
 		varDecl := &ast.VariableDeclarationNode{
-			Name: name,
-			Type: &ast.IdentifierNode{
-				Name:     p.currentToken.Literal,
-				Position: p.convertPosition(p.currentToken.Position),
-			},
+			Name:          name,
 			IsLocked:      isLocked,
 			Documentation: memberDocs,
 			Position:      p.convertPosition(identifierPosition),
+		}
+
+		if p.peekTokenIs(TEH) {
+			p.nextToken() // consume TEH
+			p.nextToken() // move to type
+			if !p.currentTokenIs(IDENTIFIER) && !p.isTypeToken(p.currentToken.Type) {
+				p.addError(fmt.Sprintf("expected type after 'TEH', got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
+				return nil
+			}
+			varDecl.Type = &ast.IdentifierNode{
+				Name:     p.currentToken.Literal,
+				Position: p.convertPosition(p.currentToken.Position),
+			}
 		}
 
 		// Check for initialization

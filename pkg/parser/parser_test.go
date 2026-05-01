@@ -3,6 +3,7 @@ package parser
 import (
 	"testing"
 
+	"github.com/bjia56/objective-lol/pkg/ast"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -71,6 +72,37 @@ KTHXBAI`
 	if len(parser.Errors()) > 0 {
 		t.Logf("Parser errors: %v", parser.Errors())
 	}
+}
+
+func TestParserClassMemberDynamicType(t *testing.T) {
+	input := `HAI ME TEH CLAS PERSON
+    EVRYONE
+    DIS TEH VARIABLE NAME
+    DIS TEH VARIABLE AGE ITZ 0
+KTHXBAI`
+
+	lexer := NewLexer(input)
+	parser := NewParser(lexer)
+	program := parser.ParseProgram()
+
+	require.NotNil(t, program, "Program should not be nil")
+	require.Empty(t, parser.Errors(), "Parser should have no errors")
+	require.Len(t, program.Declarations, 1, "Should have one class declaration")
+
+	classDecl, ok := program.Declarations[0].(*ast.ClassDeclarationNode)
+	require.True(t, ok, "Declaration should be a ClassDeclarationNode")
+	require.Len(t, classDecl.Members, 2, "Class should have two members")
+
+	nameVar := classDecl.Members[0].Variable
+	require.NotNil(t, nameVar, "First member should be a variable")
+	assert.Equal(t, "NAME", nameVar.Name)
+	assert.Nil(t, nameVar.Type, "NAME should have no type annotation")
+
+	ageVar := classDecl.Members[1].Variable
+	require.NotNil(t, ageVar, "Second member should be a variable")
+	assert.Equal(t, "AGE", ageVar.Name)
+	assert.Nil(t, ageVar.Type, "AGE should have no type annotation")
+	assert.NotNil(t, ageVar.Value, "AGE should have an initializer")
 }
 
 func TestParserImportStatement(t *testing.T) {
