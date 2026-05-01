@@ -108,6 +108,11 @@ MIT License
 
 ## Changelog
 
+### [0.0.8] - 2026-04-30
+
+#### Changed
+- Class member variable type annotations are now optional, allowing dynamic typing consistent with global and local variable declarations
+
 ### [0.0.7] - 2026-04-30
 
 #### Changed
