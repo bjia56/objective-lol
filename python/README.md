@@ -108,6 +108,11 @@ MIT License
 
 ## Changelog
 
+### [0.0.9] - 2026-05-01
+
+#### Fixed
+- Fixed incorrect serialization of unknown function handler return values
+
 ### [0.0.8] - 2026-04-30
 
 #### Changed
