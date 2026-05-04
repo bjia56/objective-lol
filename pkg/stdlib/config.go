@@ -15,6 +15,7 @@ func DefaultStdlibInitializers() map[string]interpreter.StdlibInitializer {
 		"FILE":    RegisterFILEInEnv,
 		"HTTP":    RegisterHTTPInEnv,
 		"IO":      RegisterIOInEnv,
+		"JSON":    RegisterJSONInEnv,
 		"MATH":    RegisterMATHInEnv,
 		"PROCESS": RegisterPROCESSInEnv,
 		"RANDOM":  RegisterRANDOMInEnv,
@@ -128,6 +129,8 @@ func GetModuleCategories(moduleName string) []string {
 		return moduleFileCategories
 	case "HTTP":
 		return moduleHTTPCategories
+	case "JSON":
+		return moduleJSONCategories
 	case "IO":
 		return moduleIOCategories
 	case "SOCKET":
