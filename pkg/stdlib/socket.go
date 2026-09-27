@@ -179,7 +179,7 @@ func getSocketClasses() map[string]*environment.Class {
 								}
 								socketData.Listener = listener
 							case "UDP":
-								conn, err := net.ListenPacket("udp", address)
+								conn, err := listenPacketConn("udp", address)
 								if err != nil {
 									return environment.NOTHIN, runtime.Exception{Message: fmt.Sprintf("BIND failed: %v", err)}
 								}

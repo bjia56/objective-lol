@@ -836,7 +836,7 @@ func getFileClasses() map[string]*environment.Class {
 							}
 							intVal := intValue.(environment.IntegerValue)
 							if data, ok := this.NativeData.(*DocumentData); ok {
-								err := os.Chmod(data.FilePath, os.FileMode(int(intVal)))
+								err := chmodFile(data.FilePath, os.FileMode(int(intVal)))
 								if err != nil {
 									return runtime.Exception{Message: fmt.Sprintf("RWX: failed to set file permissions: %v", err)}
 								}

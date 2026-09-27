@@ -77,3 +77,15 @@ Both backends invoke a defined function as a direct, blocking call from deep ins
 ## Native vs. wasm: what you lose in the browser
 
 The wasm build is Go compiled with `GOOS=js`, which has no real OS threads (goroutines are cooperatively scheduled on the one JS thread) and no filesystem by default. Concretely: the `THREAD` stdlib module won't give you true parallelism under wasm, and `FILE`/relative-import module resolution has no disk to resolve against unless you provide your own virtual filesystem. Use the native backend under Node for full stdlib fidelity; reach for wasm only where running in a browser (or another environment without a native build) is the actual requirement.
+
+Two spots in `pkg/stdlib` (`RWX`'s setter in `FILE`, and UDP `BIND` in `SOCKET`) call `os.Chmod`/`net.ListenPacket`, which aren't implemented for `GOOS=js` under either the standard wasm port or TinyGo. Both are isolated behind a `chmodFile`/`listenPacketConn` build-tag pair (`pkg/stdlib/chmod_{other,js}.go`, `pkg/stdlib/listenpacket_{other,js}.go`) so the modules still compile and register everywhere; only those two specific operations return an ordinary Objective-LOL exception under wasm instead of working, rather than being unavailable outright.
+
+### Building with TinyGo instead
+
+`scripts/build-wasm.js` uses the standard Go compiler, which produces a wasm binary on the order of 13 MB (~3 MB gzipped) because most of its bulk is the Go runtime/scheduler/GC compiled into linear memory - `-ldflags="-s -w"` barely moves that number. [TinyGo](https://tinygo.org) reimplements much of the runtime and stdlib for embedded/wasm targets and produces a substantially smaller binary for the same program - roughly 4.6 MB (~1.5 MB gzipped) for this interpreter, verified with:
+
+```bash
+tinygo build -o wasm/objectivelol.wasm -target wasm ./js/go/wasm
+```
+
+(TinyGo 0.34 requires a Go 1.19-1.23 toolchain to build *with*, not just Go itself - point `GOROOT`/`PATH` at one if your default `go` is newer.) This isn't wired into `build-wasm.js` as the default because TinyGo's stdlib coverage is narrower than upstream Go's (that's exactly why the chmod/listenPacket guards above exist) and its `syscall/js` finalizer support is a no-op (`syscall/js.finalizeRef not implemented`, printed to stderr - harmless for the request/response calling pattern used here, but worth knowing about before relying on it for anything long-running with heavy JS value churn). Swap it in if the size difference matters more than that tradeoff.
