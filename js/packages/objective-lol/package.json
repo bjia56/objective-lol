@@ -1,0 +1,29 @@
+{
+  "name": "@objective-lol/core",
+  "version": "0.1.0",
+  "description": "JavaScript/TypeScript interop for the Objective-LOL interpreter, running as a native addon under Node and as WebAssembly in the browser.",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "exports": {
+    ".": {
+      "browser": "./src/index.browser.js",
+      "default": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "wasm/wasm_exec.js",
+    "wasm/objectivelol.wasm",
+    "native"
+  ],
+  "scripts": {
+    "build:wasm": "node scripts/build-wasm.js",
+    "build:native": "node scripts/build-native.js",
+    "build": "npm run build:wasm && npm run build:native",
+    "test": "node --test test"
+  },
+  "dependencies": {
+    "koffi": "^2.9.0"
+  }
+}

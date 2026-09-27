@@ -4,3 +4,9 @@ olol-lsp
 !cmd/olol-lsp/
 *.out
 *.whl
+
+# JS/Node interop build artifacts (built via js/packages/objective-lol/scripts/*)
+js/packages/objective-lol/node_modules/
+js/packages/objective-lol/wasm/*.wasm
+js/packages/objective-lol/wasm/wasm_exec.js
+js/packages/objective-lol/native/*/

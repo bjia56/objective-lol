@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Objective-LOL in the browser</title>
+</head>
+<body>
+  <pre id="out"></pre>
+
+  <!--
+    Served without a bundler for this example: adjust the relative paths
+    below to wherever wasm/objectivelol.wasm and wasm/wasm_exec.js end up
+    in your build output. With a bundler (Vite/webpack), instead resolve
+    these via an asset import, e.g.
+      new URL('@objective-lol/core/wasm/objectivelol.wasm', import.meta.url)
+    and pass the resulting URLs to createVM() below.
+  -->
+  <script type="module">
+    import { createVM } from "../src/index.browser.js";
+
+    const out = document.getElementById("out");
+    const log = (...args) => {
+      out.textContent += args.join(" ") + "\n";
+    };
+
+    async function main() {
+      const vm = await createVM({
+        wasmURL: "../wasm/objectivelol.wasm",
+        wasmExecURL: "../wasm/wasm_exec.js",
+      });
+
+      await vm.execute(`
+        I CAN HAS STDIO?
+        HAI ME TEH FUNCSHUN MAIN
+          SAYZ WIT "hello from Objective-LOL, running as wasm in your browser"
+        KTHXBAI
+      `);
+
+      await vm.defineFunction("DOUBLE", 1, (x) => x * 2);
+      log("DOUBLE(21) =", await vm.call("DOUBLE", 21));
+    }
+
+    main().catch((err) => log("ERROR:", err.message));
+  </script>
+</body>
+</html>
