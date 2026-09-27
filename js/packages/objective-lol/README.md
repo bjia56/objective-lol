@@ -11,13 +11,14 @@ Both backends share one Go package, `js/go/bridge`, which exposes every VM opera
 
 ```bash
 npm install
-npm run build        # builds both backends for the current platform
+npm run build              # native addon + standard-Go wasm for the current platform
 # or individually:
 npm run build:native
-npm run build:wasm
+npm run build:wasm          # wasm/objectivelol.wasm        (standard Go)
+npm run build:wasm:tinygo   # wasm/objectivelol-tinygo.wasm (TinyGo, smaller - see below)
 ```
 
-`build:native` requires a matching C toolchain for the current platform (only builds for the host platform/arch - see `scripts/build-native.js`); `build:wasm` only needs a Go toolchain.
+`build:native` requires a matching C toolchain for the current platform (only builds for the host platform/arch - see `scripts/build-native.js`); `build:wasm` only needs a Go toolchain. `build:wasm:tinygo` is optional and not part of `npm run build` - see "Two wasm builds" below for what it trades off and why it needs its own toolchain.
 
 ## Usage (Node)
 
@@ -56,6 +57,28 @@ await vm.execute(`...`);
 
 See `examples/node-example.js` and `examples/browser-example.html` for runnable versions of both.
 
+### Two wasm builds - and how a bundler ships only one
+
+`wasm/objectivelol.wasm` (standard Go) and `wasm/objectivelol-tinygo.wasm` (TinyGo) are both published in the package, alongside their respective `wasm_exec.js`/`wasm_exec-tinygo.js` glue - see "Building with TinyGo" below for what actually differs between them. `createVM()` never picks one for you; it's just which pair of URLs *your own code* references:
+
+```js
+// Standard Go - larger, full stdlib fidelity.
+const vm = await createVM({
+  wasmURL: new URL("@objective-lol/core/wasm/objectivelol.wasm", import.meta.url),
+  wasmExecURL: new URL("@objective-lol/core/wasm/wasm_exec.js", import.meta.url),
+});
+
+// TinyGo - roughly a third of the transfer size; see the caveats below.
+const vm = await createVM({
+  wasmURL: new URL("@objective-lol/core/wasm/objectivelol-tinygo.wasm", import.meta.url),
+  wasmExecURL: new URL("@objective-lol/core/wasm/wasm_exec-tinygo.js", import.meta.url),
+});
+```
+
+This isn't tree-shaking in the dead-code-elimination sense - a `.wasm` file is an opaque binary a bundler can't look inside, not JS it can statically analyze. What actually happens is simpler: bundlers (Vite/webpack/etc.) only copy the asset file a `new URL(...)`/import reference actually points at into the deployed output. Since each variant's files are never referenced unless your code asks for that specific path, whichever one you didn't reference is never copied - so picking a variant is just a matter of writing the URL for the one you want, nothing more.
+
+Under Node, the equivalent choice is `createVM({ backend: "wasm", wasmVariant: "tinygo" })` (default `"go"`) - mainly useful for testing the wasm build without a browser.
+
 ## API surface
 
 `ObjectiveLOLVM` (returned by `createVM()`) exposes:
@@ -82,10 +105,12 @@ Two spots in `pkg/stdlib` (`RWX`'s setter in `FILE`, and UDP `BIND` in `SOCKET`)
 
 ### Building with TinyGo instead
 
-`scripts/build-wasm.js` uses the standard Go compiler, which produces a wasm binary on the order of 13 MB (~3 MB gzipped) because most of its bulk is the Go runtime/scheduler/GC compiled into linear memory - `-ldflags="-s -w"` barely moves that number. [TinyGo](https://tinygo.org) reimplements much of the runtime and stdlib for embedded/wasm targets and produces a substantially smaller binary for the same program - roughly 4.6 MB (~1.5 MB gzipped) for this interpreter, verified with:
+The standard Go compiler produces a wasm binary on the order of 13 MB (~3 MB gzipped) because most of its bulk is the Go runtime/scheduler/GC compiled into linear memory - `-ldflags="-s -w"` barely moves that number. [TinyGo](https://tinygo.org) reimplements much of the runtime and stdlib for embedded/wasm targets and produces a substantially smaller binary for the same program - roughly 4.6 MB (~1.5 MB gzipped), built with:
 
 ```bash
-tinygo build -o wasm/objectivelol.wasm -target wasm ./js/go/wasm
+npm run build:wasm:tinygo
 ```
 
-(TinyGo 0.34 requires a Go 1.19-1.23 toolchain to build *with*, not just Go itself - point `GOROOT`/`PATH` at one if your default `go` is newer.) This isn't wired into `build-wasm.js` as the default because TinyGo's stdlib coverage is narrower than upstream Go's (that's exactly why the chmod/listenPacket guards above exist) and its `syscall/js` finalizer support is a no-op (`syscall/js.finalizeRef not implemented`, printed to stderr - harmless for the request/response calling pattern used here, but worth knowing about before relying on it for anything long-running with heavy JS value churn). Swap it in if the size difference matters more than that tradeoff.
+(TinyGo 0.34 requires a Go 1.19-1.23 toolchain to build *with*, not just Go itself - point `PATH` at one if your default `go` is newer; the script checks this and fails with a clear message rather than a confusing TinyGo error.) It's a separate, optional script rather than part of `npm run build` because TinyGo's stdlib coverage is narrower than upstream Go's (that's exactly why the chmod/listenPacket guards above exist) and its `syscall/js` finalizer support is a no-op (`syscall/js.finalizeRef not implemented`, printed to stderr - harmless for the request/response calling pattern used here, but worth knowing about before relying on it for anything long-running with heavy JS value churn).
+
+Both a native shared library on Node and a bare static host like GitHub Pages are cases where TinyGo's tradeoffs are close to free: there's no native backend in the picture on GH Pages (wasm is the only option either way, so its ceiling on stdlib/threading applies regardless of which compiler produced it), and GH Pages' transfer size is exactly what TinyGo shrinks. Reach for the standard build instead when you need whatever stdlib coverage TinyGo is missing, or when running under Node where the native backend is available anyway and wasm's ceiling doesn't apply.

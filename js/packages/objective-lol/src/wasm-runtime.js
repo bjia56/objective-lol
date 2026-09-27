@@ -2,14 +2,28 @@
 
 const isNode = typeof process !== "undefined" && !!(process.versions && process.versions.node);
 
+// Standard Go and TinyGo each ship a wasm_exec.js that defines an
+// incompatible `globalThis.Go` runtime class under the same name (their
+// import objects differ - e.g. TinyGo's wasm needs "wasi_snapshot_preview1"
+// imports the standard Go runtime doesn't provide). So "Go is already
+// defined" is only safe to treat as "already loaded" when it's the *same*
+// wasm_exec.js as last time; switching variants within one process must
+// force a reload rather than trusting whatever's already on globalThis.
+let lastLoadedPath = null;
+
 async function ensureGoRuntime(wasmExecPath) {
-  if (typeof globalThis.Go === "function") return;
+  if (lastLoadedPath === wasmExecPath && typeof globalThis.Go === "function") return;
 
   if (isNode) {
     // wasm_exec.js is a plain (non-module) script that assigns
     // `globalThis.Go` as a side effect - requiring it for that effect is
-    // exactly what Go's own docs recommend running under Node.
-    require(wasmExecPath);
+    // exactly what Go's own docs recommend running under Node. Evict any
+    // cached copy first so switching variants re-executes it instead of
+    // getting a no-op from require()'s module cache.
+    const resolved = require.resolve(wasmExecPath);
+    delete require.cache[resolved];
+    require(resolved);
+    lastLoadedPath = wasmExecPath;
     return;
   }
 
@@ -21,6 +35,7 @@ async function ensureGoRuntime(wasmExecPath) {
       script.onerror = () => reject(new Error(`objective-lol: failed to load ${wasmExecPath}`));
       document.head.appendChild(script);
     });
+    lastLoadedPath = wasmExecPath;
     return;
   }
 

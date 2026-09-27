@@ -9,14 +9,23 @@
 
   <!--
     Served without a bundler for this example: adjust the relative paths
-    below to wherever wasm/objectivelol.wasm and wasm/wasm_exec.js end up
-    in your build output. With a bundler (Vite/webpack), instead resolve
-    these via an asset import, e.g.
+    below to wherever the wasm/wasm_exec files end up in your build
+    output. With a bundler (Vite/webpack), instead resolve them via an
+    asset import, e.g.
       new URL('@objective-lol/core/wasm/objectivelol.wasm', import.meta.url)
     and pass the resulting URLs to createVM() below.
+
+    Picking the standard-Go vs. TinyGo build (see README.md) is just a
+    matter of which pair of URLs you reference here - swap both lines in
+    WASM_VARIANTS below and a bundler will ship only the one you use.
   -->
   <script type="module">
     import { createVM } from "../src/index.browser.js";
+
+    const WASM_VARIANTS = {
+      go: { wasmURL: "../wasm/objectivelol.wasm", wasmExecURL: "../wasm/wasm_exec.js" },
+      tinygo: { wasmURL: "../wasm/objectivelol-tinygo.wasm", wasmExecURL: "../wasm/wasm_exec-tinygo.js" },
+    };
 
     const out = document.getElementById("out");
     const log = (...args) => {
@@ -24,10 +33,7 @@
     };
 
     async function main() {
-      const vm = await createVM({
-        wasmURL: "../wasm/objectivelol.wasm",
-        wasmExecURL: "../wasm/wasm_exec.js",
-      });
+      const vm = await createVM(WASM_VARIANTS.go); // or WASM_VARIANTS.tinygo
 
       await vm.execute(`
         I CAN HAS STDIO?

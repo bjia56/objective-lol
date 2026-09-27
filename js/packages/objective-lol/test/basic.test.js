@@ -4,9 +4,21 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { createVM } = require("../src/index");
 
-for (const backendName of ["native", "wasm"]) {
-  const makeVM = (opts = {}) =>
-    createVM(backendName === "wasm" ? { ...opts, backend: "wasm" } : opts);
+const fs = require("fs");
+const path = require("path");
+
+const backends = ["native", "wasm"];
+if (fs.existsSync(path.join(__dirname, "..", "wasm", "objectivelol-tinygo.wasm"))) {
+  backends.push("wasm-tinygo");
+}
+
+for (const backendName of backends) {
+  const makeVM = (opts = {}) => {
+    if (backendName === "wasm-tinygo") {
+      return createVM({ ...opts, backend: "wasm", wasmVariant: "tinygo" });
+    }
+    return createVM(backendName === "wasm" ? { ...opts, backend: "wasm" } : opts);
+  };
 
   test(`[${backendName}] execute() runs a MAIN function and returns its value`, async () => {
     const vm = await makeVM();

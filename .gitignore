@@ -9,4 +9,5 @@ olol-lsp
 js/packages/objective-lol/node_modules/
 js/packages/objective-lol/wasm/*.wasm
 js/packages/objective-lol/wasm/wasm_exec.js
+js/packages/objective-lol/wasm/wasm_exec-tinygo.js
 js/packages/objective-lol/native/*/

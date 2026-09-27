@@ -15,10 +15,13 @@
     "src",
     "wasm/wasm_exec.js",
     "wasm/objectivelol.wasm",
+    "wasm/wasm_exec-tinygo.js",
+    "wasm/objectivelol-tinygo.wasm",
     "native"
   ],
   "scripts": {
     "build:wasm": "node scripts/build-wasm.js",
+    "build:wasm:tinygo": "node scripts/build-wasm.js --tinygo",
     "build:native": "node scripts/build-native.js",
     "build": "npm run build:wasm && npm run build:native",
     "test": "node --test test"
