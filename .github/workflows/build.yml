@@ -138,7 +138,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04-arm, ubuntu-latest, windows-latest, macos-15-intel, macos-14]
+        os: [ubuntu-24.04-arm, ubuntu-latest, windows-latest, macos-15-intel, macos-15]
 
     steps:
     # Wheels are built from the sdist (not the checkout) so the sdist is
@@ -162,7 +162,8 @@ jobs:
         CIBW_ENABLE: graalpy
         # GraalPy builds without isolation, so build requirements must be preinstalled
         CIBW_BEFORE_BUILD: pip install pybindgen
-        CIBW_SKIP: "*-musllinux* *_i686 *-win32"
+        # GraalPy has no import library to link against on Windows
+        CIBW_SKIP: "*-musllinux* *_i686 *-win32 gp*-win*"
         CIBW_BUILD_VERBOSITY: 1
         CIBW_PROJECT_REQUIRES_PYTHON: ">=3.9"
         CIBW_ENVIRONMENT: >
