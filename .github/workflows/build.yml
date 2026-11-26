@@ -156,9 +156,9 @@ jobs:
       run: echo "path=$(ls sdist/*.tar.gz)" >> "$GITHUB_OUTPUT"
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a
+      uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e
       env:
-        CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-* gp311_* gp312_* gp313_*
+        CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-* gp312_* gp313_*
         CIBW_ENABLE: graalpy
         # GraalPy builds without isolation, so build requirements must be preinstalled
         CIBW_BEFORE_BUILD: pip install pybindgen
@@ -166,6 +166,8 @@ jobs:
         CIBW_TEST_COMMAND: python {project}/smoke_test.py
         # GraalPy has no import library to link against on Windows
         CIBW_SKIP: "*-musllinux* *_i686 *-win32 gp*-win*"
+        # Keep Windows wheels unrepaired (delvewheel became the default in 4.0)
+        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
         CIBW_BUILD_VERBOSITY: 1
         CIBW_PROJECT_REQUIRES_PYTHON: ">=3.9"
         CIBW_ENVIRONMENT: >
