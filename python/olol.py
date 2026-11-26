@@ -3,6 +3,7 @@ import concurrent.futures
 import functools
 import inspect
 import json
+import sys
 import threading
 from typing import Any, Callable, Dict, Tuple, Type
 import uuid
@@ -340,6 +341,9 @@ class ObjectiveLOLVM:
         if working_directory is not None:
             config.WorkingDirectory = working_directory
         self._vm = NewVM(config)
+        if sys.implementation.name == "graalpy":
+            # GraalPy can't be called back from threads it didn't create
+            self._vm.SetCallbacksOnCallerThread(True)
         self._compat = self._vm.GetCompatibilityShim()
         self._asyncio_loop = asyncio_loop
 

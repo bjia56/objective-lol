@@ -47,7 +47,7 @@ func (shim *VMCompatibilityShim) DefineFunction(id, name string, argc int, funct
 		}
 
 		// Call the provided function
-		jsonResult := callInGoroutine(function, id, string(jsonBytes))
+		jsonResult := shim.vm.runCallback(function, id, string(jsonBytes))
 
 		// Parse JSON result
 		var result map[string]interface{}
@@ -77,7 +77,7 @@ func (shim *VMCompatibilityShim) BuildNewClassVariableWithGetter(variable *Class
 		}
 
 		// Call the provided function
-		jsonResult := callInGoroutine(getter, getterID, string(jsonBytes))
+		jsonResult := shim.vm.runCallback(getter, getterID, string(jsonBytes))
 
 		var result map[string]interface{}
 		if err := json.Unmarshal([]byte(jsonResult), &result); err != nil {
@@ -108,7 +108,7 @@ func (shim *VMCompatibilityShim) BuildNewClassVariableWithSetter(variable *Class
 		}
 
 		// Call the provided function
-		jsonResult := callInGoroutine(setter, setterID, string(jsonBytes))
+		jsonResult := shim.vm.runCallback(setter, setterID, string(jsonBytes))
 
 		var result map[string]interface{}
 		if err := json.Unmarshal([]byte(jsonResult), &result); err != nil {
@@ -137,7 +137,7 @@ func (shim *VMCompatibilityShim) BuildNewClassMethod(method *ClassMethod, id str
 		}
 
 		// Call the provided function
-		jsonResult := callInGoroutine(function, id, string(jsonBytes))
+		jsonResult := shim.vm.runCallback(function, id, string(jsonBytes))
 
 		// Parse JSON result
 		var result map[string]interface{}
@@ -171,7 +171,7 @@ func (shim *VMCompatibilityShim) BuildNewUnknownFunctionHandler(id string, funct
 			}
 
 			// Call the provided function
-			jsonResult := callInGoroutine(function, id, string(jsonBytes))
+			jsonResult := shim.vm.runCallback(function, id, string(jsonBytes))
 
 			// Parse JSON result
 			var result map[string]interface{}
