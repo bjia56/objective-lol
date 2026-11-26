@@ -15,6 +15,7 @@ except:
 
 import setuptools
 from setuptools.command.build_ext import build_ext
+from setuptools.command.sdist import sdist
 from pathlib import Path
 
 
@@ -24,6 +25,65 @@ long_description = (this_directory / "README.md").read_text()
 
 PACKAGE_PATH="pkg/api"
 PACKAGE_NAME="objective_lol"
+
+# The Go sources live one directory above this file. An sdist only contains
+# this directory, so `sdist` stages the Go sources needed to build pkg/api
+# into SDIST_GO_DIR and the build falls back to that copy when the repository
+# root isn't available.
+SDIST_GO_DIR = "_go_src"
+GO_ROOT_FILES = ["go.mod", "go.sum", "LICENSE"]
+# Packages pkg/api depends on (`go list -deps ./pkg/api`)
+GO_PACKAGES = [
+    "api", "ast", "environment", "interpreter",
+    "modules", "parser", "runtime", "stdlib",
+]
+
+
+def is_graalpy():
+    return sys.implementation.name == "graalpy"
+
+
+# GraalPy doesn't flush/close unreferenced file objects at interpreter exit (no
+# refcount finalization). gopy's generated build.py ends with
+# `mod.generate(open('api.c', 'w'))` and never closes the file, so api.c is
+# truncated. This sitecustomize shim closes every file opened for writing.
+GRAALPY_SHIM = """\
+import atexit, builtins
+_open = builtins.open
+_written = []
+def _tracking_open(*args, **kwargs):
+    f = _open(*args, **kwargs)
+    try:
+        if f.writable():
+            _written.append(f)
+    except Exception:
+        pass
+    return f
+builtins.open = _tracking_open
+@atexit.register
+def _close_all():
+    for f in _written:
+        try:
+            f.close()
+        except Exception:
+            pass
+"""
+
+
+def use_system_toolchain():
+    """Build with `go` from PATH and the running interpreter (no downloads)"""
+    return is_graalpy() or os.environ.get("OLOL_SYSTEM_TOOLCHAIN") == "1"
+
+
+def find_go_root(script_dir):
+    """Locate the directory containing go.mod and pkg/api"""
+    for candidate in (os.path.dirname(script_dir), os.path.join(script_dir, SDIST_GO_DIR)):
+        if os.path.isfile(os.path.join(candidate, "go.mod")) and os.path.isdir(os.path.join(candidate, PACKAGE_PATH)):
+            return candidate
+    raise RuntimeError(
+        "Cannot find the Objective-LOL Go sources (expected ../pkg/api or "
+        f"{SDIST_GO_DIR}/pkg/api next to setup.py)"
+    )
 
 
 def get_python_version():
@@ -253,6 +313,36 @@ def install_go_dependencies(go_exe, gobin_dir):
     subprocess.check_call([go_exe, "install", "github.com/go-python/gopy@04cb87bab1e03ba3d50e827654e6e07c94ed760"], env=env)
 
 
+class CustomSdist(sdist):
+    """Bundle the Go sources into the sdist so wheels can be built from it"""
+
+    def run(self):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        repo_root = os.path.dirname(script_dir)
+        stage = os.path.join(script_dir, SDIST_GO_DIR)
+
+        if not os.path.isdir(os.path.join(repo_root, PACKAGE_PATH)):
+            # Building an sdist from an sdist; sources are already bundled
+            return super().run()
+
+        if os.path.isdir(stage):
+            shutil.rmtree(stage)
+        for name in GO_ROOT_FILES:
+            os.makedirs(stage, exist_ok=True)
+            shutil.copy(os.path.join(repo_root, name), os.path.join(stage, name))
+        ignore = shutil.ignore_patterns("*_test.go", "testdata")
+        for pkg in GO_PACKAGES:
+            shutil.copytree(
+                os.path.join(repo_root, "pkg", pkg),
+                os.path.join(stage, "pkg", pkg),
+                ignore=ignore,
+            )
+        try:
+            super().run()
+        finally:
+            shutil.rmtree(stage, ignore_errors=True)
+
+
 class CustomBuildExt(build_ext):
     def build_extension(self, ext: Extension):
         # Detect platform
@@ -263,26 +353,43 @@ class CustomBuildExt(build_ext):
         toolchain_dir = os.path.join(script_dir, ".toolchain")
 
         # Download and setup Go
-        go_dir = download_and_extract_go(toolchain_dir, detected_platform)
-        go_exe = os.path.join(go_dir, "bin", "go")
-        if detected_platform.startswith("windows"):
-            go_exe += ".exe"
-
-        # Download and setup Python
-        python_dir = download_and_extract_python(toolchain_dir, detected_platform)
-        if detected_platform.startswith("windows"):
-            python_exe = os.path.join(python_dir, "bin", "python.exe")
+        if os.environ.get("OLOL_SYSTEM_TOOLCHAIN") == "1":
+            go_exe = shutil.which("go")
+            if go_exe is None:
+                raise RuntimeError("OLOL_SYSTEM_TOOLCHAIN=1 but `go` was not found on PATH")
+            go_dir = os.path.dirname(os.path.dirname(os.path.realpath(go_exe)))
         else:
-            python_exe = os.path.join(python_dir, "bin", "python3")
-            os.chmod(python_exe, 0o755)
+            go_dir = download_and_extract_go(toolchain_dir, detected_platform)
+            go_exe = os.path.join(go_dir, "bin", "go")
+            if detected_platform.startswith("windows"):
+                go_exe += ".exe"
+
+        # Download and setup Python. CPython builds against a portable
+        # distribution (so wheels don't depend on the build interpreter's
+        # layout); GraalPy has no such distribution, so build against the
+        # running interpreter.
+        if use_system_toolchain():
+            python_dir = None
+            python_exe = sys.executable
+        else:
+            python_dir = download_and_extract_python(toolchain_dir, detected_platform)
+            if detected_platform.startswith("windows"):
+                python_exe = os.path.join(python_dir, "bin", "python.exe")
+            else:
+                python_exe = os.path.join(python_dir, "bin", "python3")
+                os.chmod(python_exe, 0o755)
 
         # Setup GOBIN directory and install dependencies
         gobin_dir = os.path.join(toolchain_dir, "gobin")
         os.makedirs(gobin_dir, exist_ok=True)
         install_go_dependencies(go_exe, gobin_dir)
 
-        # Install pybindgen for the downloaded Python
-        subprocess.check_call([python_exe, "-m", "pip", "install", "pybindgen"])
+        # Install pybindgen for the downloaded Python (for the running
+        # interpreter, it is a declared build requirement)
+        have_pybindgen = use_system_toolchain() and subprocess.call(
+            [python_exe, "-c", "import pybindgen"], stderr=subprocess.DEVNULL) == 0
+        if not have_pybindgen:
+            subprocess.check_call([python_exe, "-m", "pip", "install", "pybindgen"])
 
         # Get Go environment
         go_env_result = subprocess.check_output([go_exe, "env", "-json"], text=True)
@@ -308,18 +415,27 @@ class CustomBuildExt(build_ext):
         }
 
         # Platform-specific environment setup
+        if is_graalpy():
+            shim_dir = os.path.join(toolchain_dir, "graalpy-shim")
+            os.makedirs(shim_dir, exist_ok=True)
+            with open(os.path.join(shim_dir, "sitecustomize.py"), "w") as f:
+                f.write(GRAALPY_SHIM)
+            env["PYTHONPATH"] = shim_dir
+
         if sys.platform == "win32":
             env["SYSTEMROOT"] = os.environ.get("SYSTEMROOT", "")
-            # Use downloaded Python paths
-            python_include = os.path.join(python_dir, "include")
-            python_lib = os.path.join(python_dir, "libs")
-            # Use running Python version for lib name
-            python_lib_name = f"python{sys.version_info.major}{sys.version_info.minor}.lib"
-            env["CGO_CFLAGS"] = f"{env['CGO_CFLAGS']} -I{python_include}"
-            env["CGO_LDFLAGS"] = f"-L{python_lib} -l:{python_lib_name}"
-            env["GOPY_INCLUDE"] = python_include
-            env["GOPY_LIBDIR"] = python_lib
-            env["GOPY_PYLIB"] = f":{python_lib_name}"
+            if python_dir is not None:
+                # Use downloaded Python paths
+                python_include = os.path.join(python_dir, "include")
+                python_lib = os.path.join(python_dir, "libs")
+                # Use running Python version for lib name
+                python_lib_name = f"python{sys.version_info.major}{sys.version_info.minor}.lib"
+                env["CGO_CFLAGS"] = f"{env['CGO_CFLAGS']} -I{python_include}"
+                env["CGO_LDFLAGS"] = f"-L{python_lib} -l:{python_lib_name}"
+                env["GOPY_INCLUDE"] = python_include
+                env["GOPY_LIBDIR"] = python_lib
+                env["GOPY_PYLIB"] = f":{python_lib_name}"
+            # else: running interpreter; let gopy query it for flags
         elif sys.platform == "darwin":
             min_ver = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "10.15")
             env["MACOSX_DEPLOYMENT_TARGET"] = min_ver
@@ -328,8 +444,16 @@ class CustomBuildExt(build_ext):
 
         # Change to the source directory
         original_cwd = os.getcwd()
-        source_dir = os.path.join(os.path.dirname(script_dir), PACKAGE_PATH)
+        go_root = find_go_root(script_dir)
+        source_dir = os.path.join(go_root, PACKAGE_PATH)
         os.chdir(source_dir)
+
+        # gopy runs `go build` inside its output directory, so that directory
+        # must live under go.mod. Generate there, then move into the wheel's
+        # build dir (which, for an sdist, is not under the Go module).
+        gopy_out = os.path.join(go_root, ".gopy-build", PACKAGE_NAME)
+        if os.path.isdir(gopy_out):
+            shutil.rmtree(gopy_out)
 
         try:
             # Run gopy build
@@ -343,15 +467,17 @@ class CustomBuildExt(build_ext):
                 "-no-make",
                 "-dynamic-link=True",
                 "-symbols=False",
-                "-output", destination,
+                "-output", gopy_out,
                 "--vm", python_exe,
                 "."
             ], env=env)
+            os.makedirs(os.path.dirname(destination), exist_ok=True)
+            shutil.copytree(gopy_out, destination)
         finally:
-            for file in ["__init__.py", "olol.py"]:
-                source_file = os.path.join(script_dir, file)
-                shutil.copy(source_file, os.path.join(destination, file))
+            shutil.rmtree(os.path.dirname(gopy_out), ignore_errors=True)
             os.chdir(original_cwd)
+        for file in ["__init__.py", "olol.py"]:
+            shutil.copy(os.path.join(script_dir, file), os.path.join(destination, file))
 
 
 setuptools.setup(
@@ -370,8 +496,9 @@ setuptools.setup(
     include_package_data=True,
     cmdclass={
         "build_ext": CustomBuildExt,
+        "sdist": CustomSdist,
     },
     ext_modules=[
-        Extension(PACKAGE_NAME, [PACKAGE_PATH]),
+        Extension(PACKAGE_NAME, []),
     ],
 )

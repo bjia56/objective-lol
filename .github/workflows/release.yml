@@ -207,6 +207,12 @@ jobs:
           path: wheels
           merge-multiple: true
 
+      - name: Download Python sdist
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: sdist
+          path: sdist
+
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -223,6 +229,7 @@ jobs:
 
           # Copy wheels from artifacts
           find wheels -name "*.whl" -exec cp {} dist-all/ \;
+          cp sdist/*.tar.gz dist-all/
 
           echo "Distribution files:"
           ls -la dist-all/

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/bjia56/objective-lol/pkg/ast"
@@ -25,6 +26,12 @@ type VM struct {
 	config      *VMConfig
 	interpreter *interpreter.Interpreter
 	isStarted   bool
+
+	// Caller-thread callback dispatch (see SetCallbacksOnCallerThread).
+	// dispatch is nil unless enabled; waiters counts goroutines currently
+	// servicing it.
+	dispatch chan func()
+	waiters  int32
 }
 
 // NewVM creates a new VM instance with the given config
@@ -126,13 +133,22 @@ func (vm *VM) ExecuteWithContext(ctx context.Context, code string) (*ExecutionRe
 		done <- err
 	}()
 
-	select {
-	case err := <-done:
-		if err != nil {
-			return nil, wrapError(err, RuntimeErrorType, "execution failed")
+	// While waiting, service callbacks queued for the caller's thread
+	atomic.AddInt32(&vm.waiters, 1)
+	defer atomic.AddInt32(&vm.waiters, -1)
+waitLoop:
+	for {
+		select {
+		case err := <-done:
+			if err != nil {
+				return nil, wrapError(err, RuntimeErrorType, "execution failed")
+			}
+			break waitLoop
+		case f := <-vm.dispatch: // nil channel (blocks forever) when disabled
+			f()
+		case <-ctx.Done():
+			return nil, NewTimeoutError(time.Since(startTime))
 		}
-	case <-ctx.Done():
-		return nil, NewTimeoutError(time.Since(startTime))
 	}
 
 	// Convert result value
@@ -197,7 +213,10 @@ func (vm *VM) Call(functionName string, args []GoValue) (GoValue, error) {
 	}
 
 	// Call function through interpreter
-	result, err := vm.interpreter.CallFunction(strings.ToUpper(functionName), ololArgs)
+	var result environment.Value
+	vm.onInterpreterGoroutine(func() {
+		result, err = vm.interpreter.CallFunction(strings.ToUpper(functionName), ololArgs)
+	})
 	if err != nil {
 		return WrapAny(nil), wrapError(err, RuntimeErrorType, fmt.Sprintf("'%s' function call failed", functionName))
 	}
@@ -227,7 +246,10 @@ func (vm *VM) CallMethod(object GoValue, methodName string, args []GoValue) (GoV
 	}
 
 	// Call method through interpreter
-	result, err := vm.interpreter.CallMemberFunction(objInstance, strings.ToUpper(methodName), ololArgs)
+	var result environment.Value
+	vm.onInterpreterGoroutine(func() {
+		result, err = vm.interpreter.CallMemberFunction(objInstance, strings.ToUpper(methodName), ololArgs)
+	})
 	if err != nil {
 		return WrapAny(nil), wrapError(err, RuntimeErrorType, fmt.Sprintf("'%s' method call failed", methodName))
 	}
@@ -528,4 +550,55 @@ func (vm *VM) DefineClass(classDef *ClassDefinition) error {
 
 	// Define the class in the environment
 	return vm.interpreter.GetEnvironment().DefineClass(class)
+}
+
+// SetCallbacksOnCallerThread makes foreign-language callbacks (see
+// VMCompatibilityShim) run on the goroutine, and therefore the OS thread, that
+// entered the VM, instead of on a fresh goroutine.
+//
+// Some runtimes (GraalPy) cannot be called back from OS threads they did not
+// create. Entry points (Execute, Call, CallMethod) run the interpreter on a
+// separate goroutine and the entering goroutine services callbacks while it
+// waits.
+func (vm *VM) SetCallbacksOnCallerThread(enabled bool) {
+	if enabled {
+		vm.dispatch = make(chan func())
+	} else {
+		vm.dispatch = nil
+	}
+}
+
+// onInterpreterGoroutine runs fn, on a separate goroutine if caller-thread
+// callbacks are enabled (so this goroutine can service them), else inline.
+func (vm *VM) onInterpreterGoroutine(fn func()) {
+	if vm.dispatch == nil {
+		fn()
+		return
+	}
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		fn()
+	}()
+	atomic.AddInt32(&vm.waiters, 1)
+	defer atomic.AddInt32(&vm.waiters, -1)
+	for {
+		select {
+		case <-done:
+			return
+		case f := <-vm.dispatch:
+			f()
+		}
+	}
+}
+
+// runCallback runs a foreign callback, on the entering goroutine if one is
+// waiting to service it, otherwise on a new goroutine.
+func (vm *VM) runCallback(function CompatibilityCallback, id, jsonArgs string) string {
+	if vm.dispatch == nil || atomic.LoadInt32(&vm.waiters) == 0 {
+		return callInGoroutine(function, id, jsonArgs)
+	}
+	result := make(chan string, 1)
+	vm.dispatch <- func() { result <- function(id, jsonArgs) }
+	return <-result
 }

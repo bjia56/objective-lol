@@ -1,0 +1,5 @@
+include README.md
+include __init__.py
+include olol.py
+recursive-include _go_src *
+include smoke_test.py
