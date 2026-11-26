@@ -428,14 +428,25 @@ class CustomBuildExt(build_ext):
                 # Use downloaded Python paths
                 python_include = os.path.join(python_dir, "include")
                 python_lib = os.path.join(python_dir, "libs")
-                # Use running Python version for lib name
-                python_lib_name = f"python{sys.version_info.major}{sys.version_info.minor}.lib"
-                env["CGO_CFLAGS"] = f"{env['CGO_CFLAGS']} -I{python_include}"
-                env["CGO_LDFLAGS"] = f"-L{python_lib} -l:{python_lib_name}"
-                env["GOPY_INCLUDE"] = python_include
-                env["GOPY_LIBDIR"] = python_lib
-                env["GOPY_PYLIB"] = f":{python_lib_name}"
-            # else: running interpreter; let gopy query it for flags
+            else:
+                # Running interpreter (GraalPy). Windows can't leave Python
+                # symbols undefined for load-time resolution, so link its
+                # import library, which GraalPy ships under libs/.
+                python_include = os.path.join(sys.base_prefix, "include")
+                python_lib = os.path.join(sys.base_prefix, "libs")
+            # Use running Python version for lib name
+            python_lib_name = f"python{sys.version_info.major}{sys.version_info.minor}.lib"
+            if python_dir is None and not os.path.exists(os.path.join(python_lib, python_lib_name)):
+                # GraalPy also ships the same library as python-native.lib
+                python_lib = os.path.join(sys.base_prefix, "lib-graalpython")
+                python_lib_name = "python-native.lib"
+            if python_dir is None:
+                print(f"Linking {python_lib_name} from {python_lib}")
+            env["CGO_CFLAGS"] = f"{env['CGO_CFLAGS']} -I{python_include}"
+            env["CGO_LDFLAGS"] = f"-L{python_lib} -l:{python_lib_name}"
+            env["GOPY_INCLUDE"] = python_include
+            env["GOPY_LIBDIR"] = python_lib
+            env["GOPY_PYLIB"] = f":{python_lib_name}"
         elif sys.platform == "darwin":
             min_ver = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "10.15")
             env["MACOSX_DEPLOYMENT_TARGET"] = min_ver

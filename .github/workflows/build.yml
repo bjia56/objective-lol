@@ -164,8 +164,7 @@ jobs:
         CIBW_BEFORE_BUILD: pip install pybindgen
         # Smoke test each built wheel in a clean virtualenv
         CIBW_TEST_COMMAND: python {project}/smoke_test.py
-        # GraalPy has no import library to link against on Windows
-        CIBW_SKIP: "*-musllinux* *_i686 *-win32 gp*-win*"
+        CIBW_SKIP: "*-musllinux* *_i686 *-win32"
         # Keep Windows wheels unrepaired (delvewheel became the default in 4.0)
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
         CIBW_BUILD_VERBOSITY: 1
