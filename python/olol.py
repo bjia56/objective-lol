@@ -341,8 +341,11 @@ class ObjectiveLOLVM:
         if working_directory is not None:
             config.WorkingDirectory = working_directory
         self._vm = NewVM(config)
-        if sys.implementation.name == "graalpy":
-            # GraalPy can't be called back from threads it didn't create
+        if sys.implementation.name == "graalpy" and sys.platform != "win32":
+            # GraalPy can't be called back from threads it didn't create.
+            # Skipped on Windows (experiment): there Go aborts when a callback
+            # runs on the goroutine that entered the VM, so keep the
+            # goroutine-per-callback path (see callInGoroutine).
             self._vm.SetCallbacksOnCallerThread(True)
         self._compat = self._vm.GetCompatibilityShim()
         self._asyncio_loop = asyncio_loop
