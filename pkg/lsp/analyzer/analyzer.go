@@ -58,7 +58,16 @@ func NewAnalyzer() *Analyzer {
 	}
 }
 
-func (a *Analyzer) getOrCreateSemanticAnalyzer(uri, content string) (*SemanticAnalyzer, error) {
+func (a *Analyzer) getOrCreateSemanticAnalyzer(uri, content string) (sa *SemanticAnalyzer, err error) {
+	// Malformed source must never take down the language server: turn any
+	// analyzer panic into an error for this one request.
+	defer func() {
+		if r := recover(); r != nil {
+			sa = nil
+			err = fmt.Errorf("semantic analysis panicked: %v", r)
+		}
+	}()
+
 	a.semanticCacheLock.Lock()
 	defer a.semanticCacheLock.Unlock()
 
@@ -81,7 +90,7 @@ func (a *Analyzer) getOrCreateSemanticAnalyzer(uri, content string) (*SemanticAn
 
 	semanticAnalyzer := NewSemanticAnalyzer(uri, content)
 	ctx := context.Background()
-	if err := semanticAnalyzer.AnalyzeDocument(ctx); err != nil {
+	if err = semanticAnalyzer.AnalyzeDocument(ctx); err != nil {
 		return nil, fmt.Errorf("semantic analysis failed: %v", err)
 	}
 

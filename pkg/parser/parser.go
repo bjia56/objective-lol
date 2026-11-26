@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
 	"strings"
 
@@ -129,7 +130,10 @@ func (p *Parser) ParseProgram() *ast.ProgramNode {
 		// Check if this is an import statement or a regular declaration
 		if p.currentTokenIs(I) && p.peekTokenIs(CAN) {
 			// This is an import statement
-			node = p.parseImportStatement()
+			// Assign via the concrete type so a nil result stays a nil interface
+			if imp := p.parseImportStatement(); imp != nil {
+				node = imp
+			}
 		} else if p.currentTokenIs(HAI) {
 			// This is a regular declaration
 			node = p.parseDeclaration()
@@ -151,6 +155,10 @@ func (p *Parser) ParseProgram() *ast.ProgramNode {
 
 // parseDeclaration parses a top-level declaration
 func (p *Parser) parseDeclaration() ast.Node {
+	return nilIfTyped(p.parseDeclarationInner())
+}
+
+func (p *Parser) parseDeclarationInner() ast.Node {
 	if !p.currentTokenIs(HAI) {
 		p.addError(fmt.Sprintf("expected 'HAI' at start of declaration, got %v at line %d", p.currentToken.Type, p.currentToken.Position.Line))
 		return nil
@@ -166,13 +174,24 @@ func (p *Parser) parseDeclaration() ast.Node {
 		return nil
 	}
 
+	// Return untyped nil on failure: a nil concrete pointer wrapped in ast.Node
+	// is a non-nil interface and would crash consumers (e.g. the LSP analyzer).
 	switch p.peekToken.Type {
 	case VARIABLE, LOCKD:
-		return p.parseVariableDeclaration()
+		if n := p.parseVariableDeclaration(); n != nil {
+			return n
+		}
+		return nil
 	case FUNCSHUN:
-		return p.parseFunctionDeclaration()
+		if n := p.parseFunctionDeclaration(); n != nil {
+			return n
+		}
+		return nil
 	case CLAS:
-		return p.parseClassDeclaration()
+		if n := p.parseClassDeclaration(); n != nil {
+			return n
+		}
+		return nil
 	default:
 		p.addError(fmt.Sprintf("unexpected token after 'HAI ME TEH': %v at line %d", p.peekToken.Type, p.peekToken.Position.Line))
 		return nil
@@ -765,7 +784,25 @@ func (p *Parser) skipNewlines() {
 }
 
 // parseStatement parses individual statements
+// nilIfTyped converts an ast.Node holding a nil concrete pointer (e.g. a nil
+// *ast.VariableDeclarationNode returned after a parse error) into a true nil
+// interface, so consumers can rely on `node != nil`.
+func nilIfTyped(n ast.Node) ast.Node {
+	if n == nil {
+		return nil
+	}
+	if v := reflect.ValueOf(n); v.Kind() == reflect.Ptr && v.IsNil() {
+		return nil
+	}
+	return n
+}
+
+// parseStatement parses a statement; it never returns a typed-nil node.
 func (p *Parser) parseStatement() ast.Node {
+	return nilIfTyped(p.parseStatementInner())
+}
+
+func (p *Parser) parseStatementInner() ast.Node {
 	p.skipNewlines() // skip any leading newlines
 
 	switch p.currentToken.Type {
@@ -1029,18 +1066,37 @@ func (p *Parser) parseExpressionStatement() ast.Node {
 
 // parseExpression parses expressions with precedence
 func (p *Parser) parseExpression() ast.Node {
+	return nilIfTyped(p.parseExpressionInner())
+}
+
+func (p *Parser) parseExpressionInner() ast.Node {
 	return p.parseOrExpression()
+}
+
+// incompleteExpression records an error (if none was recorded yet) for an
+// operator whose operand failed to parse, and yields no node.
+func (p *Parser) incompleteExpression() ast.Node {
+	if len(p.errors) == 0 {
+		p.addError(fmt.Sprintf("incomplete expression at line %d", p.currentToken.Position.Line))
+	}
+	return nil
 }
 
 // parseOrExpression parses OR expressions (lowest precedence)
 func (p *Parser) parseOrExpression() ast.Node {
 	left := p.parseAndExpression()
+	if left == nil {
+		return nil
+	}
 
 	for p.peekTokenIs(OR) {
 		op := p.peekToken.Literal
 		p.nextToken()
 		p.nextToken()
 		right := p.parseAndExpression()
+		if left == nil || right == nil {
+			return p.incompleteExpression()
+		}
 		left = &ast.BinaryOpNode{
 			Left:     left,
 			Operator: op,
@@ -1055,12 +1111,18 @@ func (p *Parser) parseOrExpression() ast.Node {
 // parseAndExpression parses AN (AND) expressions
 func (p *Parser) parseAndExpression() ast.Node {
 	left := p.parseEqualityExpression()
+	if left == nil {
+		return nil
+	}
 
 	for p.peekTokenIs(AN) && !p.isTokenSequence(AN, WIT) {
 		op := p.peekToken.Literal
 		p.nextToken()
 		p.nextToken()
 		right := p.parseEqualityExpression()
+		if left == nil || right == nil {
+			return p.incompleteExpression()
+		}
 		left = &ast.BinaryOpNode{
 			Left:     left,
 			Operator: op,
@@ -1075,6 +1137,9 @@ func (p *Parser) parseAndExpression() ast.Node {
 // parseEqualityExpression parses equality expressions (SAEM AS)
 func (p *Parser) parseEqualityExpression() ast.Node {
 	left := p.parseComparisonExpression()
+	if left == nil {
+		return nil
+	}
 
 	if p.peekTokenIs(SAEM) {
 		p.nextToken() // consume SAEM
@@ -1083,6 +1148,9 @@ func (p *Parser) parseEqualityExpression() ast.Node {
 		}
 		p.nextToken()
 		right := p.parseComparisonExpression()
+		if left == nil || right == nil {
+			return p.incompleteExpression()
+		}
 		return &ast.BinaryOpNode{
 			Left:     left,
 			Operator: "SAEM AS",
@@ -1097,6 +1165,9 @@ func (p *Parser) parseEqualityExpression() ast.Node {
 // parseComparisonExpression parses comparison expressions
 func (p *Parser) parseComparisonExpression() ast.Node {
 	left := p.parseArithmeticExpression()
+	if left == nil {
+		return nil
+	}
 
 	if p.peekTokenIs(BIGGR) || p.peekTokenIs(SMALLR) {
 		op := p.peekToken.Literal
@@ -1106,6 +1177,9 @@ func (p *Parser) parseComparisonExpression() ast.Node {
 		}
 		p.nextToken()
 		right := p.parseArithmeticExpression()
+		if left == nil || right == nil {
+			return p.incompleteExpression()
+		}
 		return &ast.BinaryOpNode{
 			Left:     left,
 			Operator: op + " THAN",
@@ -1120,12 +1194,18 @@ func (p *Parser) parseComparisonExpression() ast.Node {
 // parseArithmeticExpression parses arithmetic expressions
 func (p *Parser) parseArithmeticExpression() ast.Node {
 	left := p.parseTermExpression()
+	if left == nil {
+		return nil
+	}
 
 	for p.peekTokenIs(MOAR) || p.peekTokenIs(LES) {
 		op := p.peekToken.Literal
 		p.nextToken()
 		p.nextToken()
 		right := p.parseTermExpression()
+		if left == nil || right == nil {
+			return p.incompleteExpression()
+		}
 		left = &ast.BinaryOpNode{
 			Left:     left,
 			Operator: op,
@@ -1140,12 +1220,18 @@ func (p *Parser) parseArithmeticExpression() ast.Node {
 // parseTermExpression parses multiplication/division
 func (p *Parser) parseTermExpression() ast.Node {
 	left := p.parseCastExpression()
+	if left == nil {
+		return nil
+	}
 
 	for p.peekTokenIs(TIEMZ) || p.peekTokenIs(DIVIDEZ) {
 		op := p.peekToken.Literal
 		p.nextToken()
 		p.nextToken()
 		right := p.parseCastExpression()
+		if left == nil || right == nil {
+			return p.incompleteExpression()
+		}
 		left = &ast.BinaryOpNode{
 			Left:     left,
 			Operator: op,
@@ -1160,6 +1246,9 @@ func (p *Parser) parseTermExpression() ast.Node {
 // parseCastExpression parses cast expressions
 func (p *Parser) parseCastExpression() ast.Node {
 	left := p.parsePrimaryExpression()
+	if left == nil {
+		return nil
+	}
 
 	if p.peekTokenIs(AS) {
 		p.nextToken() // consume AS

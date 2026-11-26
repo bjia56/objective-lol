@@ -1,8 +1,10 @@
 package server
 
 import (
+	"strings"
 	"testing"
 
+	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
@@ -163,4 +165,85 @@ func TestOlolLSPServer_DocumentWorkflow(t *testing.T) {
 	if server.workspace.HasDocument(uri) {
 		t.Error("Expected document to be closed")
 	}
+}
+
+func newTestContext() *glsp.Context {
+	return &glsp.Context{Notify: func(string, any) {}}
+}
+
+// Requests for documents that were never opened (or were closed) must return
+// errors, not panic.
+func TestServerRequestsOnUnknownDocument(t *testing.T) {
+	s, _ := NewServer("")
+	uri := protocol.DocumentUri("file:///nope.olol")
+	pos := protocol.Position{Line: 5, Character: 5}
+	td := protocol.TextDocumentIdentifier{URI: uri}
+
+	if _, err := s.textDocumentHover(nil, &protocol.HoverParams{TextDocumentPositionParams: protocol.TextDocumentPositionParams{TextDocument: td, Position: pos}}); err == nil {
+		t.Error("hover on unknown document should error")
+	}
+	if _, err := s.textDocumentCompletion(nil, &protocol.CompletionParams{TextDocumentPositionParams: protocol.TextDocumentPositionParams{TextDocument: td, Position: pos}}); err == nil {
+		t.Error("completion on unknown document should error")
+	}
+	if _, err := s.textDocumentDefinition(nil, &protocol.DefinitionParams{TextDocumentPositionParams: protocol.TextDocumentPositionParams{TextDocument: td, Position: pos}}); err == nil {
+		t.Error("definition on unknown document should error")
+	}
+	if err := s.textDocumentDidChange(newTestContext(), &protocol.DidChangeTextDocumentParams{
+		TextDocument:   protocol.VersionedTextDocumentIdentifier{TextDocumentIdentifier: td},
+		ContentChanges: []any{protocol.TextDocumentContentChangeEventWhole{Text: "x"}},
+	}); err == nil {
+		t.Error("change on unopened document should error")
+	}
+	if err := s.textDocumentDidClose(nil, &protocol.DidCloseTextDocumentParams{TextDocument: td}); err != nil {
+		t.Errorf("closing unknown document should be a no-op, got %v", err)
+	}
+}
+
+func TestServerMalformedChangeEvents(t *testing.T) {
+	s, _ := NewServer("")
+	uri := protocol.DocumentUri("file:///a.olol")
+	ctx := newTestContext()
+	_ = s.textDocumentDidOpen(ctx, &protocol.DidOpenTextDocumentParams{TextDocument: protocol.TextDocumentItem{URI: uri, Text: "HAI"}})
+	td := protocol.VersionedTextDocumentIdentifier{TextDocumentIdentifier: protocol.TextDocumentIdentifier{URI: uri}}
+
+	// no changes: no-op
+	if err := s.textDocumentDidChange(ctx, &protocol.DidChangeTextDocumentParams{TextDocument: td}); err != nil {
+		t.Errorf("empty change list should be a no-op: %v", err)
+	}
+	// incremental/unknown change type: error, not panic
+	if err := s.textDocumentDidChange(ctx, &protocol.DidChangeTextDocumentParams{TextDocument: td, ContentChanges: []any{"garbage"}}); err == nil {
+		t.Error("unsupported change type should error")
+	}
+	if err := s.textDocumentDidChange(ctx, &protocol.DidChangeTextDocumentParams{TextDocument: td, ContentChanges: []any{nil}}); err == nil {
+		t.Error("nil change should error")
+	}
+}
+
+// A document going through open/change/query/close cycles with broken content.
+func TestServerLifecycleWithBrokenSources(t *testing.T) {
+	s, _ := NewServer("")
+	uri := protocol.DocumentUri("file:///broken.olol")
+	ctx := newTestContext()
+	td := protocol.TextDocumentIdentifier{URI: uri}
+	pos := protocol.TextDocumentPositionParams{TextDocument: td, Position: protocol.Position{Line: 1, Character: 4}}
+
+	sources := []string{
+		"", "HAI ME TEH CLAS", "I CAN HAS", "\x00\xff\xfe",
+		"HAI ME TEH FUNCSHUN MAIN\n I HAS A VARIABLE X TEH NOPE ITZ NEW\nKTHXBAI",
+		"HAI ME TEH FUNCSHUN MAIN\n SAYZ WIT (((\nKTHXBAI",
+		strings.Repeat("HAI ME TEH ", 5000),
+	}
+	if err := s.textDocumentDidOpen(ctx, &protocol.DidOpenTextDocumentParams{TextDocument: protocol.TextDocumentItem{URI: uri, Text: sources[0]}}); err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	for _, src := range sources {
+		_ = s.textDocumentDidChange(ctx, &protocol.DidChangeTextDocumentParams{
+			TextDocument:   protocol.VersionedTextDocumentIdentifier{TextDocumentIdentifier: td},
+			ContentChanges: []any{protocol.TextDocumentContentChangeEventWhole{Text: src}},
+		})
+		_, _ = s.textDocumentHover(ctx, &protocol.HoverParams{TextDocumentPositionParams: pos})
+		_, _ = s.textDocumentCompletion(ctx, &protocol.CompletionParams{TextDocumentPositionParams: pos})
+		_, _ = s.textDocumentDefinition(ctx, &protocol.DefinitionParams{TextDocumentPositionParams: pos})
+	}
+	_ = s.textDocumentDidClose(ctx, &protocol.DidCloseTextDocumentParams{TextDocument: td})
 }
