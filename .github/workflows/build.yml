@@ -158,7 +158,8 @@ jobs:
     - name: Build wheels
       uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a
       env:
-        CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-* gp311-*
+        CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-* gp311_*
+        CIBW_ENABLE: graalpy
         CIBW_SKIP: "*-musllinux* *_i686 *-win32"
         CIBW_BUILD_VERBOSITY: 1
         CIBW_PROJECT_REQUIRES_PYTHON: ">=3.9"
