@@ -442,6 +442,11 @@ class CustomBuildExt(build_ext):
                 python_lib_name = "python-native.lib"
             if python_dir is None:
                 print(f"Linking {python_lib_name} from {python_lib}")
+                # cmd/go compares CGO_LDFLAGS with the quoted //go:cgo_ldflag
+                # lines cgo generates, and backslashes break that match (Go
+                # 1.21 then fails or panics), so use forward slashes.
+                python_include = python_include.replace("\\", "/")
+                python_lib = python_lib.replace("\\", "/")
             env["CGO_CFLAGS"] = f"{env['CGO_CFLAGS']} -I{python_include}"
             env["CGO_LDFLAGS"] = f"-L{python_lib} -l:{python_lib_name}"
             env["GOPY_INCLUDE"] = python_include
