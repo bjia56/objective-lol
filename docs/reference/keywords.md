@@ -63,7 +63,11 @@ Complete reference of all Objective-LOL keywords organized by category.
 |---------|-------------|----------|
 | `IZ` | If statement | `IZ CONDITION?` |
 | `NOPE` | Else clause | `IZ ... NOPE ...` |
+| `MEBBE` | Else-if clause | `MEBBE X SMALLR THAN 5?` |
 | `WHILE` | While loop | `WHILE CONDITION` |
+| `CALLZ` | Label a loop | `WHILE CONDITION CALLZ OUTER` |
+| `OUTTA HERE` | Break out of the innermost loop | `OUTTA HERE` |
+| `OUTTA` | Break out of a labeled loop | `OUTTA OUTER` |
 | `DO` | Method call | `OBJECT DO METHOD` |
 | `?` | Conditional marker | `IZ X BIGGR THAN 5?` |
 
@@ -128,15 +132,9 @@ Complete reference of all Objective-LOL keywords organized by category.
 | `0x` | Hexadecimal prefix | `0xFF` (255 in decimal) |
 | `0o` | Octal prefix | `0o777` (511 in decimal) |
 
-## Reserved for Future Use
+## Not Implemented
 
-These keywords are reserved but not currently implemented (subject to change):
-
-- `BREAK` - Loop breaking
-- `CONTINUE` - Loop continuation
-- `SWITCH` - Switch statements
-- `CASE` - Switch cases
-- `DEFAULT` - Switch default case
+There is no `CONTINUE` statement and no switch/case construct. Loops are exited with `OUTTA HERE` (or `OUTTA <label>` for a labeled loop); use `IZ`/`MEBBE`/`NOPE` for multi-way branching.
 
 ## Case Sensitivity
 

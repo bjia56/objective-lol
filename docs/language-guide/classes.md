@@ -415,4 +415,4 @@ KTHXBAI
 ## Next Steps
 
 - [Modules](modules.md) - Code organization across files
-- [Standard Library Collections](../standard-library/collections.md) - Built-in BUKKIT and BASKIT classes
+- [ARRAYS](../standard-library/arrays.md) and [MAPS](../standard-library/maps.md) - Built-in BUKKIT and BASKIT classes

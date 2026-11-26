@@ -199,5 +199,5 @@ Each type has a truth value for boolean contexts:
 ## Next Steps
 
 - [Control Flow](control-flow.md) - Learn about conditionals, loops, and exception handling
-- [Collections](../standard-library/collections.md) - Working with BUKKIT and BASKIT types
+- [ARRAYS](../standard-library/arrays.md) and [MAPS](../standard-library/maps.md) - Working with BUKKIT and BASKIT types
 - [Keywords Reference](../reference/keywords.md) - Complete keyword reference

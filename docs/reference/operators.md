@@ -28,6 +28,7 @@ Operators are evaluated in the following order, from highest to lowest precedenc
 - DUBBLE + DUBBLE → DUBBLE
 - INTEGR + DUBBLE → DUBBLE
 - STRIN + STRIN → STRIN (concatenation)
+- STRIN + other → STRIN (the other operand is converted to a string, e.g. `"a" MOAR 5` is `"a5"`)
 
 ```lol
 I HAS A VARIABLE A TEH INTEGR ITZ 5 MOAR 3     BTW 8

@@ -10,7 +10,7 @@ A programming language inspired by LOLCODE.
 - **Module System**: Import built-in and file modules with selective import syntax
 - **Exception Handling**: Comprehensive try-catch-finally blocks with custom exceptions
 - **Rich Collections**: Dynamic arrays and maps with extensive methods
-- **Standard Library**: File I/O, mathematics, time, string utilities, threading, and buffered I/O
+- **Standard Library**: File I/O, mathematics, random numbers, time, string utilities, threading, buffered I/O, HTTP, sockets, process management, and caching
 
 ## Quick Start
 

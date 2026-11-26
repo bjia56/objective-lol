@@ -66,7 +66,7 @@ go build -o olol cmd/olol/main.go
 - Object-oriented features with inheritance and visibility
 
 **Standard Library** (`pkg/stdlib/`):
-- Modular system with STDIO, MATH, TIME, STRING, TEST, IO, THREAD, FILE
+- Modular system with STDIO, MATH, RANDOM, TIME, STRING, ARRAYS, MAPS, TEST, IO, THREAD, FILE, CACHE, HTTP, SOCKET, PROCESS, SYSTEM
 - Each module provides domain-specific functionality
 - Thread-safe implementation with proper concurrency support
 

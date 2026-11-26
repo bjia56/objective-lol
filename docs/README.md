@@ -28,7 +28,8 @@ Welcome to the comprehensive documentation for Objective-LOL, a programming lang
 **Built-in modules and functions:**
 
 - [**Overview**](standard-library/overview.md) - Import system, scoping rules
-- [**Collections**](standard-library/collections.md) - `BUKKIT` arrays and `BASKIT` maps
+- [**ARRAYS**](standard-library/arrays.md) - `BUKKIT` arrays
+- [**MAPS**](standard-library/maps.md) - `BASKIT` maps
 - [**STDIO**](standard-library/stdio.md) - Input/output functions
 - [**MATH**](standard-library/math.md) - Mathematical functions
 - [**RANDOM**](standard-library/random.md) - Random number generator
@@ -36,11 +37,13 @@ Welcome to the comprehensive documentation for Objective-LOL, a programming lang
 - [**STRING**](standard-library/string.md) - String utilities
 - [**TEST**](standard-library/test.md) - Testing and assertions
 - [**IO**](standard-library/io.md) - Advanced I/O classes (buffered readers/writers)
-- [**THREAD**](standard-library/threading.md) - Concurrency
+- [**THREAD**](standard-library/thread.md) - Concurrency
 - [**FILE**](standard-library/file.md) - File system operations
 - [**CACHE**](standard-library/cache.md) - Caching classes
 - [**HTTP**](standard-library/http.md) - HTTP client operations
 - [**PROCESS**](standard-library/process.md) - Process management operations
+- [**SOCKET**](standard-library/socket.md) - TCP socket networking
+- [**SYSTEM**](standard-library/system.md) - Environment variables
 
 ### 🔍 Reference
 

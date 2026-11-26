@@ -147,6 +147,8 @@ Functions in Objective-LOL follow **lexical scoping** similar to other modern la
 ### Scoping Example
 
 ```lol
+I CAN HAS STDIO?
+
 HAI ME TEH VARIABLE GLOBAL_VAR TEH STRIN ITZ "Available everywhere"
 
 HAI ME TEH FUNCSHUN OUTER

@@ -185,7 +185,10 @@ Error: circular import detected during execution: circular_module_a
 | Module | Description | Key Items |
 |--------|-------------|----------|
 | `STDIO` | I/O functions | `SAY`, `SAYZ`, `GIMME` |
-| `MATH` | Mathematical functions | `ABS`, `MAX`, `SQRT`, `RANDOM` |
+| `ARRAYS` | Dynamic arrays | `BUKKIT` class |
+| `MAPS` | Key-value maps | `BASKIT` class |
+| `MATH` | Mathematical functions | `ABS`, `MAX`, `SQRT`, `PI` |
+| `RANDOM` | Random numbers | `RANDOM_INT`, `RANDOM_FLOAT`, `SEED` |
 | `TIME` | Time and date | `DATE` class, `SLEEP` function |
 | `STRING` | String utilities | `LEN`, `CONCAT` |
 | `TEST` | Testing functions | `ASSERT` |
@@ -194,6 +197,8 @@ Error: circular import detected during execution: circular_module_a
 | `FILE` | File utilities | `DOCUMENT` class |
 | `HTTP` | HTTP client | `INTERWEB`, `RESPONSE` classes |
 | `PROCESS` | Process management | `MINION`, `PIPE` classes |
+| `CACHE` | Caching | See [CACHE](../standard-library/cache.md) |
+| `SOCKET` | TCP sockets | See [SOCKET](../standard-library/socket.md) |
 | `SYSTEM` | Environment variables | `ENVBASKIT` class, `ENV` global |
 
 ### Standard Library Examples

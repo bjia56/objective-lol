@@ -26,6 +26,7 @@ Create a file named `hello.olol`:
 
 ```lol
 BTW This is a comment - Hello World program
+I CAN HAS STDIO?
 
 HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT "Hello, World!"
@@ -60,6 +61,7 @@ KTHXBAI
 
 ```lol
 BTW This is a single-line comment
+i can has stdio?
 hai me teh funcshun main    BTW Same as HAI ME TEH FUNCSHUN MAIN
     SAYZ WIT "Hello"        BTW This is also a comment
 kthxbai

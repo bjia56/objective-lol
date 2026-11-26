@@ -61,6 +61,8 @@ KTHX
 Exceptions propagate up the call stack until caught:
 
 ```lol
+I CAN HAS STDIO?
+
 HAI ME TEH FUNCSHUN LEVEL_3
     OOPS "Error from level 3"
 KTHXBAI

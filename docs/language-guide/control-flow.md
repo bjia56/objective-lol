@@ -270,6 +270,8 @@ KTHX
 Exceptions automatically propagate up the call stack until caught:
 
 ```lol
+I CAN HAS STDIO?
+
 HAI ME TEH FUNCSHUN RISKY_OPERATION
     OOPS "Operation failed!"
 KTHXBAI

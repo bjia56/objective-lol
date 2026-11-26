@@ -144,6 +144,8 @@ SAYZ WIT MAP DO GET WIT "name"    BTW Alice
 
 **Standard Modules:**
 - `STDIO`
+- `ARRAYS`
+- `MAPS`
 - `MATH`
 - `RANDOM`
 - `TIME`
@@ -156,6 +158,7 @@ SAYZ WIT MAP DO GET WIT "name"    BTW Alice
 - `HTTP`
 - `SOCKET`
 - `PROCESS`
+- `SYSTEM`
 
 ## Common Patterns
 
@@ -197,4 +200,4 @@ go build -o olol cmd/olol/main.go    # Build interpreter
 
 ---
 
-**📚 Complete Docs:** [docs/README.md](docs/README.md) • **🔍 All Operators:** [docs/reference/operators.md](docs/reference/operators.md) • **💡 Examples:** [docs/examples/](docs/examples/)
+**📚 Complete Docs:** [README.md](README.md) • **🔍 All Operators:** [reference/operators.md](reference/operators.md) • **💡 Examples:** [examples/](examples/calculator.md)
