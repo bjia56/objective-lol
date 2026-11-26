@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4] - 2026-11-26
+
+### Fixed
+- Language server no longer crashes on invalid source
+- Parse error diagnostics now point to the actual source position
+- Incomplete expressions and declarations no longer produce invalid syntax tree nodes
+
 ## [0.0.3] - 2026-04-30
 
 ### Changed

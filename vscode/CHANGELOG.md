@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.0.5] - 2026-11-26
+
+### Changed
+- Updated LSP to 0.0.4
+
 ## [0.0.4] - 2026-04-30
 
 ### Changed

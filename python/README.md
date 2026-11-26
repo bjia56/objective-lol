@@ -108,6 +108,15 @@ MIT License
 
 ## Changelog
 
+### [0.0.10] - 2026-11-26
+
+#### Added
+- GraalPy 3.12 and 3.13 wheels (Linux and macOS; 3.13 on macOS is arm64 only)
+- Source distribution on PyPI, bundling the Go sources
+
+#### Fixed
+- Incomplete expressions and declarations no longer produce invalid syntax tree nodes
+
 ### [0.0.9] - 2026-05-01
 
 #### Fixed

@@ -482,7 +482,7 @@ class CustomBuildExt(build_ext):
 
 setuptools.setup(
     name=PACKAGE_NAME,
-    version="0.0.9",
+    version="0.0.10",
     author="Brett Jia",
     author_email="dev.bjia56@gmail.com",
     description="Python bindings for Objective-LOL",

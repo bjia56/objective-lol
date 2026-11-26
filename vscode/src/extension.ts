@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 }
 
-const lspVersion = 'v0.0.3';
+const lspVersion = 'v0.0.4';
 const lspPlatform = (() => {
     switch (process.platform) {
         case 'win32':
