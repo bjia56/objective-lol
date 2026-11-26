@@ -160,6 +160,8 @@ jobs:
       env:
         CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-* gp311_*
         CIBW_ENABLE: graalpy
+        # GraalPy builds without isolation, so build requirements must be preinstalled
+        CIBW_BEFORE_BUILD: pip install pybindgen
         CIBW_SKIP: "*-musllinux* *_i686 *-win32"
         CIBW_BUILD_VERBOSITY: 1
         CIBW_PROJECT_REQUIRES_PYTHON: ">=3.9"

@@ -422,20 +422,20 @@ class CustomBuildExt(build_ext):
                 f.write(GRAALPY_SHIM)
             env["PYTHONPATH"] = shim_dir
 
-        if python_dir is None:
-            pass  # running interpreter: let gopy query it for flags
-        elif sys.platform == "win32":
+        if sys.platform == "win32":
             env["SYSTEMROOT"] = os.environ.get("SYSTEMROOT", "")
-            # Use downloaded Python paths
-            python_include = os.path.join(python_dir, "include")
-            python_lib = os.path.join(python_dir, "libs")
-            # Use running Python version for lib name
-            python_lib_name = f"python{sys.version_info.major}{sys.version_info.minor}.lib"
-            env["CGO_CFLAGS"] = f"{env['CGO_CFLAGS']} -I{python_include}"
-            env["CGO_LDFLAGS"] = f"-L{python_lib} -l:{python_lib_name}"
-            env["GOPY_INCLUDE"] = python_include
-            env["GOPY_LIBDIR"] = python_lib
-            env["GOPY_PYLIB"] = f":{python_lib_name}"
+            if python_dir is not None:
+                # Use downloaded Python paths
+                python_include = os.path.join(python_dir, "include")
+                python_lib = os.path.join(python_dir, "libs")
+                # Use running Python version for lib name
+                python_lib_name = f"python{sys.version_info.major}{sys.version_info.minor}.lib"
+                env["CGO_CFLAGS"] = f"{env['CGO_CFLAGS']} -I{python_include}"
+                env["CGO_LDFLAGS"] = f"-L{python_lib} -l:{python_lib_name}"
+                env["GOPY_INCLUDE"] = python_include
+                env["GOPY_LIBDIR"] = python_lib
+                env["GOPY_PYLIB"] = f":{python_lib_name}"
+            # else: running interpreter; let gopy query it for flags
         elif sys.platform == "darwin":
             min_ver = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "10.15")
             env["MACOSX_DEPLOYMENT_TARGET"] = min_ver
