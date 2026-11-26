@@ -16,6 +16,17 @@ type Parser struct {
 	currentToken Token
 	peekToken    Token
 	errors       []string
+	errorDetails []ParseError
+}
+
+// ParseError is a parse error with the source location it refers to.
+// Line and Column are 1-based; Length is the width of the offending token
+// (at least 1).
+type ParseError struct {
+	Message string
+	Line    int
+	Column  int
+	Length  int
 }
 
 // NewParser creates a new parser instance
@@ -45,6 +56,41 @@ func (p *Parser) nextToken() {
 // addError adds an error message to the parser's error list
 func (p *Parser) addError(msg string) {
 	p.errors = append(p.errors, msg)
+	p.errorDetails = append(p.errorDetails, p.locateError(msg))
+}
+
+// locateError picks the token an error message most plausibly refers to:
+// the peek token or current token if the message names their line, otherwise
+// the start of the line named in the message, otherwise the current token.
+func (p *Parser) locateError(msg string) ParseError {
+	pe := ParseError{Message: msg}
+	msgLine := 0
+	if i := strings.LastIndex(msg, "line "); i >= 0 {
+		fmt.Sscanf(msg[i:], "line %d", &msgLine)
+	}
+	pick := func(t Token) ParseError {
+		pe.Line, pe.Column = t.Position.Line, t.Position.Column
+		pe.Length = len(t.Literal)
+		if pe.Length < 1 {
+			pe.Length = 1
+		}
+		return pe
+	}
+	switch {
+	case msgLine > 0 && p.peekToken.Position.Line == msgLine:
+		return pick(p.peekToken)
+	case msgLine > 0 && p.currentToken.Position.Line == msgLine:
+		return pick(p.currentToken)
+	case msgLine > 0:
+		pe.Line, pe.Column, pe.Length = msgLine, 1, 1
+		return pe
+	}
+	return pick(p.currentToken)
+}
+
+// ErrorDetails returns all parsing errors with source positions.
+func (p *Parser) ErrorDetails() []ParseError {
+	return p.errorDetails
 }
 
 // Errors returns all parsing errors

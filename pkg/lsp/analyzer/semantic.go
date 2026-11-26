@@ -114,6 +114,7 @@ type AnalysisError struct {
 	Position ast.PositionInfo
 	Severity protocol.DiagnosticSeverity
 	Code     string
+	Length   int // width of the highlighted range in columns; 0 = default
 }
 
 // ErrorType represents different types of analysis errors
@@ -408,13 +409,21 @@ func (sa *SemanticAnalyzer) AnalyzeDocument(ctx context.Context) error {
 
 	// Check for parse errors first
 	if errors := p.Errors(); len(errors) > 0 {
-		for _, errorMsg := range errors {
+		details := p.ErrorDetails()
+		for i, errorMsg := range errors {
+			pos := ast.PositionInfo{Line: 1, Column: 1}
+			length := 0
+			if i < len(details) && details[i].Line > 0 {
+				pos = ast.PositionInfo{Line: details[i].Line, Column: details[i].Column}
+				length = details[i].Length
+			}
 			sa.analysisErrors = append(sa.analysisErrors, AnalysisError{
 				Type:     ErrorTypeUndefinedSymbol, // Generic for parse errors
 				Message:  errorMsg,
-				Position: ast.PositionInfo{Line: 1, Column: 1}, // TODO: Get actual position
+				Position: pos,
 				Severity: protocol.DiagnosticSeverityError,
 				Code:     "parse_error",
+				Length:   length,
 			})
 		}
 		// Don't return error - let parse errors be reported as diagnostics
@@ -542,16 +551,22 @@ func (sa *SemanticAnalyzer) GetDiagnostics() []protocol.Diagnostic {
 	var diagnostics []protocol.Diagnostic
 
 	for _, err := range sa.analysisErrors {
+		// LSP positions are 0-based; clamp so a missing position can't underflow.
+		line, col := err.Position.Line-1, err.Position.Column-1
+		if line < 0 {
+			line = 0
+		}
+		if col < 0 {
+			col = 0
+		}
+		width := len(err.Message)
+		if err.Length > 0 {
+			width = err.Length
+		}
 		diagnostic := protocol.Diagnostic{
 			Range: protocol.Range{
-				Start: protocol.Position{
-					Line:      uint32(err.Position.Line - 1),   // LSP is 0-based
-					Character: uint32(err.Position.Column - 1), // LSP is 0-based
-				},
-				End: protocol.Position{
-					Line:      uint32(err.Position.Line - 1),
-					Character: uint32(err.Position.Column - 1 + len(err.Message)),
-				},
+				Start: protocol.Position{Line: uint32(line), Character: uint32(col)},
+				End:   protocol.Position{Line: uint32(line), Character: uint32(col + width)},
 			},
 			Severity: &err.Severity,
 			Source:   &[]string{"olol-semantic"}[0],
